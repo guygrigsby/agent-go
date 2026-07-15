@@ -51,9 +51,30 @@ and median time-to-green.
 Expected failure modes raw should exhibit and semantic should not: missed
 callers, wrong-symbol edits, broken imports, long compile-repair loops.
 
+## Runner
+
+The bench runs under the Go benchmarking tool (`bench/bench_test.go`): one
+benchmark per task per mode, one episode per iteration. ns/op is wall-clock
+episode time (only the agent run is on the clock; worktree setup, cache
+warming, and scoring are not), and a `pass` metric reports success rate.
+`-benchtime=3x` gives k=3; benchstat compares modes with real statistics.
+Per-episode detail (predicate/typecheck/tests breakdown, capped flag,
+time-to-green) is appended as JSONL for the completion-time curve.
+
+	AGO_BENCH_ENDPOINT=http://host:port/v1 \
+	AGO_BENCH_MODEL=<model> \
+	AGO_BENCH_SCRATCH=<dir with clones> \
+	go test ./bench -bench Rename -benchtime 3x -timeout 0
+
+Unset env skips everything, so plain `go test ./...` stays green.
+Task manifests come from `bench prep-rename`, which recovers (pkg, sym, to)
+specs from ground-truth commits by AST diff and confirms each spec against
+the commit-side declarations.
+
 ## Open
 
-- Task set: validate all 83 parents, select a balanced ~30 (boundary-heavy;
-  traefik contributes little post-modules).
+- Task set beyond rename: prep extractors for add-param, signature, move.
 - Cap value: pick after watching a few runs; err generous, the curve does
   the discriminating.
+- Model serving: GLM 4.7 Flash on the R9700 via an OpenAI-compatible
+  endpoint; opencode is the agent harness in both modes.

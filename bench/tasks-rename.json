@@ -1,0 +1,426 @@
+[
+ {
+  "repo": "traefik",
+  "sha": "514914639aeb2d493062126950192bb9bff82799",
+  "kind": "rename",
+  "prompt": "Rename traefik.docker.* labels for Docker Swarm to traefik.swarm.*",
+  "go_files": 7,
+  "renames": [
+   {
+    "pkg": "github.com/traefik/traefik/v3/pkg/provider/docker",
+    "sym": "Shared.extractLabels",
+    "to": "extractDockerLabels"
+   }
+  ]
+ },
+ {
+  "repo": "boundary",
+  "sha": "9f2c83f3b0e83bc756621b396a9552a0426fd7d1",
+  "kind": "rename",
+  "prompt": "refact(bsr): Rename const to denote when interpolation is needed",
+  "go_files": 4,
+  "renames": [
+   {
+    "pkg": "github.com/hashicorp/boundary/internal/bsr",
+    "sym": "pubKeySelfSignatureFile",
+    "to": "pubKeySelfSignatureFileName"
+   },
+   {
+    "pkg": "github.com/hashicorp/boundary/internal/bsr",
+    "sym": "pubKeyBsrSignatureFile",
+    "to": "pubKeyBsrSignatureFileName"
+   },
+   {
+    "pkg": "github.com/hashicorp/boundary/internal/bsr",
+    "sym": "wrappedPrivKeyFile",
+    "to": "wrappedPrivKeyFileName"
+   },
+   {
+    "pkg": "github.com/hashicorp/boundary/internal/bsr",
+    "sym": "wrappedBsrKeyFile",
+    "to": "wrappedBsrKeyFileName"
+   },
+   {
+    "pkg": "github.com/hashicorp/boundary/internal/bsr",
+    "sym": "sessionMetaFile",
+    "to": "sessionMetaFileName"
+   },
+   {
+    "pkg": "github.com/hashicorp/boundary/internal/bsr",
+    "sym": "connectionFile",
+    "to": "connectionFileNameTemplate"
+   },
+   {
+    "pkg": "github.com/hashicorp/boundary/internal/bsr",
+    "sym": "bsrPubKeyFile",
+    "to": "bsrPubKeyFileName"
+   },
+   {
+    "pkg": "github.com/hashicorp/boundary/internal/bsr",
+    "sym": "messagesFile",
+    "to": "messagesFileNameTemplate"
+   },
+   {
+    "pkg": "github.com/hashicorp/boundary/internal/bsr",
+    "sym": "requestsFile",
+    "to": "requestsFileNameTemplate"
+   },
+   {
+    "pkg": "github.com/hashicorp/boundary/internal/bsr",
+    "sym": "checksumFile",
+    "to": "checksumFileName"
+   },
+   {
+    "pkg": "github.com/hashicorp/boundary/internal/bsr",
+    "sym": "channelFile",
+    "to": "channelFileNameTemplate"
+   },
+   {
+    "pkg": "github.com/hashicorp/boundary/internal/bsr",
+    "sym": "metaFile",
+    "to": "metaFileNameTemplate"
+   },
+   {
+    "pkg": "github.com/hashicorp/boundary/internal/bsr",
+    "sym": "bsrFile",
+    "to": "bsrFileNameTemplate"
+   },
+   {
+    "pkg": "github.com/hashicorp/boundary/internal/bsr",
+    "sym": "sigFile",
+    "to": "sigFileName"
+   }
+  ]
+ },
+ {
+  "repo": "boundary",
+  "sha": "87b09d5e27aa4dfb955a600140f57c32a3b031f7",
+  "kind": "rename",
+  "prompt": "Rename router to receiver for secondary connections",
+  "go_files": 5,
+  "needs_review": "subject names router-\u003ereceiver but no declaration found in diff"
+ },
+ {
+  "repo": "boundary",
+  "sha": "c05324282f96691668f2e9ea2781dd89ca19301b",
+  "kind": "rename",
+  "prompt": "Rename the UI passthrough dir flag/env var",
+  "go_files": 5,
+  "renames": [
+   {
+    "pkg": "github.com/hashicorp/boundary/internal/cmd/commands/dev",
+    "sym": "Command.flagPassthroughDirectory",
+    "to": "flagUiPassthroughDir"
+   },
+   {
+    "pkg": "github.com/hashicorp/boundary/internal/servers/controller",
+    "sym": "devPassthroughHandler",
+    "to": "devUiPassthroughHandler"
+   },
+   {
+    "pkg": "github.com/hashicorp/boundary/internal/cmd/config",
+    "sym": "Config.PassthroughDirectory",
+    "to": "DevUiPassthroughDir"
+   }
+  ]
+ },
+ {
+  "repo": "boundary",
+  "sha": "f7631edcabe0508817fb46f74f55b8b1462be265",
+  "kind": "rename",
+  "prompt": "rename target2 import alias to talias",
+  "go_files": 6,
+  "needs_review": "no rename pair extracted"
+ },
+ {
+  "repo": "boundary",
+  "sha": "caf19f867edb9f60026d792ae53caf80e644cea7",
+  "kind": "rename",
+  "prompt": "Rename some variables to remove Nodee",
+  "go_files": 6,
+  "renames": [
+   {
+    "pkg": "github.com/hashicorp/boundary/internal/daemon/worker",
+    "sym": "Worker.nodeeSplitListener",
+    "to": "workerAuthSplitListener"
+   },
+   {
+    "pkg": "github.com/hashicorp/boundary/internal/daemon/worker",
+    "sym": "Worker.NodeeFileStorage",
+    "to": "WorkerAuthStorage"
+   },
+   {
+    "pkg": "github.com/hashicorp/boundary/internal/daemon/worker",
+    "sym": "Worker.NodeeCurrentKeyId",
+    "to": "WorkerAuthCurrentKeyId"
+   },
+   {
+    "pkg": "github.com/hashicorp/boundary/internal/daemon/worker",
+    "sym": "Worker.NodeeRegistrationRequest",
+    "to": "WorkerAuthRegistrationRequest"
+   }
+  ]
+ },
+ {
+  "repo": "boundary",
+  "sha": "06d69f699e76e8e04a5e730ad3a6596336ec2142",
+  "kind": "rename",
+  "prompt": "refact(e2e): Rename credential methods for clarity",
+  "go_files": 9,
+  "renames": [
+   {
+    "pkg": "github.com/hashicorp/boundary/testing/internal/e2e/boundary",
+    "sym": "CreateStaticCredentialPasswordCli",
+    "to": "CreateStaticCredentialUsernamePasswordCli"
+   }
+  ]
+ },
+ {
+  "repo": "boundary",
+  "sha": "2d18f82c9f0f63209d50366289f460a9690aaef3",
+  "kind": "rename",
+  "prompt": "Rename refresh token errors to list error",
+  "go_files": 9,
+  "needs_review": "subject names refresh-\u003eken but no declaration found in diff"
+ },
+ {
+  "repo": "boundary",
+  "sha": "35b91c66dedb9ccda1ee1a845d6cc0399bdbf504",
+  "kind": "rename",
+  "prompt": "refact(ratelimit): Rename MaxEntries to MaxQuotas",
+  "go_files": 9,
+  "renames": [
+   {
+    "pkg": "github.com/hashicorp/boundary/internal/ratelimit",
+    "sym": "DefaultLimiterMaxEntries",
+    "to": "DefaultLimiterMaxQuotas"
+   },
+   {
+    "pkg": "github.com/hashicorp/boundary/internal/cmd/config",
+    "sym": "Controller.ApiRateLimiterMaxEntries",
+    "to": "ApiRateLimiterMaxQuotas"
+   },
+   {
+    "pkg": "github.com/hashicorp/boundary/internal/ratelimit",
+    "sym": "defaultLimiterMaxEntries",
+    "to": "defaultLimiterMaxQuotas"
+   },
+   {
+    "pkg": "github.com/hashicorp/boundary/internal/ratelimit",
+    "sym": "initDefaultLimiterMaxEntries",
+    "to": "initDefaultLimiterMaxQuotas"
+   },
+   {
+    "pkg": "github.com/hashicorp/boundary/internal/ratelimit",
+    "sym": "TestDefaulLimiterMaxEntries",
+    "to": "TestDefaulLimiterMaxQuotas"
+   }
+  ]
+ },
+ {
+  "repo": "boundary",
+  "sha": "9237d6f787c60d0ec43fbd33a322973adf350d42",
+  "kind": "rename",
+  "prompt": "Rename authorize to authorize-session",
+  "go_files": 10,
+  "renames": [
+   {
+    "pkg": "github.com/hashicorp/boundary/api/targets",
+    "sym": "Client.Authorize",
+    "to": "AuthorizeSession"
+   }
+  ]
+ },
+ {
+  "repo": "boundary",
+  "sha": "8ff18f6c3c98a1c46d78feadf64bbc0765205284",
+  "kind": "rename",
+  "prompt": "internal/cmd: rename ferry to client-agent",
+  "go_files": 13,
+  "needs_review": "subject names ferry-\u003eclient but no declaration found in diff"
+ },
+ {
+  "repo": "boundary",
+  "sha": "21033a61744741e780ce55a6e12ae9a4eeb7e2a8",
+  "kind": "rename",
+  "prompt": "Refactor: multiple rename to fix the spelling of subtype",
+  "go_files": 16,
+  "needs_review": "no rename pair extracted"
+ },
+ {
+  "repo": "boundary",
+  "sha": "401493d2259cd30dc3ff127a06a013754cff9416",
+  "kind": "rename",
+  "prompt": "test(e2e): Rename test packages",
+  "go_files": 26,
+  "needs_review": "no rename pair extracted"
+ },
+ {
+  "repo": "vault",
+  "sha": "6dc69291bf05b85d82bcca5978b33296d1fbb254",
+  "kind": "rename",
+  "prompt": "identity (CE): Persist conflict resolution after rename",
+  "go_files": 7,
+  "needs_review": "no rename pair extracted"
+ },
+ {
+  "repo": "vault",
+  "sha": "925702de10d83a895a8caa75efc10d67708d4e55",
+  "kind": "rename",
+  "prompt": "events: Add full `api_path`; rename Send",
+  "go_files": 7,
+  "needs_review": "no rename pair extracted"
+ },
+ {
+  "repo": "vault",
+  "sha": "cd7b17c65f4aa351feff345e2839a5238f76d514",
+  "kind": "rename",
+  "prompt": "PKI: JKS param rename (#15004)",
+  "go_files": 9,
+  "needs_review": "no rename pair extracted"
+ },
+ {
+  "repo": "vault",
+  "sha": "95b24f55a9c346650e93b261ac7f61348c9ac8fd",
+  "kind": "rename",
+  "prompt": "Rename PKI health check helpers",
+  "go_files": 9,
+  "renames": [
+   {
+    "pkg": "github.com/hashicorp/vault/command/healthcheck",
+    "sym": "pkiFetchIssuers",
+    "to": "pkiFetchIssuersList"
+   },
+   {
+    "pkg": "github.com/hashicorp/vault/command/healthcheck",
+    "sym": "pkiFetchLeaves",
+    "to": "pkiFetchLeavesList"
+   },
+   {
+    "pkg": "github.com/hashicorp/vault/command/healthcheck",
+    "sym": "pkiFetchRoles",
+    "to": "pkiFetchRolesList"
+   }
+  ]
+ },
+ {
+  "repo": "vault",
+  "sha": "f503f739de19944537638129f1cb3492f523f937",
+  "kind": "rename",
+  "prompt": "identity: Resolve conflicts with rename",
+  "go_files": 10,
+  "needs_review": "no rename pair extracted"
+ },
+ {
+  "repo": "vault",
+  "sha": "caec65a7a56daa7e8a4daf7ed27b8734ad68e3b8",
+  "kind": "rename",
+  "prompt": "Rename SealInfo to SealWrapper.",
+  "go_files": 10,
+  "renames": [
+   {
+    "pkg": "github.com/hashicorp/vault/vault/seal",
+    "sym": "SealInfo",
+    "to": "SealWrapper"
+   }
+  ]
+ },
+ {
+  "repo": "vault",
+  "sha": "bfb5cd6ead2ad1e50654fc52ae8aa8c41b4a052d",
+  "kind": "rename",
+  "prompt": "Rename functions referencing \"enterprise tokens\" for readability/clarity (#15193)",
+  "go_files": 13,
+  "renames": [
+   {
+    "pkg": "github.com/hashicorp/vault/vault",
+    "sym": "Core.materializeEnterpriseTokenForUsage",
+    "to": "materializeOAuthJwtForUsage"
+   },
+   {
+    "pkg": "github.com/hashicorp/vault/vault",
+    "sym": "normalizeEnterpriseTokenToID",
+    "to": "normalizeOAuthJwtToId"
+   },
+   {
+    "pkg": "github.com/hashicorp/vault/sdk/helper/consts",
+    "sym": "GetEnterpriseTokenPrefix",
+    "to": "GetOAuthJwtPrefix"
+   },
+   {
+    "pkg": "github.com/hashicorp/vault/vault",
+    "sym": "getEnterpriseTokenId",
+    "to": "getOAuthJwtId"
+   },
+   {
+    "pkg": "github.com/hashicorp/vault/sdk/logical",
+    "sym": "Request.EnterpriseTokenAuthorizationDetails",
+    "to": "JwtAuthorizationDetails"
+   },
+   {
+    "pkg": "github.com/hashicorp/vault/sdk/logical",
+    "sym": "Request.EnterpriseTokenIssuer",
+    "to": "JwtIssuer"
+   },
+   {
+    "pkg": "github.com/hashicorp/vault/sdk/logical",
+    "sym": "Request.EnterpriseTokenAudience",
+    "to": "JwtAudienceClaim"
+   },
+   {
+    "pkg": "github.com/hashicorp/vault/sdk/logical",
+    "sym": "Request.EnterpriseTokenTransaction",
+    "to": "JwtTransactionClaim"
+   }
+  ]
+ },
+ {
+  "repo": "vault",
+  "sha": "a72a5ff754bb2aeecb32d511fb9d3a6c9b80acad",
+  "kind": "rename",
+  "prompt": "Rename master key to root key",
+  "go_files": 22,
+  "renames": [
+   {
+    "pkg": "github.com/hashicorp/vault/vault/seal",
+    "sym": "StoredKeysSupportedShamirMaster",
+    "to": "StoredKeysSupportedShamirRoot"
+   },
+   {
+    "pkg": "github.com/hashicorp/vault/vault",
+    "sym": "Core.unsealKeyToMasterKeyPostUnseal",
+    "to": "unsealKeyToRootKeyPostUnseal"
+   },
+   {
+    "pkg": "github.com/hashicorp/vault/vault",
+    "sym": "AESGCMBarrier.VerifyMaster",
+    "to": "VerifyRoot"
+   },
+   {
+    "pkg": "github.com/hashicorp/vault/vault",
+    "sym": "AESGCMBarrier.ReloadMasterKey",
+    "to": "ReloadRootKey"
+   },
+   {
+    "pkg": "github.com/hashicorp/vault/vault",
+    "sym": "AESGCMBarrier.updateMasterKeyCommon",
+    "to": "updateRootKeyCommon"
+   },
+   {
+    "pkg": "github.com/hashicorp/vault/vault",
+    "sym": "AESGCMBarrier.SetMasterKey",
+    "to": "SetRootKey"
+   },
+   {
+    "pkg": "github.com/hashicorp/vault/vault",
+    "sym": "Keyring.masterKey",
+    "to": "rootKey"
+   },
+   {
+    "pkg": "github.com/hashicorp/vault/vault",
+    "sym": "masterKeyPath",
+    "to": "rootKeyPath"
+   }
+  ]
+ }
+]
