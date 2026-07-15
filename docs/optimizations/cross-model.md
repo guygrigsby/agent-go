@@ -142,3 +142,43 @@ with op detail behind `help` (instruction-following degrades with
 catalog size). Both are right for their family. Keep the spec's
 ten-tool surface as the default, and let the op-mix and parse-failure
 counters say whether any family earns a wider flat surface.
+
+## Which model fits the protocol best: a prediction
+
+Worth writing down before results exist, so the bench can confirm or
+embarrass it. "Responds best to the ago way of working" decomposes into
+four measurable things: schema-faithful tool calls, imitation of
+paste-ready examples (the repair loop is built on copying), working
+inside a fixed vocabulary instead of fighting it, and a serving stack
+where ago's levers land.
+
+Predicted order:
+
+1. **Qwen3-Coder-Next.** Hits all four. Agentic-trained on generic
+   trajectories, not a specific shell scaffold, so no prior to unlearn.
+   The family leans on few-shot imitation, which is exactly the grain
+   of repairs-as-literal-calls and fixture-validated help examples: ago
+   amplifies its strengths rather than compensating for weaknesses.
+   Only family where the full constrained-decoding story works today
+   (xgrammar, GBNF, no harmony trap, no wedge bug); effectively the
+   model the structured expression form was designed for.
+2. **gpt-oss-120b.** Strongest native tool-calling discipline in the
+   lineup, plus the effort dial. Two deductions: trained with built-in
+   browser/python tools, so it reaches for python to edit files when
+   any escape hatch exists, and harmony rules out grammar assistance,
+   so it runs on protocol validation alone.
+3. **DeepSeek V4 Flash.** Best stack alignment (DSML temp-0 structure,
+   ds4 exact replay) but locally it only exists at 2-bit through a
+   beta engine: the best test of the thesis, not the best responder.
+4. **GLM-4.7-Flash.** Fine incumbent; serving fragility taxes it.
+5. **Devstral 2.** The anti-fit by construction: most skilled coder
+   here, post-trained specifically on raw-mode choreography, most
+   likely to fight the protocol. That is why devstral.md frames it as
+   the adversarial control.
+
+The distinction that matters when reading results: best responder is
+not where the thesis wins biggest. The largest semantic-vs-raw margin
+should show on the weak tier (gpt-oss-20b at low effort, Qwen3.6-27B,
+GLM-Flash at Q2), because that is the population ago exists for.
+Coder-Next is the model that will make ago look most fluent; the small
+dense models are the ones that will make it look most necessary.
