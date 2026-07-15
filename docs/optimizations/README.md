@@ -2,6 +2,8 @@
 
 Per-model brainstorms for running the ago language against local models.
 Levers only, no protocol changes; each doc ranks its own priorities.
+[cross-model.md](cross-model.md) synthesizes the levers that pay on
+every family and is the build list.
 
 ## Scope: what local means
 
