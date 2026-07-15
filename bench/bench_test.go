@@ -283,17 +283,26 @@ func scopedTests(c config, wt string, t Manifest) bool {
 
 func runAgent(ctx context.Context, c config, wt, prompt string) (string, error) {
 	full := prompt + "\n\nMake this change across the whole repository. The task is complete when the change is applied everywhere and the project still typechecks."
-	cmd := exec.CommandContext(ctx, "opencode", "run",
+	cmd := exec.CommandContext(ctx, "opencode", "run", "--pure",
 		"--agent", "bench", "-m", "local/"+c.model, "--format", "json", full)
 	cmd.Dir = wt
-	cmd.Env = append(os.Environ(), "OPENCODE_CONFIG="+filepath.Join(wt, "opencode.json"))
+	// Isolate from the user's global opencode config, skills, and plugins:
+	// OPENCODE_CONFIG alone still merges ~/.config/opencode.
+	xdg := filepath.Join(wt, ".xdg-config")
+	os.MkdirAll(xdg, 0o755)
+	cmd.Env = append(os.Environ(),
+		"OPENCODE_CONFIG="+filepath.Join(wt, "opencode.json"),
+		"XDG_CONFIG_HOME="+xdg)
 	out, err := cmd.CombinedOutput()
 	return string(out), err
 }
 
 func writeOpencodeConfig(b *testing.B, c config, wt, mode string) {
 	b.Helper()
-	tools := map[string]any{}
+	// Single-agent purity in both modes: no subagent spawning, no user
+	// skills. Round 3 autopsy: leaked global skills ate 36/45 tool calls of
+	// one episode; task-spawned subagents dodge mode tool restrictions.
+	tools := map[string]any{"task": false, "skill": false}
 	mcp := map[string]any{}
 	prompt := "You are completing a repository-wide Go refactoring task."
 	if mode == "semantic" {
