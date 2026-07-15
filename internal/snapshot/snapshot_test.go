@@ -1,6 +1,7 @@
 package snapshot
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -67,6 +68,24 @@ func TestRefs(t *testing.T) {
 	}
 	if res["count"].(int) != 2 { // def in lib.go + use in main.go
 		t.Errorf("want 2 refs, got %v", res)
+	}
+}
+
+func TestSearch(t *testing.T) {
+	s := demo(t)
+	res, err := s.Search("dou")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if res["count"].(int) != 1 {
+		t.Fatalf("got %v", res)
+	}
+	res, err = s.Search("put")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if res["count"].(int) != 1 || !strings.Contains(fmt.Sprint(res["symbols"]), "Store.Put") {
+		t.Fatalf("got %v", res)
 	}
 }
 

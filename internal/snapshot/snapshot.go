@@ -463,6 +463,71 @@ func (s *Snapshot) Status() (map[string]any, error) {
 	}, nil
 }
 
+// Search finds workspace symbols by case-insensitive substring: package
+// scope names, struct fields, and methods. This is the discovery op — the
+// bridge from a natural-language name fragment to an exact symbol address.
+func (s *Snapshot) Search(query string) (map[string]any, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	ms, err := s.ensureFresh()
+	if err != nil {
+		return nil, err
+	}
+	if query == "" {
+		return nil, &Reject{Reason: "empty query"}
+	}
+	q := strings.ToLower(query)
+	type hit struct {
+		Pkg  string `json:"pkg"`
+		Sym  string `json:"sym"`
+		Kind string `json:"kind"`
+		Pos  string `json:"pos"`
+	}
+	const limit = 200
+	var hits []hit
+	seen := map[string]bool{}
+	add := func(pkg, sym string, obj types.Object) {
+		key := pkg + "." + sym
+		if seen[key] || len(hits) >= limit {
+			return
+		}
+		seen[key] = true
+		hits = append(hits, hit{pkg, sym, objKind(obj), s.fset.Position(obj.Pos()).String()})
+	}
+	for _, p := range s.pkgs {
+		if p.Types == nil {
+			continue
+		}
+		scope := p.Types.Scope()
+		for _, name := range scope.Names() {
+			obj := scope.Lookup(name)
+			if strings.Contains(strings.ToLower(name), q) {
+				add(p.PkgPath, name, obj)
+			}
+			tn, ok := obj.(*types.TypeName)
+			if !ok {
+				continue
+			}
+			if st, ok := tn.Type().Underlying().(*types.Struct); ok {
+				for fld := range st.Fields() {
+					if strings.Contains(strings.ToLower(fld.Name()), q) {
+						add(p.PkgPath, name+"."+fld.Name(), fld)
+					}
+				}
+			}
+			for sel := range types.NewMethodSet(types.NewPointer(tn.Type())).Methods() {
+				if fn := sel.Obj(); strings.Contains(strings.ToLower(fn.Name()), q) {
+					add(p.PkgPath, name+"."+fn.Name(), fn)
+				}
+			}
+		}
+	}
+	return map[string]any{
+		"status": "ok", "query": query, "count": len(hits),
+		"truncated": len(hits) >= limit, "symbols": hits, "load_ms": ms,
+	}, nil
+}
+
 func (s *Snapshot) Inspect(pkgPath, sym string) (map[string]any, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()

@@ -1,0 +1,44 @@
+{
+ "$schema": "https://opencode.ai/config.json",
+ "agent": {
+  "bench": {
+   "mode": "primary",
+   "prompt": "You are completing a repository-wide Go refactoring task. Use the ago_* tools for every inspection and code change: ago_refs to find usages, ago_rename to rename symbols, ago_set_body to change function bodies. Mutations are validated; a rejection tells you exactly what to fix. You cannot edit files directly.",
+   "tools": {
+    "bash": false,
+    "edit": false,
+    "patch": false,
+    "write": false
+   }
+  }
+ },
+ "mcp": {
+  "ago": {
+   "command": [
+    "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRename3516129884/001/ago",
+    "mcp"
+   ],
+   "enabled": true,
+   "type": "local"
+  }
+ },
+ "permission": {
+  "bash": "allow",
+  "edit": "allow",
+  "webfetch": "deny"
+ },
+ "provider": {
+  "local": {
+   "models": {
+    "unsloth/GLM-4.7-Flash-GGUF:UD-Q4_K_XL": {
+     "name": "unsloth/GLM-4.7-Flash-GGUF:UD-Q4_K_XL"
+    }
+   },
+   "name": "local",
+   "npm": "@ai-sdk/openai-compatible",
+   "options": {
+    "baseURL": "https://llama.lab.aeryx.ai/v1"
+   }
+  }
+ }
+}

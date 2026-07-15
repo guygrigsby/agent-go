@@ -68,6 +68,8 @@ func handle(conn net.Conn, snap *snapshot.Snapshot) (stop bool) {
 		res, err = snap.Inspect(req.Pkg, req.Sym)
 	case "refs":
 		res, err = snap.Refs(req.Pkg, req.Sym)
+	case "search":
+		res, err = snap.Search(req.Sym)
 	case "set-body":
 		res, err = snap.SetBody(req.Pkg, req.Sym, req.Body)
 	case "rename":

@@ -1,0 +1,23 @@
+{
+ "agent_error": true,
+ "capped": true,
+ "iter": 0,
+ "mode": "semantic",
+ "pass": false,
+ "predicate": false,
+ "prompt": "Rename authorize to authorize-session",
+ "specs": [
+  {
+   "baseline_refs": 3,
+   "new_refs": 0,
+   "ok": false,
+   "old_refs_left": 3,
+   "sym": "github.com/hashicorp/boundary/api/targets.Client.Authorize",
+   "to": "AuthorizeSession"
+  }
+ ],
+ "task": "boundary_9237d6f7",
+ "tests": false,
+ "typecheck": true,
+ "wall_s": 1200.032560209
+}
