@@ -122,16 +122,17 @@ func (s *Snapshot) Patch(raw []byte) (map[string]any, error) {
 // list has applied without a Reject, so a failure partway leaves the
 // workspace untouched — no rollback bookkeeping is needed for that case.
 //
-// dry_run runs the identical op-apply and format steps (so a caller learns
-// about op-level and syntax problems exactly as it would on commit), writes
-// the result to disk, then unconditionally restores the original bytes and
-// re-typechecks the dirty set against that restored content — the same
-// resync rename.go's verifyResolution failure path performs — before
-// replying. It does not gate its response on that resync's diagnostics:
-// they describe the pre-patch state, not the proposed one. A caller who
-// wants a true type-check of the proposed change must actually commit;
-// dry_run answers "does this op list apply and format", not "does the
-// result compile".
+// dry_run runs the identical op-apply, format, write, and retypecheck steps
+// a commit would, so its response carries the same accept/reject outcome a
+// real commit would produce — including diagnostics on rejection. It then
+// unconditionally restores the original bytes and re-typechecks the dirty
+// set against that restored content — the same resync rename.go's
+// verifyResolution failure path performs — before replying, so a preview
+// never leaves disk changed. That resync's own retypecheck would otherwise
+// bump the dirty packages' generation counters on a clean recheck exactly as
+// a real splice does; dry_run snapshots and restores those counters around
+// the resync so previewing a patch never invalidates a caller's held
+// generation handle.
 func (s *Snapshot) patchComposable(env patchEnvelope, names []string) (map[string]any, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -189,6 +190,22 @@ func (s *Snapshot) patchComposable(env patchEnvelope, names []string) (map[strin
 	}
 
 	dirty := append(s.dirtyByFiles(editedFiles), s.affected(env.Pkg)...)
+	// dry_run previews the same retypecheck a commit would run, so it must
+	// see the same accept/reject outcome. But the resync retypecheck below
+	// (which puts the snapshot back once the proposed edit's bytes are
+	// restored) still bumps generations on a clean recheck, exactly like a
+	// real splice would — so for dry_run, snapshot every dirty package's
+	// generation counter here and restore it after resync, leaving a
+	// dry_run's held generation handles valid.
+	var savedGens map[string]int64
+	if env.DryRun {
+		savedGens = map[string]int64{}
+		for _, p := range dirty {
+			if p != nil {
+				savedGens[p.PkgPath] = s.gens[p.PkgPath]
+			}
+		}
+	}
 	diags, n, err := s.retypecheck(dirty)
 	if err != nil {
 		s.rollback(originals)
@@ -197,6 +214,12 @@ func (s *Snapshot) patchComposable(env patchEnvelope, names []string) (map[strin
 	if env.DryRun {
 		s.rollback(originals)
 		s.retypecheck(dirty)
+		for pkg, g := range savedGens {
+			s.gens[pkg] = g
+		}
+		if len(diags) > 0 {
+			return nil, &Reject{Reason: "patch does not typecheck", Diagnostics: annotateDiagnostics(diags, ctx.fileLastOp)}
+		}
 		return map[string]any{"status": "ok", "dry_run": true, "would": "accepted"}, nil
 	}
 	if len(diags) > 0 {

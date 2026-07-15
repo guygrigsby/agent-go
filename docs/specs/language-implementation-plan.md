@@ -467,7 +467,7 @@ func TestPatchInsertAfterHandle(t *testing.T) {
 	// UseHelper body: n1 assign, n2 blank-assign, n3 return.
 	res, err := s.Patch([]byte(`{"pkg":"demo/lib","sym":"UseHelper",
 		"ops":[{"op":"add_assign","at":"n1","where":"after","lhs":"extra","rhs":"h(1)","define":true},
-		       {"op":"add_call","at":"n3","where":"before","expr":"_ = extra"}]}`))
+		       {"op":"add_assign","at":"n3","where":"before","lhs":"_","rhs":"extra"}]}`))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -500,7 +500,7 @@ func TestPatchDryRun(t *testing.T) {
 	s := demo(t)
 	orig, _ := os.ReadFile(s.dir + "/lib/use.go")
 	res, err := s.Patch([]byte(`{"pkg":"demo/lib","sym":"UseHelper","dry_run":true,
-		"ops":[{"op":"add_assign","at":"n1","where":"after","lhs":"x","rhs":"1","define":true}]}`))
+		"ops":[{"op":"add_call","at":"n1","where":"after","expr":"helper(2)"}]}`))
 	if err != nil || res["dry_run"] != true || res["would"] != "accepted" {
 		t.Fatalf("got %v %v", res, err)
 	}

@@ -93,8 +93,8 @@ func (ctx *patchCtx) insertStmt(at, where, stmtText string) (string, *Reject) {
 	return newHandle, nil
 }
 
-// exprAtom parses and returns gofmt'd expression text or a Reject with
-// in-scope did_you_mean candidates.
+// exprAtom parses src as a Go expression and returns its gofmt'd text, or a
+// Reject carrying the parse error.
 //
 // exprAtom only validates syntax (parser.ParseExpr); it has no type
 // information at this point in the pipeline (ctx.src is not yet
@@ -240,11 +240,10 @@ func (addAssignOp) apply(ctx *patchCtx, raw json.RawMessage) *Reject {
 	return nil
 }
 
-// addCallOp inserts a statement relative to a handle. Despite the field
-// name, "expr" is spliced as a full simple statement rather than routed
-// through exprAtom's expression-only grammar: callers use it for blank
-// assignments (`_ = x`) as often as bare calls (`foo()`), and insertStmt's
-// own re-parse after splicing already validates whatever lands there.
+// addCallOp inserts a call-expression statement relative to a handle. "expr"
+// must be a genuine call (`foo()`) or a channel receive (`<-ch`), the only
+// two expression shapes Go allows as a standalone statement; anything else
+// (an assignment in particular) belongs to add_assign instead.
 type addCallOp struct{}
 
 func (addCallOp) name() string { return "add_call" }
@@ -257,6 +256,24 @@ func (addCallOp) apply(ctx *patchCtx, raw json.RawMessage) *Reject {
 	}
 	if err := json.Unmarshal(raw, &a); err != nil {
 		return &Reject{Reason: "malformed op args", Detail: err.Error()}
+	}
+	expr, err := parser.ParseExpr(a.Expr)
+	if err != nil {
+		return &Reject{Reason: "expression does not parse", Detail: err.Error()}
+	}
+	for {
+		p, ok := expr.(*ast.ParenExpr)
+		if !ok {
+			break
+		}
+		expr = p.X
+	}
+	_, isCall := expr.(*ast.CallExpr)
+	recv, isUnary := expr.(*ast.UnaryExpr)
+	isReceive := isUnary && recv.Op == token.ARROW
+	if !isCall && !isReceive {
+		return &Reject{Reason: "add_call requires a call expression",
+			Detail: "not a call or channel receive; use add_assign for assignments"}
 	}
 	h, rej := ctx.insertStmt(a.At, a.Where, a.Expr)
 	if rej != nil {
