@@ -1,0 +1,838 @@
+{
+ "traefik": [
+  {
+   "sha": "b966215e6c65d36d4a568c78981ef24a90918c43",
+   "subject": "Move origin fields capture to service level",
+   "kinds": [
+    "move"
+   ],
+   "go_files": 5,
+   "other_files": 2,
+   "churn": 102
+  },
+  {
+   "sha": "514914639aeb2d493062126950192bb9bff82799",
+   "subject": "Rename traefik.docker.* labels for Docker Swarm to traefik.swarm.*",
+   "kinds": [
+    "rename"
+   ],
+   "go_files": 7,
+   "other_files": 3,
+   "churn": 214
+  },
+  {
+   "sha": "5026ca97d0266e2ad260947cfb22c3f5453fa673",
+   "subject": "Move snicheck to ctx instead of simulated routing",
+   "kinds": [
+    "move"
+   ],
+   "go_files": 18,
+   "other_files": 1,
+   "churn": 912
+  }
+ ],
+ "boundary": [
+  {
+   "sha": "9f2c83f3b0e83bc756621b396a9552a0426fd7d1",
+   "subject": "refact(bsr): Rename const to denote when interpolation is needed",
+   "kinds": [
+    "rename"
+   ],
+   "go_files": 4,
+   "other_files": 0,
+   "churn": 102
+  },
+  {
+   "sha": "224f8d2d4ece315b14845518355c5fb8f474566a",
+   "subject": "refact(controller): Move Target Repository Factory to the target package",
+   "kinds": [
+    "move"
+   ],
+   "go_files": 4,
+   "other_files": 0,
+   "churn": 12
+  },
+  {
+   "sha": "1a1d3058c9a431f1a34c0cb94be406af5be572ad",
+   "subject": "Move verification to a shared package (#197)",
+   "kinds": [
+    "move"
+   ],
+   "go_files": 4,
+   "other_files": 0,
+   "churn": 1107
+  },
+  {
+   "sha": "feb87e717ed041dc39fc871402b1beb861da931c",
+   "subject": "Add Closed error code and rename recorder cache to manager",
+   "kinds": [
+    "rename"
+   ],
+   "go_files": 5,
+   "other_files": 0,
+   "churn": 32
+  },
+  {
+   "sha": "87b09d5e27aa4dfb955a600140f57c32a3b031f7",
+   "subject": "Rename router to receiver for secondary connections (#2816)",
+   "kinds": [
+    "rename"
+   ],
+   "go_files": 5,
+   "other_files": 0,
+   "churn": 46
+  },
+  {
+   "sha": "051d337b2183d66e004a33945bf0923b519980a3",
+   "subject": "refact(e2e): Move logging to helper function",
+   "kinds": [
+    "move"
+   ],
+   "go_files": 5,
+   "other_files": 0,
+   "churn": 29
+  },
+  {
+   "sha": "c05324282f96691668f2e9ea2781dd89ca19301b",
+   "subject": "Rename the UI passthrough dir flag/env var (#1600)",
+   "kinds": [
+    "rename"
+   ],
+   "go_files": 5,
+   "other_files": 2,
+   "churn": 34
+  },
+  {
+   "sha": "6a92e0892834824d65142a0e4e88ed5f2d66af6c",
+   "subject": "refact(worker): update worker porxy handler signature to return an error (#1536)",
+   "kinds": [
+    "signature"
+   ],
+   "go_files": 5,
+   "other_files": 0,
+   "churn": 67
+  },
+  {
+   "sha": "670abaed88b187d1f59d4061a383350899b89aab",
+   "subject": "Rename GormReadWriter -> Db",
+   "kinds": [
+    "rename"
+   ],
+   "go_files": 5,
+   "other_files": 1,
+   "churn": 174
+  },
+  {
+   "sha": "bf9dbd818eaf1b70757781becb575e21b15482e7",
+   "subject": "chore(cmd): Remove IntVar and move to Int64Var",
+   "kinds": [
+    "move"
+   ],
+   "go_files": 6,
+   "other_files": 0,
+   "churn": 90
+  },
+  {
+   "sha": "f7631edcabe0508817fb46f74f55b8b1462be265",
+   "subject": "rename target2 import alias to talias (#4482)",
+   "kinds": [
+    "rename"
+   ],
+   "go_files": 6,
+   "other_files": 0,
+   "churn": 42
+  },
+  {
+   "sha": "caf19f867edb9f60026d792ae53caf80e644cea7",
+   "subject": "Rename some variables to remove Nodee",
+   "kinds": [
+    "rename"
+   ],
+   "go_files": 6,
+   "other_files": 2,
+   "churn": 75
+  },
+  {
+   "sha": "3482f91a179fb4f6ff1fd1a41be0228bc169763f",
+   "subject": "refactor(connections): Move connect connect to the Connection repo",
+   "kinds": [
+    "move"
+   ],
+   "go_files": 6,
+   "other_files": 0,
+   "churn": 374
+  },
+  {
+   "sha": "fb1ea92a30a2888fbfb7c36ff30ed5f51e738e23",
+   "subject": "Pass both the control and data context into handle",
+   "kinds": [
+    "add-param"
+   ],
+   "go_files": 7,
+   "other_files": 0,
+   "churn": 41
+  },
+  {
+   "sha": "185d8b392d65f35062b150123c0df30983758003",
+   "subject": "refact(auth): Move subtype registration into global registry",
+   "kinds": [
+    "move"
+   ],
+   "go_files": 7,
+   "other_files": 0,
+   "churn": 130
+  },
+  {
+   "sha": "fff15bc9f3a5493dad91c3d34099b8654637f063",
+   "subject": "Rename KMS purpose 'controller' to 'root'",
+   "kinds": [
+    "rename"
+   ],
+   "go_files": 7,
+   "other_files": 2,
+   "churn": 20
+  },
+  {
+   "sha": "687dd1bda62ae18f9d3c6d97f04bfed9af4aae16",
+   "subject": "Move the session cleanup job logic into the session package. (#2060)",
+   "kinds": [
+    "move"
+   ],
+   "go_files": 8,
+   "other_files": 0,
+   "churn": 1136
+  },
+  {
+   "sha": "79670180a7af00d4e602727adf43f093c6feee36",
+   "subject": "refact(session): Move domain logic of Worker Status into domain service",
+   "kinds": [
+    "move"
+   ],
+   "go_files": 8,
+   "other_files": 0,
+   "churn": 1114
+  },
+  {
+   "sha": "419e2146d426338d32aba63f483df5844fe06b34",
+   "subject": "Revert \"Move api tests to internal package to remove issue with external resources depending on internal libs\"",
+   "kinds": [
+    "move"
+   ],
+   "go_files": 8,
+   "other_files": 0,
+   "churn": 2
+  },
+  {
+   "sha": "326086e352910955545ffeecedfc7e290fced163",
+   "subject": "Move api tests to internal package to remove issue with external resources depending on internal libs",
+   "kinds": [
+    "move"
+   ],
+   "go_files": 8,
+   "other_files": 0,
+   "churn": 2
+  },
+  {
+   "sha": "06d69f699e76e8e04a5e730ad3a6596336ec2142",
+   "subject": "refact(e2e): Rename credential methods for clarity (#6219)",
+   "kinds": [
+    "rename"
+   ],
+   "go_files": 9,
+   "other_files": 0,
+   "churn": 26
+  },
+  {
+   "sha": "1c62470ba6ee3eb54fb4309dc73f34e8eb7190c0",
+   "subject": "chore(cmd): Move FlagClientAgentPort and flagTargetDefaultPort to uint16",
+   "kinds": [
+    "move"
+   ],
+   "go_files": 9,
+   "other_files": 0,
+   "churn": 22
+  },
+  {
+   "sha": "3195dcba4ec65099a7aaf8246198e82be258a9c4",
+   "subject": "chore(cmd): Remove UintVar and move to Uint64Var",
+   "kinds": [
+    "move"
+   ],
+   "go_files": 9,
+   "other_files": 0,
+   "churn": 84
+  },
+  {
+   "sha": "2d18f82c9f0f63209d50366289f460a9690aaef3",
+   "subject": "Rename refresh token errors to list error (#4138)",
+   "kinds": [
+    "rename"
+   ],
+   "go_files": 9,
+   "other_files": 0,
+   "churn": 42
+  },
+  {
+   "sha": "35b91c66dedb9ccda1ee1a845d6cc0399bdbf504",
+   "subject": "refact(ratelimit): Rename MaxEntries to MaxQuotas",
+   "kinds": [
+    "rename"
+   ],
+   "go_files": 9,
+   "other_files": 0,
+   "churn": 108
+  },
+  {
+   "sha": "533b434d1a7d8256a93e3bf5061cb476747e26ec",
+   "subject": "refact(controller/targets): Move tcp functionality into subpackage",
+   "kinds": [
+    "move"
+   ],
+   "go_files": 10,
+   "other_files": 0,
+   "churn": 596
+  },
+  {
+   "sha": "9237d6f787c60d0ec43fbd33a322973adf350d42",
+   "subject": "Rename authorize to authorize-session (#531)",
+   "kinds": [
+    "rename"
+   ],
+   "go_files": 10,
+   "other_files": 3,
+   "churn": 96
+  },
+  {
+   "sha": "38b12394fd9dee751d5278bb404a4cb45c8a0186",
+   "subject": "refactor (kms): add GetWrapperer for RewrapFn parameter (#2701)",
+   "kinds": [
+    "add-param"
+   ],
+   "go_files": 12,
+   "other_files": 0,
+   "churn": 155
+  },
+  {
+   "sha": "8ff18f6c3c98a1c46d78feadf64bbc0765205284",
+   "subject": "internal/cmd: rename ferry to client-agent",
+   "kinds": [
+    "rename"
+   ],
+   "go_files": 13,
+   "other_files": 0,
+   "churn": 388
+  },
+  {
+   "sha": "57ffc71849385ed3f019d9e2d3bfbb0a493565cb",
+   "subject": "refact(e2e): Add context as an argument for cli methods",
+   "kinds": [
+    "add-param"
+   ],
+   "go_files": 15,
+   "other_files": 0,
+   "churn": 217
+  },
+  {
+   "sha": "bf1486f75efcde4568b2197379c54a7e94eb62b8",
+   "subject": "refact(target): Add context to RepositoryFactory constructor",
+   "kinds": [
+    "add-param"
+   ],
+   "go_files": 16,
+   "other_files": 0,
+   "churn": 97
+  },
+  {
+   "sha": "b4b95e0f0e8f21ed3fa95370edfd2d62ad30d665",
+   "subject": "refactor(vault): add context and remove deprecated errors (#2396)",
+   "kinds": [
+    "add-param"
+   ],
+   "go_files": 16,
+   "other_files": 0,
+   "churn": 310
+  },
+  {
+   "sha": "dd2c3807cde9f8fc541986191fbeffa64238bcee",
+   "subject": "refactor: Move functions from kms pkg to new libs/crypto pkg (#1650)",
+   "kinds": [
+    "move"
+   ],
+   "go_files": 16,
+   "other_files": 0,
+   "churn": 787
+  },
+  {
+   "sha": "21033a61744741e780ce55a6e12ae9a4eeb7e2a8",
+   "subject": "Refactor: multiple rename to fix the spelling of subtype (#1227)",
+   "kinds": [
+    "rename"
+   ],
+   "go_files": 16,
+   "other_files": 0,
+   "churn": 160
+  },
+  {
+   "sha": "a16033b73a96a9655ab63f8b51c147b7f301a09e",
+   "subject": "fix (kms): move oplog DEK into its own internal kms (#3665)",
+   "kinds": [
+    "move"
+   ],
+   "go_files": 24,
+   "other_files": 7,
+   "churn": 1423
+  },
+  {
+   "sha": "eb61ac63045d6690f50565c9d48b36ef1669b78a",
+   "subject": "refact(session): Add context to session factory",
+   "kinds": [
+    "add-param"
+   ],
+   "go_files": 25,
+   "other_files": 0,
+   "churn": 156
+  },
+  {
+   "sha": "401493d2259cd30dc3ff127a06a013754cff9416",
+   "subject": "test(e2e): Rename test packages (#3334)",
+   "kinds": [
+    "rename"
+   ],
+   "go_files": 26,
+   "other_files": 7,
+   "churn": 52
+  },
+  {
+   "sha": "9354a4ebcf72dad8a9b119af5ca94797d7238bd0",
+   "subject": "refactor(scheduler): Add statusThreshold parameter to job.Run",
+   "kinds": [
+    "add-param"
+   ],
+   "go_files": 27,
+   "other_files": 0,
+   "churn": 167
+  },
+  {
+   "sha": "f8237fb945841a8a09cf1b47d5ad6867b88f84df",
+   "subject": "Move some packages into SDK, out of internal",
+   "kinds": [
+    "move"
+   ],
+   "go_files": 32,
+   "other_files": 0,
+   "churn": 60
+  },
+  {
+   "sha": "d8f11af4d7d8a4605eafa15c58e2bf1c52bd1dd6",
+   "subject": "Move actions, resource (types), and scopes to packages. (#149)",
+   "kinds": [
+    "move"
+   ],
+   "go_files": 37,
+   "other_files": 0,
+   "churn": 1181
+  },
+  {
+   "sha": "b26814a3cc02d131e76b31fb17232743e57ba1d5",
+   "subject": "move user variables into globals (#2580)",
+   "kinds": [
+    "move"
+   ],
+   "go_files": 39,
+   "other_files": 0,
+   "churn": 215
+  },
+  {
+   "sha": "9733a250fa26209b953146f7c0bd27b67cd50716",
+   "subject": "refact(event): move observability/event to event (#3704)",
+   "kinds": [
+    "move"
+   ],
+   "go_files": 118,
+   "other_files": 0,
+   "churn": 142
+  },
+  {
+   "sha": "b58dada40d81084b4291d87e79e1f14a0364b6d4",
+   "subject": "Move the server daemons into their own package (#2061)",
+   "kinds": [
+    "move"
+   ],
+   "go_files": 176,
+   "other_files": 1,
+   "churn": 548
+  }
+ ],
+ "vault": [
+  {
+   "sha": "9c61738c63a4fe6c07b0da8a91a1c44a42444245",
+   "subject": "Wrap overloaded errors from the WAL backend (#26928)",
+   "kinds": [
+    "wrap-error"
+   ],
+   "go_files": 4,
+   "other_files": 0,
+   "churn": 46
+  },
+  {
+   "sha": "2051758f04434fbcf99dc4180802e08e2a073748",
+   "subject": "rename secret sync association to secret syncs in activity log (#24671)",
+   "kinds": [
+    "rename"
+   ],
+   "go_files": 4,
+   "other_files": 0,
+   "churn": 64
+  },
+  {
+   "sha": "ccb0dd7c057cb1e510404b6ee54c5d233639deec",
+   "subject": "Rename raft configuration command to list-peers and make output easier to read (#8484)",
+   "kinds": [
+    "rename"
+   ],
+   "go_files": 4,
+   "other_files": 1,
+   "churn": 177
+  },
+  {
+   "sha": "6b2d5ac3dcc748c1494654cf232af78a46c01b99",
+   "subject": "Add an sts_region parameter to the AWS auth engine's client config (#7922)",
+   "kinds": [
+    "add-param"
+   ],
+   "go_files": 4,
+   "other_files": 0,
+   "churn": 138
+  },
+  {
+   "sha": "004dfc49f8f20995e1467f886e12455762d1cf3c",
+   "subject": "Add a max_crl_size parameter to CRL config (#28654)",
+   "kinds": [
+    "add-param"
+   ],
+   "go_files": 5,
+   "other_files": 2,
+   "churn": 308
+  },
+  {
+   "sha": "1d67c3f3b41a3a3854abab1e6658f5b04528489d",
+   "subject": "Audit: move validation of audit related options for Enterprise/CE to audit package (#26575)",
+   "kinds": [
+    "move"
+   ],
+   "go_files": 5,
+   "other_files": 0,
+   "churn": 233
+  },
+  {
+   "sha": "9cc3bd6558c8c1d580413fef51f060d328d4005d",
+   "subject": "quotas: Move storage updates into quotas package (#24381)",
+   "kinds": [
+    "move"
+   ],
+   "go_files": 5,
+   "other_files": 0,
+   "churn": 81
+  },
+  {
+   "sha": "cf48236a3c864d4b3cccd3ef7de21594f76a1a53",
+   "subject": "Move database connections map out to separate package (#21207)",
+   "kinds": [
+    "move"
+   ],
+   "go_files": 5,
+   "other_files": 1,
+   "churn": 243
+  },
+  {
+   "sha": "cbdf16c5a1d49310daa8398be0e2930ca0320853",
+   "subject": "Rebase #14178 / Add not_before_duration API parameter to Root/Intermediate CA generation (#15511)",
+   "kinds": [
+    "add-param"
+   ],
+   "go_files": 5,
+   "other_files": 2,
+   "churn": 35
+  },
+  {
+   "sha": "e8015313dded4a2f5f7b4b72c7cc64b634eb4475",
+   "subject": "Add a new parameter \"allowed_managed_keys\" to mount config (#13202)",
+   "kinds": [
+    "add-param"
+   ],
+   "go_files": 5,
+   "other_files": 2,
+   "churn": 137
+  },
+  {
+   "sha": "45b0179aa56b667c849ca95360ec48adbe08637b",
+   "subject": "[VAULT-3157] Move `mergeStates` utils from Agent to api module (#12731)",
+   "kinds": [
+    "move"
+   ],
+   "go_files": 5,
+   "other_files": 1,
+   "churn": 381
+  },
+  {
+   "sha": "c4fcb4a0865ca5dc9002e07d40b784051bb21c94",
+   "subject": "Move fetchCertBySerial back into the main PKI package. (#27461)",
+   "kinds": [
+    "move"
+   ],
+   "go_files": 6,
+   "other_files": 0,
+   "churn": 234
+  },
+  {
+   "sha": "4b7250e3c1c650edc34cfa43925bced83bdd6944",
+   "subject": "Add role parameter to restrict issuance of wildcard certificates (#14238)",
+   "kinds": [
+    "add-param"
+   ],
+   "go_files": 6,
+   "other_files": 1,
+   "churn": 580
+  },
+  {
+   "sha": "4d6f575991bd16141e77735e4ec39bad53285385",
+   "subject": "Move the code that creates Consul containers out of teststorage.  This allows importers of teststorage that don't need consul to run as a non-docker test. (#9975)",
+   "kinds": [
+    "move"
+   ],
+   "go_files": 6,
+   "other_files": 0,
+   "churn": 159
+  },
+  {
+   "sha": "b792adb9a1178a65637ecd92486aabd83f31a331",
+   "subject": "AWS: Add iam_groups parameter to role create/update (#8811)",
+   "kinds": [
+    "add-param"
+   ],
+   "go_files": 6,
+   "other_files": 2,
+   "churn": 862
+  },
+  {
+   "sha": "6dc69291bf05b85d82bcca5978b33296d1fbb254",
+   "subject": "identity (CE): Persist conflict resolution after rename (#29471)",
+   "kinds": [
+    "rename"
+   ],
+   "go_files": 7,
+   "other_files": 0,
+   "churn": 324
+  },
+  {
+   "sha": "bcd89f875d88e0a01f2e6f9220f6d72afb5661b2",
+   "subject": "move system view interface, grpc server, and client to stubs_oss files (#29291)",
+   "kinds": [
+    "move"
+   ],
+   "go_files": 7,
+   "other_files": 0,
+   "churn": 341
+  },
+  {
+   "sha": "925702de10d83a895a8caa75efc10d67708d4e55",
+   "subject": "events: Add full `api_path`; rename Send (#22487)",
+   "kinds": [
+    "rename"
+   ],
+   "go_files": 7,
+   "other_files": 1,
+   "churn": 287
+  },
+  {
+   "sha": "993a1ae9f2f645d579e6e54809d4d33927fdb1e9",
+   "subject": "Add config parameter to allow unauthenticated metrics access (#7550)",
+   "kinds": [
+    "add-param"
+   ],
+   "go_files": 7,
+   "other_files": 1,
+   "churn": 161
+  },
+  {
+   "sha": "2f4fe5345a0997cba6c69d1ca40e7795022c2734",
+   "subject": "Backport fix: add timeout context around UpdateUser to prevent static role rotation hang into ce/main (#13971)",
+   "kinds": [
+    "add-param"
+   ],
+   "go_files": 8,
+   "other_files": 1,
+   "churn": 440
+  },
+  {
+   "sha": "7ec1fe75a98eae3655c32415d03cf4b5372f158b",
+   "subject": "Move cluster logic out of vault package (#6601)",
+   "kinds": [
+    "move"
+   ],
+   "go_files": 8,
+   "other_files": 0,
+   "churn": 761
+  },
+  {
+   "sha": "cd7b17c65f4aa351feff345e2839a5238f76d514",
+   "subject": "PKI: JKS param rename (#15004) (#15026)",
+   "kinds": [
+    "rename"
+   ],
+   "go_files": 9,
+   "other_files": 0,
+   "churn": 62
+  },
+  {
+   "sha": "95b24f55a9c346650e93b261ac7f61348c9ac8fd",
+   "subject": "Rename PKI health check helpers  (#18017)",
+   "kinds": [
+    "rename"
+   ],
+   "go_files": 9,
+   "other_files": 0,
+   "churn": 28
+  },
+  {
+   "sha": "f503f739de19944537638129f1cb3492f523f937",
+   "subject": "identity: Resolve conflicts with rename (#29356)",
+   "kinds": [
+    "rename"
+   ],
+   "go_files": 10,
+   "other_files": 1,
+   "churn": 336
+  },
+  {
+   "sha": "caec65a7a56daa7e8a4daf7ed27b8734ad68e3b8",
+   "subject": "Rename SealInfo to SealWrapper. (#22689)",
+   "kinds": [
+    "rename"
+   ],
+   "go_files": 10,
+   "other_files": 0,
+   "churn": 297
+  },
+  {
+   "sha": "91aa12ac195c088cd68eb879dea51eda03839a7b",
+   "subject": "VAULT-42658 Move Agent Registry to main (#12443) (#12455)",
+   "kinds": [
+    "move"
+   ],
+   "go_files": 11,
+   "other_files": 0,
+   "churn": 552
+  },
+  {
+   "sha": "cfff8d420e2f1479d7f16e9f349dd444e6f1c7b6",
+   "subject": "aws: pass cancelable context with aws calls (#19365)",
+   "kinds": [
+    "add-param"
+   ],
+   "go_files": 11,
+   "other_files": 1,
+   "churn": 105
+  },
+  {
+   "sha": "610c8a4d38e044fd575bb9ba01562ed1521f61f5",
+   "subject": "Move Vault's customized pkcs7 fork into a shared location (#24658)",
+   "kinds": [
+    "move"
+   ],
+   "go_files": 12,
+   "other_files": 3,
+   "churn": 6
+  },
+  {
+   "sha": "7103bc2cdb45ff8c4e01ebb09f61e9b20a67fe10",
+   "subject": "VAULT-17078: Add useEventLogger Argument to Audit Factory Functions (#21962)",
+   "kinds": [
+    "add-param"
+   ],
+   "go_files": 12,
+   "other_files": 0,
+   "churn": 40
+  },
+  {
+   "sha": "bfb5cd6ead2ad1e50654fc52ae8aa8c41b4a052d",
+   "subject": "Rename functions referencing \"enterprise tokens\" for readability/clarity (#15193) (#15289)",
+   "kinds": [
+    "rename"
+   ],
+   "go_files": 13,
+   "other_files": 0,
+   "churn": 388
+  },
+  {
+   "sha": "3e022a3910acc64ab610013fe8fb7715ac8d6bea",
+   "subject": "Move all ACME wrappers into a dedicated go file (#20174)",
+   "kinds": [
+    "move"
+   ],
+   "go_files": 13,
+   "other_files": 0,
+   "churn": 380
+  },
+  {
+   "sha": "047a9ff03ae88f7d3a19d3620c89ac36bff20de8",
+   "subject": "Move pki docker tests to pkiext (#17928)",
+   "kinds": [
+    "move"
+   ],
+   "go_files": 14,
+   "other_files": 1,
+   "churn": 204
+  },
+  {
+   "sha": "9ed00822ea5404c63faa87560f222223d775a8ca",
+   "subject": "Move CLI token helper to api module (#25744)",
+   "kinds": [
+    "move"
+   ],
+   "go_files": 18,
+   "other_files": 7,
+   "churn": 434
+  },
+  {
+   "sha": "86c1cdf9e61897dee14203c51d6ad3d971cfda1a",
+   "subject": "Move awsutil over to the go-secure-stdlib version (#12128)",
+   "kinds": [
+    "move"
+   ],
+   "go_files": 18,
+   "other_files": 6,
+   "churn": 712
+  },
+  {
+   "sha": "b54ac98a0ba56812f7de076c44cc8302740755dd",
+   "subject": "Move Request Limiter to enterprise (#25615)",
+   "kinds": [
+    "move"
+   ],
+   "go_files": 20,
+   "other_files": 3,
+   "churn": 1097
+  },
+  {
+   "sha": "a72a5ff754bb2aeecb32d511fb9d3a6c9b80acad",
+   "subject": "Rename master key to root key (#13324)",
+   "kinds": [
+    "rename"
+   ],
+   "go_files": 22,
+   "other_files": 1,
+   "churn": 358
+  },
+  {
+   "sha": "38a78697c21fc232ad3f4c56718891ecd403f1be",
+   "subject": "move noop audit to audit package (#26448)",
+   "kinds": [
+    "move"
+   ],
+   "go_files": 25,
+   "other_files": 0,
+   "churn": 903
+  }
+ ]
+}
