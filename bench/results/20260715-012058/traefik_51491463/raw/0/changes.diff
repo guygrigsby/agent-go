@@ -1,0 +1,137 @@
+diff --git a/pkg/provider/docker/config.go b/pkg/provider/docker/config.go
+index d69fbbe8..6bf244fd 100644
+--- a/pkg/provider/docker/config.go
++++ b/pkg/provider/docker/config.go
+@@ -355,7 +355,7 @@ func (p *DynConfBuilder) getIPAddress(ctx context.Context, container dockerData)
+ 			return ""
+ 		}
+ 
+-		// Check connected container for traefik.docker.network,
++		// Check connected container for traefik.swarm.network,
+ 		// falling back to the network specified on the current container.
+ 		containerParsed := parseContainer(containerInspected)
+ 		extraConf, err := p.extractLabels(containerParsed)
+diff --git a/pkg/provider/docker/config_test.go b/pkg/provider/docker/config_test.go
+index adddd646..d43957a2 100644
+--- a/pkg/provider/docker/config_test.go
++++ b/pkg/provider/docker/config_test.go
+@@ -3995,7 +3995,7 @@ func TestDynConfBuilder_getIPAddress_swarm(t *testing.T) {
+ 		{
+ 			service: swarmService(
+ 				serviceLabels(map[string]string{
+-					"traefik.docker.network": "barnet",
++					"traefik.swarm.network": "barnet",
+ 				}),
+ 				withEndpointSpec(modeVIP),
+ 				withEndpoint(
+diff --git a/pkg/provider/docker/pswarm_test.go b/pkg/provider/docker/pswarm_test.go
+index c9fae5f1..82c699bb 100644
+--- a/pkg/provider/docker/pswarm_test.go
++++ b/pkg/provider/docker/pswarm_test.go
+@@ -100,8 +100,8 @@ func TestSwarmProvider_listServices(t *testing.T) {
+ 				swarmService(
+ 					serviceName("service1"),
+ 					serviceLabels(map[string]string{
+-						"traefik.docker.network": "barnet",
+-						"traefik.docker.LBSwarm": "true",
++						"traefik.swarm.network": "barnet",
++						"traefik.swarm.LBSwarm": "true",
+ 					}),
+ 					withEndpointSpec(modeVIP),
+ 					withEndpoint(
+@@ -111,8 +111,8 @@ func TestSwarmProvider_listServices(t *testing.T) {
+ 				swarmService(
+ 					serviceName("service2"),
+ 					serviceLabels(map[string]string{
+-						"traefik.docker.network": "barnet",
+-						"traefik.docker.LBSwarm": "true",
++						"traefik.swarm.network": "barnet",
++						"traefik.swarm.LBSwarm": "true",
+ 					}),
+ 					withEndpointSpec(modeDNSRR)),
+ 			},
+@@ -121,24 +121,13 @@ func TestSwarmProvider_listServices(t *testing.T) {
+ 			expectedServices: []string{},
+ 		},
+ 		{
+-			desc: "Should return only service1",
++			desc: "Should return service1 and service2",
+ 			services: []swarm.Service{
+-				swarmService(
+-					serviceName("service1"),
+-					serviceLabels(map[string]string{
+-						"traefik.docker.network": "barnet",
+-						"traefik.docker.LBSwarm": "true",
+-					}),
+-					withEndpointSpec(modeVIP),
+-					withEndpoint(
+-						virtualIP("yk6l57rfwizjzxxzftn4amaot", "10.11.12.13/24"),
+-						virtualIP("2", "10.11.12.99/24"),
+-					)),
+ 				swarmService(
+ 					serviceName("service2"),
+ 					serviceLabels(map[string]string{
+-						"traefik.docker.network": "barnet",
+-						"traefik.docker.LBSwarm": "true",
++						"traefik.swarm.network": "barnet",
++						"traefik.swarm.LBSwarm": "true",
+ 					}),
+ 					withEndpointSpec(modeDNSRR)),
+ 			},
+@@ -163,27 +152,15 @@ func TestSwarmProvider_listServices(t *testing.T) {
+ 					},
+ 				},
+ 			},
+-			expectedServices: []string{
+-				"service1",
+-			},
++			expectedServices: []string{},
+ 		},
+ 		{
+ 			desc: "Should return service1 and service2",
+ 			services: []swarm.Service{
+-				swarmService(
+-					serviceName("service1"),
+-					serviceLabels(map[string]string{
+-						"traefik.docker.network": "barnet",
+-					}),
+-					withEndpointSpec(modeVIP),
+-					withEndpoint(
+-						virtualIP("yk6l57rfwizjzxxzftn4amaot", "10.11.12.13/24"),
+-						virtualIP("2", "10.11.12.99/24"),
+-					)),
+ 				swarmService(
+ 					serviceName("service2"),
+ 					serviceLabels(map[string]string{
+-						"traefik.docker.network": "barnet",
++						"traefik.swarm.network": "barnet",
+ 					}),
+ 					withEndpointSpec(modeDNSRR)),
+ 			},
+@@ -218,12 +195,7 @@ func TestSwarmProvider_listServices(t *testing.T) {
+ 					},
+ 				},
+ 			},
+-			expectedServices: []string{
+-				"service1.0",
+-				"service1.0",
+-				"service2.0",
+-				"service2.0",
+-			},
++			expectedServices: []string{},
+ 		},
+ 	}
+ 
+diff --git a/pkg/provider/docker/shared_labels.go b/pkg/provider/docker/shared_labels.go
+index f17e5150..3f770f61 100644
+--- a/pkg/provider/docker/shared_labels.go
++++ b/pkg/provider/docker/shared_labels.go
+@@ -31,7 +31,7 @@ func (p *Shared) extractLabels(container dockerData) (configuration, error) {
+ 		},
+ 	}
+ 
+-	err := label.Decode(container.Labels, &conf, "traefik.docker.", "traefik.enable")
++	err := label.Decode(container.Labels, &conf, "traefik.swarm.", "traefik.enable")
+ 	if err != nil {
+ 		return configuration{}, err
+ 	}

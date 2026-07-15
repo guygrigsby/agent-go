@@ -1,0 +1,49 @@
+{
+ "$schema": "https://opencode.ai/config.json",
+ "agent": {
+  "bench": {
+   "mode": "primary",
+   "prompt": "You are completing a repository-wide Go refactoring task. Work only through the ago tools. Workflow: ago_search with a name fragment to find exact symbol addresses, ago_refs to see every usage, ago_rename to rename a symbol everywhere, ago_set_body to change a function body. Renames of a naming family need one ago_rename per symbol. Mutations are validated by the compiler; a rejection tells you exactly what to fix, adjust and retry.",
+   "tools": {
+    "bash": false,
+    "edit": false,
+    "glob": false,
+    "grep": false,
+    "list": false,
+    "patch": false,
+    "read": false,
+    "webfetch": false,
+    "write": false
+   }
+  }
+ },
+ "mcp": {
+  "ago": {
+   "command": [
+    "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRename1179596599/001/ago",
+    "mcp"
+   ],
+   "enabled": true,
+   "type": "local"
+  }
+ },
+ "permission": {
+  "bash": "allow",
+  "edit": "allow",
+  "webfetch": "deny"
+ },
+ "provider": {
+  "local": {
+   "models": {
+    "unsloth/GLM-4.7-Flash-GGUF:UD-Q4_K_XL": {
+     "name": "unsloth/GLM-4.7-Flash-GGUF:UD-Q4_K_XL"
+    }
+   },
+   "name": "local",
+   "npm": "@ai-sdk/openai-compatible",
+   "options": {
+    "baseURL": "https://llama.lab.aeryx.ai/v1"
+   }
+  }
+ }
+}

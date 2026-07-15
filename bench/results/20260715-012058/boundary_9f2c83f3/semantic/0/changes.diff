@@ -1,0 +1,44 @@
+diff --git a/internal/bsr/bsr.go b/internal/bsr/bsr.go
+index c58998056..412d9b0d0 100644
+--- a/internal/bsr/bsr.go
++++ b/internal/bsr/bsr.go
+@@ -24,7 +24,7 @@ const (
+ 	channelFile     = "%s.channel"
+ 	messagesFile    = "messages-%s.data"
+ 	requestsFile    = "requests-%s.data"
+-	sessionMetaFile = "session-meta.json"
++	sessionMetaFilePath = "session-meta.json"
+ 
+ 	bsrPubKeyFile           = "bsrKey.pub"
+ 	wrappedBsrKeyFile       = "wrappedBsrKey"
+@@ -90,7 +90,7 @@ func NewSession(ctx context.Context, meta *SessionRecordingMeta, sessionMeta *Se
+ 		return nil, errors.Join(err, fmt.Errorf("%s: %w", op, ErrBsrKeyPersistenceFailure))
+ 	}
+ 
+-	sm, err := nc.create(ctx, sessionMetaFile)
++	sm, err := nc.create(ctx, sessionMetaFilePath)
+ 	if err != nil {
+ 		return nil, err
+ 	}
+@@ -209,7 +209,7 @@ func OpenSession(ctx context.Context, sessionRecordingId string, f storage.FS, k
+ 	}
+ 
+ 	sessionMeta := &SessionMeta{}
+-	if err := cc.decodeJsonFile(ctx, sessionMetaFile, sessionMeta); err != nil {
++	if err := cc.decodeJsonFile(ctx, sessionMetaFilePath, sessionMeta); err != nil {
+ 		return nil, err
+ 	}
+ 
+diff --git a/internal/bsr/bsr_open_test.go b/internal/bsr/bsr_open_test.go
+index 74c765d00..1c3ead9c4 100644
+--- a/internal/bsr/bsr_open_test.go
++++ b/internal/bsr/bsr_open_test.go
+@@ -42,7 +42,7 @@ func TestPopulateMeta(t *testing.T) {
+ 	require.Equal(t, s.Meta.Protocol, srm.Protocol)
+ 
+ 	gotSessionMeta := &SessionMeta{}
+-	r, err := s.container.container.OpenFile(ctx, sessionMetaFile)
++	r, err := s.container.container.OpenFile(ctx, sessionMetaFilePath)
+ 	require.NoError(t, err)
+ 	dec := json.NewDecoder(r)
+ 	err = dec.Decode(gotSessionMeta)

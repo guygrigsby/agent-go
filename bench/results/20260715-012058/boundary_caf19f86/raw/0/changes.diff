@@ -1,0 +1,188 @@
+diff --git a/internal/cmd/commands/dev/dev.go b/internal/cmd/commands/dev/dev.go
+index eccea78dd..7e189928d 100644
+--- a/internal/cmd/commands/dev/dev.go
++++ b/internal/cmd/commands/dev/dev.go
+@@ -691,7 +691,7 @@ func (c *Command) Run(args []string) int {
+ 		}
+ 
+ 		if !c.flagUseEphemeralKmsWorkerAuthMethod {
+-			req := c.worker.NodeeRegistrationRequest
++			req := c.worker.NodeEnrollmentRegistrationRequest
+ 			if req == "" {
+ 				c.UI.Error("No worker registration request found at worker start time")
+ 				return base.CommandCliError
+@@ -699,14 +699,14 @@ func (c *Command) Run(args []string) int {
+ 			c.InfoKeys = append(c.InfoKeys, "worker registration request")
+ 			c.Info["worker registration request"] = req
+ 			c.InfoKeys = append(c.InfoKeys, "worker current key id")
+-			c.Info["worker current key id"] = c.worker.NodeeCurrentKeyId
++			c.Info["worker current key id"] = c.worker.NodeEnrollmentCurrentKeyId
+ 			go func() {
+ 				for {
+ 					select {
+ 					case <-c.Context.Done():
+ 						return
+ 					case <-time.After(time.Second):
+-						if err := c.controller.AuthorizeNodeeWorker(req); err != nil {
++						if err := c.controller.AuthorizeNodeEnrollmentWorker(req); err != nil {
+ 							c.UI.Error(fmt.Errorf("Error authorizing node: %w", err).Error())
+ 							errorEncountered.Store(true)
+ 							return
+@@ -772,7 +772,7 @@ func (c *Command) Run(args []string) int {
+ 
+ 			if !c.flagControllerOnly {
+ 				if !c.flagWorkerAuthStorageSkipCleanup {
+-					c.worker.NodeeFileStorage.Cleanup()
++					c.worker.NodeEnrollmentFileStorage.Cleanup()
+ 				}
+ 				if err := c.worker.Shutdown(); err != nil {
+ 					c.UI.Error(fmt.Errorf("Error shutting down worker: %w", err).Error())
+diff --git a/internal/cmd/commands/server/server.go b/internal/cmd/commands/server/server.go
+index ca17036f4..7309d0828 100644
+--- a/internal/cmd/commands/server/server.go
++++ b/internal/cmd/commands/server/server.go
+@@ -464,7 +464,7 @@ func (c *Command) Run(args []string) int {
+ 			return base.CommandCliError
+ 		}
+ 		if c.WorkerAuthKms == nil {
+-			req := c.worker.NodeeRegistrationRequest
++			req := c.worker.NodeEnrollmentRegistrationRequest
+ 			if req == "" {
+ 				retErr := fmt.Errorf("No worker registration request found at worker startup time")
+ 				if err := c.worker.Shutdown(); err != nil {
+@@ -480,7 +480,7 @@ func (c *Command) Run(args []string) int {
+ 			c.InfoKeys = append(c.InfoKeys, "worker registration request")
+ 			c.Info["worker registration request"] = req
+ 			c.InfoKeys = append(c.InfoKeys, "worker current key id")
+-			c.Info["worker current key id"] = c.worker.NodeeCurrentKeyId
++			c.Info["worker current key id"] = c.worker.NodeEnrollmentCurrentKeyId
+ 		}
+ 	}
+ 
+diff --git a/internal/daemon/controller/controller.go b/internal/daemon/controller/controller.go
+index 212fdcc55..bee9b2213 100644
+--- a/internal/daemon/controller/controller.go
++++ b/internal/daemon/controller/controller.go
+@@ -410,8 +410,8 @@ func (c *Controller) WorkerStatusUpdateTimes() *sync.Map {
+ }
+ 
+ // This is a temporary function until the API is up
+-func (c *Controller) AuthorizeNodeeWorker(request string) error {
+-	const op = "controller.(Controller).AuthorizeNodeeWorker"
++func (c *Controller) AuthorizeNodeEnrollmentWorker(request string) error {
++	const op = "controller.(Controller).AuthorizeNodeEnrollmentWorker"
+ 	reqBytes, err := base58.FastBase58Decoding(request)
+ 	if err != nil {
+ 		return fmt.Errorf("(%s) error base58-decoding fetch node creds next proto value: %w", op, err)
+diff --git a/internal/daemon/controller/handler.go b/internal/daemon/controller/handler.go
+index d5757a81a..95d158a6b 100644
+--- a/internal/daemon/controller/handler.go
++++ b/internal/daemon/controller/handler.go
+@@ -595,7 +595,7 @@ func handleNodes(c *Controller) http.Handler {
+ 				w.WriteHeader(500)
+ 				return
+ 			}
+-			if err := c.AuthorizeNodeeWorker(currVal.Request); err != nil {
++			if err := c.AuthorizeNodeEnrollmentWorker(currVal.Request); err != nil {
+ 				_, _ = w.Write([]byte(err.Error()))
+ 				w.WriteHeader(500)
+ 				return
+diff --git a/internal/daemon/worker/controller_connection.go b/internal/daemon/worker/controller_connection.go
+index 66b5fce6b..ff0cb91cc 100644
+--- a/internal/daemon/worker/controller_connection.go
++++ b/internal/daemon/worker/controller_connection.go
+@@ -74,7 +74,7 @@ func (w *Worker) controllerDialerFunc() func(context.Context, string) (net.Conn,
+ 		case w.conf.WorkerAuthKms != nil:
+ 			conn, err = w.v1KmsAuthDialFn(ctx, addr)
+ 		default:
+-			conn, err = protocol.Dial(ctx, w.NodeeFileStorage, addr, nodeenrollment.WithWrapper(w.conf.WorkerAuthStorageKms))
++			conn, err = protocol.Dial(ctx, w.NodeEnrollmentFileStorage, addr, nodeenrollment.WithWrapper(w.conf.WorkerAuthStorageKms))
+ 		}
+ 
+ 		if !w.everAuthenticated.Load() && err == nil && conn != nil {
+diff --git a/internal/daemon/worker/listeners.go b/internal/daemon/worker/listeners.go
+index ed98ac843..87b8fd199 100644
+--- a/internal/daemon/worker/listeners.go
++++ b/internal/daemon/worker/listeners.go
+@@ -123,7 +123,7 @@ func (w *Worker) configureForWorker(ln *base.ServerListener, logger *log.Logger)
+ 	interceptingListener, err := protocol.NewInterceptingListener(
+ 		&protocol.InterceptingListenerConfiguration{
+ 			Context:      w.baseContext,
+-			Storage:      w.NodeeFileStorage,
++			Storage:      w.NodeEnrollmentFileStorage,
+ 			BaseListener: ln.ProxyListener,
+ 			BaseTlsConfiguration: &tls.Config{
+ 				GetConfigForClient: w.getSessionTls,
+@@ -142,7 +142,7 @@ func (w *Worker) configureForWorker(ln *base.ServerListener, logger *log.Logger)
+ 		grpc.MaxSendMsgSize(math.MaxInt32),
+ 	)
+ 	multihopService, err := handlers.NewMultihopServiceServer(
+-		w.NodeeFileStorage,
++		w.NodeEnrollmentFileStorage,
+ 		false,
+ 		w.controllerMultihopConn,
+ 	)
+diff --git a/internal/daemon/worker/worker.go b/internal/daemon/worker/worker.go
+index b4d5d417c..6ba4206ae 100644
+--- a/internal/daemon/worker/worker.go
++++ b/internal/daemon/worker/worker.go
+@@ -75,10 +75,10 @@ type Worker struct {
+ 	updateTags *ua.Bool
+ 
+ 	// PoC: Testing bits for BYOW
+-	NodeeFileStorage         *nodeefile.FileStorage
+-	NodeeCurrentKeyId        string
+-	NodeeRegistrationRequest string
+-	nodeeSplitListener       *splitlistener.SplitListener
++	NodeEnrollmentFileStorage         *nodeefile.FileStorage
++	NodeEnrollmentCurrentKeyId        string
++	NodeEnrollmentRegistrationRequest string
++	nodeeSplitListener                 *splitlistener.SplitListener
+ 
+ 	// Test-specific options
+ 	TestOverrideX509VerifyDnsName  string
+@@ -161,7 +161,7 @@ func New(conf *Config) (*Worker, error) {
+ 		return nil, fmt.Errorf("exactly one proxy listener is required")
+ 	}
+ 
+-	w.NodeeFileStorage, err = nodeefile.NewFileStorage(w.baseContext,
++	w.NodeEnrollmentFileStorage, err = nodeefile.NewFileStorage(w.baseContext,
+ 		nodeefile.WithBaseDirectory(w.conf.RawConfig.Worker.AuthStoragePath))
+ 	if err != nil {
+ 		return nil, err
+@@ -188,7 +188,7 @@ func (w *Worker) Start() error {
+ 		return fmt.Errorf("error starting worker listeners: %w", err)
+ 	}
+ 
+-	nodeCreds, err := types.NewNodeCredentials(w.baseContext, w.NodeeFileStorage, nodeenrollment.WithWrapper(w.conf.WorkerAuthStorageKms))
++	nodeCreds, err := types.NewNodeCredentials(w.baseContext, w.NodeEnrollmentFileStorage, nodeenrollment.WithWrapper(w.conf.WorkerAuthStorageKms))
+ 	if err != nil {
+ 		return fmt.Errorf("error generating new node creds: %w", err)
+ 	}
+@@ -201,11 +201,11 @@ func (w *Worker) Start() error {
+ 	if err != nil {
+ 		return fmt.Errorf("error marshaling fetch credentials request: %w", err)
+ 	}
+-	w.NodeeRegistrationRequest = base58.FastBase58Encoding(reqBytes)
++	w.NodeEnrollmentRegistrationRequest = base58.FastBase58Encoding(reqBytes)
+ 	if err != nil {
+ 		return fmt.Errorf("error encoding registration request: %w", err)
+ 	}
+-	w.NodeeCurrentKeyId, err = nodeenrollment.KeyIdFromPkix(nodeCreds.CertificatePublicKeyPkix)
++	w.NodeEnrollmentCurrentKeyId, err = nodeenrollment.KeyIdFromPkix(nodeCreds.CertificatePublicKeyPkix)
+ 	if err != nil {
+ 		return fmt.Errorf("error deriving key id: %w", err)
+ 	}
+diff --git a/internal/servers/worker.go b/internal/servers/worker.go
+index 4d7beabfd..b2ada0e42 100644
+--- a/internal/servers/worker.go
++++ b/internal/servers/worker.go
+@@ -16,7 +16,7 @@ type workerAuthWorkerId struct {
+ 	WorkerId string `mapstructure:"worker_id" structs:"worker_id"`
+ }
+ 
+-// AttachWorkerIdToState accepts a workerId and creates a struct for use with the Nodeenrollment lib
++// AttachWorkerIdToState accepts a workerId and creates a struct for use with the NodeEnrollment lib
+ // This is intended for use in worker authorization; AuthorizeNode in the lib accepts the option WithState
+ // so that the workerId is passed through to storage and associated with a WorkerAuth record
+ func AttachWorkerIdToState(ctx context.Context, workerId string) (*structpb.Struct, error) {

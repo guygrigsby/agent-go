@@ -1,0 +1,9 @@
+ M internal/cmd/commands/dev/dev.go
+ M internal/cmd/commands/server/server.go
+ M internal/daemon/controller/controller.go
+ M internal/daemon/controller/handler.go
+ M internal/daemon/worker/controller_connection.go
+ M internal/daemon/worker/listeners.go
+ M internal/daemon/worker/worker.go
+ M internal/servers/worker.go
+?? opencode.json

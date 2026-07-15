@@ -71,6 +71,7 @@ func prepRename(scratch, tasksFile, outFile string) error {
 		m.Renames, m.NeedsReview = extract(repo, t.SHA, m.Prompt)
 		if len(m.Renames) > 0 {
 			clean++
+			m.Prompt = ensureTargetsNamed(m.Prompt, m.Renames)
 		}
 		out = append(out, m)
 	}
@@ -178,6 +179,31 @@ func extract(repo, sha, subject string) ([]RenameSpec, string) {
 		return specs, ""
 	}
 	return nil, "no rename pair extracted"
+}
+
+// ensureTargetsNamed appends the rename mapping to the prompt when the
+// commit subject does not already name every pair. A real user states what
+// the new name should be; recovering it from the ground-truth diff is not
+// part of the task. Only bare names are given — finding the declarations
+// and every reference stays the agent's work.
+func ensureTargetsNamed(prompt string, specs []RenameSpec) string {
+	complete := true
+	for _, r := range specs {
+		base := r.Sym[strings.LastIndexByte(r.Sym, '.')+1:]
+		if !strings.Contains(prompt, base) || !strings.Contains(prompt, r.To) {
+			complete = false
+			break
+		}
+	}
+	if complete {
+		return prompt
+	}
+	var pairs []string
+	for _, r := range specs {
+		base := r.Sym[strings.LastIndexByte(r.Sym, '.')+1:]
+		pairs = append(pairs, base+" -> "+r.To)
+	}
+	return prompt + "\n\nSpecifically, rename: " + strings.Join(pairs, "; ")
 }
 
 func lcp(a, b string) int {

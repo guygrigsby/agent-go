@@ -1,0 +1,7 @@
+{
+ "ago_rev": "555c086e2872f5d9c551ea6207b0ee64cd1b28a9",
+ "cap": "20m0s",
+ "endpoint": "https://llama.lab.aeryx.ai/v1",
+ "model": "unsloth/GLM-4.7-Flash-GGUF:UD-Q4_K_XL",
+ "started": "2026-07-15T01:20:58-06:00"
+}

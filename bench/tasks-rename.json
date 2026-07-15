@@ -3,13 +3,13 @@
   "repo": "traefik",
   "sha": "514914639aeb2d493062126950192bb9bff82799",
   "kind": "rename",
-  "prompt": "Rename traefik.docker.* labels for Docker Swarm to traefik.swarm.*",
+  "prompt": "Rename traefik.docker.* labels for Docker Swarm to traefik.swarm.*\n\nSpecifically, rename: extractLabels -> extractSwarmLabels",
   "go_files": 7,
   "renames": [
    {
     "pkg": "github.com/traefik/traefik/v3/pkg/provider/docker",
     "sym": "Shared.extractLabels",
-    "to": "extractDockerLabels"
+    "to": "extractSwarmLabels"
    }
   ]
  },
@@ -17,7 +17,7 @@
   "repo": "boundary",
   "sha": "9f2c83f3b0e83bc756621b396a9552a0426fd7d1",
   "kind": "rename",
-  "prompt": "refact(bsr): Rename const to denote when interpolation is needed",
+  "prompt": "refact(bsr): Rename const to denote when interpolation is needed\n\nSpecifically, rename: pubKeySelfSignatureFile -> pubKeySelfSignatureFileName; pubKeyBsrSignatureFile -> pubKeyBsrSignatureFileName; wrappedPrivKeyFile -> wrappedPrivKeyFileName; wrappedBsrKeyFile -> wrappedBsrKeyFileName; sessionMetaFile -> sessionMetaFileName; connectionFile -> connectionFileNameTemplate; bsrPubKeyFile -> bsrPubKeyFileName; messagesFile -> messagesFileNameTemplate; requestsFile -> requestsFileNameTemplate; checksumFile -> checksumFileName; channelFile -> channelFileNameTemplate; metaFile -> metaFileNameTemplate; bsrFile -> bsrFileNameTemplate; sigFile -> sigFileName",
   "go_files": 4,
   "renames": [
    {
@@ -104,7 +104,7 @@
   "repo": "boundary",
   "sha": "c05324282f96691668f2e9ea2781dd89ca19301b",
   "kind": "rename",
-  "prompt": "Rename the UI passthrough dir flag/env var",
+  "prompt": "Rename the UI passthrough dir flag/env var\n\nSpecifically, rename: flagPassthroughDirectory -> flagUiPassthroughDir; devPassthroughHandler -> devUiPassthroughHandler; PassthroughDirectory -> DevUiPassthroughDir",
   "go_files": 5,
   "renames": [
    {
@@ -136,7 +136,7 @@
   "repo": "boundary",
   "sha": "caf19f867edb9f60026d792ae53caf80e644cea7",
   "kind": "rename",
-  "prompt": "Rename some variables to remove Nodee",
+  "prompt": "Rename some variables to remove Nodee\n\nSpecifically, rename: nodeeSplitListener -> workerAuthSplitListener; NodeeFileStorage -> WorkerAuthStorage; NodeeCurrentKeyId -> WorkerAuthCurrentKeyId; NodeeRegistrationRequest -> WorkerAuthRegistrationRequest",
   "go_files": 6,
   "renames": [
    {
@@ -165,7 +165,7 @@
   "repo": "boundary",
   "sha": "06d69f699e76e8e04a5e730ad3a6596336ec2142",
   "kind": "rename",
-  "prompt": "refact(e2e): Rename credential methods for clarity",
+  "prompt": "refact(e2e): Rename credential methods for clarity\n\nSpecifically, rename: CreateStaticCredentialPasswordCli -> CreateStaticCredentialUsernamePasswordCli",
   "go_files": 9,
   "renames": [
    {
@@ -187,18 +187,18 @@
   "repo": "boundary",
   "sha": "35b91c66dedb9ccda1ee1a845d6cc0399bdbf504",
   "kind": "rename",
-  "prompt": "refact(ratelimit): Rename MaxEntries to MaxQuotas",
+  "prompt": "refact(ratelimit): Rename MaxEntries to MaxQuotas\n\nSpecifically, rename: ApiRateLimiterMaxEntries -> ApiRateLimiterMaxQuotas; DefaultLimiterMaxEntries -> DefaultLimiterMaxQuotas; defaultLimiterMaxEntries -> defaultLimiterMaxQuotas; initDefaultLimiterMaxEntries -> initDefaultLimiterMaxQuotas; TestDefaulLimiterMaxEntries -> TestDefaulLimiterMaxQuotas",
   "go_files": 9,
   "renames": [
-   {
-    "pkg": "github.com/hashicorp/boundary/internal/ratelimit",
-    "sym": "DefaultLimiterMaxEntries",
-    "to": "DefaultLimiterMaxQuotas"
-   },
    {
     "pkg": "github.com/hashicorp/boundary/internal/cmd/config",
     "sym": "Controller.ApiRateLimiterMaxEntries",
     "to": "ApiRateLimiterMaxQuotas"
+   },
+   {
+    "pkg": "github.com/hashicorp/boundary/internal/ratelimit",
+    "sym": "DefaultLimiterMaxEntries",
+    "to": "DefaultLimiterMaxQuotas"
    },
    {
     "pkg": "github.com/hashicorp/boundary/internal/ratelimit",
@@ -221,7 +221,7 @@
   "repo": "boundary",
   "sha": "9237d6f787c60d0ec43fbd33a322973adf350d42",
   "kind": "rename",
-  "prompt": "Rename authorize to authorize-session",
+  "prompt": "Rename authorize to authorize-session\n\nSpecifically, rename: Authorize -> AuthorizeSession",
   "go_files": 10,
   "renames": [
    {
@@ -283,7 +283,7 @@
   "repo": "vault",
   "sha": "95b24f55a9c346650e93b261ac7f61348c9ac8fd",
   "kind": "rename",
-  "prompt": "Rename PKI health check helpers",
+  "prompt": "Rename PKI health check helpers\n\nSpecifically, rename: pkiFetchIssuers -> pkiFetchIssuersList; pkiFetchLeaves -> pkiFetchLeavesList; pkiFetchRoles -> pkiFetchRolesList",
   "go_files": 9,
   "renames": [
    {
@@ -329,7 +329,7 @@
   "repo": "vault",
   "sha": "bfb5cd6ead2ad1e50654fc52ae8aa8c41b4a052d",
   "kind": "rename",
-  "prompt": "Rename functions referencing \"enterprise tokens\" for readability/clarity (#15193)",
+  "prompt": "Rename functions referencing \"enterprise tokens\" for readability/clarity (#15193)\n\nSpecifically, rename: materializeEnterpriseTokenForUsage -> materializeOAuthJwtForUsage; normalizeEnterpriseTokenToID -> normalizeOAuthJwtToId; GetEnterpriseTokenPrefix -> GetOAuthJwtPrefix; getEnterpriseTokenId -> getOAuthJwtId; EnterpriseTokenAuthorizationDetails -> JwtAuthorizationDetails; EnterpriseTokenIssuer -> JwtIssuer; EnterpriseTokenAudience -> JwtAudienceClaim; EnterpriseTokenTransaction -> JwtTransactionClaim",
   "go_files": 13,
   "renames_blocked": [
    {
@@ -379,7 +379,7 @@
   "repo": "vault",
   "sha": "a72a5ff754bb2aeecb32d511fb9d3a6c9b80acad",
   "kind": "rename",
-  "prompt": "Rename master key to root key",
+  "prompt": "Rename master key to root key\n\nSpecifically, rename: StoredKeysSupportedShamirMaster -> StoredKeysSupportedShamirRoot; unsealKeyToMasterKeyPostUnseal -> unsealKeyToRootKeyPostUnseal; VerifyMaster -> VerifyRoot; ReloadMasterKey -> ReloadRootKey; updateMasterKeyCommon -> updateRootKeyCommon; SetMasterKey -> SetRootKey; masterKey -> rootKey; masterKeyPath -> rootKeyPath",
   "go_files": 22,
   "renames_blocked": [
    {
