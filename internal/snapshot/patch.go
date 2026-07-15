@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"go/format"
 	"os"
+	"regexp"
 	"sort"
+	"strconv"
 	"strings"
 )
 
@@ -163,8 +165,12 @@ func (s *Snapshot) patchComposable(env patchEnvelope, names []string) (map[strin
 	}
 	for i, raw := range env.Ops {
 		ctx.opIndex = i + 1
+		resolved, rej := ctx.resolveArgRefs(raw)
+		if rej != nil {
+			return nil, rej
+		}
 		op := opRegistry[names[i]]()
-		if rej := op.apply(ctx, raw); rej != nil {
+		if rej := op.apply(ctx, resolved); rej != nil {
 			return nil, rej
 		}
 	}
@@ -235,6 +241,61 @@ func (s *Snapshot) patchComposable(env patchEnvelope, names []string) (map[strin
 		"load_ms": ms, "packages_rechecked": n,
 		"generation": s.generation(env.Pkg, env.Sym),
 	}, nil
+}
+
+// dollarRefPattern matches a bare "$N" intra-patch handle reference: N is
+// the 1-based index of the op whose bound result it names.
+var dollarRefPattern = regexp.MustCompile(`^\$(\d+)$`)
+
+// resolveArgRefs rewrites any "$N" value under the at/from/to keys of one
+// op's raw JSON args into the literal handle op N bound, before the op's own
+// struct unmarshal ever sees it — op implementations never handle $ syntax
+// themselves. N must name an op strictly earlier than the one currently
+// applying and must have actually bound a handle (via bindResult); anything
+// else — a typo, a forward reference to an op that hasn't run yet, self-
+// reference, or an op that never binds one — rejects as "unknown $ref"
+// naming the current op's index. from/to are unused by any op Tasks 5/6
+// define; resolving them here anyway keeps this the single place future ops
+// need to support $ addressing.
+func (ctx *patchCtx) resolveArgRefs(raw json.RawMessage) (json.RawMessage, *Reject) {
+	var args map[string]json.RawMessage
+	if err := json.Unmarshal(raw, &args); err != nil {
+		return raw, nil // malformed op args surfaces from the op's own unmarshal
+	}
+	changed := false
+	for _, key := range []string{"at", "from", "to"} {
+		rm, ok := args[key]
+		if !ok {
+			continue
+		}
+		var s string
+		if err := json.Unmarshal(rm, &s); err != nil {
+			continue // not a plain string value; nothing to resolve
+		}
+		m := dollarRefPattern.FindStringSubmatch(s)
+		if m == nil {
+			continue
+		}
+		n, _ := strconv.Atoi(m[1])
+		h, ok := ctx.handles[s]
+		if n >= ctx.opIndex || !ok {
+			return nil, &Reject{Reason: "unknown $ref", Detail: fmt.Sprintf("op %d: %s", ctx.opIndex, s)}
+		}
+		b, err := json.Marshal(h)
+		if err != nil {
+			return nil, &Reject{Reason: "malformed op args", Detail: err.Error()}
+		}
+		args[key] = b
+		changed = true
+	}
+	if !changed {
+		return raw, nil
+	}
+	out, err := json.Marshal(args)
+	if err != nil {
+		return nil, &Reject{Reason: "malformed op args", Detail: err.Error()}
+	}
+	return out, nil
 }
 
 // annotateDiagnostics prefixes each diagnostic's message with the nearest

@@ -19,10 +19,12 @@ import (
 // reusing a cached table: each prior op may have shifted every later
 // statement's handle number, and the only source of truth for current
 // handle assignment is handleWalk over the current bytes.
+//
+// at arrives already resolved: patchComposable's resolveArgRefs rewrites any
+// "$N" in an op's raw at/from/to args to the literal handle op N bound
+// before the op's own struct unmarshal ever runs, so insertStmt (and every
+// op that calls it) only ever sees plain handles like "n3".
 func (ctx *patchCtx) insertStmt(at, where, stmtText string) (string, *Reject) {
-	if h, ok := ctx.handles[at]; ok {
-		at = h
-	}
 	src := ctx.src[ctx.file]
 	fset := token.NewFileSet()
 	decl, err := declInFile(fset, ctx.file, src, ctx.sym)
@@ -44,14 +46,26 @@ func (ctx *patchCtx) insertStmt(at, where, stmtText string) (string, *Reject) {
 	case "after":
 		offset = lineEndNL(src, fset.Position(node.End()).Offset)
 	case "first", "last":
-		block, ok := blockOf(node)
-		if !ok {
-			return "", &Reject{Reason: "handle does not own a block", Detail: at}
-		}
-		if where == "first" {
-			offset = fset.Position(block.Lbrace).Offset + 1
-		} else {
-			offset = fset.Position(block.Rbrace).Offset
+		switch nd := node.(type) {
+		case *ast.CaseClause:
+			// A case clause has no brace pair: "first" (and "last" against
+			// an empty body) anchor right after the colon; "last" against a
+			// populated body anchors after its final statement's line.
+			if where == "first" || len(nd.Body) == 0 {
+				offset = skipBlankLine(src, fset.Position(nd.Colon).Offset+1)
+			} else {
+				offset = lineEndNL(src, fset.Position(nd.Body[len(nd.Body)-1].End()).Offset)
+			}
+		default:
+			block, ok := blockOf(node)
+			if !ok {
+				return "", &Reject{Reason: "handle does not own a block", Detail: at}
+			}
+			if where == "first" {
+				offset = skipBlankLine(src, fset.Position(block.Lbrace).Offset+1)
+			} else {
+				offset = fset.Position(block.Rbrace).Offset
+			}
 		}
 	default:
 		return "", &Reject{Reason: "unknown insertion point", Detail: where,
@@ -149,8 +163,11 @@ func declInFile(fset *token.FileSet, filename string, src []byte, sym string) (*
 
 // blockOf returns the block a handle's node owns, for "first"/"last"
 // insertion or delete_node's emptiness check, or false if the node does not
-// own one. Switch/case bodies are deliberately excluded: a case clause has
-// no brace pair to anchor on.
+// own one. A switch statement's own body (the list of its case clauses) is a
+// real BlockStmt with brace positions, so add_case can append to it the same
+// way as any other block; a single case clause's body is not (it has no
+// brace pair to anchor on) and is handled separately, in insertStmt and
+// childList.
 func blockOf(n ast.Node) (*ast.BlockStmt, bool) {
 	switch s := n.(type) {
 	case *ast.BlockStmt:
@@ -160,6 +177,8 @@ func blockOf(n ast.Node) (*ast.BlockStmt, bool) {
 	case *ast.ForStmt:
 		return s.Body, true
 	case *ast.RangeStmt:
+		return s.Body, true
+	case *ast.SwitchStmt:
 		return s.Body, true
 	}
 	return nil, false
@@ -181,6 +200,20 @@ func lineEndNL(src []byte, offset int) int {
 	}
 	if offset < len(src) {
 		offset++
+	}
+	return offset
+}
+
+// skipBlankLine advances offset past one immediately-following newline, so a
+// "first" insertion right after an opening brace or a case's colon lands at
+// the start of the next line rather than gluing onto the brace/colon's own
+// line — the common case is an empty block, whose body is just that one
+// newline before the closing brace or next case. Only ever skips at most one
+// newline: a truly blank line in the body (two newlines in a row) is left
+// alone rather than swallowed.
+func skipBlankLine(src []byte, offset int) int {
+	if offset < len(src) && src[offset] == '\n' {
+		return offset + 1
 	}
 	return offset
 }
@@ -472,6 +505,164 @@ func directChildHandles(nt *nodeTable, list []ast.Stmt) []string {
 	return out
 }
 
+// addIfOp inserts an if-statement, with an empty then-block and, when
+// requested, an empty else block.
+//
+// bindResult records the IfStmt's own handle. blockOf already maps an
+// IfStmt handle to its Body for "first"/"last" insertion, so $N addresses
+// the then-block. There is currently no handle for a requested else block:
+// reaching it needs a follow-up View call or structural addressing added
+// later — v1's $N covers only the then-block a constructor creates.
+type addIfOp struct{}
+
+func (addIfOp) name() string { return "add_if" }
+
+func (addIfOp) apply(ctx *patchCtx, raw json.RawMessage) *Reject {
+	var a struct {
+		At    string `json:"at"`
+		Where string `json:"where"`
+		Cond  string `json:"cond"`
+		Else  bool   `json:"else"`
+	}
+	if err := json.Unmarshal(raw, &a); err != nil {
+		return &Reject{Reason: "malformed op args", Detail: err.Error()}
+	}
+	cond, rej := ctx.exprAtom(a.Cond)
+	if rej != nil {
+		return rej
+	}
+	stmt := "if " + cond + " {\n}"
+	if a.Else {
+		stmt += " else {\n}"
+	}
+	h, rej := ctx.insertStmt(a.At, a.Where, stmt)
+	if rej != nil {
+		return rej
+	}
+	ctx.bindResult(h)
+	return nil
+}
+
+// addForOp inserts a for-statement with an empty body: condition-only,
+// infinite (neither cond nor range given), or range form. The range form
+// splices "range" verbatim after "for " rather than through exprAtom — a
+// range clause ("k, v := range coll") is not a standalone expression, so
+// only a full syntax re-parse (insertStmt's, after splicing) can validate
+// it.
+type addForOp struct{}
+
+func (addForOp) name() string { return "add_for" }
+
+func (addForOp) apply(ctx *patchCtx, raw json.RawMessage) *Reject {
+	var a struct {
+		At    string `json:"at"`
+		Where string `json:"where"`
+		Cond  string `json:"cond"`
+		Range string `json:"range"`
+	}
+	if err := json.Unmarshal(raw, &a); err != nil {
+		return &Reject{Reason: "malformed op args", Detail: err.Error()}
+	}
+	if a.Cond != "" && a.Range != "" {
+		return &Reject{Reason: "add_for: cond and range are mutually exclusive"}
+	}
+	header := "for"
+	switch {
+	case a.Range != "":
+		header = "for " + a.Range
+	case a.Cond != "":
+		cond, rej := ctx.exprAtom(a.Cond)
+		if rej != nil {
+			return rej
+		}
+		header = "for " + cond
+	}
+	h, rej := ctx.insertStmt(a.At, a.Where, header+" {\n}")
+	if rej != nil {
+		return rej
+	}
+	ctx.bindResult(h)
+	return nil
+}
+
+// addSwitchOp inserts a switch-statement with an empty body: tagless when no
+// tag is given.
+type addSwitchOp struct{}
+
+func (addSwitchOp) name() string { return "add_switch" }
+
+func (addSwitchOp) apply(ctx *patchCtx, raw json.RawMessage) *Reject {
+	var a struct {
+		At    string `json:"at"`
+		Where string `json:"where"`
+		Tag   string `json:"tag"`
+	}
+	if err := json.Unmarshal(raw, &a); err != nil {
+		return &Reject{Reason: "malformed op args", Detail: err.Error()}
+	}
+	header := "switch"
+	if a.Tag != "" {
+		tag, rej := ctx.exprAtom(a.Tag)
+		if rej != nil {
+			return rej
+		}
+		header = "switch " + tag
+	}
+	h, rej := ctx.insertStmt(a.At, a.Where, header+" {\n}")
+	if rej != nil {
+		return rej
+	}
+	ctx.bindResult(h)
+	return nil
+}
+
+// addCaseOp appends a case (or default) clause to an existing switch. "at"
+// names the switch, not an insertion point around it: add_case always
+// appends as the last clause, since v1 has no argument for placing a new
+// case among existing ones. bindResult records the new CaseClause's own
+// handle, which insertStmt's CaseClause branch treats as a block owner for
+// "first"/"last" against the case's body.
+type addCaseOp struct{}
+
+func (addCaseOp) name() string { return "add_case" }
+
+func (addCaseOp) apply(ctx *patchCtx, raw json.RawMessage) *Reject {
+	var a struct {
+		At      string   `json:"at"`
+		Exprs   []string `json:"exprs"`
+		Default bool     `json:"default"`
+	}
+	if err := json.Unmarshal(raw, &a); err != nil {
+		return &Reject{Reason: "malformed op args", Detail: err.Error()}
+	}
+	if a.Default && len(a.Exprs) > 0 {
+		return &Reject{Reason: "add_case: default and exprs are mutually exclusive"}
+	}
+	if !a.Default && len(a.Exprs) == 0 {
+		return &Reject{Reason: "add_case requires exprs or default"}
+	}
+	var header string
+	if a.Default {
+		header = "default:"
+	} else {
+		parts := make([]string, len(a.Exprs))
+		for i, e := range a.Exprs {
+			v, rej := ctx.exprAtom(e)
+			if rej != nil {
+				return rej
+			}
+			parts[i] = v
+		}
+		header = "case " + strings.Join(parts, ", ") + ":"
+	}
+	h, rej := ctx.insertStmt(a.At, "last", header)
+	if rej != nil {
+		return rej
+	}
+	ctx.bindResult(h)
+	return nil
+}
+
 func init() {
 	opRegistry["add_assign"] = func() patchOp { return addAssignOp{} }
 	opRegistry["add_call"] = func() patchOp { return addCallOp{} }
@@ -479,4 +670,8 @@ func init() {
 	opRegistry["add_defer"] = func() patchOp { return addDeferOp{} }
 	opRegistry["add_go"] = func() patchOp { return addGoOp{} }
 	opRegistry["delete_node"] = func() patchOp { return deleteNodeOp{} }
+	opRegistry["add_if"] = func() patchOp { return addIfOp{} }
+	opRegistry["add_for"] = func() patchOp { return addForOp{} }
+	opRegistry["add_switch"] = func() patchOp { return addSwitchOp{} }
+	opRegistry["add_case"] = func() patchOp { return addCaseOp{} }
 }

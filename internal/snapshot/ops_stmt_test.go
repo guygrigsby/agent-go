@@ -195,3 +195,134 @@ func TestDeleteNodeSuccess(t *testing.T) {
 		t.Fatalf("delete_node left the node:\n%s", b)
 	}
 }
+
+// n1 in UseHelper is a plain statement; craft an if via patch, then try
+// deleting its handle while populated. This also exercises Task 6's add_if
+// and $N handles; Tasks 5 and 6 land together so both are available here.
+func TestDeleteNodeRejectsNonEmptyBlock(t *testing.T) {
+	s := demo(t)
+	_, err := s.Patch([]byte(`{"pkg":"demo/lib","sym":"UseHelper",
+		"ops":[{"op":"add_if","at":"n1","where":"after","cond":"true"},
+		       {"op":"add_call","at":"$1","where":"first","expr":"println(1)"},
+		       {"op":"delete_node","at":"$1"}]}`))
+	rej, ok := err.(*Reject)
+	if !ok || rej.Reason != "block is not empty" {
+		t.Fatalf("got %v", err)
+	}
+}
+
+// An if's then-block being empty is not enough: deleting it would silently
+// discard a populated else clause.
+func TestDeleteNodeRejectsIfWithElse(t *testing.T) {
+	s := demo(t)
+	_, err := s.Patch([]byte(`{"pkg":"demo/lib","sym":"UseHelper",
+		"ops":[{"op":"add_if","at":"n1","where":"after","cond":"true","else":true},
+		       {"op":"delete_node","at":"$1"}]}`))
+	rej, ok := err.(*Reject)
+	if !ok || rej.Reason != "block is not empty" {
+		t.Fatalf("got %v", err)
+	}
+}
+
+// Task 6: block constructors (add_if, add_for, add_switch, add_case) and $N
+// intra-patch handle references.
+
+func TestBlockConstructorsAndDollarRefs(t *testing.T) {
+	s := demo(t)
+	res, err := s.Patch([]byte(`{"pkg":"demo/lib","sym":"UseHelper",
+		"ops":[{"op":"add_if","at":"n1","where":"after","cond":"helper(1) > 0"},
+		       {"op":"add_call","at":"$1","where":"first","expr":"println(\"pos\")"},
+		       {"op":"add_switch","at":"$1","where":"after","tag":"helper(2)"},
+		       {"op":"add_case","at":"$3","exprs":["1","2"]},
+		       {"op":"add_call","at":"$4","where":"first","expr":"println(\"small\")"}]}`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if res["ops_applied"].(int) != 5 {
+		t.Fatalf("got %v", res)
+	}
+}
+
+// Deferred from Task 4's review: once add_if exists, exercise insertStmt's
+// where:"first" and where:"last" against a block-owning handle, asserting
+// both placements land inside the braces in the right order regardless of
+// which is applied first.
+func TestInsertStmtFirstLastAgainstBlock(t *testing.T) {
+	s := demo(t)
+	res, err := s.Patch([]byte(`{"pkg":"demo/lib","sym":"UseHelper",
+		"ops":[{"op":"add_if","at":"n1","where":"after","cond":"true"},
+		       {"op":"add_call","at":"$1","where":"last","expr":"println(2)"},
+		       {"op":"add_call","at":"$1","where":"first","expr":"println(1)"}]}`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	b, _ := os.ReadFile(res["files"].([]string)[0])
+	firstIdx := strings.Index(string(b), "println(1)")
+	lastIdx := strings.Index(string(b), "println(2)")
+	if firstIdx == -1 || lastIdx == -1 || firstIdx > lastIdx {
+		t.Fatalf("first/last placement wrong order:\n%s", b)
+	}
+}
+
+func TestAddForCondAndInfiniteForms(t *testing.T) {
+	s := demo(t)
+	res, err := s.Patch([]byte(`{"pkg":"demo/lib","sym":"UseHelper",
+		"ops":[{"op":"add_for","at":"n1","where":"after","cond":"helper(1) > 0"},
+		       {"op":"add_for","at":"$1","where":"after"}]}`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if res["ops_applied"].(int) != 2 {
+		t.Fatalf("got %v", res)
+	}
+}
+
+func TestAddForRangeForm(t *testing.T) {
+	s := demo(t)
+	res, err := s.Patch([]byte(`{"pkg":"demo/lib","sym":"UseHelper",
+		"ops":[{"op":"add_assign","at":"n1","where":"after","lhs":"items","rhs":"[]int{1, 2, 3}","define":true},
+		       {"op":"add_for","at":"$1","where":"after","range":"range items"}]}`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if res["ops_applied"].(int) != 2 {
+		t.Fatalf("got %v", res)
+	}
+}
+
+func TestAddSwitchTaglessAndCaseDefault(t *testing.T) {
+	s := demo(t)
+	res, err := s.Patch([]byte(`{"pkg":"demo/lib","sym":"UseHelper",
+		"ops":[{"op":"add_switch","at":"n1","where":"after"},
+		       {"op":"add_case","at":"$1","default":true},
+		       {"op":"add_call","at":"$2","where":"first","expr":"println(1)"}]}`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if res["ops_applied"].(int) != 3 {
+		t.Fatalf("got %v", res)
+	}
+}
+
+func TestDollarRefUnknown(t *testing.T) {
+	s := demo(t)
+	_, err := s.Patch([]byte(`{"pkg":"demo/lib","sym":"UseHelper",
+		"ops":[{"op":"add_call","at":"$9","where":"after","expr":"helper(1)"}]}`))
+	rej, ok := err.(*Reject)
+	if !ok || rej.Reason != "unknown $ref" {
+		t.Fatalf("got %v", err)
+	}
+}
+
+// $2 in op 1 refers to op 2's own not-yet-produced handle: a forward
+// reference, rejected the same way as a wildly unknown one.
+func TestDollarRefForward(t *testing.T) {
+	s := demo(t)
+	_, err := s.Patch([]byte(`{"pkg":"demo/lib","sym":"UseHelper",
+		"ops":[{"op":"add_call","at":"$2","where":"after","expr":"helper(1)"},
+		       {"op":"add_call","at":"n1","where":"after","expr":"helper(2)"}]}`))
+	rej, ok := err.(*Reject)
+	if !ok || rej.Reason != "unknown $ref" {
+		t.Fatalf("got %v", err)
+	}
+}
