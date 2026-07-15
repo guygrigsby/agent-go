@@ -15,39 +15,66 @@ import (
 // patchCtx carries the working state of one patch application: the
 // pkg/sym defaults for ops that omit them, the in-memory working copy of
 // file contents touched by the op list, and the handle table assigned by
-// earlier ops for later ops to reference. Ops registered in opRegistry
-// apply against ctx.src only; the legacy ops dispatched separately still
-// write straight through their existing single-op methods.
+// earlier ops for later ops to reference. Every op registered in opRegistry
+// applies against ctx.src only; nothing reaches disk until the whole list
+// has applied without a Reject.
 type patchCtx struct {
 	s        *Snapshot
 	pkg, sym string            // defaults for ops that omit them
 	src      map[string][]byte // working copy of file contents
 	handles  map[string]string // "$1" -> handle assigned by op 1
 
-	file       string         // file holding the target pkg.sym declaration
+	file       string         // file holding the target pkg.sym declaration (statement ops only)
 	opIndex    int            // 1-based index of the op currently applying
 	fileLastOp map[string]int // file -> op index that last edited it, for
 	// attributing end-of-list typecheck diagnostics to the nearest op.
+
+	// declOrig/declEdits back the decl ops' (rename, set_body, add_param,
+	// upsert_decl, delete_decl, set_doc, add_field, remove_field) shared
+	// splice ledger: each op computes its edits' byte offsets against the
+	// live, pre-patch snapshot (the same positions its legacy single-op
+	// method has always used), then applyDeclEdits folds them into a
+	// per-file ledger replayed against that file's pristine (first-touch)
+	// bytes. Replaying the full ledger on every new edit, rather than
+	// splicing incrementally into ctx.src, means a second decl op touching
+	// the same file composes correctly regardless of application order —
+	// exactly what atomic multi-rename needs.
+	declOrig  map[string][]byte
+	declEdits map[string][]edit
+
+	// affectedPkgs accumulates every decl op's own target package, unioned
+	// into the dirty set alongside dirtyByFiles(touched) and
+	// affected(env.Pkg): a rename or add_param elsewhere in the workspace
+	// can break a reverse importer that no edited file itself touches.
+	affectedPkgs map[string]bool
+
+	// postChecks run once, after the shared end-of-list retypecheck
+	// succeeds, against the now-spliced live snapshot: rename's
+	// verifyResolution (reference-capture detection) and add_param's
+	// "parameter actually landed" sanity check both need the POST-retypecheck
+	// state, and a multi-rename patch must prove itself as one unit against
+	// the FINAL state rather than after each individual rename.
+	postChecks []func() *Reject
 }
 
-// patchOp is one composable operation in a patch's op list. Implementations
-// arrive with Task 4; this task only defines the shape so the registry name
-// and signature are fixed for what builds on it.
+// declOps are ops whose args name their own pkg/sym (or, for upsert_decl,
+// derive it from the declaration text) rather than address positions
+// relative to the envelope's own target declaration. patchComposable does
+// not require the envelope pkg/sym to resolve to a function before running
+// a patch made up entirely of these — only the statement ops (ops_stmt.go)
+// need that fixed function context.
+var declOps = map[string]bool{
+	"rename": true, "set_body": true, "add_param": true, "upsert_decl": true,
+	"delete_decl": true, "set_doc": true, "add_field": true, "remove_field": true,
+}
+
+// opRegistry holds every composable op, keyed by wire name.
+var opRegistry = map[string]func() patchOp{}
+
+// patchOp is one composable operation in a patch's op list.
 type patchOp interface {
 	name() string
 	apply(ctx *patchCtx, args json.RawMessage) *Reject
-}
-
-// opRegistry holds composable ops that apply natively to patchCtx.src.
-// Empty in this task — rename, set_body, add_param, and upsert_decl are
-// still dispatched directly to their existing methods below.
-var opRegistry = map[string]func() patchOp{}
-
-// legacyOps are the pre-Task-4 mutations, each still a single-op fast path
-// delegating to its existing implementation. Task 8 folds them into
-// opRegistry once they operate on ctx.src and support multi-op sequencing.
-var legacyOps = map[string]bool{
-	"rename": true, "set_body": true, "add_param": true, "upsert_decl": true,
 }
 
 // patchEnvelope is the wire shape of a whole patch.
@@ -67,10 +94,13 @@ type opName struct {
 
 // Patch applies a transaction envelope of edit operations: parse, check the
 // generation the caller built the patch against, validate every op name,
-// then dispatch. Ops registered in opRegistry go down the composable
-// ctx.src pipeline (multi-op and dry_run supported); legacy ops still
-// dispatch one at a time through their existing single-op methods; mixing
-// the two in one patch is rejected as not yet composable.
+// then run the whole list through the composable ctx.src pipeline. The
+// envelope's own generation check applies to the envelope pkg only — a
+// per-op pkg/sym override (rename/set_body/add_param/upsert_decl/
+// delete_decl/set_doc/add_field/remove_field can each name a different
+// declaration than the envelope) is not itself generation-checked in v1;
+// staleness there still surfaces as a typecheck reject, just without the
+// sharper "stale generation: re-view" message.
 func (s *Snapshot) Patch(raw []byte) (map[string]any, error) {
 	var env patchEnvelope
 	if err := json.Unmarshal(raw, &env); err != nil {
@@ -83,47 +113,32 @@ func (s *Snapshot) Patch(raw []byte) (map[string]any, error) {
 		return nil, &Reject{Reason: "patch has no ops"}
 	}
 	names := make([]string, len(env.Ops))
-	var hasLegacy, hasComposable bool
 	for i, raw := range env.Ops {
 		var n opName
 		if err := json.Unmarshal(raw, &n); err != nil {
 			return nil, &Reject{Reason: "malformed op", Detail: err.Error()}
 		}
-		switch {
-		case legacyOps[n.Op]:
-			hasLegacy = true
-		case opRegistry[n.Op] != nil:
-			hasComposable = true
-		default:
+		if opRegistry[n.Op] == nil {
 			return nil, &Reject{Reason: "unknown op", Detail: n.Op, DidYouMean: nearestOps(n.Op)}
 		}
 		names[i] = n.Op
 	}
-	if hasLegacy && hasComposable {
-		return nil, &Reject{Reason: "not yet composable", Detail: "patch mixes legacy and composable ops"}
-	}
-	if hasComposable {
-		return s.patchComposable(env, names)
-	}
-	if len(env.Ops) > 1 {
-		return nil, &Reject{Reason: "not yet composable", Detail: "patch has more than one op"}
-	}
-	if env.DryRun {
-		return nil, &Reject{Reason: "dry_run requires composable ops"}
-	}
-	res, err := s.dispatchLegacy(names[0], env.Pkg, env.Sym, env.Ops[0])
-	if err != nil {
-		return nil, err
-	}
-	res["ops_applied"] = 1
-	return res, nil
+	return s.patchComposable(env, names)
 }
 
 // patchComposable runs the ctx.src pipeline: every name in names is
-// registered in opRegistry (Patch already ruled out legacy ops and unknown
-// names). Ops mutate ctx.src only; nothing touches disk until the whole
-// list has applied without a Reject, so a failure partway leaves the
-// workspace untouched — no rollback bookkeeping is needed for that case.
+// registered in opRegistry (Patch already ruled out unknown names). Ops
+// mutate ctx.src only; nothing touches disk until the whole list has
+// applied without a Reject, so a failure partway leaves the workspace
+// untouched — no rollback bookkeeping is needed for that case.
+//
+// The envelope's own pkg/sym resolve to a fixed function context (nt.file)
+// only when the op list contains a statement op (ops_stmt.go): those
+// address positions by handle within that one function. A patch made up
+// entirely of decl ops skips that resolution — each decl op resolves its
+// own pkg/sym (defaulting from the envelope) independently, and the
+// envelope's own sym need not even be a function (or be given at all, when
+// every op supplies its own).
 //
 // dry_run runs the identical op-apply, format, write, and retypecheck steps
 // a commit would, so its response carries the same accept/reject outcome a
@@ -143,27 +158,38 @@ func (s *Snapshot) patchComposable(env patchEnvelope, names []string) (map[strin
 	if err != nil {
 		return nil, err
 	}
-	nt, rej := s.nodeTableFor(env.Pkg, env.Sym)
-	if rej != nil {
-		return nil, rej
-	}
-	src, err := os.ReadFile(nt.file)
-	if err != nil {
-		return nil, err
-	}
-	editedFiles := map[string]bool{nt.file: true}
-	preDirty := append(s.dirtyByFiles(editedFiles), s.affected(env.Pkg)...)
-	if diags := errorsIn(preDirty); len(diags) > 0 {
-		return nil, &Reject{Reason: "affected packages have pre-existing errors", Diagnostics: diags}
-	}
 
 	ctx := &patchCtx{
 		s: s, pkg: env.Pkg, sym: env.Sym,
-		src:        map[string][]byte{nt.file: append([]byte(nil), src...)},
+		src:        map[string][]byte{},
 		handles:    map[string]string{},
-		file:       nt.file,
 		fileLastOp: map[string]int{},
 	}
+
+	needsFunc := false
+	for _, n := range names {
+		if !declOps[n] {
+			needsFunc = true
+			break
+		}
+	}
+	if needsFunc {
+		nt, rej := s.nodeTableFor(env.Pkg, env.Sym)
+		if rej != nil {
+			return nil, rej
+		}
+		src, err := os.ReadFile(nt.file)
+		if err != nil {
+			return nil, err
+		}
+		preDirty := append(s.dirtyByFiles(map[string]bool{nt.file: true}), s.affected(env.Pkg)...)
+		if diags := errorsIn(preDirty); len(diags) > 0 {
+			return nil, &Reject{Reason: "affected packages have pre-existing errors", Diagnostics: diags}
+		}
+		ctx.file = nt.file
+		ctx.src[nt.file] = append([]byte(nil), src...)
+	}
+
 	for i, raw := range env.Ops {
 		ctx.opIndex = i + 1
 		resolved, rej := ctx.resolveArgRefs(raw)
@@ -194,7 +220,17 @@ func (s *Snapshot) patchComposable(env patchEnvelope, names []string) (map[strin
 	}
 	sort.Strings(touched)
 
-	originals := map[string][]byte{nt.file: src}
+	// Nothing has been written yet, so disk still holds every touched
+	// file's pre-patch bytes — read them fresh here rather than tracking a
+	// second original-bytes map through the op loop.
+	originals := map[string][]byte{}
+	for _, file := range touched {
+		b, err := os.ReadFile(file)
+		if err != nil {
+			return nil, err
+		}
+		originals[file] = b
+	}
 	for _, file := range touched {
 		if err := os.WriteFile(file, formatted[file], 0o644); err != nil {
 			s.rollback(originals)
@@ -202,7 +238,15 @@ func (s *Snapshot) patchComposable(env patchEnvelope, names []string) (map[strin
 		}
 	}
 
+	editedFiles := map[string]bool{}
+	for _, f := range touched {
+		editedFiles[f] = true
+	}
 	dirty := append(s.dirtyByFiles(editedFiles), s.affected(env.Pkg)...)
+	for pkg := range ctx.affectedPkgs {
+		dirty = append(dirty, s.affected(pkg)...)
+	}
+
 	// dry_run previews the same retypecheck a commit would run, so it must
 	// see the same accept/reject outcome. But the resync retypecheck below
 	// (which puts the snapshot back once the proposed edit's bytes are
@@ -224,6 +268,18 @@ func (s *Snapshot) patchComposable(env patchEnvelope, names []string) (map[strin
 		s.rollback(originals)
 		return nil, err
 	}
+	// postChecks (rename's verifyResolution, add_param's post-edit sanity
+	// check) need the just-retypechecked live snapshot; run them once here,
+	// against the FINAL state of every decl op in the patch, not per-op.
+	var opRej *Reject
+	if len(diags) == 0 {
+		for _, chk := range ctx.postChecks {
+			if r := chk(); r != nil {
+				opRej = r
+				break
+			}
+		}
+	}
 	if env.DryRun {
 		s.rollback(originals)
 		s.retypecheck(dirty)
@@ -233,11 +289,22 @@ func (s *Snapshot) patchComposable(env patchEnvelope, names []string) (map[strin
 		if len(diags) > 0 {
 			return nil, &Reject{Reason: "patch does not typecheck", Diagnostics: annotateDiagnostics(diags, ctx.fileLastOp)}
 		}
+		if opRej != nil {
+			return nil, opRej
+		}
 		return map[string]any{"status": "ok", "dry_run": true, "would": "accepted"}, nil
 	}
 	if len(diags) > 0 {
 		s.rollback(originals)
 		return nil, &Reject{Reason: "patch does not typecheck", Diagnostics: annotateDiagnostics(diags, ctx.fileLastOp)}
+	}
+	if opRej != nil {
+		s.rollback(originals)
+		// Splices already landed; re-typecheck the same set against the
+		// restored files to put the snapshot back (mirrors rename.go's own
+		// verifyResolution failure path).
+		s.retypecheck(dirty)
+		return nil, opRej
 	}
 	for _, file := range touched {
 		s.noteWrite(file)
@@ -248,6 +315,88 @@ func (s *Snapshot) patchComposable(env patchEnvelope, names []string) (map[strin
 		"load_ms": ms, "packages_rechecked": n,
 		"generation": s.generation(env.Pkg, env.Sym),
 	}, nil
+}
+
+// applyDeclEdits folds edits into the per-file decl-op ledger and replays
+// each touched file's full edit history against its pristine (first-touch)
+// bytes: the first decl op to touch a file captures ctx.src's already-loaded
+// bytes if present (so a decl op sharing a file with the envelope's
+// statement-op target sees the same starting bytes those ops work from),
+// else reads disk fresh. Every edit's offset must already be valid against
+// that pristine baseline — each decl op computes its own edits from the
+// live, pre-patch snapshot, so this always holds regardless of how many
+// other decl ops have already touched the same file.
+func (ctx *patchCtx) applyDeclEdits(edits []edit) *Reject {
+	if len(edits) == 0 {
+		return nil
+	}
+	if ctx.declOrig == nil {
+		ctx.declOrig = map[string][]byte{}
+		ctx.declEdits = map[string][]edit{}
+	}
+	byFile := map[string][]edit{}
+	var files []string
+	for _, e := range edits {
+		if _, ok := byFile[e.file]; !ok {
+			files = append(files, e.file)
+		}
+		byFile[e.file] = append(byFile[e.file], e)
+	}
+	for _, file := range files {
+		// Ceiling: a decl op and a statement op may not both edit one file in
+		// a single patch. Statement ops (ops_stmt.go) treat ctx.src[file] as
+		// the source of truth, editing it incrementally and re-parsing it
+		// fresh to reassign handles; decl ops treat their declOrig+declEdits
+		// ledger as the truth and OVERWRITE ctx.src[file] with a full replay
+		// on every applyDeclEdits. The two models only reconcile when they
+		// touch different files. Same-file composition is sound only in one
+		// fragile ordering (a lone decl edit, then a stmt op, with no further
+		// decl op on that file) and silently corrupts otherwise — a stmt-op
+		// insertion is either clobbered by a later ledger replay or shifts the
+		// offsets a decl edit was computed against. ctx.file is set (in
+		// patchComposable) exactly when the patch contains a statement op, and
+		// stmt ops only ever edit ctx.file, so rejecting a decl edit that
+		// lands on ctx.file forecloses the whole unsound class, order- and
+		// count-independent. Split such work across separate patches.
+		if ctx.file != "" && file == ctx.file {
+			return &Reject{Reason: "cannot mix a decl op and a statement op on the same file",
+				Detail: file + ": a statement op addresses handles by position that a same-file " +
+					"decl op's reparse invalidates; run the decl op and the statement op as separate patches"}
+		}
+		if _, ok := ctx.declOrig[file]; !ok {
+			if b, ok := ctx.src[file]; ok {
+				ctx.declOrig[file] = append([]byte(nil), b...)
+			} else {
+				b, err := os.ReadFile(file)
+				if err != nil {
+					return &Reject{Reason: "file not found", Detail: file}
+				}
+				ctx.declOrig[file] = b
+			}
+		}
+		ctx.declEdits[file] = append(ctx.declEdits[file], byFile[file]...)
+		all := append([]edit(nil), ctx.declEdits[file]...)
+		sort.Slice(all, func(i, j int) bool { return all[i].offset > all[j].offset })
+		out := append([]byte(nil), ctx.declOrig[file]...)
+		for _, e := range all {
+			if e.offset < 0 || e.offset+e.length > len(out) {
+				return &Reject{Reason: "stale offset", Detail: fmt.Sprintf("%s at %d", file, e.offset)}
+			}
+			out = append(append(append([]byte{}, out[:e.offset]...), e.text...), out[e.offset+e.length:]...)
+		}
+		ctx.src[file] = out
+		ctx.fileLastOp[file] = ctx.opIndex
+	}
+	return nil
+}
+
+// addAffected records pkg as a decl op's own target package, unioned into
+// patchComposable's post-loop dirty set via affected(pkg).
+func (ctx *patchCtx) addAffected(pkg string) {
+	if ctx.affectedPkgs == nil {
+		ctx.affectedPkgs = map[string]bool{}
+	}
+	ctx.affectedPkgs[pkg] = true
 }
 
 // dollarRefPattern matches a bare "$N" intra-patch handle reference: N is
@@ -323,57 +472,6 @@ func annotateDiagnostics(diags []Diagnostic, fileLastOp map[string]int) []Diagno
 	return out
 }
 
-// dispatchLegacy translates one op's raw JSON into the existing single-op
-// method's plain-string arguments, defaulting pkg/sym from the envelope but
-// letting the op override either.
-func (s *Snapshot) dispatchLegacy(op, pkg, sym string, raw json.RawMessage) (map[string]any, error) {
-	switch op {
-	case "rename":
-		var args struct {
-			Pkg string `json:"pkg"`
-			Sym string `json:"sym"`
-			To  string `json:"to"`
-		}
-		if err := json.Unmarshal(raw, &args); err != nil {
-			return nil, &Reject{Reason: "malformed op args", Detail: err.Error()}
-		}
-		return s.Rename(orDefault(args.Pkg, pkg), orDefault(args.Sym, sym), args.To)
-	case "set_body":
-		var args struct {
-			Pkg  string `json:"pkg"`
-			Sym  string `json:"sym"`
-			Body string `json:"body"`
-		}
-		if err := json.Unmarshal(raw, &args); err != nil {
-			return nil, &Reject{Reason: "malformed op args", Detail: err.Error()}
-		}
-		return s.SetBody(orDefault(args.Pkg, pkg), orDefault(args.Sym, sym), args.Body)
-	case "add_param":
-		var args struct {
-			Pkg     string `json:"pkg"`
-			Sym     string `json:"sym"`
-			Name    string `json:"name"`
-			Type    string `json:"type"`
-			Default string `json:"default"`
-		}
-		if err := json.Unmarshal(raw, &args); err != nil {
-			return nil, &Reject{Reason: "malformed op args", Detail: err.Error()}
-		}
-		return s.AddParam(orDefault(args.Pkg, pkg), orDefault(args.Sym, sym), args.Name, args.Type, args.Default)
-	case "upsert_decl":
-		var args struct {
-			Pkg  string `json:"pkg"`
-			Text string `json:"text"`
-		}
-		if err := json.Unmarshal(raw, &args); err != nil {
-			return nil, &Reject{Reason: "malformed op args", Detail: err.Error()}
-		}
-		return s.UpsertDecl(orDefault(args.Pkg, pkg), args.Text)
-	}
-	// Unreachable: Patch validates op names before calling dispatchLegacy.
-	return nil, &Reject{Reason: "unknown op", Detail: op, DidYouMean: nearestOps(op)}
-}
-
 // orDefault returns v if the op supplied it, else the envelope default.
 func orDefault(v, def string) string {
 	if v != "" {
@@ -387,10 +485,7 @@ func orDefault(v, def string) string {
 // nothing is close. There are only a handful of ops, so listing them all is
 // signal rather than the noise a full symbol dump would be.
 func nearestOps(name string) []string {
-	catalog := make([]string, 0, len(legacyOps)+len(opRegistry))
-	for n := range legacyOps {
-		catalog = append(catalog, n)
-	}
+	catalog := make([]string, 0, len(opRegistry))
 	for n := range opRegistry {
 		catalog = append(catalog, n)
 	}

@@ -13,6 +13,35 @@ import (
 	"golang.org/x/tools/imports"
 )
 
+// upsertDeclEdit locates where text's declaration belongs in an
+// already-loaded pkgPath: an existing standalone declaration's range to
+// replace (reusing findDeclRange), or the end of an already-existing
+// agent.go to append to. needsCreate signals the one case the composable
+// upsert_decl op cannot support: no agent.go exists yet, so landing the
+// declaration means creating a brand-new file. A new file changes the
+// package's CompiledGoFiles, which the incremental retypecheck path never
+// picks up — only a full workspace reload does (see UpsertDecl's own
+// s.loaded = false below) — and the composable pipeline has no such
+// fallback mid-patch. The direct UpsertDecl method still handles it, same
+// as it always has; needsCreate is a documented v1 ceiling for the
+// composable op only.
+func upsertDeclEdit(s *Snapshot, pkgPath, name, sym string) (file string, start, end int, action string, needsCreate bool, rej *Reject) {
+	p := s.primary(pkgPath)
+	if p == nil {
+		return "", 0, 0, "", false, &Reject{Reason: "package not found", Detail: pkgPath,
+			DidYouMean: s.suggestPackages(pkgPath)}
+	}
+	if file, start, end := s.findDeclRange(p, name, sym); file != "" {
+		return file, start, end, "replaced", false, nil
+	}
+	agentFile := filepath.Join(filepath.Dir(p.Fset.Position(p.Syntax[0].Pos()).Filename), "agent.go")
+	b, err := os.ReadFile(agentFile)
+	if err != nil {
+		return agentFile, 0, 0, "added", true, nil
+	}
+	return agentFile, len(b), len(b), "added", false, nil
+}
+
 // UpsertDecl adds or replaces one top-level declaration from source text.
 // This is the authoring op: everything else reshapes existing code. The
 // edited file goes through goimports before validation, so declarations may
@@ -39,19 +68,14 @@ func (s *Snapshot) UpsertDecl(pkgPath, text string) (map[string]any, error) {
 		return s.upsertNewPackage(pkgPath, text, sym, ms)
 	}
 
-	file, start, end := s.findDeclRange(p, name, sym)
-	action := "replaced"
+	file, start, end, action, needsCreate, rej := upsertDeclEdit(s, pkgPath, name, sym)
+	if rej != nil {
+		return nil, rej
+	}
 	var src []byte
-	if file == "" {
-		action = "added"
-		file = filepath.Join(filepath.Dir(p.Fset.Position(p.Syntax[0].Pos()).Filename), "agent.go")
-		if b, err := os.ReadFile(file); err == nil {
-			src = b
-			start, end = len(b), len(b)
-		} else {
-			src = []byte("package " + p.Types.Name() + "\n")
-			start, end = len(src), len(src)
-		}
+	if needsCreate {
+		src = []byte("package " + p.Types.Name() + "\n")
+		start, end = len(src), len(src)
 	} else {
 		src, err = os.ReadFile(file)
 		if err != nil {
@@ -236,16 +260,19 @@ func recvTypeName(d *ast.FuncDecl) string {
 	}
 }
 
-// findDeclRange locates an existing standalone top-level declaration by
-// name (and receiver for methods), returning its file and byte range
-// including the doc comment. Empty file means not found — either genuinely
-// new, or hidden inside a grouped block, where the subsequent typecheck
-// rejects the redeclaration with a diagnostic naming both sites.
-func (s *Snapshot) findDeclRange(p *packages.Package, name, sym string) (string, int, int) {
+// findDeclNode locates an existing standalone top-level declaration by name
+// (and receiver for methods): the shared traversal behind findDeclRange
+// (the whole range including any doc comment) and set_doc (which needs the
+// doc comment and the bare declaration's own start distinctly, to tell
+// "replace this existing comment" from "no comment yet, insert one"). A nil
+// decl means not found — either genuinely new, or hidden inside a grouped
+// block, where the subsequent typecheck rejects the redeclaration with a
+// diagnostic naming both sites.
+func (s *Snapshot) findDeclNode(p *packages.Package, name, sym string) (filename string, decl ast.Decl, doc *ast.CommentGroup) {
 	recv, mname, isMethod := strings.Cut(sym, ".")
 	for _, f := range p.Syntax {
 		for _, d := range f.Decls {
-			var doc *ast.CommentGroup
+			var dc *ast.CommentGroup
 			match := false
 			switch d := d.(type) {
 			case *ast.FuncDecl:
@@ -254,7 +281,7 @@ func (s *Snapshot) findDeclRange(p *packages.Package, name, sym string) (string,
 				} else {
 					match = d.Recv == nil && d.Name.Name == name
 				}
-				doc = d.Doc
+				dc = d.Doc
 			case *ast.GenDecl:
 				if isMethod || len(d.Specs) != 1 {
 					continue
@@ -265,18 +292,27 @@ func (s *Snapshot) findDeclRange(p *packages.Package, name, sym string) (string,
 				case *ast.ValueSpec:
 					match = len(spec.Names) == 1 && spec.Names[0].Name == name
 				}
-				doc = d.Doc
+				dc = d.Doc
 			}
 			if !match {
 				continue
 			}
-			start := d.Pos()
-			if doc != nil {
-				start = doc.Pos()
-			}
-			pos := s.fset.Position(start)
-			return pos.Filename, pos.Offset, s.fset.Position(d.End()).Offset
+			return s.fset.Position(d.Pos()).Filename, d, dc
 		}
 	}
-	return "", 0, 0
+	return "", nil, nil
+}
+
+// findDeclRange returns a declaration's byte range including its doc
+// comment, or an empty file when not found. See findDeclNode.
+func (s *Snapshot) findDeclRange(p *packages.Package, name, sym string) (string, int, int) {
+	file, d, doc := s.findDeclNode(p, name, sym)
+	if file == "" {
+		return "", 0, 0
+	}
+	start := d.Pos()
+	if doc != nil {
+		start = doc.Pos()
+	}
+	return file, s.fset.Position(start).Offset, s.fset.Position(d.End()).Offset
 }

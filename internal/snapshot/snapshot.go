@@ -720,6 +720,32 @@ func (s *Snapshot) Refs(pkgPath, sym string) (map[string]any, error) {
 	}, nil
 }
 
+// setBodyEdit locates sym's function body and validates it's editable
+// (existing declaration, no pre-existing errors in the file's dirty set),
+// returning the byte offsets of its opening and closing braces. Pure
+// position computation: callers read the file themselves and splice body
+// into place (SetBody via spliceBody, which also gofmts the whole file; the
+// composable set_body op via the decl-op ledger, deferring formatting to
+// patchComposable's end-of-list imports.Process).
+func setBodyEdit(s *Snapshot, pkgPath, sym string) (filename string, lbrace, rbrace int, rej *Reject) {
+	p, obj, rej0 := s.findObject(pkgPath, sym)
+	if rej0 != nil {
+		return "", 0, 0, rej0
+	}
+	fn, ok := obj.(*types.Func)
+	if !ok {
+		return "", 0, 0, &Reject{Reason: "symbol is not a function", Detail: objKind(obj)}
+	}
+	decl, filename := findFuncDecl(p, fn)
+	if decl == nil || decl.Body == nil {
+		return "", 0, 0, &Reject{Reason: "function declaration not found", Detail: sym}
+	}
+	if diags := errorsIn(s.dirtyByFiles(map[string]bool{filename: true})); len(diags) > 0 {
+		return "", 0, 0, &Reject{Reason: "affected packages have pre-existing errors", Diagnostics: diags}
+	}
+	return filename, s.fset.Position(decl.Body.Lbrace).Offset, s.fset.Position(decl.Body.Rbrace).Offset, nil
+}
+
 // SetBody replaces a function's body. A body edit cannot change the
 // package's exported API, so the dirty set is just the packages compiling
 // the edited file (the package and its internal-test variant).
@@ -730,27 +756,14 @@ func (s *Snapshot) SetBody(pkgPath, sym, body string) (map[string]any, error) {
 	if err != nil {
 		return nil, err
 	}
-	p, obj, rej := s.findObject(pkgPath, sym)
+	filename, lbrace, rbrace, rej := setBodyEdit(s, pkgPath, sym)
 	if rej != nil {
 		return nil, rej
-	}
-	fn, ok := obj.(*types.Func)
-	if !ok {
-		return nil, &Reject{Reason: "symbol is not a function", Detail: objKind(obj)}
-	}
-	decl, filename := findFuncDecl(p, fn)
-	if decl == nil || decl.Body == nil {
-		return nil, &Reject{Reason: "function declaration not found", Detail: sym}
-	}
-	if diags := errorsIn(s.dirtyByFiles(map[string]bool{filename: true})); len(diags) > 0 {
-		return nil, &Reject{Reason: "affected packages have pre-existing errors", Diagnostics: diags}
 	}
 	src, err := os.ReadFile(filename)
 	if err != nil {
 		return nil, err
 	}
-	lbrace := s.fset.Position(decl.Body.Lbrace).Offset
-	rbrace := s.fset.Position(decl.Body.Rbrace).Offset
 	formatted, ferr := spliceBody(src, lbrace, rbrace, body)
 	if ferr != nil {
 		return nil, &Reject{Reason: "new body does not parse", Detail: ferr.Error()}
