@@ -35,6 +35,11 @@ type Reject struct {
 	Reason      string       `json:"reason"`
 	Detail      string       `json:"detail,omitempty"`
 	Diagnostics []Diagnostic `json:"diagnostics,omitempty"`
+	// DidYouMean carries concrete repairs: candidate package paths or
+	// symbols. Rejections are the agent's error channel; a bare "not
+	// found" produces flailing retries, a candidate list produces the
+	// correct next call.
+	DidYouMean []string `json:"did_you_mean,omitempty"`
 }
 
 func (r *Reject) Error() string { return r.Reason }
@@ -161,7 +166,8 @@ func (s *Snapshot) primary(pkgPath string) *packages.Package {
 func (s *Snapshot) findObject(pkgPath, sym string) (*packages.Package, types.Object, *Reject) {
 	primary := s.primary(pkgPath)
 	if primary == nil {
-		return nil, nil, &Reject{Reason: "package not found", Detail: pkgPath}
+		return nil, nil, &Reject{Reason: "package not found", Detail: pkgPath,
+			DidYouMean: s.suggestPackages(pkgPath)}
 	}
 	variants := []*packages.Package{primary}
 	for _, p := range s.pkgs {
@@ -188,11 +194,72 @@ func (s *Snapshot) findObject(pkgPath, sym string) (*packages.Package, types.Obj
 	}
 	if isSel {
 		if primary.Types.Scope().Lookup(recv) == nil {
-			return nil, nil, &Reject{Reason: "receiver type not found", Detail: pkgPath + "." + recv}
+			return nil, nil, &Reject{Reason: "receiver type not found", Detail: pkgPath + "." + recv,
+				DidYouMean: s.suggestSymbols(pkgPath, recv)}
 		}
-		return nil, nil, &Reject{Reason: "method or field not found", Detail: pkgPath + "." + sym}
+		return nil, nil, &Reject{Reason: "method or field not found", Detail: pkgPath + "." + sym,
+			DidYouMean: s.suggestSymbols(pkgPath, name)}
 	}
-	return nil, nil, &Reject{Reason: "symbol not found", Detail: pkgPath + "." + sym}
+	return nil, nil, &Reject{Reason: "symbol not found", Detail: pkgPath + "." + sym,
+		DidYouMean: s.suggestSymbols(pkgPath, sym)}
+}
+
+// suggestPackages finds loaded package paths close to a miss: exact after
+// dot/slash normalization, then suffix or substring matches.
+func (s *Snapshot) suggestPackages(miss string) []string {
+	norm := strings.ReplaceAll(miss, ".", "/")
+	base := miss[strings.LastIndexAny(miss, "./")+1:]
+	var exact, close_ []string
+	seen := map[string]bool{}
+	for _, p := range s.pkgs {
+		if p.Types == nil || seen[p.PkgPath] {
+			continue
+		}
+		seen[p.PkgPath] = true
+		if strings.ReplaceAll(p.PkgPath, ".", "/") == norm {
+			exact = append(exact, p.PkgPath)
+		} else if strings.HasSuffix(p.PkgPath, "/"+base) || p.PkgPath == base {
+			close_ = append(close_, p.PkgPath)
+		}
+	}
+	out := append(exact, close_...)
+	if len(out) > 3 {
+		out = out[:3]
+	}
+	return out
+}
+
+// suggestSymbols finds near-miss symbols in a package: case-insensitive
+// equality first, then substring either way.
+func (s *Snapshot) suggestSymbols(pkgPath, name string) []string {
+	p := s.primary(pkgPath)
+	if p == nil {
+		return nil
+	}
+	lower := strings.ToLower(name)
+	var hits []string
+	scope := p.Types.Scope()
+	for _, n := range scope.Names() {
+		ln := strings.ToLower(n)
+		if ln == lower || strings.Contains(ln, lower) || strings.Contains(lower, ln) {
+			hits = append(hits, n)
+		}
+		if tn, ok := scope.Lookup(n).(*types.TypeName); ok {
+			for sel := range types.NewMethodSet(types.NewPointer(tn.Type())).Methods() {
+				m := sel.Obj().Name()
+				if lm := strings.ToLower(m); lm == lower || strings.Contains(lm, lower) {
+					hits = append(hits, n+"."+m)
+				}
+			}
+		}
+		if len(hits) >= 6 {
+			break
+		}
+	}
+	if len(hits) > 3 {
+		hits = hits[:3]
+	}
+	return hits
 }
 
 func objKind(obj types.Object) string {

@@ -25,7 +25,12 @@ func (s *Snapshot) Rename(pkgPath, sym, to string) (map[string]any, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	if !token.IsIdentifier(to) {
-		return nil, &Reject{Reason: "new name is not a valid identifier", Detail: to}
+		rej := &Reject{Reason: "new name is not a valid identifier", Detail: to}
+		if recv, name, ok := strings.Cut(to, "."); ok && token.IsIdentifier(recv) && token.IsIdentifier(name) {
+			rej.Detail = to + ": pass only the new member name; the receiver stays"
+			rej.DidYouMean = []string{name}
+		}
+		return nil, rej
 	}
 	ms, err := s.ensureFresh()
 	if err != nil {

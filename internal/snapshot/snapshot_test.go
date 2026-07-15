@@ -60,6 +60,32 @@ func TestInspectMissing(t *testing.T) {
 	}
 }
 
+// Rejections carry repairs: dotted package paths, near-miss symbol names,
+// and Recv.Name passed as a rename target all get did_you_mean candidates.
+func TestRejectionsSuggestRepairs(t *testing.T) {
+	s := demo(t)
+	_, err := s.Inspect("demo.lib", "Double")
+	rej := err.(*Reject)
+	if len(rej.DidYouMean) == 0 || rej.DidYouMean[0] != "demo/lib" {
+		t.Errorf("dotted pkg path: got %v", rej.DidYouMean)
+	}
+	_, err = s.Inspect("demo/lib", "double")
+	rej = err.(*Reject)
+	if len(rej.DidYouMean) == 0 || rej.DidYouMean[0] != "Double" {
+		t.Errorf("case miss: got %v", rej.DidYouMean)
+	}
+	_, err = s.Inspect("demo/lib", "Store.put")
+	rej = err.(*Reject)
+	if len(rej.DidYouMean) == 0 || rej.DidYouMean[0] != "Store.Put" {
+		t.Errorf("method case miss: got %v", rej.DidYouMean)
+	}
+	_, err = s.Rename("demo/lib", "Double", "Lib.Twice")
+	rej = err.(*Reject)
+	if rej.Reason != "new name is not a valid identifier" || len(rej.DidYouMean) == 0 || rej.DidYouMean[0] != "Twice" {
+		t.Errorf("qualified rename target: got %v %v", rej.Reason, rej.DidYouMean)
+	}
+}
+
 func TestRefs(t *testing.T) {
 	s := demo(t)
 	res, err := s.Refs("demo/lib", "Double")
