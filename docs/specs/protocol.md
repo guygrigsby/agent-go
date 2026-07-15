@@ -53,12 +53,9 @@ auto-spawned, idle-exit; gopls `-remote=auto` precedent, ADR 0001):
 
 ## Op catalog
 
-Implemented: status, search, inspect, refs, rename, set_body, add_param.
+Implemented: status, search, inspect, refs, rename, set_body, add_param, upsert_decl (authoring: whole declarations, auto-imports, new packages on demand).
 
 Planned, in order (bench task counts drive priority):
-- `upsert_decl` — add or replace a whole top-level declaration from
-  checked source text; the greenfield authoring op (zerolang's
-  `upsertFunction` analog). Includes import management.
 - `move_decl` — move a declaration across packages, rewriting references
   and imports.
 - Rejection upgrades: `possible_repairs` suggestions (idea.md's design) so

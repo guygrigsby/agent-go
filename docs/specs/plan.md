@@ -33,9 +33,9 @@ op catalog. Status as of 2026-07-14 night.
 1. ~~`add_param`~~ done: callers updated with explicit default, value uses
    rejected with positions, verified on boundary (2 cross-package callers,
    75 pkgs rechecked, 1.6s).
-2. `upsert_decl`: authoring op so the protocol covers new code, not just
-   refactors; unblocks the `ago init` greenfield story; needs import
-   management (add/remove imports as part of validation).
+2. ~~`upsert_decl`~~ done: whole-declaration add/replace with goimports
+   in the loop, agent.go landing spot, new packages created under the
+   module on demand.
 3. Rejection upgrades: `possible_repairs` naming the ops that would fix
    each rejection (idea.md's original design).
 4. `move_decl` (24 tasks): hardest op; only after the rename+add_param
