@@ -1,0 +1,590 @@
+[
+ {
+  "repo": "traefik",
+  "sha": "b966215e6c65d36d4a568c78981ef24a90918c43",
+  "subject": "Move origin fields capture to service level",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 5,
+  "churn": 102,
+  "packages": 134,
+  "files": 385
+ },
+ {
+  "repo": "traefik",
+  "sha": "514914639aeb2d493062126950192bb9bff82799",
+  "subject": "Rename traefik.docker.* labels for Docker Swarm to traefik.swarm.*",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 7,
+  "churn": 214,
+  "packages": 130,
+  "files": 368
+ },
+ {
+  "repo": "traefik",
+  "sha": "5026ca97d0266e2ad260947cfb22c3f5453fa673",
+  "subject": "Move snicheck to ctx instead of simulated routing",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 18,
+  "churn": 912,
+  "packages": 139,
+  "files": 396
+ },
+ {
+  "repo": "boundary",
+  "sha": "9f2c83f3b0e83bc756621b396a9552a0426fd7d1",
+  "subject": "refact(bsr): Rename const to denote when interpolation is needed",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 4,
+  "churn": 102,
+  "packages": 226,
+  "files": 958
+ },
+ {
+  "repo": "boundary",
+  "sha": "224f8d2d4ece315b14845518355c5fb8f474566a",
+  "subject": "refact(controller): Move Target Repository Factory to the target package",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 4,
+  "churn": 12,
+  "packages": 192,
+  "files": 739
+ },
+ {
+  "repo": "boundary",
+  "sha": "87b09d5e27aa4dfb955a600140f57c32a3b031f7",
+  "subject": "Rename router to receiver for secondary connections (#2816)",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 5,
+  "churn": 46,
+  "packages": 204,
+  "files": 809
+ },
+ {
+  "repo": "boundary",
+  "sha": "051d337b2183d66e004a33945bf0923b519980a3",
+  "subject": "refact(e2e): Move logging to helper function",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 5,
+  "churn": 29,
+  "packages": 199,
+  "files": 752
+ },
+ {
+  "repo": "boundary",
+  "sha": "c05324282f96691668f2e9ea2781dd89ca19301b",
+  "subject": "Rename the UI passthrough dir flag/env var (#1600)",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 5,
+  "churn": 34,
+  "packages": 146,
+  "files": 574
+ },
+ {
+  "repo": "boundary",
+  "sha": "6a92e0892834824d65142a0e4e88ed5f2d66af6c",
+  "subject": "refact(worker): update worker porxy handler signature to return an error (#1536)",
+  "kinds": [
+   "signature"
+  ],
+  "go_files": 5,
+  "churn": 67,
+  "packages": 147,
+  "files": 563
+ },
+ {
+  "repo": "boundary",
+  "sha": "bf9dbd818eaf1b70757781becb575e21b15482e7",
+  "subject": "chore(cmd): Remove IntVar and move to Int64Var",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 6,
+  "churn": 90,
+  "packages": 267,
+  "files": 1220
+ },
+ {
+  "repo": "boundary",
+  "sha": "f7631edcabe0508817fb46f74f55b8b1462be265",
+  "subject": "rename target2 import alias to talias (#4482)",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 6,
+  "churn": 42,
+  "packages": 260,
+  "files": 1189
+ },
+ {
+  "repo": "boundary",
+  "sha": "caf19f867edb9f60026d792ae53caf80e644cea7",
+  "subject": "Rename some variables to remove Nodee",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 6,
+  "churn": 75,
+  "packages": 178,
+  "files": 676
+ },
+ {
+  "repo": "boundary",
+  "sha": "3482f91a179fb4f6ff1fd1a41be0228bc169763f",
+  "subject": "refactor(connections): Move connect connect to the Connection repo",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 6,
+  "churn": 374,
+  "packages": 166,
+  "files": 657
+ },
+ {
+  "repo": "boundary",
+  "sha": "fb1ea92a30a2888fbfb7c36ff30ed5f51e738e23",
+  "subject": "Pass both the control and data context into handle",
+  "kinds": [
+   "add-param"
+  ],
+  "go_files": 7,
+  "churn": 41,
+  "packages": 226,
+  "files": 958
+ },
+ {
+  "repo": "boundary",
+  "sha": "185d8b392d65f35062b150123c0df30983758003",
+  "subject": "refact(auth): Move subtype registration into global registry",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 7,
+  "churn": 130,
+  "packages": 173,
+  "files": 679
+ },
+ {
+  "repo": "boundary",
+  "sha": "687dd1bda62ae18f9d3c6d97f04bfed9af4aae16",
+  "subject": "Move the session cleanup job logic into the session package. (#2060)",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 8,
+  "churn": 1136,
+  "packages": 176,
+  "files": 683
+ },
+ {
+  "repo": "boundary",
+  "sha": "79670180a7af00d4e602727adf43f093c6feee36",
+  "subject": "refact(session): Move domain logic of Worker Status into domain service",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 8,
+  "churn": 1114,
+  "packages": 166,
+  "files": 658
+ },
+ {
+  "repo": "boundary",
+  "sha": "06d69f699e76e8e04a5e730ad3a6596336ec2142",
+  "subject": "refact(e2e): Rename credential methods for clarity (#6219)",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 9,
+  "churn": 26,
+  "packages": 273,
+  "files": 1260
+ },
+ {
+  "repo": "boundary",
+  "sha": "1c62470ba6ee3eb54fb4309dc73f34e8eb7190c0",
+  "subject": "chore(cmd): Move FlagClientAgentPort and flagTargetDefaultPort to uint16",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 9,
+  "churn": 22,
+  "packages": 267,
+  "files": 1220
+ },
+ {
+  "repo": "boundary",
+  "sha": "3195dcba4ec65099a7aaf8246198e82be258a9c4",
+  "subject": "chore(cmd): Remove UintVar and move to Uint64Var",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 9,
+  "churn": 84,
+  "packages": 267,
+  "files": 1220
+ },
+ {
+  "repo": "boundary",
+  "sha": "2d18f82c9f0f63209d50366289f460a9690aaef3",
+  "subject": "Rename refresh token errors to list error (#4138)",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 9,
+  "churn": 42,
+  "packages": 243,
+  "files": 1047
+ },
+ {
+  "repo": "boundary",
+  "sha": "35b91c66dedb9ccda1ee1a845d6cc0399bdbf504",
+  "subject": "refact(ratelimit): Rename MaxEntries to MaxQuotas",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 9,
+  "churn": 108,
+  "packages": 231,
+  "files": 976
+ },
+ {
+  "repo": "boundary",
+  "sha": "9237d6f787c60d0ec43fbd33a322973adf350d42",
+  "subject": "Rename authorize to authorize-session (#531)",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 10,
+  "churn": 96,
+  "packages": 118,
+  "files": 399
+ },
+ {
+  "repo": "boundary",
+  "sha": "38b12394fd9dee751d5278bb404a4cb45c8a0186",
+  "subject": "refactor (kms): add GetWrapperer for RewrapFn parameter (#2701)",
+  "kinds": [
+   "add-param"
+  ],
+  "go_files": 12,
+  "churn": 155,
+  "packages": 202,
+  "files": 798
+ },
+ {
+  "repo": "boundary",
+  "sha": "8ff18f6c3c98a1c46d78feadf64bbc0765205284",
+  "subject": "internal/cmd: rename ferry to client-agent",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 13,
+  "churn": 388,
+  "packages": 263,
+  "files": 1204
+ },
+ {
+  "repo": "boundary",
+  "sha": "57ffc71849385ed3f019d9e2d3bfbb0a493565cb",
+  "subject": "refact(e2e): Add context as an argument for cli methods",
+  "kinds": [
+   "add-param"
+  ],
+  "go_files": 15,
+  "churn": 217,
+  "packages": 199,
+  "files": 756
+ },
+ {
+  "repo": "boundary",
+  "sha": "bf1486f75efcde4568b2197379c54a7e94eb62b8",
+  "subject": "refact(target): Add context to RepositoryFactory constructor",
+  "kinds": [
+   "add-param"
+  ],
+  "go_files": 16,
+  "churn": 97,
+  "packages": 192,
+  "files": 739
+ },
+ {
+  "repo": "boundary",
+  "sha": "b4b95e0f0e8f21ed3fa95370edfd2d62ad30d665",
+  "subject": "refactor(vault): add context and remove deprecated errors (#2396)",
+  "kinds": [
+   "add-param"
+  ],
+  "go_files": 16,
+  "churn": 310,
+  "packages": 190,
+  "files": 733
+ },
+ {
+  "repo": "boundary",
+  "sha": "dd2c3807cde9f8fc541986191fbeffa64238bcee",
+  "subject": "refactor: Move functions from kms pkg to new libs/crypto pkg (#1650)",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 16,
+  "churn": 787,
+  "packages": 154,
+  "files": 587
+ },
+ {
+  "repo": "boundary",
+  "sha": "21033a61744741e780ce55a6e12ae9a4eeb7e2a8",
+  "subject": "Refactor: multiple rename to fix the spelling of subtype (#1227)",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 16,
+  "churn": 160,
+  "packages": 125,
+  "files": 453
+ },
+ {
+  "repo": "boundary",
+  "sha": "a16033b73a96a9655ab63f8b51c147b7f301a09e",
+  "subject": "fix (kms): move oplog DEK into its own internal kms (#3665)",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 24,
+  "churn": 1423,
+  "packages": 229,
+  "files": 966
+ },
+ {
+  "repo": "boundary",
+  "sha": "eb61ac63045d6690f50565c9d48b36ef1669b78a",
+  "subject": "refact(session): Add context to session factory",
+  "kinds": [
+   "add-param"
+  ],
+  "go_files": 25,
+  "churn": 156,
+  "packages": 192,
+  "files": 739
+ },
+ {
+  "repo": "boundary",
+  "sha": "401493d2259cd30dc3ff127a06a013754cff9416",
+  "subject": "test(e2e): Rename test packages (#3334)",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 26,
+  "churn": 52,
+  "packages": 228,
+  "files": 962
+ },
+ {
+  "repo": "boundary",
+  "sha": "9354a4ebcf72dad8a9b119af5ca94797d7238bd0",
+  "subject": "refactor(scheduler): Add statusThreshold parameter to job.Run",
+  "kinds": [
+   "add-param"
+  ],
+  "go_files": 27,
+  "churn": 167,
+  "packages": 268,
+  "files": 1224
+ },
+ {
+  "repo": "boundary",
+  "sha": "b26814a3cc02d131e76b31fb17232743e57ba1d5",
+  "subject": "move user variables into globals (#2580)",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 39,
+  "churn": 215,
+  "packages": 200,
+  "files": 763
+ },
+ {
+  "repo": "boundary",
+  "sha": "9733a250fa26209b953146f7c0bd27b67cd50716",
+  "subject": "refact(event): move observability/event to event (#3704)",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 118,
+  "churn": 142,
+  "packages": 230,
+  "files": 966
+ },
+ {
+  "repo": "boundary",
+  "sha": "b58dada40d81084b4291d87e79e1f14a0364b6d4",
+  "subject": "Move the server daemons into their own package (#2061)",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 176,
+  "churn": 548,
+  "packages": 176,
+  "files": 684
+ },
+ {
+  "repo": "vault",
+  "sha": "cf48236a3c864d4b3cccd3ef7de21594f76a1a53",
+  "subject": "Move database connections map out to separate package (#21207)",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 5,
+  "churn": 243,
+  "packages": 225,
+  "files": 775
+ },
+ {
+  "repo": "vault",
+  "sha": "cbdf16c5a1d49310daa8398be0e2930ca0320853",
+  "subject": "Rebase #14178 / Add not_before_duration API parameter to Root/Intermediate CA generation (#15511)",
+  "kinds": [
+   "add-param"
+  ],
+  "go_files": 5,
+  "churn": 35,
+  "packages": 195,
+  "files": 691
+ },
+ {
+  "repo": "vault",
+  "sha": "e8015313dded4a2f5f7b4b72c7cc64b634eb4475",
+  "subject": "Add a new parameter \"allowed_managed_keys\" to mount config (#13202)",
+  "kinds": [
+   "add-param"
+  ],
+  "go_files": 5,
+  "churn": 137,
+  "packages": 195,
+  "files": 663
+ },
+ {
+  "repo": "vault",
+  "sha": "45b0179aa56b667c849ca95360ec48adbe08637b",
+  "subject": "[VAULT-3157] Move `mergeStates` utils from Agent to api module (#12731)",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 5,
+  "churn": 381,
+  "packages": 193,
+  "files": 655
+ },
+ {
+  "repo": "vault",
+  "sha": "4b7250e3c1c650edc34cfa43925bced83bdd6944",
+  "subject": "Add role parameter to restrict issuance of wildcard certificates (#14238)",
+  "kinds": [
+   "add-param"
+  ],
+  "go_files": 6,
+  "churn": 580,
+  "packages": 195,
+  "files": 677
+ },
+ {
+  "repo": "vault",
+  "sha": "6dc69291bf05b85d82bcca5978b33296d1fbb254",
+  "subject": "identity (CE): Persist conflict resolution after rename (#29471)",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 7,
+  "churn": 324,
+  "packages": 244,
+  "files": 922
+ },
+ {
+  "repo": "vault",
+  "sha": "bcd89f875d88e0a01f2e6f9220f6d72afb5661b2",
+  "subject": "move system view interface, grpc server, and client to stubs_oss files (#29291)",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 7,
+  "churn": 341,
+  "packages": 244,
+  "files": 918
+ },
+ {
+  "repo": "vault",
+  "sha": "925702de10d83a895a8caa75efc10d67708d4e55",
+  "subject": "events: Add full `api_path`; rename Send (#22487)",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 7,
+  "churn": 287,
+  "packages": 227,
+  "files": 794
+ },
+ {
+  "repo": "vault",
+  "sha": "2f4fe5345a0997cba6c69d1ca40e7795022c2734",
+  "subject": "Backport fix: add timeout context around UpdateUser to prevent static role rotation hang into ce/main (#13971)",
+  "kinds": [
+   "add-param"
+  ],
+  "go_files": 8,
+  "churn": 440,
+  "packages": 268,
+  "files": 988
+ },
+ {
+  "repo": "vault",
+  "sha": "7ec1fe75a98eae3655c32415d03cf4b5372f158b",
+  "subject": "Move cluster logic out of vault package (#6601)",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 8,
+  "churn": 761,
+  "packages": 146,
+  "files": 515
+ },
+ {
+  "repo": "vault",
+  "sha": "cd7b17c65f4aa351feff345e2839a5238f76d514",
+  "subject": "PKI: JKS param rename (#15004) (#15026)",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 9,
+  "churn": 62,
+  "packages": 270,
+  "files": 994
+ },
+ {
+  "repo": "vault",
+  "sha": "95b24f55a9c346650e93b261ac7f61348c9ac8fd",
+  "subject": "Rename PKI health check helpers  (#18017)",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 9,
+  "churn": 28,
+  "packages": 204,
+  "files": 724
+ }
+]
