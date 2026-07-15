@@ -182,3 +182,45 @@ should show on the weak tier (gpt-oss-20b at low effort, Qwen3.6-27B,
 GLM-Flash at Q2), because that is the population ago exists for.
 Coder-Next is the model that will make ago look most fluent; the small
 dense models are the ones that will make it look most necessary.
+
+## Bench roster
+
+The models to run, by tier and role. Guy's calls (2026-07-15): gpt-oss
+definite, DeepSeek probable, a generalist arm wanted, an 8B floor cell
+added.
+
+| tier | model | role |
+|---|---|---|
+| floor (~8B, any laptop) | Qwen3.6-8B (fall back Qwen3.5-8B) | floor-finding: where does the protocol stop working at all |
+| low (R9700 class) | Qwen3.6-27B MTP | the weak-choreography population, thesis home ground |
+| low | gpt-oss-20b | definite; effort dial gives three cells from one model, 20b-low is the weakest reliable tool-caller |
+| low | GLM-4.7-Flash | incumbent, continuity with existing results |
+| low | Gemma 4 (31B dense or 26B MoE) | generalist arm: tool mechanics without coding-agent post-training |
+| low, optional | Devstral Small 2 (24B) | adversarial control at small scale |
+| high (128GB Mac) | gpt-oss-120b | definite |
+| high | Qwen3-Coder-Next (80B-A3B) | predicted best responder; the most informative high cell |
+| high, exploratory | DeepSeek V4 Flash via ds4 | probable; 2-bit through a beta engine, so engine artifacts and model results are hard to separate |
+| high, gated | Devstral 2 123B | adversarial control; runs only after the decode-speed check, k set by it |
+
+Roster notes:
+
+- **The 8B cell is scored separately.** Raw mode there is a near-certain
+  zero, so any semantic pass is the strongest single datapoint the
+  bench can produce, and zero-vs-zero is expected noise otherwise.
+  Smoke one episode before committing a k; if the floor turns out to be
+  above 8B, report the floor as the finding. This is also where the
+  coarse-op arm and grammar constraints matter most.
+- **The Qwen picks form a within-family scale curve** (8B, 27B,
+  80B-A3B): same tokenizer and tool-format lineage, so model size stops
+  being confounded with model family. That is why the floor cell is a
+  Qwen and not Gemma 4 E4B, which would double up with the generalist
+  arm.
+- **Gemma 4 reverses this dir's earlier exclusion.** The README ruled
+  Gemma out on Gemma 3 evidence (6.6% on tau2-bench retail); Gemma 4
+  posts 86.4% with native function-calling tokens, structured output,
+  and Apache 2.0. As the only roster model with no coding-agent
+  post-training, it isolates protocol fluency from agentic training.
+- **Fill order when time-boxed:** GLM (wired) → gpt-oss-20b →
+  Qwen3.6-27B → gpt-oss-120b → Coder-Next → Gemma 4 → DeepSeek →
+  Devstral pair → 8B floor cell last. Thesis population and the two
+  definites first, exploratory and floor cells after.
