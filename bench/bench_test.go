@@ -152,6 +152,7 @@ func episode(b *testing.B, c config, t Manifest, mode string, iter int) bool {
 	start := time.Now()
 	ctx, cancel := context.WithTimeout(context.Background(), c.cap)
 	agentOut, agentErr := runAgent(ctx, c, wt, t.Prompt)
+	timedOut := ctx.Err() == context.DeadlineExceeded
 	cancel()
 	wall := time.Since(start)
 	b.StopTimer()
@@ -162,7 +163,7 @@ func episode(b *testing.B, c config, t Manifest, mode string, iter int) bool {
 	res["iter"] = iter
 	res["prompt"] = t.Prompt
 	res["wall_s"] = wall.Seconds()
-	res["capped"] = ctx.Err() != nil
+	res["capped"] = timedOut
 	res["agent_error"] = agentErr != nil
 	record(c, epDir, wt, agentOut, res)
 	pass, _ := res["pass"].(bool)
