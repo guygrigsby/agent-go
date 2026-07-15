@@ -202,6 +202,7 @@ func (s *Snapshot) patchComposable(env patchEnvelope, names []string) (map[strin
 		ctx.opIndex = i + 1
 		resolved, rej := ctx.resolveArgRefs(raw)
 		if rej != nil {
+			ctx.cleanupCreatedFiles()
 			return nil, rej
 		}
 		op := opRegistry[names[i]]()

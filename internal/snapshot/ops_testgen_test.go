@@ -284,6 +284,39 @@ func TestPatchCreatedFileRolledBack(t *testing.T) {
 	}
 }
 
+// TestPatchCreatedFileRolledBackOnBadRef is a variant of
+// TestPatchCreatedFileRolledBack: add_test creates lib_test.go, then the
+// second op's resolveArgRefs fails on an unknown $ref (before add_test_case
+// is even applied), leaving the created file behind. The fix ensures
+// ctx.cleanupCreatedFiles() runs at the resolveArgRefs rejection path.
+func TestPatchCreatedFileRolledBackOnBadRef(t *testing.T) {
+	s := demo(t)
+	_, err := s.Patch([]byte(`{"pkg":"demo/lib","ops":[
+		{"op":"add_test","target":"Double"},
+		{"op":"add_test_case","test":"TestDouble","at":"$1","name":"x","args":["1"],"want":["2"]}
+	]}`))
+	rej, ok := err.(*Reject)
+	if !ok {
+		t.Fatalf("want reject, got %v", err)
+	}
+	if !strings.Contains(rej.Reason, "$ref") && !strings.Contains(rej.Detail, "$ref") {
+		t.Fatalf("got reason %q detail %q; want $ref error", rej.Reason, rej.Detail)
+	}
+	testFile := filepath.Join(s.dir, "lib", "lib_test.go")
+	if _, statErr := os.Stat(testFile); statErr == nil {
+		t.Errorf("rejected patch left lib_test.go behind")
+	} else if !os.IsNotExist(statErr) {
+		t.Fatalf("stat lib_test.go: %v", statErr)
+	}
+	st, err := s.Status()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if diags, _ := st["errors"].([]Diagnostic); len(diags) != 0 {
+		t.Errorf("follow-up Status shows errors: %v", diags)
+	}
+}
+
 // TestAddTestPreexistingRotNotBlamed is Task 10 review Fix 3: a package
 // with pre-existing rot elsewhere in the package must not have that rot
 // blamed on the newly generated test. Before the fix, add_test's new-file
