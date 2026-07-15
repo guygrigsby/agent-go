@@ -67,10 +67,22 @@ mutation. Those counters are the difference between "semantic mode
 lost on GLM" and "GLM never recovered from unknown-handle rejections",
 and the second sentence is the one that drives protocol changes.
 
-Token accounting rides along: pull usage from opencode's JSON output if
-present, else scrape the server (`/metrics` on llama-server, usage
-fields on ds4). Tokens in/out per episode belong in episodes.jsonl;
+Token accounting rides along, and the source question is settled:
+opencode records per-assistant-message `tokens` (input, output,
+reasoning, cache read/write) and cost in its sqlite db (verified
+locally against a GLM-4.7-Flash message). The bench redirects
+XDG_CONFIG_HOME but not data, so the db is queryable by session id
+after each episode; the `--format json` event stream likely carries the
+same message objects, confirm on the next smoke run. No server-side
+scraping needed. Tokens in/out per episode belong in episodes.jsonl;
 time under a cap is only half the cost story on local hardware.
+
+Placement, per Guy's call: the daemon request log is a flag, off by
+default; always-on is too expensive. Not a bench-only flag though, a
+general daemon option (`log requests to <path>`), since an op-level
+audit trail has uses beyond the bench (debugging agent sessions,
+post-hoc "what did the agent actually do" review). The bench sets it
+per workspace and collects the file at scoring time.
 
 ## 4. Scoring: pluggable predicates and an oracle arm
 
@@ -121,6 +133,35 @@ numbers ever matter (publication), adopt SWE-rebench's answer: mine
 commits newer than the model's cutoff, which our miner already supports
 by construction (it takes a repo and a date range).
 
+## Harness: opencode stays primary, Pi is the sensitivity check
+
+Both candidates are installed and both record per-message token usage
+in inspectable local files (opencode: sqlite db; Pi: session JSONL with
+`usage` per entry, verified locally on both). The comparison:
+
+- **opencode** is wired, MCP-native (the semantic arm's ago tools drop
+  in), and its purity problems are already solved and paid for (tool
+  denylist, XDG isolation, the round-3 skill-leak fix). Continuity with
+  recorded results argues for keeping it as the primary driver.
+- **Pi** (0.80.2, already serving Qwen locally here) makes purity
+  first-class on the CLI: `--no-tools`, `--tools` allowlist,
+  `-ne -ns -nc -na` kill extensions, skills, context files, and
+  project-local config per invocation, no config-file dance. It also
+  exposes `--thinking off..xhigh` per run, which maps directly onto the
+  thinking/effort bench axis, and `--mode json`/`--mode rpc` for
+  programmatic driving. The catch: no built-in MCP; ago's tools would
+  arrive via a small TypeScript extension (registering tools that call
+  the ago CLI), which is real if modest work and a second toolchain in
+  the repo.
+
+Proposal: don't switch, add. Keep opencode as the primary harness; once
+multi-model rounds produce a stable result on one task kind, rerun a
+subset (one model, rename round) under Pi as a harness-sensitivity
+check. If the mode margin survives a harness swap, it is a protocol
+result, not an opencode artifact; that is the same logic as the oracle
+arm, applied to the driver. The Pi extension for ago is the
+prerequisite and can wait until then.
+
 ## What not to build, after looking outside
 
 - **Harbor / Terminal-Bench** (containerized agent evals, parallel
@@ -158,13 +199,16 @@ by construction (it takes a repo and a date range).
 
 ## Open questions
 
-- Does opencode's `--format json` output carry token usage per message?
-  Determines whether token accounting needs server-side scraping.
-- Where does the daemon request log live: always-on ring buffer in the
-  daemon, or a bench-only flag? Always-on is more useful (users get an
-  audit trail) but needs a size cap.
 - Is one canary probe per episode enough for GLM, or does the wedge
   strike mid-episode often enough to need a mid-episode heartbeat?
+- Does opencode's `--format json` event stream include the message
+  token fields, or does the bench query the sqlite db by session id?
+  Either works (the db is confirmed); pick on the next smoke run.
+
+Resolved (Guy, 2026-07-15): daemon request log is a general daemon
+flag, off by default, not always-on and not bench-only. Token usage is
+recorded by both candidate harnesses locally; no server scraping.
+Harness: opencode primary, Pi as a later sensitivity check.
 
 ## References
 
