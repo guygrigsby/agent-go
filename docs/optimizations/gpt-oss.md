@@ -2,7 +2,7 @@
 
 Brainstorm: optimizations specific to running the ago language against
 OpenAI's gpt-oss open-weight models served locally. Same framing as
-deepseek.md and gml4.7-flash.md: levers only, no protocol changes,
+deepseek.md and glm4.7-flash.md: levers only, no protocol changes,
 ranked at the end. gpt-oss brings a different set of constraints than
 either: a hard-required response format (harmony), native tool-calling
 training, one fixed quantization, and a reasoning-effort dial the other
