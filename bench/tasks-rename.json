@@ -98,7 +98,7 @@
   "kind": "rename",
   "prompt": "Rename router to receiver for secondary connections",
   "go_files": 5,
-  "needs_review": "subject names router-\u003ereceiver but no declaration found in diff"
+  "needs_review": "subject names router->receiver but no declaration found in diff"
  },
  {
   "repo": "boundary",
@@ -181,7 +181,7 @@
   "kind": "rename",
   "prompt": "Rename refresh token errors to list error",
   "go_files": 9,
-  "needs_review": "subject names refresh-\u003eken but no declaration found in diff"
+  "needs_review": "subject names refresh->ken but no declaration found in diff"
  },
  {
   "repo": "boundary",
@@ -237,7 +237,7 @@
   "kind": "rename",
   "prompt": "internal/cmd: rename ferry to client-agent",
   "go_files": 13,
-  "needs_review": "subject names ferry-\u003eclient but no declaration found in diff"
+  "needs_review": "subject names ferry->client but no declaration found in diff"
  },
  {
   "repo": "boundary",
@@ -331,7 +331,7 @@
   "kind": "rename",
   "prompt": "Rename functions referencing \"enterprise tokens\" for readability/clarity (#15193)",
   "go_files": 13,
-  "renames": [
+  "renames_blocked": [
    {
     "pkg": "github.com/hashicorp/vault/vault",
     "sym": "Core.materializeEnterpriseTokenForUsage",
@@ -372,7 +372,8 @@
     "sym": "Request.EnterpriseTokenTransaction",
     "to": "JwtTransactionClaim"
    }
-  ]
+  ],
+  "needs_review": "specs span the sdk/ nested module; engine is single-module (go.work gap)"
  },
  {
   "repo": "vault",
@@ -380,7 +381,7 @@
   "kind": "rename",
   "prompt": "Rename master key to root key",
   "go_files": 22,
-  "renames": [
+  "renames_blocked": [
    {
     "pkg": "github.com/hashicorp/vault/vault/seal",
     "sym": "StoredKeysSupportedShamirMaster",
@@ -421,6 +422,7 @@
     "sym": "masterKeyPath",
     "to": "rootKeyPath"
    }
-  ]
+  ],
+  "needs_review": "interface method + impls must rename atomically; needs a batch/transaction op"
  }
 ]

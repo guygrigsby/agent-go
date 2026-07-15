@@ -244,7 +244,10 @@ func (s *Snapshot) references(obj types.Object) []refInfo {
 	seen := map[string]bool{}
 	var refs []refInfo
 	for _, p := range s.pkgs {
-		if p.TypesInfo == nil {
+		// Test-main packages hold generated registration code in the build
+		// cache; their references are synthetic and regenerate on the next
+		// go test.
+		if p.TypesInfo == nil || strings.HasSuffix(p.ID, ".test") {
 			continue
 		}
 		add := func(idPos token.Pos, o types.Object, def bool) {

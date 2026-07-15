@@ -43,6 +43,22 @@ op catalog. Status as of 2026-07-14 night.
 5. Bench prep extractors for add-param and move kinds, mirroring
    prep-rename's confirm-against-ground-truth approach.
 
+## Gaps found by the oracle pass (2026-07-15)
+
+Executing every manifest spec through ago surfaced, in order of discovery:
+pre-existing rot must not block unrelated mutations (fixed: scoped
+preflight); test-forked dependency copies must be in the reverse graph or
+splices leave stale type identities (fixed); generated test-main packages
+must be ignored by references (fixed); _test.go symbols need test-variant
+lookup (fixed). Two remain open and each blocks one bench task:
+
+- Multi-module repos: vault's sdk/ is a nested module; the engine loads one
+  module. go.work-style multi-root loading is the fix.
+- Atomic multi-rename: renaming an interface method requires renaming its
+  implementations in the same validated transaction; one-at-a-time rename
+  correctly rejects the intermediate broken states. A batch op fixes this
+  and matches zerolang's multi-op patches.
+
 ## Open questions
 
 - Cap: is 10m right? Raw capping is signal, not noise, but the cap must
