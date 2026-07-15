@@ -1,0 +1,24 @@
+{
+ "agent_error": false,
+ "capped": false,
+ "iter": 0,
+ "mode": "semantic",
+ "new_errors": null,
+ "pass": false,
+ "predicate": true,
+ "prompt": "Rename SealInfo to SealWrapper.",
+ "specs": [
+  {
+   "baseline_refs": 30,
+   "new_refs": 30,
+   "ok": true,
+   "old_refs_left": 0,
+   "sym": "github.com/hashicorp/vault/vault/seal.SealInfo",
+   "to": "SealWrapper"
+  }
+ ],
+ "task": "vault_caec65a7",
+ "tests": false,
+ "typecheck": true,
+ "wall_s": 114.984596791
+}

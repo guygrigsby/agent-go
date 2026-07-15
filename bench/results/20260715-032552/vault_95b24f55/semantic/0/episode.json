@@ -1,0 +1,40 @@
+{
+ "agent_error": false,
+ "capped": false,
+ "iter": 0,
+ "mode": "semantic",
+ "new_errors": null,
+ "pass": true,
+ "predicate": true,
+ "prompt": "Rename PKI health check helpers\n\nSpecifically, rename: pkiFetchIssuers -\u003e pkiFetchIssuersList; pkiFetchLeaves -\u003e pkiFetchLeavesList; pkiFetchRoles -\u003e pkiFetchRolesList",
+ "specs": [
+  {
+   "baseline_refs": 5,
+   "new_refs": 5,
+   "ok": true,
+   "old_refs_left": 0,
+   "sym": "github.com/hashicorp/vault/command/healthcheck.pkiFetchIssuers",
+   "to": "pkiFetchIssuersList"
+  },
+  {
+   "baseline_refs": 4,
+   "new_refs": 4,
+   "ok": true,
+   "old_refs_left": 0,
+   "sym": "github.com/hashicorp/vault/command/healthcheck.pkiFetchLeaves",
+   "to": "pkiFetchLeavesList"
+  },
+  {
+   "baseline_refs": 4,
+   "new_refs": 4,
+   "ok": true,
+   "old_refs_left": 0,
+   "sym": "github.com/hashicorp/vault/command/healthcheck.pkiFetchRoles",
+   "to": "pkiFetchRolesList"
+  }
+ ],
+ "task": "vault_95b24f55",
+ "tests": true,
+ "typecheck": true,
+ "wall_s": 138.485468042
+}

@@ -1,0 +1,24 @@
+{
+ "agent_error": false,
+ "capped": false,
+ "iter": 0,
+ "mode": "semantic",
+ "new_errors": null,
+ "pass": true,
+ "predicate": true,
+ "prompt": "refact(e2e): Rename credential methods for clarity\n\nSpecifically, rename: CreateStaticCredentialPasswordCli -\u003e CreateStaticCredentialUsernamePasswordCli",
+ "specs": [
+  {
+   "baseline_refs": 9,
+   "new_refs": 9,
+   "ok": true,
+   "old_refs_left": 0,
+   "sym": "github.com/hashicorp/boundary/testing/internal/e2e/boundary.CreateStaticCredentialPasswordCli",
+   "to": "CreateStaticCredentialUsernamePasswordCli"
+  }
+ ],
+ "task": "boundary_06d69f69",
+ "tests": true,
+ "typecheck": true,
+ "wall_s": 86.704122208
+}

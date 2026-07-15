@@ -1,0 +1,28 @@
+{
+ "agent_error": true,
+ "capped": true,
+ "iter": 0,
+ "mode": "raw",
+ "new_errors": [
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenamevault_caec65a7raw1977783620/001/vault/vault/seal/seal.go:446:23|a.GetAllSealInfoByPriority undefined (type *access has no field or method GetAllSealInfoByPriority)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenamevault_caec65a7raw1977783620/001/vault/vault/seal/seal.go:466:23|a.GetAllSealInfoByPriority undefined (type *access has no field or method GetAllSealInfoByPriority)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenamevault_caec65a7raw1977783620/001/vault/vault/seal/seal.go:520:23|a.GetAllSealInfoByPriority undefined (type *access has no field or method GetAllSealInfoByPriority)"
+ ],
+ "pass": false,
+ "predicate": true,
+ "prompt": "Rename SealInfo to SealWrapper.",
+ "specs": [
+  {
+   "baseline_refs": 30,
+   "new_refs": 30,
+   "ok": true,
+   "old_refs_left": 0,
+   "sym": "github.com/hashicorp/vault/vault/seal.SealInfo",
+   "to": "SealWrapper"
+  }
+ ],
+ "task": "vault_caec65a7",
+ "tests": false,
+ "typecheck": false,
+ "wall_s": 1200.010567375
+}

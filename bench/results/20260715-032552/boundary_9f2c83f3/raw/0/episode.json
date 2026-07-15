@@ -1,0 +1,128 @@
+{
+ "agent_error": false,
+ "capped": false,
+ "iter": 0,
+ "mode": "raw",
+ "new_errors": null,
+ "pass": false,
+ "predicate": false,
+ "prompt": "refact(bsr): Rename const to denote when interpolation is needed\n\nSpecifically, rename: pubKeySelfSignatureFile -\u003e pubKeySelfSignatureFileName; pubKeyBsrSignatureFile -\u003e pubKeyBsrSignatureFileName; wrappedPrivKeyFile -\u003e wrappedPrivKeyFileName; wrappedBsrKeyFile -\u003e wrappedBsrKeyFileName; sessionMetaFile -\u003e sessionMetaFileName; connectionFile -\u003e connectionFileNameTemplate; bsrPubKeyFile -\u003e bsrPubKeyFileName; messagesFile -\u003e messagesFileNameTemplate; requestsFile -\u003e requestsFileNameTemplate; checksumFile -\u003e checksumFileName; channelFile -\u003e channelFileNameTemplate; metaFile -\u003e metaFileNameTemplate; bsrFile -\u003e bsrFileNameTemplate; sigFile -\u003e sigFileName",
+ "specs": [
+  {
+   "baseline_refs": 3,
+   "new_refs": 0,
+   "ok": false,
+   "old_refs_left": 3,
+   "sym": "github.com/hashicorp/boundary/internal/bsr.pubKeySelfSignatureFile",
+   "to": "pubKeySelfSignatureFileName"
+  },
+  {
+   "baseline_refs": 3,
+   "new_refs": 0,
+   "ok": false,
+   "old_refs_left": 3,
+   "sym": "github.com/hashicorp/boundary/internal/bsr.pubKeyBsrSignatureFile",
+   "to": "pubKeyBsrSignatureFileName"
+  },
+  {
+   "baseline_refs": 3,
+   "new_refs": 0,
+   "ok": false,
+   "old_refs_left": 3,
+   "sym": "github.com/hashicorp/boundary/internal/bsr.wrappedPrivKeyFile",
+   "to": "wrappedPrivKeyFileName"
+  },
+  {
+   "baseline_refs": 3,
+   "new_refs": 0,
+   "ok": false,
+   "old_refs_left": 3,
+   "sym": "github.com/hashicorp/boundary/internal/bsr.wrappedBsrKeyFile",
+   "to": "wrappedBsrKeyFileName"
+  },
+  {
+   "baseline_refs": 4,
+   "new_refs": 0,
+   "ok": false,
+   "old_refs_left": 4,
+   "sym": "github.com/hashicorp/boundary/internal/bsr.sessionMetaFile",
+   "to": "sessionMetaFileName"
+  },
+  {
+   "baseline_refs": 3,
+   "new_refs": 0,
+   "ok": false,
+   "old_refs_left": 3,
+   "sym": "github.com/hashicorp/boundary/internal/bsr.connectionFile",
+   "to": "connectionFileNameTemplate"
+  },
+  {
+   "baseline_refs": 3,
+   "new_refs": 0,
+   "ok": false,
+   "old_refs_left": 3,
+   "sym": "github.com/hashicorp/boundary/internal/bsr.bsrPubKeyFile",
+   "to": "bsrPubKeyFileName"
+  },
+  {
+   "baseline_refs": 4,
+   "new_refs": 0,
+   "ok": false,
+   "old_refs_left": 4,
+   "sym": "github.com/hashicorp/boundary/internal/bsr.messagesFile",
+   "to": "messagesFileNameTemplate"
+  },
+  {
+   "baseline_refs": 4,
+   "new_refs": 0,
+   "ok": false,
+   "old_refs_left": 4,
+   "sym": "github.com/hashicorp/boundary/internal/bsr.requestsFile",
+   "to": "requestsFileNameTemplate"
+  },
+  {
+   "baseline_refs": 3,
+   "new_refs": 0,
+   "ok": false,
+   "old_refs_left": 3,
+   "sym": "github.com/hashicorp/boundary/internal/bsr.checksumFile",
+   "to": "checksumFileName"
+  },
+  {
+   "baseline_refs": 3,
+   "new_refs": 0,
+   "ok": false,
+   "old_refs_left": 3,
+   "sym": "github.com/hashicorp/boundary/internal/bsr.channelFile",
+   "to": "channelFileNameTemplate"
+  },
+  {
+   "baseline_refs": 3,
+   "new_refs": 0,
+   "ok": false,
+   "old_refs_left": 3,
+   "sym": "github.com/hashicorp/boundary/internal/bsr.metaFile",
+   "to": "metaFileNameTemplate"
+  },
+  {
+   "baseline_refs": 4,
+   "new_refs": 0,
+   "ok": false,
+   "old_refs_left": 4,
+   "sym": "github.com/hashicorp/boundary/internal/bsr.bsrFile",
+   "to": "bsrFileNameTemplate"
+  },
+  {
+   "baseline_refs": 3,
+   "new_refs": 0,
+   "ok": false,
+   "old_refs_left": 3,
+   "sym": "github.com/hashicorp/boundary/internal/bsr.sigFile",
+   "to": "sigFileName"
+  }
+ ],
+ "task": "boundary_9f2c83f3",
+ "tests": false,
+ "typecheck": true,
+ "wall_s": 301.578100458
+}

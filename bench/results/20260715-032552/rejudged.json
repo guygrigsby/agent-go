@@ -1,0 +1,185 @@
+{
+ "waived_reason": "scoped tests fail on pristine parent (env-dependent suites)",
+ "episodes": [
+  {
+   "task": "traefik_51491463",
+   "mode": "raw",
+   "pass": true,
+   "tests_waived": false,
+   "wall_s": 802.6,
+   "predicate": true,
+   "typecheck": true,
+   "capped": false
+  },
+  {
+   "task": "traefik_51491463",
+   "mode": "semantic",
+   "pass": false,
+   "tests_waived": false,
+   "wall_s": 1200.0,
+   "predicate": false,
+   "typecheck": true,
+   "capped": true
+  },
+  {
+   "task": "boundary_9f2c83f3",
+   "mode": "raw",
+   "pass": false,
+   "tests_waived": false,
+   "wall_s": 301.6,
+   "predicate": false,
+   "typecheck": true,
+   "capped": false
+  },
+  {
+   "task": "boundary_9f2c83f3",
+   "mode": "semantic",
+   "pass": true,
+   "tests_waived": false,
+   "wall_s": 689.1,
+   "predicate": true,
+   "typecheck": true,
+   "capped": false
+  },
+  {
+   "task": "boundary_c0532428",
+   "mode": "raw",
+   "pass": true,
+   "tests_waived": true,
+   "wall_s": 362.9,
+   "predicate": true,
+   "typecheck": true,
+   "capped": false
+  },
+  {
+   "task": "boundary_c0532428",
+   "mode": "semantic",
+   "pass": false,
+   "tests_waived": true,
+   "wall_s": 1200.0,
+   "predicate": false,
+   "typecheck": true,
+   "capped": true
+  },
+  {
+   "task": "boundary_caf19f86",
+   "mode": "raw",
+   "pass": true,
+   "tests_waived": true,
+   "wall_s": 817.9,
+   "predicate": true,
+   "typecheck": true,
+   "capped": false
+  },
+  {
+   "task": "boundary_caf19f86",
+   "mode": "semantic",
+   "pass": true,
+   "tests_waived": true,
+   "wall_s": 159.4,
+   "predicate": true,
+   "typecheck": true,
+   "capped": false
+  },
+  {
+   "task": "boundary_06d69f69",
+   "mode": "raw",
+   "pass": true,
+   "tests_waived": false,
+   "wall_s": 333.3,
+   "predicate": true,
+   "typecheck": true,
+   "capped": false
+  },
+  {
+   "task": "boundary_06d69f69",
+   "mode": "semantic",
+   "pass": true,
+   "tests_waived": false,
+   "wall_s": 86.7,
+   "predicate": true,
+   "typecheck": true,
+   "capped": false
+  },
+  {
+   "task": "boundary_35b91c66",
+   "mode": "raw",
+   "pass": false,
+   "tests_waived": false,
+   "wall_s": 1200.0,
+   "predicate": false,
+   "typecheck": false,
+   "capped": true
+  },
+  {
+   "task": "boundary_35b91c66",
+   "mode": "semantic",
+   "pass": false,
+   "tests_waived": false,
+   "wall_s": 1200.0,
+   "predicate": false,
+   "typecheck": true,
+   "capped": true
+  },
+  {
+   "task": "boundary_9237d6f7",
+   "mode": "raw",
+   "pass": true,
+   "tests_waived": false,
+   "wall_s": 1165.2,
+   "predicate": true,
+   "typecheck": true,
+   "capped": false
+  },
+  {
+   "task": "boundary_9237d6f7",
+   "mode": "semantic",
+   "pass": false,
+   "tests_waived": false,
+   "wall_s": 1200.0,
+   "predicate": false,
+   "typecheck": true,
+   "capped": true
+  },
+  {
+   "task": "vault_95b24f55",
+   "mode": "raw",
+   "pass": true,
+   "tests_waived": false,
+   "wall_s": 467.5,
+   "predicate": true,
+   "typecheck": true,
+   "capped": false
+  },
+  {
+   "task": "vault_95b24f55",
+   "mode": "semantic",
+   "pass": true,
+   "tests_waived": false,
+   "wall_s": 138.5,
+   "predicate": true,
+   "typecheck": true,
+   "capped": false
+  },
+  {
+   "task": "vault_caec65a7",
+   "mode": "raw",
+   "pass": false,
+   "tests_waived": true,
+   "wall_s": 1200.0,
+   "predicate": true,
+   "typecheck": false,
+   "capped": true
+  },
+  {
+   "task": "vault_caec65a7",
+   "mode": "semantic",
+   "pass": true,
+   "tests_waived": true,
+   "wall_s": 115.0,
+   "predicate": true,
+   "typecheck": true,
+   "capped": false
+  }
+ ]
+}
