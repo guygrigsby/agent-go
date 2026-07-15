@@ -43,6 +43,10 @@ claims #1 open-source SWE-bench Verified). Same size class as DeepSeek
 V4 Flash, so viable only through the same aggressive selective-quant
 route; worth a doc if community quants prove out at ~80GB.
 
+Open before any Devstral 123B bench run: measure real decode t/s at Q4
+on the 128GB Mac first; that number decides whether the adversarial
+cell (devstral.md) gets k=3 or k=1.
+
 ## Cross-cutting note: the "weak at choreography" premise moved
 
 The bench thesis was framed against models that emit good code but
