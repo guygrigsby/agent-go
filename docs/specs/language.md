@@ -46,9 +46,11 @@ All from the typechecked snapshot (go/types tier); milliseconds.
 - `search {q}` — case-insensitive name fragment to exact addresses.
 - `inspect {pkg, sym}` — kind, signature, decl position, doc.
 - `refs {pkg, sym}` — every reference, tests included, defs marked.
-- `callers {pkg, sym}` / `callees {pkg, sym}` — call-graph edges from
-  types info (static calls; dynamic dispatch listed as candidates via
-  method sets).
+- `callers {pkg, sym}` / `callees {pkg, sym}` — static call-graph edges
+  from types info. A call through an interface reports the interface
+  method (query the interface method for its callers; `implementations`
+  bridges to concrete types). v1 ceiling: no method-set candidate
+  expansion for dynamic dispatch.
 - `implementations {pkg, sym}` — interface -> implementing types, or
   type -> interfaces satisfied.
 - `doc {pkg, sym}` — doc comment.
