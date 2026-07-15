@@ -4,7 +4,6 @@ import (
 	"go/ast"
 	"go/token"
 	"go/types"
-	"strings"
 
 	"golang.org/x/tools/go/packages"
 )
@@ -68,41 +67,31 @@ func (s *Snapshot) Callers(pkgPath, sym string) (map[string]any, error) {
 	if !ok {
 		return nil, &Reject{Reason: "symbol is not a function", Detail: objKind(obj)}
 	}
-	key := s.objKey(fn)
 	var hits []callerHit
 	seen := map[string]bool{}
-	for _, p := range s.pkgs {
-		if p.TypesInfo == nil || strings.HasSuffix(p.ID, ".test") {
-			continue
+	s.funcUses(fn, func(p *packages.Package, id *ast.Ident, pos token.Position, call *ast.CallExpr) {
+		if call == nil {
+			return // not call-shaped; refs is the query for value uses
 		}
-		for id, o := range p.TypesInfo.Uses {
-			if o == nil || o.Name() != fn.Name() || s.objKey(o) != key {
-				continue
-			}
-			call := enclosingCall(fileFor(p, id.Pos()), id)
-			if call == nil {
-				continue
-			}
-			callPos := p.Fset.Position(call.Pos())
-			if seen[callPos.String()] {
-				continue
-			}
-			decl, _ := enclosingFuncOf(p, call.Pos())
-			if decl == nil {
-				continue // call site not inside a named function (e.g. a var initializer)
-			}
-			seen[callPos.String()] = true
-			callerSym := decl.Name.Name
-			if recv := recvTypeName(decl); recv != "" {
-				callerSym = recv + "." + callerSym
-			}
-			hits = append(hits, callerHit{
-				Pkg: p.PkgPath, Sym: callerSym,
-				Pos:     p.Fset.Position(decl.Name.Pos()).String(),
-				CallPos: callPos.String(),
-			})
+		callPos := p.Fset.Position(call.Pos())
+		if seen[callPos.String()] {
+			return
 		}
-	}
+		decl, _ := enclosingFuncOf(p, call.Pos())
+		if decl == nil {
+			return // call site not inside a named function (e.g. a var initializer)
+		}
+		seen[callPos.String()] = true
+		callerSym := decl.Name.Name
+		if recv := recvTypeName(decl); recv != "" {
+			callerSym = recv + "." + callerSym
+		}
+		hits = append(hits, callerHit{
+			Pkg: p.PkgPath, Sym: callerSym,
+			Pos:     p.Fset.Position(decl.Name.Pos()).String(),
+			CallPos: callPos.String(),
+		})
+	})
 	return map[string]any{"status": "ok", "symbol": pkgPath + "." + sym,
 		"count": len(hits), "callers": hits, "load_ms": ms}, nil
 }

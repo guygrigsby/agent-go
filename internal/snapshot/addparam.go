@@ -205,14 +205,13 @@ type callSite struct {
 	pos  token.Position
 }
 
-// callSites splits every reference to fn into direct calls and value uses.
-// The definition itself is neither.
-func (s *Snapshot) callSites(fn *types.Func) ([]callSite, []Diagnostic) {
+// funcUses walks every workspace package's Uses map for identifiers
+// resolving to fn, resolving each to its enclosing CallExpr when the
+// reference is call-shaped (nil otherwise, meaning a value use). This is
+// the shared core behind callSites (add_param's call/value-use split) and
+// Callers (the query tier's call-graph edges).
+func (s *Snapshot) funcUses(fn *types.Func, visit func(p *packages.Package, id *ast.Ident, pos token.Position, call *ast.CallExpr)) {
 	key := s.objKey(fn)
-	var calls []callSite
-	var values []Diagnostic
-	seenCall := map[string]bool{}
-	seenVal := map[string]bool{}
 	for _, p := range s.pkgs {
 		if p.TypesInfo == nil {
 			continue
@@ -222,22 +221,34 @@ func (s *Snapshot) callSites(fn *types.Func) ([]callSite, []Diagnostic) {
 				continue
 			}
 			pos := p.Fset.Position(id.Pos())
-			if !strings.HasPrefix(pos.Filename, s.dir+string(os.PathSeparator)) {
-				continue
-			}
 			call := enclosingCall(fileFor(p, id.Pos()), id)
-			if call != nil {
-				if k := pos.String(); !seenCall[k] {
-					seenCall[k] = true
-					calls = append(calls, callSite{call, pos})
-				}
-			} else if k := pos.String(); !seenVal[k] {
-				seenVal[k] = true
-				values = append(values, Diagnostic{Pos: pos.String(),
-					Msg: "function referenced as a value"})
-			}
+			visit(p, id, pos, call)
 		}
 	}
+}
+
+// callSites splits every reference to fn into direct calls and value uses.
+// The definition itself is neither.
+func (s *Snapshot) callSites(fn *types.Func) ([]callSite, []Diagnostic) {
+	var calls []callSite
+	var values []Diagnostic
+	seenCall := map[string]bool{}
+	seenVal := map[string]bool{}
+	s.funcUses(fn, func(p *packages.Package, id *ast.Ident, pos token.Position, call *ast.CallExpr) {
+		if !strings.HasPrefix(pos.Filename, s.dir+string(os.PathSeparator)) {
+			return
+		}
+		if call != nil {
+			if k := pos.String(); !seenCall[k] {
+				seenCall[k] = true
+				calls = append(calls, callSite{call, pos})
+			}
+		} else if k := pos.String(); !seenVal[k] {
+			seenVal[k] = true
+			values = append(values, Diagnostic{Pos: pos.String(),
+				Msg: "function referenced as a value"})
+		}
+	})
 	return calls, values
 }
 
