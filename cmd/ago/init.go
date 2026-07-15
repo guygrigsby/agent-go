@@ -67,33 +67,80 @@ compiler before anything is written; a rejection tells you exactly why.
 
 ## Tools (MCP server "ago")
 
-- ago_status — load the workspace; reports packages, files, type errors
-- ago_search {query} — find symbols by name fragment; use this to turn a
-  name from a task into exact pkg and sym addresses
-- ago_inspect {pkg, sym} — kind, type signature, declaration position
-- ago_refs {pkg, sym} — every reference across the workspace, tests included
+Ten tools total. sym is Name for package-level symbols, Type.Method for
+methods and fields.
+
+- ago_status — load or refresh the workspace; reports packages, files,
+  type errors. No arguments.
+- ago_help — the full versioned op catalog: every patch op's argument
+  schema, one worked example, and its known ceilings. Call this before
+  using an op you haven't used yet.
+- ago_query {kind, pkg, sym, q} — semantic questions, dispatched by kind:
+  search (name fragment -> exact pkg/sym addresses, fragment in q),
+  inspect (kind, signature, decl position), refs (every reference, tests
+  included), callers / callees (static call-graph edges), implementations
+  (interface <-> concrete type, both directions), doc (doc comment).
+- ago_view {pkg, sym} — render a declaration as text. Functions and
+  methods get a per-statement nK: handle on each line plus a generation
+  counter; other declarations render as plain source.
+- ago_patch {pkg, sym, generation, dry_run, ops} — apply an ordered list of
+  ops as one atomic, generation-checked transaction: every op applies to
+  an in-memory copy, the dirty set re-typechecks once, then everything
+  writes together or nothing does. An op can reference a handle an earlier
+  op in the same list returned, as $1, $2, ... (1-based op index).
+  dry_run:true previews the outcome without writing. ago_help lists every
+  op; the four below are also reachable standalone, each as sugar for a
+  one-op patch.
+- ago_test {pkg, run} — run go test, scoped to a package and optionally
+  filtered by name; structured pass/fail, elapsed time, failure output.
+  Validation of mutations stays compiler-only — this is how you close the
+  behavior loop after a set of changes.
 - ago_rename {pkg, sym, to} — rename at every reference; rejected on
-  collision, capture, or type errors, and nothing is written
+  collision, capture, or type errors, and nothing is written.
 - ago_set_body {pkg, sym, body} — replace a function body (statements only,
-  no braces); rejected with compiler diagnostics if it does not typecheck
+  no braces); rejected with compiler diagnostics if it does not typecheck.
 - ago_add_param {pkg, sym, name, type, default} — append a parameter and
   update every call site with the default expression; rejected when the
-  function is used as a value
+  function is used as a value.
 - ago_upsert_decl {pkg, text} — add or replace one whole top-level
   declaration from source text; imports managed automatically; new package
-  paths under the module are created on demand
+  paths under the module are created on demand.
 
-sym is Name for package-level symbols, Type.Method for methods and fields.
+## A worked patch: two ops, one $1 reference
+
+ago_view {"pkg": "demo/lib", "sym": "Store.Put"} first, to read the current
+generation and get handles (nK:) for the statements to address. Then:
+
+    ago_patch {
+      "pkg": "demo/lib", "sym": "Store.Put", "generation": 14,
+      "ops": [
+        {"op": "add_if", "at": "n1", "where": "before", "cond": "v < 0"},
+        {"op": "add_return", "at": "$1", "where": "first", "exprs": ["ErrNegative"]}
+      ]
+    }
+
+op 1 inserts an empty "if v < 0 { }" before handle n1 and binds its
+then-block to $1; op 2 places a return statement first inside that block
+by addressing $1 instead of guessing the handle a re-view would assign.
+Both ops apply, retypecheck, and write as one unit, or neither does.
 
 ## Workflow
 
-1. ago_status to see the workspace.
-2. ago_search to find symbols, ago_inspect / ago_refs to understand them.
-3. Mutate with ago_rename / ago_set_body / ago_add_param / ago_upsert_decl.
-4. A rejection is data: read the diagnostics, adjust, retry.
+1. ago_status to see the workspace (auto-spawns the daemon on first call).
+2. ago_query kind=search to turn a task's names into exact pkg/sym
+   addresses; kind=inspect / refs to understand them.
+3. ago_view the target to get handles and its current generation.
+4. Compose an ago_patch against those handles and that generation — or use
+   a sugar tool (ago_rename / ago_set_body / ago_add_param /
+   ago_upsert_decl) for a single well-known edit.
+5. A rejection is data: read the diagnostics and did_you_mean, adjust,
+   retry. A "stale generation" rejection means re-view before retrying.
+6. ago_test to confirm behavior once the edits typecheck — typechecking is
+   not the same as correct.
 
-CLI equivalents exist for humans: ago status | inspect | refs | rename |
-set-body, plus ago stop to shut down the workspace daemon.
+CLI equivalents exist for humans: ago status | help | query | view | patch
+| test | rename | set-body | add-param | upsert, plus ago stop to shut
+down the workspace daemon.
 `,
 	}
 	for name, content := range files {

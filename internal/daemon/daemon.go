@@ -64,6 +64,8 @@ func handle(conn net.Conn, snap *snapshot.Snapshot) (stop bool) {
 	switch req.Op {
 	case "status":
 		res, err = snap.Status()
+	case "help":
+		res, err = snap.Help()
 	case "inspect":
 		res, err = snap.Inspect(req.Pkg, req.Sym)
 	case "view":

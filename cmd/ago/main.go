@@ -3,6 +3,7 @@
 // typechecked snapshot.
 //
 //	ago status   [-C dir]
+//	ago help     [-C dir]   (versioned op catalog: args, one example, notes per op)
 //	ago search   [-C dir] -s <name fragment>
 //	ago inspect  [-C dir] -p <pkgpath> -s <Name | Recv.Name>
 //	ago view     [-C dir] -p <pkgpath> -s <Name | Recv.Name>
@@ -37,7 +38,7 @@ import (
 
 func main() {
 	if len(os.Args) < 2 {
-		fail("usage: ago <init|status|search|inspect|view|refs|query|set-body|upsert|rename|add-param|patch|test|stop|mcp|daemon> [flags]")
+		fail("usage: ago <init|status|help|search|inspect|view|refs|query|set-body|upsert|rename|add-param|patch|test|stop|mcp|daemon> [flags]")
 	}
 	cmd, args := os.Args[1], os.Args[2:]
 	fs := flag.NewFlagSet(cmd, flag.ExitOnError)
@@ -101,7 +102,7 @@ func main() {
 	if cmd == "test" {
 		req.Sym = *run // wire reuses Sym as the -run filter, same as query's q
 	}
-	if cmd == "status" || cmd == "search" || cmd == "inspect" || cmd == "view" || cmd == "refs" || cmd == "query" || cmd == "set-body" || cmd == "upsert" || cmd == "rename" || cmd == "add-param" || cmd == "patch" || cmd == "test" || cmd == "stop" {
+	if cmd == "status" || cmd == "help" || cmd == "search" || cmd == "inspect" || cmd == "view" || cmd == "refs" || cmd == "query" || cmd == "set-body" || cmd == "upsert" || cmd == "rename" || cmd == "add-param" || cmd == "patch" || cmd == "test" || cmd == "stop" {
 		out, err := roundTrip(abs, req, cmd != "stop")
 		if err != nil {
 			fail("%v", err)
