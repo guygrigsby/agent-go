@@ -65,6 +65,10 @@ func runMCP(dir string) error {
 				"ops": map[string]any{"type": "array", "description": "the ops to apply, e.g. [{\"op\":\"rename\",\"to\":\"NewName\"}]",
 					"items": map[string]any{"type": "object"}},
 			})},
+		{"test", "Run `go test`, scoped to a package (default the whole workspace) and optionally filtered by name, and return structured per-test results: pass/fail, elapsed time, and captured output for failures. Validation of mutations stays compiler-only (rename, set_body, patch, ...); this is how you close the behavior loop after a set of changes.",
+			obj(nil, map[string]any{
+				"pkg": str("package import path to scope the run to; omit for the whole workspace"),
+				"run": str("test name filter, passed to go test's -run flag")})},
 	}
 
 	in := bufio.NewScanner(os.Stdin)
@@ -145,6 +149,16 @@ func mcpCall(dir, name string, args map[string]any) (string, bool) {
 			}
 		}
 		req := protocol.Request{Op: "query", Kind: get("kind"), Pkg: get("pkg"), Sym: sym}
+		out, err := roundTrip(dir, req, true)
+		if err != nil {
+			return fmt.Sprintf("ago error: %v", err), true
+		}
+		return out, false
+	}
+	if name == "test" {
+		// run maps to Sym, the same reuse the wire protocol already gives
+		// query's q and the daemon's -run filter.
+		req := protocol.Request{Op: "test", Pkg: get("pkg"), Sym: get("run")}
 		out, err := roundTrip(dir, req, true)
 		if err != nil {
 			return fmt.Sprintf("ago error: %v", err), true

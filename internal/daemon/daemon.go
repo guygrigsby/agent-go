@@ -84,6 +84,10 @@ func handle(conn net.Conn, snap *snapshot.Snapshot) (stop bool) {
 		res, err = snap.UpsertDecl(req.Pkg, req.Body)
 	case "add-param":
 		res, err = snap.AddParam(req.Pkg, req.Sym, req.Name, req.Type, req.Def)
+	case "test":
+		// Sym doubles as the -run filter — no separate wire field for it,
+		// the same reuse "query" already does for its q parameter.
+		res, err = snap.TestRun(req.Pkg, req.Sym)
 	case "patch":
 		raw, merr := json.Marshal(req)
 		if merr != nil {

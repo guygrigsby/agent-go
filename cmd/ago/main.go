@@ -13,6 +13,7 @@
 //	ago rename   [-C dir] -p <pkgpath> -s <Name | Recv.Name> -to <NewName>
 //	ago add-param [-C dir] -p <pkgpath> -s <Name | Recv.Name> -name <n> -type <T> [-default <expr>]
 //	ago patch    [-C dir] -body-file <f|->   (full patch envelope: pkg, sym, generation, dry_run, ops)
+//	ago test     [-C dir] [-p pkgpath] [-run <filter>]   (go test, scoped, structured results)
 //	ago init     [-C dir] [module-path]
 //	ago mcp      [-C dir]   (MCP server over stdio, for agent harnesses)
 //	ago stop     [-C dir]
@@ -36,7 +37,7 @@ import (
 
 func main() {
 	if len(os.Args) < 2 {
-		fail("usage: ago <init|status|search|inspect|view|refs|query|set-body|upsert|rename|add-param|patch|stop|mcp|daemon> [flags]")
+		fail("usage: ago <init|status|search|inspect|view|refs|query|set-body|upsert|rename|add-param|patch|test|stop|mcp|daemon> [flags]")
 	}
 	cmd, args := os.Args[1], os.Args[2:]
 	fs := flag.NewFlagSet(cmd, flag.ExitOnError)
@@ -50,6 +51,7 @@ func main() {
 	pdefault := fs.String("default", "", "argument expression for existing callers")
 	qkind := fs.String("kind", "", "query kind: search|inspect|refs|callers|callees|implementations|doc")
 	qfrag := fs.String("q", "", "query fragment (kind=search)")
+	run := fs.String("run", "", "test name filter (test op)")
 	fs.Parse(args)
 
 	abs, err := filepath.Abs(*dir)
@@ -96,7 +98,10 @@ func main() {
 			req.Sym = *qfrag // wire reuses Sym as q, same as the standalone search op
 		}
 	}
-	if cmd == "status" || cmd == "search" || cmd == "inspect" || cmd == "view" || cmd == "refs" || cmd == "query" || cmd == "set-body" || cmd == "upsert" || cmd == "rename" || cmd == "add-param" || cmd == "patch" || cmd == "stop" {
+	if cmd == "test" {
+		req.Sym = *run // wire reuses Sym as the -run filter, same as query's q
+	}
+	if cmd == "status" || cmd == "search" || cmd == "inspect" || cmd == "view" || cmd == "refs" || cmd == "query" || cmd == "set-body" || cmd == "upsert" || cmd == "rename" || cmd == "add-param" || cmd == "patch" || cmd == "test" || cmd == "stop" {
 		out, err := roundTrip(abs, req, cmd != "stop")
 		if err != nil {
 			fail("%v", err)
