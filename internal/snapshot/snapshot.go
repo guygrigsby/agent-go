@@ -11,6 +11,7 @@ package snapshot
 import (
 	"fmt"
 	"go/ast"
+	"go/importer"
 	"go/parser"
 	"go/token"
 	"go/types"
@@ -529,6 +530,21 @@ func importerFor(p *packages.Package) types.Importer {
 	return importerFunc(func(path string) (*types.Package, error) {
 		if imp, ok := p.Imports[path]; ok && imp.Types != nil {
 			return imp.Types, nil
+		}
+		// p.Imports only knows the dependency graph packages.Load walked
+		// before this edit. A patch can splice in a fresh import goimports
+		// added that nothing in p previously used (wrap_error's
+		// "fmt.Errorf(...)" being the case that surfaced this: a file with no
+		// prior fmt import gets one added by imports.Process at end-of-list
+		// formatting). Standard-library paths resolve independent of this
+		// workspace's module graph, so fall back to the running toolchain's
+		// own importer for those. A third-party or module-local package
+		// introduced this way is not covered — that needs a full workspace
+		// reload to discover via the real module graph (as UpsertDecl already
+		// does when it creates a new package), out of scope for this
+		// fallback.
+		if pkg, err := importer.Default().Import(path); err == nil {
+			return pkg, nil
 		}
 		return nil, fmt.Errorf("package %q not in snapshot", path)
 	})

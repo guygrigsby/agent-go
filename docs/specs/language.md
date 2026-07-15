@@ -123,10 +123,10 @@ text atoms, parsed and typechecked in scope at the target position.
 | `add_defer` | expr | |
 | `add_go` | expr | |
 | `set_cond` | at, expr | if/for/case condition replacement |
-| `replace_expr` | at, expr | any addressable expression slot |
+| `replace_expr` | at, expr | v1 ceiling: the node's condition or a whole expression statement only; per-slot sub-expression handles are future |
 | `delete_node` | at | statement or case; deleting a block requires it be empty |
-| `wrap_stmts` | from, to, with (if/for/block), cond? | encloses a contiguous statement range |
-| `wrap_error` | at (call handle), message | the Go idiom: assign err, add `if err != nil` return with `fmt.Errorf("...: %w", err)` |
+| `wrap_stmts` | from, to, with (if/for/block), cond? | from/to must be siblings in order in the same block; returns the new node's handle |
+| `wrap_error` | at (assign or call handle), message | the Go idiom: assign err, add `if err != nil` return with `fmt.Errorf("...: %w", err)`. v1 ceiling: a bare expression-statement call resolves its return arity only for a same-package function identifier |
 
 The statement vocabulary deliberately omits constructs an agent should
 express with `upsert_decl`/`set_body` wholesale (select, labeled

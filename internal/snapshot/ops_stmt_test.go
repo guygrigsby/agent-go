@@ -326,3 +326,225 @@ func TestDollarRefForward(t *testing.T) {
 		t.Fatalf("got %v", err)
 	}
 }
+
+// Task 7: mutating statement ops (set_cond, replace_expr, wrap_stmts, wrap_error).
+
+func TestSetCond(t *testing.T) {
+	s := demo(t)
+	res, err := s.Patch([]byte(`{"pkg":"demo/lib","sym":"UseHelper",
+		"ops":[{"op":"add_if","at":"n1","where":"after","cond":"true"},
+		       {"op":"set_cond","at":"$1","expr":"helper(3) > 0"}]}`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	b, _ := os.ReadFile(res["files"].([]string)[0])
+	if !strings.Contains(string(b), "if helper(3) > 0 {") {
+		t.Fatalf("set_cond missing:\n%s", b)
+	}
+}
+
+// set_cond only makes sense against if/for/case; any other handle rejects
+// naming the actual node kind.
+func TestSetCondRejectsWrongKind(t *testing.T) {
+	s := demo(t)
+	_, err := s.Patch([]byte(`{"pkg":"demo/lib","sym":"UseHelper",
+		"ops":[{"op":"set_cond","at":"n1","expr":"true"}]}`))
+	rej, ok := err.(*Reject)
+	if !ok || rej.Reason != "set_cond targets an if/for/case condition" || rej.Detail != "AssignStmt" {
+		t.Fatalf("got %v", err)
+	}
+}
+
+// replace_expr's v1 scope additionally covers a condition, same as set_cond.
+func TestReplaceExprCond(t *testing.T) {
+	s := demo(t)
+	res, err := s.Patch([]byte(`{"pkg":"demo/lib","sym":"UseHelper",
+		"ops":[{"op":"add_for","at":"n1","where":"after","cond":"helper(1) > 0"},
+		       {"op":"replace_expr","at":"$1","expr":"helper(2) > 0"}]}`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	b, _ := os.ReadFile(res["files"].([]string)[0])
+	if !strings.Contains(string(b), "for helper(2) > 0 {") {
+		t.Fatalf("replace_expr on cond missing:\n%s", b)
+	}
+}
+
+// replace_expr's other v1 target: a whole expression statement.
+func TestReplaceExprExprStmt(t *testing.T) {
+	s := demo(t)
+	res, err := s.Patch([]byte(`{"pkg":"demo/lib","sym":"UseHelper",
+		"ops":[{"op":"add_call","at":"n1","where":"after","expr":"helper(1)"},
+		       {"op":"replace_expr","at":"$1","expr":"helper(2)"}]}`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	b, _ := os.ReadFile(res["files"].([]string)[0])
+	if !strings.Contains(string(b), "helper(2)") || strings.Contains(string(b), "helper(1)") {
+		t.Fatalf("replace_expr on expr-stmt missing:\n%s", b)
+	}
+}
+
+// Anything else (e.g. a plain assignment) is out of v1 scope.
+func TestReplaceExprRejectsWrongTarget(t *testing.T) {
+	s := demo(t)
+	_, err := s.Patch([]byte(`{"pkg":"demo/lib","sym":"UseHelper",
+		"ops":[{"op":"replace_expr","at":"n1","expr":"true"}]}`))
+	rej, ok := err.(*Reject)
+	if !ok || rej.Reason != "replace_expr targets a condition or expression statement in v1" {
+		t.Fatalf("got %v", err)
+	}
+}
+
+func TestWrapStmts(t *testing.T) {
+	s := demo(t)
+	_, err := s.Patch([]byte(`{"pkg":"demo/lib","sym":"UseHelper",
+		"ops":[{"op":"wrap_stmts","from":"n1","to":"n2","with":"if","cond":"helper(9) > 0"}]}`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	res, _ := s.View("demo/lib", "UseHelper")
+	if !strings.Contains(res["text"].(string), "if helper(9) > 0 {") {
+		t.Fatalf("got:\n%s", res["text"])
+	}
+}
+
+// with:"block" needs no cond and produces a plain nested block.
+func TestWrapStmtsBlock(t *testing.T) {
+	s := demo(t)
+	res, err := s.Patch([]byte(`{"pkg":"demo/lib","sym":"UseHelper",
+		"ops":[{"op":"wrap_stmts","from":"n1","to":"n2","with":"block"}]}`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if res["ops_applied"].(int) != 1 {
+		t.Fatalf("got %v", res)
+	}
+}
+
+// wrap_stmts binds the new wrapping node's handle, so a later op in the same
+// patch can address it via $N (here, appending inside the new if-block).
+func TestWrapStmtsBindsHandle(t *testing.T) {
+	s := demo(t)
+	res, err := s.Patch([]byte(`{"pkg":"demo/lib","sym":"UseHelper",
+		"ops":[{"op":"wrap_stmts","from":"n1","to":"n2","with":"if","cond":"helper(9) > 0"},
+		       {"op":"add_call","at":"$1","where":"last","expr":"println(1)"}]}`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if res["ops_applied"].(int) != 2 {
+		t.Fatalf("got %v", res)
+	}
+}
+
+// from/to must be siblings in order in the same enclosing block.
+func TestWrapStmtsRejectsSiblingsOutOfOrder(t *testing.T) {
+	s := demo(t)
+	_, err := s.Patch([]byte(`{"pkg":"demo/lib","sym":"UseHelper",
+		"ops":[{"op":"wrap_stmts","from":"n2","to":"n1","with":"block"}]}`))
+	rej, ok := err.(*Reject)
+	if !ok || rej.Reason != "from/to are not siblings in order" {
+		t.Fatalf("got %v", err)
+	}
+}
+
+// with:"block" takes no cond.
+func TestWrapStmtsRejectsCondOnBlock(t *testing.T) {
+	s := demo(t)
+	_, err := s.Patch([]byte(`{"pkg":"demo/lib","sym":"UseHelper",
+		"ops":[{"op":"wrap_stmts","from":"n1","to":"n2","with":"block","cond":"true"}]}`))
+	rej, ok := err.(*Reject)
+	if !ok || rej.Reason != "wrap_stmts: cond is not allowed for with=block" {
+		t.Fatalf("got %v", err)
+	}
+}
+
+// with:"if"/"for" require a cond.
+func TestWrapStmtsRequiresCondForIf(t *testing.T) {
+	s := demo(t)
+	_, err := s.Patch([]byte(`{"pkg":"demo/lib","sym":"UseHelper",
+		"ops":[{"op":"wrap_stmts","from":"n1","to":"n2","with":"if"}]}`))
+	rej, ok := err.(*Reject)
+	if !ok || rej.Reason != "wrap_stmts: cond is required for with=if" {
+		t.Fatalf("got %v", err)
+	}
+}
+
+func TestWrapError(t *testing.T) {
+	s := demo(t)
+	// Give the fixture an error-returning call to wrap.
+	if _, err := s.UpsertDecl("demo/lib", "func fallible() (int, error) {\n\treturn 1, nil\n}"); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := s.UpsertDecl("demo/lib", "func Caller() (int, error) {\n\tn, _ := fallible()\n\treturn n, nil\n}"); err != nil {
+		t.Fatal(err)
+	}
+	_, err := s.Patch([]byte(`{"pkg":"demo/lib","sym":"Caller",
+		"ops":[{"op":"wrap_error","at":"n1","message":"calling fallible"}]}`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	res, _ := s.View("demo/lib", "Caller")
+	text := res["text"].(string)
+	if !strings.Contains(text, "if err != nil") || !strings.Contains(text, `calling fallible: %w`) {
+		t.Fatalf("wrap_error shape wrong:\n%s", text)
+	}
+}
+
+// When the assignment's last LHS is already "err" (not "_"), wrap_error
+// reuses it rather than renaming.
+func TestWrapErrorReusesExistingErr(t *testing.T) {
+	s := demo(t)
+	if _, err := s.UpsertDecl("demo/lib", "func fallible() (int, error) {\n\treturn 1, nil\n}"); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := s.UpsertDecl("demo/lib", "func Caller2() (int, error) {\n\tn, err := fallible()\n\treturn n, err\n}"); err != nil {
+		t.Fatal(err)
+	}
+	_, err := s.Patch([]byte(`{"pkg":"demo/lib","sym":"Caller2",
+		"ops":[{"op":"wrap_error","at":"n1","message":"calling fallible"}]}`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	res, _ := s.View("demo/lib", "Caller2")
+	text := res["text"].(string)
+	if !strings.Contains(text, "n, err := fallible()") || !strings.Contains(text, "if err != nil") {
+		t.Fatalf("wrap_error reuse-err shape wrong:\n%s", text)
+	}
+}
+
+// The other v1 shape: a bare expression-statement call (no assignment at
+// all), resolved against the callee's own return arity.
+func TestWrapErrorBareCall(t *testing.T) {
+	s := demo(t)
+	if _, err := s.UpsertDecl("demo/lib", "func fallible() (int, error) {\n\treturn 1, nil\n}"); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := s.UpsertDecl("demo/lib", "func CallerBare() error {\n\tfallible()\n\treturn nil\n}"); err != nil {
+		t.Fatal(err)
+	}
+	_, err := s.Patch([]byte(`{"pkg":"demo/lib","sym":"CallerBare",
+		"ops":[{"op":"wrap_error","at":"n1","message":"calling fallible"}]}`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	res, _ := s.View("demo/lib", "CallerBare")
+	text := res["text"].(string)
+	if !strings.Contains(text, "_, err := fallible()") || !strings.Contains(text, "if err != nil") {
+		t.Fatalf("wrap_error bare-call shape wrong:\n%s", text)
+	}
+}
+
+// The enclosing function must itself return error as its last result.
+func TestWrapErrorRejectsNonErrorFunction(t *testing.T) {
+	s := demo(t)
+	if _, err := s.UpsertDecl("demo/lib", "func NoErr() int {\n\tx := 1\n\treturn x\n}"); err != nil {
+		t.Fatal(err)
+	}
+	_, err := s.Patch([]byte(`{"pkg":"demo/lib","sym":"NoErr",
+		"ops":[{"op":"wrap_error","at":"n1","message":"whatever"}]}`))
+	rej, ok := err.(*Reject)
+	if !ok || rej.Reason != "enclosing function does not return error" {
+		t.Fatalf("got %v", err)
+	}
+}

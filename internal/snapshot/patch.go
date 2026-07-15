@@ -3,12 +3,13 @@ package snapshot
 import (
 	"encoding/json"
 	"fmt"
-	"go/format"
 	"os"
 	"regexp"
 	"sort"
 	"strconv"
 	"strings"
+
+	"golang.org/x/tools/imports"
 )
 
 // patchCtx carries the working state of one patch application: the
@@ -175,10 +176,16 @@ func (s *Snapshot) patchComposable(env patchEnvelope, names []string) (map[strin
 		}
 	}
 
+	// imports.Process (gofmt plus import fixup), not plain format.Source: any
+	// op list can include wrap_error, whose "fmt.Errorf(...)" splice needs a
+	// "fmt" import added if the file doesn't already have one, and it's a
+	// strict superset of format.Source's formatting for op lists that don't
+	// (matches UpsertDecl's existing use of imports.Process for the same
+	// reason).
 	touched := make([]string, 0, len(ctx.src))
 	formatted := map[string][]byte{}
 	for file, b := range ctx.src {
-		out, ferr := format.Source(b)
+		out, ferr := imports.Process(file, b, nil)
 		if ferr != nil {
 			return nil, &Reject{Reason: "patch result does not format", Detail: file + ": " + ferr.Error()}
 		}
