@@ -1,5 +1,6 @@
 # agent-go
 
+
 Go as a language for agents. `ago` puts a semantic protocol over the Go
 toolchain so a coding agent queries the workspace and submits
 compiler-checked mutations instead of editing text.
@@ -17,15 +18,23 @@ use, unix socket, idle exit):
 ```
 ago init myproject          # scaffold: module, MCP wiring, AGENTS.md
 ago status                  # load the snapshot: packages, files, errors
+ago help                    # versioned op catalog: args, one example, notes per op
 ago search -s MaxEntries    # name fragment -> exact symbol addresses
 ago refs -p <pkg> -s <sym>  # every reference, tests included
+ago query -kind implementations -p <pkg> -s <iface>  # interface -> implementing types
+ago view -p <pkg> -s <sym>  # declaration as annotated text: node handles + generation
 ago rename -p <pkg> -s DefaultLimiterMaxEntries -to DefaultLimiterMaxQuotas
 echo 'return v << 1' | ago set-body -p <pkg> -s Double -body-file -
 ago add-param -p <pkg> -s NewLimiter -name ctx -type context.Context -default 'context.Background()'
 ago upsert -p <pkg> -body-file decl.go   # add/replace a whole declaration
+ago patch -body-file patch.json   # ordered, atomic, generation-checked multi-op edit
+ago test -p <pkg>                 # go test, scoped, structured pass/fail
 ```
 
-Agents connect over MCP (`ago mcp`); `ago init` writes the wiring.
+Agents connect over MCP (`ago mcp`); `ago init` writes the wiring. `patch`
+is the full language: 14 statement ops, composable decl ops, table-driven
+test ops; `rename`/`set-body`/`add-param`/`upsert` are one-op sugar over
+it. Full catalog via `ago help`.
 
 Every mutation validates before anything touches disk: the daemon
 re-typechecks only the affected packages against its in-memory graph
@@ -63,10 +72,14 @@ AGO_BENCH_SCRATCH=<clones dir> go test ./bench -bench Rename -benchtime 3x -time
 
 ## Docs
 
-- `docs/specs/protocol.md` — protocol semantics, guarantees, op catalog
+- `docs/specs/language.md` — the full op catalog: decl, statement, test ops
+- `docs/specs/protocol.md` — protocol semantics, guarantees
 - `docs/specs/bench.md` — bench design
 - `docs/specs/plan.md` — status and build order
 - `docs/adr/` — architecture decisions
 - `idea.md` — the original thesis
 
 Experimental. Interfaces change without notice.
+
+Inspired by [zero](https://zerolang.ai), a programming language 
+for agents. 

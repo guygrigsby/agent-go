@@ -53,13 +53,11 @@ auto-spawned, idle-exit; gopls `-remote=auto` precedent, ADR 0001):
 
 ## Op catalog
 
-Implemented: status, search, inspect, refs, rename, set_body, add_param, upsert_decl (authoring: whole declarations, auto-imports, new packages on demand).
-
-Planned, in order (bench task counts drive priority):
-- `move_decl` — move a declaration across packages, rewriting references
-  and imports.
-- Rejection upgrades: `possible_repairs` suggestions (idea.md's design) so
-  a rejection names the ops that would fix it.
+Implemented surface: the ten-tool MCP/CLI surface (status, help, query,
+view, patch, test, rename, set_body, add_param, upsert_decl) plus the
+full patch op catalog underneath `patch`. See `docs/specs/language.md`
+for the language spec and `ago help` for the versioned, per-op catalog
+(args, one example, notes) that always matches what's built.
 
 Non-goals for now: multi-module go.work, non-Go files, formatting choices
 (gofmt is the only style), IDE features (hover docs, completion).
