@@ -586,5 +586,125 @@
   "churn": 28,
   "packages": 204,
   "files": 724
+ },
+ {
+  "repo": "vault",
+  "sha": "f503f739de19944537638129f1cb3492f523f937",
+  "subject": "identity: Resolve conflicts with rename (#29356)",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 10,
+  "churn": 336,
+  "packages": 545,
+  "files": 2383
+ },
+ {
+  "repo": "vault",
+  "sha": "caec65a7a56daa7e8a4daf7ed27b8734ad68e3b8",
+  "subject": "Rename SealInfo to SealWrapper. (#22689)",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 10,
+  "churn": 297,
+  "packages": 511,
+  "files": 2112
+ },
+ {
+  "repo": "vault",
+  "sha": "91aa12ac195c088cd68eb879dea51eda03839a7b",
+  "subject": "VAULT-42658 Move Agent Registry to main (#12443) (#12455)",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 11,
+  "churn": 552,
+  "packages": 563,
+  "files": 2516
+ },
+ {
+  "repo": "vault",
+  "sha": "cfff8d420e2f1479d7f16e9f349dd444e6f1c7b6",
+  "subject": "aws: pass cancelable context with aws calls (#19365)",
+  "kinds": [
+   "add-param"
+  ],
+  "go_files": 11,
+  "churn": 105,
+  "packages": 469,
+  "files": 1922
+ },
+ {
+  "repo": "vault",
+  "sha": "7103bc2cdb45ff8c4e01ebb09f61e9b20a67fe10",
+  "subject": "VAULT-17078: Add useEventLogger Argument to Audit Factory Functions (#21962)",
+  "kinds": [
+   "add-param"
+  ],
+  "go_files": 12,
+  "churn": 40,
+  "packages": 508,
+  "files": 2078
+ },
+ {
+  "repo": "vault",
+  "sha": "bfb5cd6ead2ad1e50654fc52ae8aa8c41b4a052d",
+  "subject": "Rename functions referencing \"enterprise tokens\" for readability/clarity (#15193) (#15289)",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 13,
+  "churn": 388,
+  "packages": 613,
+  "files": 2640
+ },
+ {
+  "repo": "vault",
+  "sha": "3e022a3910acc64ab610013fe8fb7715ac8d6bea",
+  "subject": "Move all ACME wrappers into a dedicated go file (#20174)",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 13,
+  "churn": 380,
+  "packages": 470,
+  "files": 1947
+ },
+ {
+  "repo": "vault",
+  "sha": "047a9ff03ae88f7d3a19d3620c89ac36bff20de8",
+  "subject": "Move pki docker tests to pkiext (#17928)",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 14,
+  "churn": 204,
+  "packages": 455,
+  "files": 1882
+ },
+ {
+  "repo": "vault",
+  "sha": "86c1cdf9e61897dee14203c51d6ad3d971cfda1a",
+  "subject": "Move awsutil over to the go-secure-stdlib version (#12128)",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 18,
+  "churn": 712,
+  "packages": 433,
+  "files": 1700
+ },
+ {
+  "repo": "vault",
+  "sha": "a72a5ff754bb2aeecb32d511fb9d3a6c9b80acad",
+  "subject": "Rename master key to root key (#13324)",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 22,
+  "churn": 358,
+  "packages": 443,
+  "files": 1760
  }
 ]
