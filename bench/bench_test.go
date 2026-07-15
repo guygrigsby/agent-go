@@ -42,8 +42,8 @@ type Manifest struct {
 }
 
 type config struct {
-	endpoint, model, scratch, agoBin, results string
-	cap                                       time.Duration
+	endpoint, model, scratch, agoBin, results, runID string
+	cap                                              time.Duration
 }
 
 func setup(b *testing.B) config {
@@ -66,7 +66,14 @@ func setup(b *testing.B) config {
 		c.cap = d
 	}
 	if c.results == "" {
-		c.results = "results.jsonl"
+		c.results = "results"
+	}
+	// Everything about a run is recorded under results/<runID> and belongs
+	// in the repo: transcripts, configs, diffs, scores. Reproducibility is
+	// part of the result.
+	c.runID = time.Now().Format("20060102-150405")
+	if err := os.MkdirAll(filepath.Join(c.results, c.runID), 0o755); err != nil {
+		b.Fatal(err)
 	}
 	bin := filepath.Join(b.TempDir(), "ago")
 	out, err := exec.Command("go", "build", "-o", bin, "github.com/guygrigsby/agent-go/cmd/ago").CombinedOutput()
@@ -74,7 +81,18 @@ func setup(b *testing.B) config {
 		b.Fatalf("build ago: %v\n%s", err, out)
 	}
 	c.agoBin = bin
+	rev, _ := exec.Command("git", "rev-parse", "HEAD").Output()
+	meta := map[string]any{
+		"endpoint": c.endpoint, "model": c.model, "cap": c.cap.String(),
+		"ago_rev": strings.TrimSpace(string(rev)), "started": time.Now().Format(time.RFC3339),
+	}
+	writeJSON(filepath.Join(c.results, c.runID, "run.json"), meta)
 	return c
+}
+
+func writeJSON(path string, v any) {
+	data, _ := json.MarshalIndent(v, "", " ")
+	os.WriteFile(path, append(data, '\n'), 0o644)
 }
 
 func BenchmarkRename(b *testing.B) {
@@ -94,8 +112,8 @@ func BenchmarkRename(b *testing.B) {
 		for _, mode := range []string{"raw", "semantic"} {
 			b.Run(fmt.Sprintf("%s_%s/%s", t.Repo, t.SHA[:8], mode), func(b *testing.B) {
 				passes := 0
-				for range b.N {
-					if episode(b, c, t, mode) {
+				for i := range b.N {
+					if episode(b, c, t, mode, i) {
 						passes++
 					}
 				}
@@ -107,11 +125,16 @@ func BenchmarkRename(b *testing.B) {
 
 // episode runs one agent attempt and scores it. Only the agent run is on
 // the clock; worktree setup, cache warming, and scoring are not.
-func episode(b *testing.B, c config, t Manifest, mode string) bool {
+func episode(b *testing.B, c config, t Manifest, mode string, iter int) bool {
 	b.Helper()
 	b.StopTimer()
 	wt := worktree(b, c, t)
 	defer teardown(c, t, wt)
+	epDir := filepath.Join(c.results, c.runID,
+		fmt.Sprintf("%s_%s", t.Repo, t.SHA[:8]), mode, fmt.Sprint(iter))
+	if err := os.MkdirAll(epDir, 0o755); err != nil {
+		b.Fatal(err)
+	}
 	writeOpencodeConfig(b, c, wt, mode)
 	// Warm what any agent would find warm on a dev machine: module cache,
 	// build cache, and (semantic mode) the daemon snapshot.
@@ -136,10 +159,12 @@ func episode(b *testing.B, c config, t Manifest, mode string) bool {
 	res := score(c, wt, t, baseline)
 	res["task"] = t.Repo + "_" + t.SHA[:8]
 	res["mode"] = mode
+	res["iter"] = iter
+	res["prompt"] = t.Prompt
 	res["wall_s"] = wall.Seconds()
 	res["capped"] = ctx.Err() != nil
 	res["agent_error"] = agentErr != nil
-	appendResult(c.results, res)
+	record(c, epDir, wt, agentOut, res)
 	pass, _ := res["pass"].(bool)
 	if !pass && testing.Verbose() {
 		b.Logf("FAIL %s/%s: %v\nagent tail: %s", res["task"], mode, res, tail(agentOut, 800))
@@ -147,14 +172,37 @@ func episode(b *testing.B, c config, t Manifest, mode string) bool {
 	return pass
 }
 
+// record persists the full evidence for one episode: the agent transcript,
+// the opencode config it ran under, the diff it produced, and the score.
+func record(c config, epDir, wt, transcript string, res map[string]any) {
+	os.WriteFile(filepath.Join(epDir, "transcript.jsonl"), []byte(transcript), 0o644)
+	if cfg, err := os.ReadFile(filepath.Join(wt, "opencode.json")); err == nil {
+		os.WriteFile(filepath.Join(epDir, "opencode.json"), cfg, 0o644)
+	}
+	diff, _ := exec.Command("git", "-C", wt, "diff").Output()
+	os.WriteFile(filepath.Join(epDir, "changes.diff"), diff, 0o644)
+	untracked, _ := exec.Command("git", "-C", wt, "status", "--porcelain").Output()
+	if len(untracked) > 0 {
+		os.WriteFile(filepath.Join(epDir, "status.txt"), untracked, 0o644)
+	}
+	writeJSON(filepath.Join(epDir, "episode.json"), res)
+	appendResult(filepath.Join(c.results, c.runID, "episodes.jsonl"), res)
+}
+
 func score(c config, wt string, t Manifest, baseline map[string]int) map[string]any {
 	predicate := true
+	var specs []map[string]any
 	for _, r := range t.Renames {
-		oldGone := refCount(c, wt, r.Pkg, r.Sym) == 0
+		oldRefs := refCount(c, wt, r.Pkg, r.Sym)
 		newRefs := refCount(c, wt, r.Pkg, renamedSym(r))
-		if !oldGone || newRefs != baseline[r.Pkg+"."+r.Sym] {
+		want := baseline[r.Pkg+"."+r.Sym]
+		ok := oldRefs == 0 && newRefs == want
+		specs = append(specs, map[string]any{
+			"sym": r.Pkg + "." + r.Sym, "to": r.To, "ok": ok,
+			"old_refs_left": oldRefs, "new_refs": newRefs, "baseline_refs": want,
+		})
+		if !ok {
 			predicate = false
-			break
 		}
 	}
 	typecheck := false
@@ -168,7 +216,7 @@ func score(c config, wt string, t Manifest, baseline map[string]int) map[string]
 	}
 	return map[string]any{
 		"predicate": predicate, "typecheck": typecheck, "tests": tests,
-		"pass": predicate && typecheck && tests,
+		"pass": predicate && typecheck && tests, "specs": specs,
 	}
 }
 
