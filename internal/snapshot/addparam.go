@@ -144,6 +144,7 @@ func (s *Snapshot) AddParam(pkgPath, sym, name, typ, defaultExpr string) (map[st
 		"status": "accepted", "symbol": pkgPath + "." + sym,
 		"param": name + " " + typ, "callers_updated": len(calls),
 		"files": len(byFile), "load_ms": ms, "packages_rechecked": n,
+		"generation": s.generation(pkgPath, sym),
 	}, nil
 }
 

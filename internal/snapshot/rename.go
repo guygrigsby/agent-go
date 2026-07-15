@@ -140,6 +140,7 @@ func (s *Snapshot) Rename(pkgPath, sym, to string) (map[string]any, error) {
 		"status": "accepted", "symbol": pkgPath + "." + sym, "new_name": to,
 		"references": len(edits), "files": len(byFile),
 		"load_ms": ms, "packages_rechecked": n,
+		"generation": s.generation(pkgPath, newSym),
 	}, nil
 }
 

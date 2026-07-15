@@ -58,6 +58,7 @@ type Snapshot struct {
 	mtimes map[string]time.Time
 	loaded bool
 	rev    map[string][]*packages.Package // package ID -> importers
+	gens   map[string]int64               // package path -> generation
 }
 
 func New(dir string) *Snapshot {
@@ -84,6 +85,7 @@ func (s *Snapshot) load() (int64, error) {
 		}
 	}
 	s.loaded = true
+	s.bumpGenerations(s.workspacePackages())
 	return time.Since(start).Milliseconds(), nil
 }
 
@@ -499,6 +501,8 @@ func (s *Snapshot) retypecheck(dirty []*packages.Package) ([]Diagnostic, int, er
 	}
 	if len(diags) > 0 {
 		restore()
+	} else {
+		s.bumpGenerations(order)
 	}
 	return diags, len(order), nil
 }
@@ -754,6 +758,7 @@ func (s *Snapshot) SetBody(pkgPath, sym, body string) (map[string]any, error) {
 	return map[string]any{
 		"status": "accepted", "symbol": pkgPath + "." + sym, "file": filename,
 		"load_ms": ms, "check_ms": checkMS, "packages_rechecked": n,
+		"generation": s.generation(pkgPath, sym),
 	}, nil
 }
 

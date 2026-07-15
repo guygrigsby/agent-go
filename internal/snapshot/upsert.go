@@ -126,6 +126,7 @@ func (s *Snapshot) UpsertDecl(pkgPath, text string) (map[string]any, error) {
 	return map[string]any{
 		"status": "accepted", "symbol": pkgPath + "." + sym, "action": action,
 		"file": file, "load_ms": ms, "packages_rechecked": n,
+		"generation": s.generation(pkgPath, sym),
 	}, nil
 }
 
