@@ -6,6 +6,7 @@ import "encoding/json"
 
 type Request struct {
 	Op         string          `json:"op"`
+	Kind       string          `json:"kind,omitempty"`
 	Pkg        string          `json:"pkg,omitempty"`
 	Sym        string          `json:"sym,omitempty"`
 	Body       string          `json:"body,omitempty"`

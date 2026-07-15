@@ -72,6 +72,10 @@ func handle(conn net.Conn, snap *snapshot.Snapshot) (stop bool) {
 		res, err = snap.Refs(req.Pkg, req.Sym)
 	case "search":
 		res, err = snap.Search(req.Sym)
+	case "query":
+		// Sym doubles as q for kind=="search", the same reuse the standalone
+		// search op already does — no separate wire field for it.
+		res, err = snap.Query(req.Kind, req.Pkg, req.Sym, req.Sym)
 	case "set-body":
 		res, err = snap.SetBody(req.Pkg, req.Sym, req.Body)
 	case "rename":

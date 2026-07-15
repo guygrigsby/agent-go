@@ -41,6 +41,10 @@ func runMCP(dir string) error {
 			obj([]string{"pkg", "sym"}, symProps)},
 		{"refs", "Find every reference to a symbol across the workspace, including tests.",
 			obj([]string{"pkg", "sym"}, symProps)},
+		{"query", "Semantic questions against the typechecked snapshot: search, inspect, refs, callers, callees, implementations, doc, dispatched by kind. callers/callees are call-graph edges (static calls; a call through an interface resolves to the interface method). implementations works both directions: interface -> implementing types, or concrete type -> interfaces it satisfies. doc returns the plain-text doc comment.",
+			obj([]string{"kind"}, merge(symProps, map[string]any{
+				"kind": str("one of search, inspect, refs, callers, callees, implementations, doc"),
+				"q":    str("name fragment, for kind=search")}))},
 		{"rename", "Rename a symbol at every reference, validated: rejected with compiler diagnostics if the result would not typecheck, collide, or be captured. Nothing is written on rejection.",
 			obj([]string{"pkg", "sym", "to"}, merge(symProps, map[string]any{"to": str("new name")}))},
 		{"upsert_decl", "Add or replace one whole top-level declaration (func, method, type, const, var) from Go source text. Imports are managed automatically. New declarations go to agent.go; a new package path under the module is created on demand. Rejected with compiler diagnostics if it would not typecheck.",
@@ -127,6 +131,20 @@ func mcpCall(dir, name string, args map[string]any) (string, bool) {
 			return fmt.Sprintf("bad patch args: %v", err), true
 		}
 		req.Op = "patch"
+		out, err := roundTrip(dir, req, true)
+		if err != nil {
+			return fmt.Sprintf("ago error: %v", err), true
+		}
+		return out, false
+	}
+	if name == "query" {
+		sym := get("sym")
+		if get("kind") == "search" {
+			if q := get("q"); q != "" {
+				sym = q
+			}
+		}
+		req := protocol.Request{Op: "query", Kind: get("kind"), Pkg: get("pkg"), Sym: sym}
 		out, err := roundTrip(dir, req, true)
 		if err != nil {
 			return fmt.Sprintf("ago error: %v", err), true

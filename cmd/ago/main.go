@@ -7,6 +7,7 @@
 //	ago inspect  [-C dir] -p <pkgpath> -s <Name | Recv.Name>
 //	ago view     [-C dir] -p <pkgpath> -s <Name | Recv.Name>
 //	ago refs     [-C dir] -p <pkgpath> -s <Name | Recv.Name>
+//	ago query    [-C dir] -kind <search|inspect|refs|callers|callees|implementations|doc> [-p pkgpath] [-s Name|Recv.Name] [-q fragment]
 //	ago set-body [-C dir] -p <pkgpath> -s <Name | Recv.Name> -body-file <f|->
 //	ago upsert   [-C dir] -p <pkgpath> -body-file <f|->   (whole declaration)
 //	ago rename   [-C dir] -p <pkgpath> -s <Name | Recv.Name> -to <NewName>
@@ -35,7 +36,7 @@ import (
 
 func main() {
 	if len(os.Args) < 2 {
-		fail("usage: ago <init|status|search|inspect|view|refs|set-body|upsert|rename|add-param|patch|stop|mcp|daemon> [flags]")
+		fail("usage: ago <init|status|search|inspect|view|refs|query|set-body|upsert|rename|add-param|patch|stop|mcp|daemon> [flags]")
 	}
 	cmd, args := os.Args[1], os.Args[2:]
 	fs := flag.NewFlagSet(cmd, flag.ExitOnError)
@@ -47,6 +48,8 @@ func main() {
 	pname := fs.String("name", "", "parameter name for add-param")
 	ptype := fs.String("type", "", "parameter type for add-param")
 	pdefault := fs.String("default", "", "argument expression for existing callers")
+	qkind := fs.String("kind", "", "query kind: search|inspect|refs|callers|callees|implementations|doc")
+	qfrag := fs.String("q", "", "query fragment (kind=search)")
 	fs.Parse(args)
 
 	abs, err := filepath.Abs(*dir)
@@ -87,7 +90,13 @@ func main() {
 		}
 		req.Op = "patch"
 	}
-	if cmd == "status" || cmd == "search" || cmd == "inspect" || cmd == "view" || cmd == "refs" || cmd == "set-body" || cmd == "upsert" || cmd == "rename" || cmd == "add-param" || cmd == "patch" || cmd == "stop" {
+	if cmd == "query" {
+		req.Kind = *qkind
+		if *qfrag != "" {
+			req.Sym = *qfrag // wire reuses Sym as q, same as the standalone search op
+		}
+	}
+	if cmd == "status" || cmd == "search" || cmd == "inspect" || cmd == "view" || cmd == "refs" || cmd == "query" || cmd == "set-body" || cmd == "upsert" || cmd == "rename" || cmd == "add-param" || cmd == "patch" || cmd == "stop" {
 		out, err := roundTrip(abs, req, cmd != "stop")
 		if err != nil {
 			fail("%v", err)
