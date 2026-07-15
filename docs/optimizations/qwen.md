@@ -6,14 +6,26 @@ node handles, generations, text-atom expressions with a structured form
 designed in. Question addressed: what changes, tunings, or additions make
 this language work well specifically on Qwen models served locally.
 
-Model targets, in likely order of use on lab hardware:
+Scope: local means what an average developer can run; the cap is a 128GB
+unified-memory Mac. Everything below fits with room to spare.
 
-- Qwen3-Coder-30B-A3B (MoE, 3B active): the realistic daily driver, fast
-  on a single card, 256k native context.
-- Qwen2.5-Coder 7B/14B/32B: dense, 32k native (128k only via YaRN),
-  strongest small models at literal Go text, weaker at long agentic loops.
-- Qwen3 Instruct/Thinking (2507 split): general models with hybrid or
-  dedicated thinking; relevant for the planning half of an episode.
+Model targets as of 2026-07, in likely order of use:
+
+- Qwen3-Coder-Next (2026-02): 80B total, 3B active (10 of 512 experts),
+  hybrid Gated DeltaNet + Gated Attention, 262k native context, ~52GB at
+  Q4_K_M, 70.6% SWE-bench Verified. Purpose-built for coding agents and
+  local serving; the primary target.
+- Qwen3.6-27B, MTP variant preferred: dense, the community-consensus
+  single-GPU coder, ~17GB at Q4, 262k native. MTP self-speculation gives
+  1.4 to 2.2x generation speedup and llama.cpp support is merged. The 3.6
+  line also added a developer role and more robust nested-argument tool
+  call parsing, so it drops into OpenCode-class harnesses cleanly.
+- Qwen3.6-35B-A3B: the MoE sibling when throughput beats the dense 27B's
+  per-token quality.
+- Prior generation (Qwen3-Coder-30B-A3B, Qwen2.5-Coder dense line): still
+  widely deployed; keep serving profiles for them, but they are not the
+  models to optimize for. Everything below that assumed Qwen2.5's 32k
+  window is updated in place.
 
 ## Serving and decoding
 
@@ -21,16 +33,19 @@ The highest-leverage layer. Most "weak model" failures on tool protocols
 are actually serving-stack failures.
 
 - **Tool-call parser must match the family.** Qwen3-Instruct uses
-  Hermes-style tool calls; Qwen3-Coder uses its own XML-ish format needing
-  the dedicated parser (`qwen3_coder` in vLLM, correct `--jinja` template
-  in llama.cpp). A mismatched parser silently drops or mangles calls and
-  the bench will read it as model failure. Verify the parser end to end
+  Hermes-style tool calls; the Coder line (including Coder-Next) uses its
+  own XML-ish format needing the dedicated parser (`--tool-call-parser
+  qwen3_coder` in vLLM, correct `--jinja` template and a current build in
+  llama.cpp). A mismatched parser silently drops or mangles calls and the
+  bench will read it as model failure. Verify the parser end to end
   before any Qwen bench round, same as was done for GLM.
-- **Published sampling settings, not defaults.** Qwen cards are specific:
-  Coder wants temp 0.7, top_p 0.8, repetition_penalty 1.05; thinking
-  variants want temp 0.6, top_p 0.95 and explicitly no greedy decoding
-  (greedy loops). Bake these into the bench harness per model so runs are
-  comparable and the repetition failure mode is suppressed at the sampler.
+- **Published sampling settings, not defaults, and they move per
+  generation.** Coder-Next wants temp 1.0, top_p 0.95, top_k 40, a
+  complete reversal of the old Coder card (temp 0.7, top_p 0.8,
+  repetition_penalty 1.05); thinking variants still forbid greedy
+  decoding (greedy loops). The settings belong in the per-model serving
+  profile, re-checked against the model card at every family bump, never
+  carried forward by habit.
 - **Constrained decoding is the payoff the spec already designed for.**
   The structured expression grammar was fixed "so a llama.cpp GBNF grammar
   can force validity at the decoder." Qwen is the family to cash that in
@@ -46,23 +61,36 @@ are actually serving-stack failures.
      pulling forward because small quants misplace quotes and parens
      inside expressions more than they misplace JSON structure.
 - **Quantization floor.** Q4 quants measurably degrade tool-call JSON
-  validity and string escaping. Either hold the line at Q5/Q6 minimum for
-  bench runs, or pair Q4 with grammar constraints and let the grammar
-  absorb the damage. Record the quant in episode metadata either way;
-  otherwise quant noise pollutes the raw-vs-semantic comparison.
-- **Speculative decoding loves this language.** Patch JSON is highly
-  predictable text: repeated keys, op names from a small vocabulary,
-  handle strings. A tiny draft model (Qwen 0.5B/1.5B of the same family)
-  should get high acceptance rates on the scaffolding and materially cut
-  wall-clock per episode, which matters because the bench scores
-  time-to-green under a cap.
-- **Prefix caching as a design constraint.** Local prefill dominates
-  episode time. Keep the stable material (system prompt, AGENTS.md
-  content, tool schemas, help catalog) as an unchanging prefix so
-  llama.cpp/vLLM prefix cache hits every turn. Concretely: deterministic
-  tool ordering in MCP `tools/list`, no timestamps or volatile state early
-  in the prompt, and `help` output should be byte-stable per catalog
-  version so a cached help call stays cached.
+  validity and string escaping; Unsloth's Coder-Next guidance names Q6_K
+  or higher specifically for tool schema compliance. Either hold that
+  floor for bench runs (the 128GB cap leaves plenty of headroom for Q6 on
+  every target), or pair lower quants with grammar constraints and let
+  the grammar absorb the damage. Record the quant in episode metadata
+  either way; otherwise quant noise pollutes the raw-vs-semantic
+  comparison.
+- **Speculative decoding loves this language, and MTP made it native.**
+  Patch JSON is highly predictable text: repeated keys, op names from a
+  small vocabulary, handle strings. The Qwen3.6 MTP variants
+  self-speculate at 1.4 to 2.2x with no draft model and no accuracy loss,
+  and the predictability of patch JSON should push acceptance above those
+  headline numbers. Prefer the MTP checkpoint wherever one exists; a tiny
+  same-family draft model is the fallback for checkpoints without MTP
+  heads. Wall-clock per episode is the metric this feeds, since the bench
+  scores time-to-green under a cap.
+- **Prefix caching as a design constraint, now with a hybrid-attention
+  caveat.** Local prefill dominates episode time. Keep the stable
+  material (system prompt, AGENTS.md content, tool schemas, help catalog)
+  as an unchanging prefix so the server's prefix cache hits every turn.
+  Concretely: deterministic tool ordering in MCP `tools/list`, no
+  timestamps or volatile state early in the prompt, and `help` output
+  should be byte-stable per catalog version so a cached help call stays
+  cached. Caveat: Coder-Next and Qwen3.6 are hybrid stacks (3 of 4 layers
+  Gated DeltaNet, linear attention with recurrent state), and prefix
+  reuse over recurrent state is engine-dependent in a way pure-KV models
+  never were. Verify actual cache-hit behavior on the serving stack
+  before counting on this; the compensation is that the few quadratic
+  layers carry tiny KV (4 KV heads), so long-context cost dropped even
+  when the cache misses.
 
 ## Tool surface and schema shape
 
@@ -93,24 +121,31 @@ are actually serving-stack failures.
 
 ## Prompt and context economy
 
-- **Staying inside the native window is a thesis-level selling point.**
-  Raw mode on a big repo wants YaRN-stretched context, and YaRN costs
-  short-context quality. Semantic mode keeps episodes in a few thousand
-  tokens of views and query results, comfortably inside Qwen2.5-Coder's
-  native 32k. State this in the bench writeup and never enable YaRN for
-  semantic-mode runs; it is part of the measured advantage.
+- **Short episodes are still the selling point; the argument changed.**
+  The old version of this claim leaned on Qwen2.5's 32k window and YaRN's
+  quality tax; current targets are 262k native, so the window is no
+  longer the constraint. What survives, and still favors semantic mode:
+  prefill wall-clock scales with context regardless of the window, the
+  hybrid linear-attention layers make long contexts cheap to hold but do
+  not make instruction-following at depth free, and Qwen's adherence to
+  tool protocols still degrades as the transcript grows. A few thousand
+  tokens of views and query results beats a few hundred thousand of raw
+  file reads on time-to-green even when both fit. Say it that way in the
+  bench writeup; the YaRN framing is stale.
 - **AGENTS.md tuned per family.** `ago init` writes the protocol
   instructions; the Qwen-tuned version should be short, imperative, and
   example-led. One worked loop (view, patch, rejected, repair, accepted),
   one rule per line, no prose paragraphs. Long nuanced system prompts are
   where small Qwen models start ignoring instructions.
-- **Thinking mode policy.** Hybrid Qwen3 lets the harness choose per
-  turn. Plausible split: `/think` for the first turn of an episode (plan
-  which symbols and ops) and `/no_think` for mechanical follow-ups
-  (re-issue a repaired patch, add test cases). Thinking tokens burn the
-  10m cap fast on local hardware; an always-think config can lose on
-  time-to-green while winning on first-patch quality. Worth an explicit
-  bench axis: Instruct vs Thinking vs hybrid-scheduled on the same tasks.
+- **Thinking mode policy.** The Coder line is non-thinking; this axis
+  applies when a thinking-capable general checkpoint plays orchestrator.
+  Plausible split: think on the first turn of an episode (plan which
+  symbols and ops), plain decode for mechanical follow-ups (re-issue a
+  repaired patch, add test cases). Thinking tokens burn the 10m cap fast
+  on local hardware; an always-think config can lose on time-to-green
+  while winning on first-patch quality. Worth an explicit bench axis:
+  Coder-Next vs a thinking generalist vs think-first-turn-only on the
+  same tasks.
 - **View compaction.** Views are the bulk of context growth in long
   episodes. Options, cheapest first: cap rendered body length with an
   elision marker and per-statement handles intact; a `view {depth}` arg
@@ -162,12 +197,14 @@ Known Qwen-family failure shapes and the engine-side answer to each.
 
 The thesis says fine-grained validated ops help weak models. Qwen-Coder
 cuts against it in one specific way: these models are unusually strong at
-emitting literal Go text and unusually weak at multi-step tool
-choreography. It is plausible that for Qwen2.5-Coder-14B the winning
-semantic-mode strategy is coarse: `view`, then `set_body`/`upsert_decl`
-with whole compiler-checked bodies, ignoring the statement vocabulary
-entirely, while for a stronger orchestrator the statement ops win on
-precision and token cost.
+emitting literal Go text and historically weak at multi-step tool
+choreography. Coder-Next narrows that gap (it was trained on agentic
+trajectories and posts 70%-class SWE-bench numbers), but the question
+stands for the dense 27B and everything smaller: the winning
+semantic-mode strategy there may be coarse, `view` then
+`set_body`/`upsert_decl` with whole compiler-checked bodies, ignoring
+the statement vocabulary entirely, while a stronger orchestrator wins
+with statement ops on precision and token cost.
 
 So: record op-mix per episode in the bench JSONL (already recording
 evidence; add op names and per-op accept/reject), and consider a third
@@ -184,9 +221,11 @@ It already executes ground-truth-derived patches for every bench task.
 - **SFT from oracle traces.** Render each oracle solution as a full
   episode transcript (status, queries, view, patch, accept) in Qwen chat
   format with tool calls. Mined tasks span traefik, vault, boundary, so
-  the distribution is real refactors, not toy edits. LoRA on
-  Qwen3-Coder-30B-A3B or Qwen2.5-Coder-14B; the target skill is protocol
-  fluency, not Go knowledge, so small adapters should move the needle.
+  the distribution is real refactors, not toy edits. Qwen3.6-27B is the
+  natural adapter target (dense, cheap to LoRA, trivially served);
+  Coder-Next is the stretch target since MoE fine-tuning is fussier. The
+  target skill is protocol fluency, not Go knowledge, so small adapters
+  should move the needle.
 - **Preference pairs from bench episodes.** Every recorded episode
   yields (rejected patch, repaired accepted patch) pairs against
   identical context: natural DPO data for teaching repair behavior and
@@ -202,7 +241,7 @@ have (there is no "raw editing catalog" to fine-tune against).
 
 ## Further out
 
-- **FIM as an expression micro-tool.** Qwen2.5-Coder has strong
+- **FIM as an expression micro-tool.** The Coder line has strong
   fill-in-middle. An engine-side option: when an expression atom fails to
   parse or typecheck, ask a small base Coder model to FIM the slot given
   the surrounding declaration, and offer the result in
@@ -224,3 +263,18 @@ op mix with per-op accept/reject, identical-resubmission count, tokens in
 and out per turn, time-to-first-accepted-mutation. Every optimization
 above is a hypothesis; these six counters are what say which ones are
 worth building for Qwen specifically.
+
+## Sources
+
+Model data as of 2026-07:
+
+- [Qwen3-Coder-Next model card](https://huggingface.co/Qwen/Qwen3-Coder-Next)
+  and [technical report](https://arxiv.org/abs/2603.00729): 80B-A3B, 10 of
+  512 experts, hybrid attention, 262k native, 70.6% SWE-bench Verified.
+- [Unsloth: running Qwen3-Coder-Next locally](https://unsloth.ai/docs/models/qwen3-coder-next):
+  temp 1.0 / top_p 0.95 / top_k 40, `qwen3_coder` parser, Q6_K floor for
+  tool schema compliance, ~52GB at Q4_K_M.
+- [Unsloth: Qwen3.6](https://unsloth.ai/docs/models/qwen3.6) and the
+  [Qwen3.6-27B card](https://huggingface.co/Qwen/Qwen3.6-27B): MTP 1.4 to
+  2.2x with llama.cpp support merged, developer role, nested tool-arg
+  parsing fixes, hybrid Gated DeltaNet layout, ~17GB at Q4.
