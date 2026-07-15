@@ -5,6 +5,7 @@
 //	ago status   [-C dir]
 //	ago search   [-C dir] -s <name fragment>
 //	ago inspect  [-C dir] -p <pkgpath> -s <Name | Recv.Name>
+//	ago view     [-C dir] -p <pkgpath> -s <Name | Recv.Name>
 //	ago refs     [-C dir] -p <pkgpath> -s <Name | Recv.Name>
 //	ago set-body [-C dir] -p <pkgpath> -s <Name | Recv.Name> -body-file <f|->
 //	ago upsert   [-C dir] -p <pkgpath> -body-file <f|->   (whole declaration)
@@ -33,7 +34,7 @@ import (
 
 func main() {
 	if len(os.Args) < 2 {
-		fail("usage: ago <init|status|search|inspect|refs|set-body|upsert|rename|add-param|stop|mcp|daemon> [flags]")
+		fail("usage: ago <init|status|search|inspect|view|refs|set-body|upsert|rename|add-param|stop|mcp|daemon> [flags]")
 	}
 	cmd, args := os.Args[1], os.Args[2:]
 	fs := flag.NewFlagSet(cmd, flag.ExitOnError)
@@ -79,7 +80,7 @@ func main() {
 	if cmd == "set-body" || cmd == "upsert" {
 		req.Body = readBody(*bodyFile)
 	}
-	if cmd == "status" || cmd == "search" || cmd == "inspect" || cmd == "refs" || cmd == "set-body" || cmd == "upsert" || cmd == "rename" || cmd == "add-param" || cmd == "stop" {
+	if cmd == "status" || cmd == "search" || cmd == "inspect" || cmd == "view" || cmd == "refs" || cmd == "set-body" || cmd == "upsert" || cmd == "rename" || cmd == "add-param" || cmd == "stop" {
 		out, err := roundTrip(abs, req, cmd != "stop")
 		if err != nil {
 			fail("%v", err)

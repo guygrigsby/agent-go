@@ -37,6 +37,8 @@ func runMCP(dir string) error {
 			obj([]string{"query"}, map[string]any{"query": str("name fragment to search for")})},
 		{"inspect", "Inspect a symbol: kind, type signature, declaration position.",
 			obj([]string{"pkg", "sym"}, symProps)},
+		{"view", "Render a declaration's source. Functions and methods get a per-statement nK: handle prefix and a generation counter for staleness checks; other declarations (const, var, type) render as plain source.",
+			obj([]string{"pkg", "sym"}, symProps)},
 		{"refs", "Find every reference to a symbol across the workspace, including tests.",
 			obj([]string{"pkg", "sym"}, symProps)},
 		{"rename", "Rename a symbol at every reference, validated: rejected with compiler diagnostics if the result would not typecheck, collide, or be captured. Nothing is written on rejection.",
@@ -106,7 +108,7 @@ func runMCP(dir string) error {
 
 func mcpCall(dir, name string, args map[string]any) (string, bool) {
 	get := func(k string) string { v, _ := args[k].(string); return v }
-	ops := map[string]string{"status": "status", "search": "search", "inspect": "inspect",
+	ops := map[string]string{"status": "status", "search": "search", "inspect": "inspect", "view": "view",
 		"refs": "refs", "rename": "rename", "set_body": "set-body", "add_param": "add-param", "upsert_decl": "upsert"}
 	op, ok := ops[name]
 	if !ok {
