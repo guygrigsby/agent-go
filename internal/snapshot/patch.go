@@ -2,6 +2,9 @@ package snapshot
 
 import (
 	"encoding/json"
+	"fmt"
+	"go/format"
+	"os"
 	"sort"
 	"strings"
 )
@@ -10,13 +13,18 @@ import (
 // pkg/sym defaults for ops that omit them, the in-memory working copy of
 // file contents touched by the op list, and the handle table assigned by
 // earlier ops for later ops to reference. Ops registered in opRegistry
-// (Task 4 onward) apply against ctx.src only; the legacy ops dispatched in
-// this task still write straight through their existing single-op methods.
+// apply against ctx.src only; the legacy ops dispatched separately still
+// write straight through their existing single-op methods.
 type patchCtx struct {
 	s        *Snapshot
 	pkg, sym string            // defaults for ops that omit them
 	src      map[string][]byte // working copy of file contents
 	handles  map[string]string // "$1" -> handle assigned by op 1
+
+	file       string         // file holding the target pkg.sym declaration
+	opIndex    int            // 1-based index of the op currently applying
+	fileLastOp map[string]int // file -> op index that last edited it, for
+	// attributing end-of-list typecheck diagnostics to the nearest op.
 }
 
 // patchOp is one composable operation in a patch's op list. Implementations
@@ -56,8 +64,10 @@ type opName struct {
 
 // Patch applies a transaction envelope of edit operations: parse, check the
 // generation the caller built the patch against, validate every op name,
-// then dispatch. v1 supports exactly one legacy op per patch — multi-op
-// composition and dry_run arrive with the handle-based ops in Tasks 4-8.
+// then dispatch. Ops registered in opRegistry go down the composable
+// ctx.src pipeline (multi-op and dry_run supported); legacy ops still
+// dispatch one at a time through their existing single-op methods; mixing
+// the two in one patch is rejected as not yet composable.
 func (s *Snapshot) Patch(raw []byte) (map[string]any, error) {
 	var env patchEnvelope
 	if err := json.Unmarshal(raw, &env); err != nil {
@@ -70,17 +80,27 @@ func (s *Snapshot) Patch(raw []byte) (map[string]any, error) {
 		return nil, &Reject{Reason: "patch has no ops"}
 	}
 	names := make([]string, len(env.Ops))
+	var hasLegacy, hasComposable bool
 	for i, raw := range env.Ops {
 		var n opName
 		if err := json.Unmarshal(raw, &n); err != nil {
 			return nil, &Reject{Reason: "malformed op", Detail: err.Error()}
 		}
-		if !legacyOps[n.Op] {
-			if _, ok := opRegistry[n.Op]; !ok {
-				return nil, &Reject{Reason: "unknown op", Detail: n.Op, DidYouMean: nearestOps(n.Op)}
-			}
+		switch {
+		case legacyOps[n.Op]:
+			hasLegacy = true
+		case opRegistry[n.Op] != nil:
+			hasComposable = true
+		default:
+			return nil, &Reject{Reason: "unknown op", Detail: n.Op, DidYouMean: nearestOps(n.Op)}
 		}
 		names[i] = n.Op
+	}
+	if hasLegacy && hasComposable {
+		return nil, &Reject{Reason: "not yet composable", Detail: "patch mixes legacy and composable ops"}
+	}
+	if hasComposable {
+		return s.patchComposable(env, names)
 	}
 	if len(env.Ops) > 1 {
 		return nil, &Reject{Reason: "not yet composable", Detail: "patch has more than one op"}
@@ -94,6 +114,122 @@ func (s *Snapshot) Patch(raw []byte) (map[string]any, error) {
 	}
 	res["ops_applied"] = 1
 	return res, nil
+}
+
+// patchComposable runs the ctx.src pipeline: every name in names is
+// registered in opRegistry (Patch already ruled out legacy ops and unknown
+// names). Ops mutate ctx.src only; nothing touches disk until the whole
+// list has applied without a Reject, so a failure partway leaves the
+// workspace untouched — no rollback bookkeeping is needed for that case.
+//
+// dry_run runs the identical op-apply and format steps (so a caller learns
+// about op-level and syntax problems exactly as it would on commit), writes
+// the result to disk, then unconditionally restores the original bytes and
+// re-typechecks the dirty set against that restored content — the same
+// resync rename.go's verifyResolution failure path performs — before
+// replying. It does not gate its response on that resync's diagnostics:
+// they describe the pre-patch state, not the proposed one. A caller who
+// wants a true type-check of the proposed change must actually commit;
+// dry_run answers "does this op list apply and format", not "does the
+// result compile".
+func (s *Snapshot) patchComposable(env patchEnvelope, names []string) (map[string]any, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	ms, err := s.ensureFresh()
+	if err != nil {
+		return nil, err
+	}
+	nt, rej := s.nodeTableFor(env.Pkg, env.Sym)
+	if rej != nil {
+		return nil, rej
+	}
+	src, err := os.ReadFile(nt.file)
+	if err != nil {
+		return nil, err
+	}
+	editedFiles := map[string]bool{nt.file: true}
+	preDirty := append(s.dirtyByFiles(editedFiles), s.affected(env.Pkg)...)
+	if diags := errorsIn(preDirty); len(diags) > 0 {
+		return nil, &Reject{Reason: "affected packages have pre-existing errors", Diagnostics: diags}
+	}
+
+	ctx := &patchCtx{
+		s: s, pkg: env.Pkg, sym: env.Sym,
+		src:        map[string][]byte{nt.file: append([]byte(nil), src...)},
+		handles:    map[string]string{},
+		file:       nt.file,
+		fileLastOp: map[string]int{},
+	}
+	for i, raw := range env.Ops {
+		ctx.opIndex = i + 1
+		op := opRegistry[names[i]]()
+		if rej := op.apply(ctx, raw); rej != nil {
+			return nil, rej
+		}
+	}
+
+	touched := make([]string, 0, len(ctx.src))
+	formatted := map[string][]byte{}
+	for file, b := range ctx.src {
+		out, ferr := format.Source(b)
+		if ferr != nil {
+			return nil, &Reject{Reason: "patch result does not format", Detail: file + ": " + ferr.Error()}
+		}
+		formatted[file] = out
+		touched = append(touched, file)
+	}
+	sort.Strings(touched)
+
+	originals := map[string][]byte{nt.file: src}
+	for _, file := range touched {
+		if err := os.WriteFile(file, formatted[file], 0o644); err != nil {
+			s.rollback(originals)
+			return nil, err
+		}
+	}
+
+	dirty := append(s.dirtyByFiles(editedFiles), s.affected(env.Pkg)...)
+	diags, n, err := s.retypecheck(dirty)
+	if err != nil {
+		s.rollback(originals)
+		return nil, err
+	}
+	if env.DryRun {
+		s.rollback(originals)
+		s.retypecheck(dirty)
+		return map[string]any{"status": "ok", "dry_run": true, "would": "accepted"}, nil
+	}
+	if len(diags) > 0 {
+		s.rollback(originals)
+		return nil, &Reject{Reason: "patch does not typecheck", Diagnostics: annotateDiagnostics(diags, ctx.fileLastOp)}
+	}
+	for _, file := range touched {
+		s.noteWrite(file)
+	}
+	return map[string]any{
+		"status": "accepted", "symbol": env.Pkg + "." + env.Sym,
+		"ops_applied": len(env.Ops), "files": touched,
+		"load_ms": ms, "packages_rechecked": n,
+		"generation": s.generation(env.Pkg, env.Sym),
+	}, nil
+}
+
+// annotateDiagnostics prefixes each diagnostic's message with the nearest
+// op that touched its file, so a caller composing several ops in one patch
+// can tell which one introduced a type error. Attribution is file-level and
+// picks the most recently applied op that touched the file — nearest-op,
+// not exact: it does not track how a later op's insertion shifts the line
+// ranges an earlier op touched.
+func annotateDiagnostics(diags []Diagnostic, fileLastOp map[string]int) []Diagnostic {
+	out := make([]Diagnostic, len(diags))
+	for i, d := range diags {
+		file := strings.SplitN(d.Pos, ":", 2)[0]
+		out[i] = d
+		if op, ok := fileLastOp[file]; ok {
+			out[i].Msg = fmt.Sprintf("op %d: %s", op, d.Msg)
+		}
+	}
+	return out
 }
 
 // dispatchLegacy translates one op's raw JSON into the existing single-op

@@ -65,7 +65,18 @@ func (s *Snapshot) nodeTableFor(pkgPath, sym string) (*nodeTable, *Reject) {
 	if decl == nil || decl.Body == nil {
 		return nil, &Reject{Reason: "function declaration not found", Detail: sym}
 	}
-	nt := &nodeTable{decl: decl, file: file, nodes: map[string]ast.Node{}}
+	nt := buildNodeTable(decl)
+	nt.file = file
+	return nt, nil
+}
+
+// buildNodeTable walks decl's body and assigns each statement its handle, in
+// the same preorder handleWalk defines for view rendering. It does not set
+// nt.file: callers with a live snapshot decl set it from findFuncDecl;
+// callers re-parsing ctx.src bytes (patch's composable ops) already know
+// the filename and assign it themselves.
+func buildNodeTable(decl *ast.FuncDecl) *nodeTable {
+	nt := &nodeTable{decl: decl, nodes: map[string]ast.Node{}}
 	i := 0
 	handleWalk(decl.Body, func(st ast.Stmt) {
 		i++
@@ -73,7 +84,7 @@ func (s *Snapshot) nodeTableFor(pkgPath, sym string) (*nodeTable, *Reject) {
 		nt.nodes[h] = st
 		nt.order = append(nt.order, h)
 	})
-	return nt, nil
+	return nt
 }
 
 // declText returns the source text of obj's top-level declaration, including
