@@ -80,6 +80,13 @@ func handle(conn net.Conn, snap *snapshot.Snapshot) (stop bool) {
 		res, err = snap.UpsertDecl(req.Pkg, req.Body)
 	case "add-param":
 		res, err = snap.AddParam(req.Pkg, req.Sym, req.Name, req.Type, req.Def)
+	case "patch":
+		raw, merr := json.Marshal(req)
+		if merr != nil {
+			err = merr
+		} else {
+			res, err = snap.Patch(raw)
+		}
 	case "stop":
 		writeJSON(conn, map[string]any{"status": "stopping"})
 		return true
@@ -88,7 +95,7 @@ func handle(conn net.Conn, snap *snapshot.Snapshot) (stop bool) {
 	}
 	if rej, ok := err.(*snapshot.Reject); ok {
 		res = map[string]any{"status": "rejected", "reason": rej.Reason,
-			"detail": rej.Detail, "diagnostics": rej.Diagnostics}
+			"detail": rej.Detail, "diagnostics": rej.Diagnostics, "did_you_mean": rej.DidYouMean}
 	} else if err != nil {
 		res = map[string]any{"status": "error", "error": err.Error()}
 	}

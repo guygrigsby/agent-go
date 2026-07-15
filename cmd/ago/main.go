@@ -11,6 +11,7 @@
 //	ago upsert   [-C dir] -p <pkgpath> -body-file <f|->   (whole declaration)
 //	ago rename   [-C dir] -p <pkgpath> -s <Name | Recv.Name> -to <NewName>
 //	ago add-param [-C dir] -p <pkgpath> -s <Name | Recv.Name> -name <n> -type <T> [-default <expr>]
+//	ago patch    [-C dir] -body-file <f|->   (full patch envelope: pkg, sym, generation, dry_run, ops)
 //	ago init     [-C dir] [module-path]
 //	ago mcp      [-C dir]   (MCP server over stdio, for agent harnesses)
 //	ago stop     [-C dir]
@@ -34,7 +35,7 @@ import (
 
 func main() {
 	if len(os.Args) < 2 {
-		fail("usage: ago <init|status|search|inspect|view|refs|set-body|upsert|rename|add-param|stop|mcp|daemon> [flags]")
+		fail("usage: ago <init|status|search|inspect|view|refs|set-body|upsert|rename|add-param|patch|stop|mcp|daemon> [flags]")
 	}
 	cmd, args := os.Args[1], os.Args[2:]
 	fs := flag.NewFlagSet(cmd, flag.ExitOnError)
@@ -80,7 +81,13 @@ func main() {
 	if cmd == "set-body" || cmd == "upsert" {
 		req.Body = readBody(*bodyFile)
 	}
-	if cmd == "status" || cmd == "search" || cmd == "inspect" || cmd == "view" || cmd == "refs" || cmd == "set-body" || cmd == "upsert" || cmd == "rename" || cmd == "add-param" || cmd == "stop" {
+	if cmd == "patch" {
+		if err := json.Unmarshal([]byte(readBody(*bodyFile)), &req); err != nil {
+			fail("parse patch json: %v", err)
+		}
+		req.Op = "patch"
+	}
+	if cmd == "status" || cmd == "search" || cmd == "inspect" || cmd == "view" || cmd == "refs" || cmd == "set-body" || cmd == "upsert" || cmd == "rename" || cmd == "add-param" || cmd == "patch" || cmd == "stop" {
 		out, err := roundTrip(abs, req, cmd != "stop")
 		if err != nil {
 			fail("%v", err)

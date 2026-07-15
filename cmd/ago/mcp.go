@@ -52,6 +52,15 @@ func runMCP(dir string) error {
 				"default": str("argument expression for existing callers, e.g. context.Background()")}))},
 		{"set_body", "Replace a function or method body with Go statements (no surrounding braces), validated: rejected with compiler diagnostics if it would not typecheck. Nothing is written on rejection.",
 			obj([]string{"pkg", "sym", "body"}, merge(symProps, map[string]any{"body": str("new body statements")}))},
+		{"patch", "Apply one or more edit operations as a single transaction, generation-checked and rolled back wholesale on any failure. v1 supports exactly one op per patch, drawn from rename, set_body, add_param, upsert_decl; multi-op patches and dry_run arrive in a later release.",
+			obj([]string{"ops"}, map[string]any{
+				"pkg":        str("default package import path for ops that omit it"),
+				"sym":        str("default symbol for ops that omit it"),
+				"generation": map[string]any{"type": "integer", "description": "reject if pkg's generation has moved past this value, from a prior view or patch response"},
+				"dry_run":    map[string]any{"type": "boolean", "description": "validate without writing; rejected for v1's legacy ops"},
+				"ops": map[string]any{"type": "array", "description": "the ops to apply, e.g. [{\"op\":\"rename\",\"to\":\"NewName\"}]",
+					"items": map[string]any{"type": "object"}},
+			})},
 	}
 
 	in := bufio.NewScanner(os.Stdin)
@@ -108,6 +117,22 @@ func runMCP(dir string) error {
 
 func mcpCall(dir, name string, args map[string]any) (string, bool) {
 	get := func(k string) string { v, _ := args[k].(string); return v }
+	if name == "patch" {
+		raw, err := json.Marshal(args)
+		if err != nil {
+			return fmt.Sprintf("bad patch args: %v", err), true
+		}
+		var req protocol.Request
+		if err := json.Unmarshal(raw, &req); err != nil {
+			return fmt.Sprintf("bad patch args: %v", err), true
+		}
+		req.Op = "patch"
+		out, err := roundTrip(dir, req, true)
+		if err != nil {
+			return fmt.Sprintf("ago error: %v", err), true
+		}
+		return out, false
+	}
 	ops := map[string]string{"status": "status", "search": "search", "inspect": "inspect", "view": "view",
 		"refs": "refs", "rename": "rename", "set_body": "set-body", "add_param": "add-param", "upsert_decl": "upsert"}
 	op, ok := ops[name]
