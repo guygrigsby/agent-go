@@ -155,29 +155,44 @@ func (s *Snapshot) primary(pkgPath string) *packages.Package {
 	return fallback
 }
 
+// findObject resolves a symbol in the package's primary variant first, then
+// in test variants — test helpers declared in _test.go files live only in
+// the "pkg [pkg.test]" variant's scope.
 func (s *Snapshot) findObject(pkgPath, sym string) (*packages.Package, types.Object, *Reject) {
-	p := s.primary(pkgPath)
-	if p == nil {
+	primary := s.primary(pkgPath)
+	if primary == nil {
 		return nil, nil, &Reject{Reason: "package not found", Detail: pkgPath}
 	}
-	scope := p.Types.Scope()
-	recv, name, isSel := strings.Cut(sym, ".")
-	if !isSel {
-		obj := scope.Lookup(sym)
-		if obj == nil {
-			return nil, nil, &Reject{Reason: "symbol not found", Detail: pkgPath + "." + sym}
+	variants := []*packages.Package{primary}
+	for _, p := range s.pkgs {
+		if p.PkgPath == pkgPath && p.Types != nil && p != primary {
+			variants = append(variants, p)
 		}
-		return p, obj, nil
 	}
-	recvObj := scope.Lookup(recv)
-	if recvObj == nil {
-		return nil, nil, &Reject{Reason: "receiver type not found", Detail: pkgPath + "." + recv}
+	recv, name, isSel := strings.Cut(sym, ".")
+	for _, p := range variants {
+		scope := p.Types.Scope()
+		if !isSel {
+			if obj := scope.Lookup(sym); obj != nil {
+				return p, obj, nil
+			}
+			continue
+		}
+		recvObj := scope.Lookup(recv)
+		if recvObj == nil {
+			continue
+		}
+		if obj, _, _ := types.LookupFieldOrMethod(recvObj.Type(), true, p.Types, name); obj != nil {
+			return p, obj, nil
+		}
 	}
-	obj, _, _ := types.LookupFieldOrMethod(recvObj.Type(), true, p.Types, name)
-	if obj == nil {
+	if isSel {
+		if primary.Types.Scope().Lookup(recv) == nil {
+			return nil, nil, &Reject{Reason: "receiver type not found", Detail: pkgPath + "." + recv}
+		}
 		return nil, nil, &Reject{Reason: "method or field not found", Detail: pkgPath + "." + sym}
 	}
-	return p, obj, nil
+	return nil, nil, &Reject{Reason: "symbol not found", Detail: pkgPath + "." + sym}
 }
 
 func objKind(obj types.Object) string {
@@ -253,11 +268,27 @@ func (s *Snapshot) references(obj types.Object) []refInfo {
 	return refs
 }
 
-// reverse builds the importer graph over every loaded package variant.
+// workspacePackages enumerates every main-module package in the full load
+// graph: roots, test variants, and test-forked dependency copies. Forks
+// (e.g. "controller [credential/vault.test]") are not roots but are real
+// compilation units holding their own types; ignoring them leaves stale
+// type identities in the graph after a splice.
+func (s *Snapshot) workspacePackages() []*packages.Package {
+	var all []*packages.Package
+	packages.Visit(s.pkgs, nil, func(p *packages.Package) {
+		if p.Module != nil && p.Module.Main {
+			all = append(all, p)
+		}
+	})
+	return all
+}
+
+// reverse builds the importer graph over every workspace package variant,
+// forks included.
 func (s *Snapshot) reverse() map[string][]*packages.Package {
 	if s.rev == nil {
 		s.rev = map[string][]*packages.Package{}
-		for _, p := range s.pkgs {
+		for _, p := range s.workspacePackages() {
 			for _, imp := range p.Imports {
 				s.rev[imp.ID] = append(s.rev[imp.ID], p)
 			}
@@ -272,7 +303,7 @@ func (s *Snapshot) reverse() map[string][]*packages.Package {
 func (s *Snapshot) affected(pkgPath string) []*packages.Package {
 	rev := s.reverse()
 	var queue []*packages.Package
-	for _, p := range s.pkgs {
+	for _, p := range s.workspacePackages() {
 		if p.PkgPath == pkgPath {
 			queue = append(queue, p)
 		}
@@ -296,7 +327,7 @@ func (s *Snapshot) affected(pkgPath string) []*packages.Package {
 // the given files.
 func (s *Snapshot) dirtyByFiles(files map[string]bool) []*packages.Package {
 	var out []*packages.Package
-	for _, p := range s.pkgs {
+	for _, p := range s.workspacePackages() {
 		for _, f := range p.CompiledGoFiles {
 			if files[f] {
 				out = append(out, p)
@@ -333,6 +364,15 @@ func (s *Snapshot) retypecheck(dirty []*packages.Package) ([]Diagnostic, int, er
 		work = append(work, p)
 	}
 	order := topo(work)
+	if os.Getenv("AGO_DEBUG_DIRTY") != "" {
+		fmt.Fprintf(os.Stderr, "retypecheck: %d dirty, order:\n", len(order))
+		for i, p := range order {
+			fmt.Fprintf(os.Stderr, "  %3d %s\n", i, p.ID)
+		}
+		if len(order) != len(work) {
+			fmt.Fprintf(os.Stderr, "  TOPO DROPPED %d PACKAGES\n", len(work)-len(order))
+		}
+	}
 
 	saved := map[*packages.Package]pkgState{}
 	restore := func() {
