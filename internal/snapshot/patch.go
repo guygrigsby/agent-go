@@ -303,6 +303,13 @@ func (s *Snapshot) patchComposable(env patchEnvelope, names []string) (map[strin
 		// Splices already landed; re-typecheck the same set against the
 		// restored files to put the snapshot back (mirrors rename.go's own
 		// verifyResolution failure path).
+		//
+		// This resync restores files and the snapshot's types/syntax, but not
+		// the generation counters retypecheck just bumped for the dirty set
+		// (bumpGenerations runs on any clean recheck, including this one).
+		// Accepted, same direction as the rest of the generation contract: a
+		// stale view after a failed patch is safe (it just forces a re-view),
+		// where restoring counters to un-bump them is not worth tracking.
 		s.retypecheck(dirty)
 		return nil, opRej
 	}

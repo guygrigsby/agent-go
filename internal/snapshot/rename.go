@@ -32,26 +32,31 @@ type edit struct {
 // workspace-boundary check, and the pre-existing-errors preflight, all
 // exactly as Rename has always done inline. old is the symbol's current
 // name, needed by both callers to verify a byte range still holds the
-// expected text before splicing it. expected/declKey feed verifyResolution,
-// which callers run after retypechecking: Rename runs it immediately;
-// patchComposable defers it as a postCheck so a multi-rename patch proves
-// itself as one unit against the final state.
-func renameEdits(s *Snapshot, pkgPath, sym, to string) (edits []edit, old string, expected map[string]bool, declKey, newSym string, rej *Reject) {
+// expected text before splicing it. declPos is the target's pristine
+// declaration position, which callers pass to renameExpected (alongside
+// edits) to compute verifyResolution's expected/declKey once the ledger
+// they're replaying against is known: Rename runs it immediately, against
+// only its own edits (byFile) — unchanged from today. patchComposable
+// defers it to a postCheck run after the full op list has applied, against
+// the file's complete per-file ledger (ctx.declEdits), so a multi-rename
+// patch accounts for every sibling decl op's shift in the same file, not
+// just its own.
+func renameEdits(s *Snapshot, pkgPath, sym, to string) (edits []edit, old string, declPos token.Position, newSym string, rej *Reject) {
 	if !token.IsIdentifier(to) {
 		rej = &Reject{Reason: "new name is not a valid identifier", Detail: to}
 		if recv, name, ok := strings.Cut(to, "."); ok && token.IsIdentifier(recv) && token.IsIdentifier(name) {
 			rej.Detail = to + ": pass only the new member name; the receiver stays"
 			rej.DidYouMean = []string{name}
 		}
-		return nil, "", nil, "", "", rej
+		return nil, "", token.Position{}, "", rej
 	}
 	_, obj, rej0 := s.findObject(pkgPath, sym)
 	if rej0 != nil {
-		return nil, "", nil, "", "", rej0
+		return nil, "", token.Position{}, "", rej0
 	}
 	old = obj.Name()
 	if old == to {
-		return nil, "", nil, "", "", &Reject{Reason: "symbol already has that name", Detail: to}
+		return nil, "", token.Position{}, "", &Reject{Reason: "symbol already has that name", Detail: to}
 	}
 	newSym = to
 	if recv, _, isMethod := strings.Cut(sym, "."); isMethod {
@@ -63,31 +68,40 @@ func renameEdits(s *Snapshot, pkgPath, sym, to string) (edits []edit, old string
 	}
 	for _, e := range edits {
 		if !strings.HasPrefix(e.file, s.dir+string(os.PathSeparator)) {
-			return nil, "", nil, "", "", &Reject{Reason: "symbol is referenced outside the workspace", Detail: e.file}
+			return nil, "", token.Position{}, "", &Reject{Reason: "symbol is referenced outside the workspace", Detail: e.file}
 		}
 	}
 
-	byFile := map[string][]edit{}
 	editedFiles := map[string]bool{}
 	for _, e := range edits {
-		byFile[e.file] = append(byFile[e.file], e)
 		editedFiles[e.file] = true
 	}
 	preDirty := append(s.dirtyByFiles(editedFiles), s.affected(pkgPath)...)
 	if diags := errorsIn(preDirty); len(diags) > 0 {
-		return nil, "", nil, "", "", &Reject{Reason: "affected packages have pre-existing errors", Diagnostics: diags}
+		return nil, "", token.Position{}, "", &Reject{Reason: "affected packages have pre-existing errors", Diagnostics: diags}
 	}
 
-	// Expected post-rename positions: each original offset shifted by the
-	// size delta of the edits before it in the same file.
-	delta := len(to) - len(old)
-	declPos := s.fset.Position(obj.Pos())
+	declPos = s.fset.Position(obj.Pos())
+	return edits, old, declPos, newSym, nil
+}
+
+// renameExpected computes a rename's expected post-splice reference
+// positions: each raw reference offset in edits (scanned against the
+// pristine, pre-patch snapshot) shifted by the cumulative length delta of
+// every edit in ledger that lands at an earlier offset in the same file.
+// ledger is the file's full edit history — the rename's own edits only for
+// the legacy single-op Rename path (byFile, so this reproduces exactly
+// today's single-op math), or the whole per-file decl-op ledger
+// (ctx.declEdits) at composable-patch postCheck time, when a sibling decl
+// op with a different length delta (e.g. another rename in the same file)
+// also shifts positions the naive same-file assumption misses.
+func renameExpected(edits []edit, declPos token.Position, ledger map[string][]edit) (expected map[string]bool, declKey string) {
 	expected = map[string]bool{}
 	for _, e := range edits {
 		shift := 0
-		for _, f := range byFile[e.file] {
-			if f.offset < e.offset {
-				shift += delta
+		for _, le := range ledger[e.file] {
+			if le.offset < e.offset {
+				shift += len(le.text) - le.length
 			}
 		}
 		key := fmt.Sprintf("%s:%d", e.file, e.offset+shift)
@@ -96,7 +110,7 @@ func renameEdits(s *Snapshot, pkgPath, sym, to string) (edits []edit, old string
 			declKey = key
 		}
 	}
-	return edits, old, expected, declKey, newSym, nil
+	return expected, declKey
 }
 
 // Rename renames a symbol at every reference, then proves the result: the
@@ -111,7 +125,7 @@ func (s *Snapshot) Rename(pkgPath, sym, to string) (map[string]any, error) {
 	if err != nil {
 		return nil, err
 	}
-	edits, old, expected, declKey, newSym, rej := renameEdits(s, pkgPath, sym, to)
+	edits, old, declPos, newSym, rej := renameEdits(s, pkgPath, sym, to)
 	if rej != nil {
 		return nil, rej
 	}
@@ -122,6 +136,10 @@ func (s *Snapshot) Rename(pkgPath, sym, to string) (map[string]any, error) {
 		byFile[e.file] = append(byFile[e.file], e)
 		editedFiles[e.file] = true
 	}
+	// Ledger is this rename's own edits only — the single-op path never
+	// shares a file-edit history with another op, so this is exactly
+	// today's original per-op math.
+	expected, declKey := renameExpected(edits, declPos, byFile)
 	// Apply per file, descending offset so earlier offsets stay valid.
 	originals := map[string][]byte{}
 	for file, fedits := range byFile {
@@ -195,7 +213,7 @@ func (renameOp) apply(ctx *patchCtx, raw json.RawMessage) *Reject {
 	}
 	pkg := orDefault(a.Pkg, ctx.pkg)
 	sym := orDefault(a.Sym, ctx.sym)
-	edits, _, expected, declKey, newSym, rej := renameEdits(ctx.s, pkg, sym, a.To)
+	edits, _, declPos, newSym, rej := renameEdits(ctx.s, pkg, sym, a.To)
 	if rej != nil {
 		return rej
 	}
@@ -204,6 +222,12 @@ func (renameOp) apply(ctx *patchCtx, raw json.RawMessage) *Reject {
 	}
 	ctx.addAffected(pkg)
 	ctx.postChecks = append(ctx.postChecks, func() *Reject {
+		// ctx.declEdits now holds the FULL per-file ledger — every decl op
+		// in the patch has applied by the time postChecks run — so a
+		// sibling rename touching this same file with a different
+		// name-length delta is accounted for here, not just this rename's
+		// own edits.
+		expected, declKey := renameExpected(edits, declPos, ctx.declEdits)
 		return ctx.s.verifyResolution(pkg, newSym, declKey, expected)
 	})
 	return nil

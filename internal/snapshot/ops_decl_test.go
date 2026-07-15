@@ -59,6 +59,44 @@ func TestPatchInterfaceImplRenameAtomic(t *testing.T) {
 	}
 }
 
+// Two renames in one patch that land in the same file with different
+// name-length deltas. Alpha->AlphaLonger (+6) sits first; Beta->B (-3) sits
+// second and, in its body, calls Alpha. Beta's own declaration offset must
+// account for Alpha's own edits shifting it forward; Alpha's in-body
+// reference (inside Beta) must account for Beta's edit shifting it backward
+// too. Before the fix, each rename computed its expected post-edit
+// positions from only its own edits against pristine bytes, blind to the
+// sibling rename's shift in the same file, so verifyResolution
+// false-rejected with "reference captured by another declaration" even
+// though the composed splice was correct.
+func TestPatchSameFileMultiRenameDifferentLengths(t *testing.T) {
+	s := demo(t)
+	for _, decl := range []string{
+		"func Alpha() int {\n\treturn 1\n}",
+		"func Beta() int {\n\treturn Alpha()\n}",
+	} {
+		if _, err := s.UpsertDecl("demo/lib", decl); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	res, err := s.Patch([]byte(`{"pkg":"demo/lib",
+		"ops":[{"op":"rename","sym":"Alpha","to":"AlphaLonger"},
+		       {"op":"rename","sym":"Beta","to":"B"}]}`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if res["status"] != "accepted" || res["ops_applied"].(int) != 2 {
+		t.Fatalf("got %v", res)
+	}
+	if _, err := s.Inspect("demo/lib", "AlphaLonger"); err != nil {
+		t.Errorf("renamed symbol not queryable: %v", err)
+	}
+	if _, err := s.Inspect("demo/lib", "B"); err != nil {
+		t.Errorf("renamed symbol not queryable: %v", err)
+	}
+}
+
 // A single rename, and a decl op mixed with a statement op in different
 // files, both now flow through the same composable pipeline the old
 // "not yet composable" reject used to block.
@@ -250,6 +288,32 @@ func TestDeleteDeclAccepts(t *testing.T) {
 	}
 	if _, err := s.Inspect("demo/lib", "Unused"); err == nil {
 		t.Error("deleted decl still queryable")
+	}
+}
+
+// A recursive function's own self-calls are references to itself that live
+// entirely inside its own declaration range; they must not count as "still
+// referenced" and block the delete. Nothing outside Fib calls it.
+func TestDeleteDeclRecursive(t *testing.T) {
+	s := demo(t)
+	if _, err := s.UpsertDecl("demo/lib",
+		"func Fib(n int) int {\n\tif n < 2 {\n\t\treturn n\n\t}\n\treturn Fib(n-1) + Fib(n-2)\n}"); err != nil {
+		t.Fatal(err)
+	}
+	res, err := s.Patch([]byte(`{"pkg":"demo/lib",
+		"ops":[{"op":"delete_decl","sym":"Fib"}]}`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if res["status"] != "accepted" {
+		t.Fatalf("got %v", res)
+	}
+	if _, err := s.Inspect("demo/lib", "Fib"); err == nil {
+		t.Error("deleted decl still queryable")
+	}
+	b, _ := os.ReadFile(filepath.Join(s.dir, "lib", "agent.go"))
+	if strings.Contains(string(b), "Fib") {
+		t.Fatalf("recursive decl not deleted:\n%s", b)
 	}
 }
 

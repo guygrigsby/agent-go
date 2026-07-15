@@ -100,12 +100,21 @@ func preexistingErrors(s *Snapshot, file, pkgPath string) *Reject {
 
 // referencePositions collects up to 10 of obj's non-declaring reference
 // positions, for delete_decl/remove_field's "still referenced" Diagnostics
-// list — the caller's own declaring identifier is excluded (r.def), so an
-// empty result means genuinely unreferenced.
-func referencePositions(s *Snapshot, obj types.Object) []Diagnostic {
+// list — the caller's own declaring identifier is excluded (r.def). A
+// reference that falls inside [declStart, declEnd) of declFile is also
+// excluded: a recursive call or a self-referential struct type field is a
+// reference to obj from within obj's own declaration, not a reference from
+// anywhere else, so it must not block deleting that declaration. Pass
+// declFile == "" to skip this second filter (remove_field's field-level
+// deletes: a field spec doesn't self-reference the way a whole decl can).
+// An empty result means genuinely unreferenced.
+func referencePositions(s *Snapshot, obj types.Object, declFile string, declStart, declEnd int) []Diagnostic {
 	var refs []Diagnostic
 	for _, r := range s.references(obj) {
 		if r.def {
+			continue
+		}
+		if declFile != "" && r.pos.Filename == declFile && r.pos.Offset >= declStart && r.pos.Offset < declEnd {
 			continue
 		}
 		refs = append(refs, Diagnostic{Pos: r.pos.String()})
@@ -124,15 +133,9 @@ func deleteDeclEdit(s *Snapshot, pkgPath, sym string) (e edit, rej *Reject) {
 	if rej0 != nil {
 		return edit{}, rej0
 	}
-	if refs := referencePositions(s, obj); len(refs) > 0 {
-		return edit{}, &Reject{Reason: "symbol is still referenced", Diagnostics: refs}
-	}
 	filename, decl, doc := s.findDeclNode(p, obj.Name(), sym)
 	if filename == "" {
 		return edit{}, &Reject{Reason: "declaration not found", Detail: pkgPath + "." + sym}
-	}
-	if rej := preexistingErrors(s, filename, pkgPath); rej != nil {
-		return edit{}, rej
 	}
 	start := decl.Pos()
 	if doc != nil {
@@ -140,6 +143,12 @@ func deleteDeclEdit(s *Snapshot, pkgPath, sym string) (e edit, rej *Reject) {
 	}
 	startOff := s.fset.Position(start).Offset
 	endOff := s.fset.Position(decl.End()).Offset
+	if refs := referencePositions(s, obj, filename, startOff, endOff); len(refs) > 0 {
+		return edit{}, &Reject{Reason: "symbol is still referenced", Diagnostics: refs}
+	}
+	if rej := preexistingErrors(s, filename, pkgPath); rej != nil {
+		return edit{}, rej
+	}
 	return edit{filename, startOff, endOff - startOff, ""}, nil
 }
 
@@ -334,7 +343,7 @@ func removeFieldEdit(s *Snapshot, pkgPath, sym string) (e edit, rej *Reject) {
 	if !ok || !v.IsField() {
 		return edit{}, &Reject{Reason: "symbol is not a field", Detail: objKind(obj)}
 	}
-	if refs := referencePositions(s, obj); len(refs) > 0 {
+	if refs := referencePositions(s, obj, "", 0, 0); len(refs) > 0 {
 		return edit{}, &Reject{Reason: "field is still referenced", Diagnostics: refs}
 	}
 	recv, fname, _ := strings.Cut(sym, ".")
