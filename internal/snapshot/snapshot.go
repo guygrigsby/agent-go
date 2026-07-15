@@ -1,11 +1,16 @@
 // Package snapshot holds a typechecked view of one Go workspace and answers
 // semantic queries and validated mutations against it.
+//
+// Mutations never re-typecheck the world. The dirty set is the packages
+// whose files changed plus, when an edit can alter a method set or exported
+// API, the transitive reverse importers of the target package. Those are
+// re-typechecked in dependency order against the in-memory graph and
+// spliced into the snapshot, or rolled back wholesale on any diagnostic.
 package snapshot
 
 import (
 	"fmt"
 	"go/ast"
-	"go/format"
 	"go/parser"
 	"go/token"
 	"go/types"
@@ -16,6 +21,7 @@ import (
 	"time"
 
 	"golang.org/x/tools/go/packages"
+	"golang.org/x/tools/go/types/objectpath"
 )
 
 const loadMode = packages.NeedName | packages.NeedFiles | packages.NeedCompiledGoFiles |
@@ -45,16 +51,19 @@ type Snapshot struct {
 	pkgs   []*packages.Package
 	fset   *token.FileSet
 	mtimes map[string]time.Time
-	stale  bool
+	loaded bool
+	rev    map[string][]*packages.Package // package ID -> importers
 }
 
 func New(dir string) *Snapshot {
-	return &Snapshot{dir: dir, stale: true}
+	return &Snapshot{dir: dir}
 }
 
-// load (re)typechecks the whole workspace. Caller holds mu.
+// load typechecks the whole workspace from scratch. Caller holds mu.
+// This runs once per daemon (and again only after external edits); all
+// mutation revalidation goes through retypecheck instead.
 func (s *Snapshot) load() (int64, error) {
-	cfg := &packages.Config{Mode: loadMode, Dir: s.dir, Tests: true}
+	cfg := &packages.Config{Mode: loadMode, Dir: s.dir, Tests: true, Fset: token.NewFileSet()}
 	start := time.Now()
 	pkgs, err := packages.Load(cfg, "./...")
 	if err != nil {
@@ -62,37 +71,40 @@ func (s *Snapshot) load() (int64, error) {
 	}
 	s.pkgs = pkgs
 	s.fset = cfg.Fset
-	if s.fset == nil && len(pkgs) > 0 {
-		s.fset = pkgs[0].Fset
-	}
+	s.rev = nil
 	s.mtimes = map[string]time.Time{}
 	for _, p := range pkgs {
 		for _, f := range p.CompiledGoFiles {
-			if fi, err := os.Stat(f); err == nil {
-				s.mtimes[f] = fi.ModTime()
-			}
+			s.noteWrite(f)
 		}
 	}
-	s.stale = false
+	s.loaded = true
 	return time.Since(start).Milliseconds(), nil
 }
 
-// ensureFresh reloads if a mutation was accepted or a file changed on disk.
-// Returns reload cost in ms (0 when the snapshot was already fresh).
+func (s *Snapshot) noteWrite(file string) {
+	if fi, err := os.Stat(file); err == nil {
+		s.mtimes[file] = fi.ModTime()
+	}
+}
+
+// ensureFresh reloads only when the snapshot has never loaded or a file
+// changed behind the daemon's back. Returns reload cost in ms.
 func (s *Snapshot) ensureFresh() (int64, error) {
-	if !s.stale {
+	if s.loaded {
+		fresh := true
 		for f, t := range s.mtimes {
 			fi, err := os.Stat(f)
 			if err != nil || !fi.ModTime().Equal(t) {
-				s.stale = true
+				fresh = false
 				break
 			}
 		}
+		if fresh {
+			return 0, nil
+		}
 	}
-	if s.stale {
-		return s.load()
-	}
-	return 0, nil
+	return s.load()
 }
 
 func (s *Snapshot) errors() []Diagnostic {
@@ -172,6 +184,268 @@ func objKind(obj types.Object) string {
 	}
 }
 
+// objKey is a splice-stable identity. Package-scope objects (and their
+// fields and methods) get pkgpath#objectpath, which survives re-typechecking
+// and matches across test-variant packages and stale importers. Locals fall
+// back to defining position; they are only ever referenced from their own
+// freshly-checked package.
+func (s *Snapshot) objKey(o types.Object) string {
+	if o.Pkg() != nil {
+		if path, err := objectpath.For(o); err == nil {
+			return o.Pkg().Path() + "#" + string(path)
+		}
+	}
+	return "pos:" + s.fset.Position(o.Pos()).String()
+}
+
+// refInfo is one reference to an object.
+type refInfo struct {
+	pos token.Position
+	pkg string
+	def bool
+}
+
+// references returns every Def and Use of obj across the workspace,
+// deduplicated across test-variant packages.
+func (s *Snapshot) references(obj types.Object) []refInfo {
+	key := s.objKey(obj)
+	seen := map[string]bool{}
+	var refs []refInfo
+	for _, p := range s.pkgs {
+		if p.TypesInfo == nil {
+			continue
+		}
+		add := func(idPos token.Pos, o types.Object, def bool) {
+			// Name check first: objKey is too expensive for every ident.
+			if o == nil || o.Name() != obj.Name() || s.objKey(o) != key {
+				return
+			}
+			pos := p.Fset.Position(idPos)
+			if !seen[pos.String()] {
+				seen[pos.String()] = true
+				refs = append(refs, refInfo{pos, p.PkgPath, def})
+			}
+		}
+		for id, o := range p.TypesInfo.Defs {
+			add(id.Pos(), o, true)
+		}
+		for id, o := range p.TypesInfo.Uses {
+			add(id.Pos(), o, false)
+		}
+	}
+	return refs
+}
+
+// reverse builds the importer graph over every loaded package variant.
+func (s *Snapshot) reverse() map[string][]*packages.Package {
+	if s.rev == nil {
+		s.rev = map[string][]*packages.Package{}
+		for _, p := range s.pkgs {
+			for _, imp := range p.Imports {
+				s.rev[imp.ID] = append(s.rev[imp.ID], p)
+			}
+		}
+	}
+	return s.rev
+}
+
+// affected returns every variant of pkgPath plus its transitive reverse
+// importers: the packages whose typechecking could observe a method-set or
+// API change in pkgPath.
+func (s *Snapshot) affected(pkgPath string) []*packages.Package {
+	rev := s.reverse()
+	var queue []*packages.Package
+	for _, p := range s.pkgs {
+		if p.PkgPath == pkgPath {
+			queue = append(queue, p)
+		}
+	}
+	seen := map[string]bool{}
+	var out []*packages.Package
+	for len(queue) > 0 {
+		p := queue[0]
+		queue = queue[1:]
+		if seen[p.ID] {
+			continue
+		}
+		seen[p.ID] = true
+		out = append(out, p)
+		queue = append(queue, rev[p.ID]...)
+	}
+	return out
+}
+
+// dirtyByFiles returns every loaded package variant that compiles any of
+// the given files.
+func (s *Snapshot) dirtyByFiles(files map[string]bool) []*packages.Package {
+	var out []*packages.Package
+	for _, p := range s.pkgs {
+		for _, f := range p.CompiledGoFiles {
+			if files[f] {
+				out = append(out, p)
+				break
+			}
+		}
+	}
+	return out
+}
+
+type pkgState struct {
+	types  *types.Package
+	info   *types.Info
+	syntax []*ast.File
+	errs   []packages.Error
+}
+
+// retypecheck re-typechecks the dirty packages in dependency order, reading
+// current file contents from disk, and splices results into the snapshot in
+// place. Importers see spliced results immediately because Imports shares
+// package pointers. Any diagnostic rolls back every splice.
+//
+// ponytail: each splice re-parses into the shared FileSet, which only grows;
+// a long-lived daemon on a huge repo will accumulate. Idle-exit bounds it.
+func (s *Snapshot) retypecheck(dirty []*packages.Package) ([]Diagnostic, int, error) {
+	var work []*packages.Package
+	seen := map[string]bool{}
+	for _, p := range dirty {
+		// Test-main packages have synthesized sources and no user symbols.
+		if p == nil || p.Types == nil || seen[p.ID] || strings.HasSuffix(p.ID, ".test") {
+			continue
+		}
+		seen[p.ID] = true
+		work = append(work, p)
+	}
+	order := topo(work)
+
+	saved := map[*packages.Package]pkgState{}
+	restore := func() {
+		for p, st := range saved {
+			p.Types, p.TypesInfo, p.Syntax, p.Errors = st.types, st.info, st.syntax, st.errs
+		}
+	}
+	var diags []Diagnostic
+	for _, p := range order {
+		files, cgo, parseDiags := s.parsePkg(p)
+		if cgo {
+			// cgo needs the go tool's preprocessing; splice the whole world.
+			restore()
+			ms, err := s.load()
+			if err != nil {
+				return nil, 0, err
+			}
+			_ = ms
+			return s.errors(), len(order), nil
+		}
+		if len(parseDiags) > 0 {
+			restore()
+			return parseDiags, len(order), nil
+		}
+		info := &types.Info{
+			Defs:         map[*ast.Ident]types.Object{},
+			Uses:         map[*ast.Ident]types.Object{},
+			Types:        map[ast.Expr]types.TypeAndValue{},
+			Selections:   map[*ast.SelectorExpr]*types.Selection{},
+			Implicits:    map[ast.Node]types.Object{},
+			Scopes:       map[ast.Node]*types.Scope{},
+			Instances:    map[*ast.Ident]types.Instance{},
+			FileVersions: map[*ast.File]string{},
+		}
+		var perr []Diagnostic
+		conf := types.Config{
+			Importer: importerFor(p),
+			Sizes:    types.SizesFor("gc", runtime.GOARCH),
+			Error: func(err error) {
+				if te, ok := err.(types.Error); ok {
+					perr = append(perr, Diagnostic{Pos: te.Fset.Position(te.Pos).String(), Msg: te.Msg})
+				} else {
+					perr = append(perr, Diagnostic{Msg: err.Error()})
+				}
+			},
+		}
+		if p.Module != nil && p.Module.GoVersion != "" {
+			conf.GoVersion = "go" + p.Module.GoVersion
+		}
+		tpkg, _ := conf.Check(p.PkgPath, s.fset, files, info)
+		saved[p] = pkgState{p.Types, p.TypesInfo, p.Syntax, p.Errors}
+		p.Types, p.TypesInfo, p.Syntax, p.Errors = tpkg, info, files, nil
+		diags = append(diags, perr...)
+	}
+	if len(diags) > 0 {
+		restore()
+	}
+	return diags, len(order), nil
+}
+
+// parsePkg parses a package's current files from disk into the shared FileSet.
+func (s *Snapshot) parsePkg(p *packages.Package) ([]*ast.File, bool, []Diagnostic) {
+	var files []*ast.File
+	for _, name := range p.CompiledGoFiles {
+		f, err := parser.ParseFile(s.fset, name, nil, parser.ParseComments|parser.SkipObjectResolution)
+		if err != nil {
+			return nil, false, []Diagnostic{{Pos: name, Msg: err.Error()}}
+		}
+		for _, imp := range f.Imports {
+			if imp.Path.Value == `"C"` {
+				return nil, true, nil
+			}
+		}
+		files = append(files, f)
+	}
+	return files, false, nil
+}
+
+func importerFor(p *packages.Package) types.Importer {
+	return importerFunc(func(path string) (*types.Package, error) {
+		if imp, ok := p.Imports[path]; ok && imp.Types != nil {
+			return imp.Types, nil
+		}
+		return nil, fmt.Errorf("package %q not in snapshot", path)
+	})
+}
+
+type importerFunc func(string) (*types.Package, error)
+
+func (f importerFunc) Import(path string) (*types.Package, error) { return f(path) }
+
+// topo orders packages so dependencies precede importers (edges within the
+// set only).
+func topo(work []*packages.Package) []*packages.Package {
+	inSet := map[string]*packages.Package{}
+	for _, p := range work {
+		inSet[p.ID] = p
+	}
+	indeg := map[string]int{}
+	for _, p := range work {
+		for _, imp := range p.Imports {
+			if _, ok := inSet[imp.ID]; ok {
+				indeg[p.ID]++
+			}
+		}
+	}
+	var order []*packages.Package
+	var ready []*packages.Package
+	for _, p := range work {
+		if indeg[p.ID] == 0 {
+			ready = append(ready, p)
+		}
+	}
+	for len(ready) > 0 {
+		p := ready[0]
+		ready = ready[1:]
+		order = append(order, p)
+		for _, q := range work {
+			for _, imp := range q.Imports {
+				if imp.ID == p.ID {
+					if indeg[q.ID]--; indeg[q.ID] == 0 {
+						ready = append(ready, q)
+					}
+				}
+			}
+		}
+	}
+	return order
+}
+
 func (s *Snapshot) Status() (map[string]any, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -224,32 +498,9 @@ func (s *Snapshot) Refs(pkgPath, sym string) (map[string]any, error) {
 		Pkg string `json:"pkg"`
 		Def bool   `json:"def,omitempty"`
 	}
-	defPos := s.fset.Position(obj.Pos()).String()
 	var refs []ref
-	seen := map[string]bool{}
-	for _, p := range s.pkgs {
-		if p.TypesInfo == nil {
-			continue
-		}
-		add := func(id *ast.Ident, o types.Object, def bool) {
-			// Identity by defining position: object pointers differ across
-			// test-variant packages.
-			if o == nil || o.Name() != obj.Name() || !o.Pos().IsValid() ||
-				p.Fset.Position(o.Pos()).String() != defPos {
-				return
-			}
-			pos := p.Fset.Position(id.Pos()).String()
-			if !seen[pos] {
-				seen[pos] = true
-				refs = append(refs, ref{Pos: pos, Pkg: p.PkgPath, Def: def})
-			}
-		}
-		for id, o := range p.TypesInfo.Defs {
-			add(id, o, true)
-		}
-		for id, o := range p.TypesInfo.Uses {
-			add(id, o, false)
-		}
+	for _, r := range s.references(obj) {
+		refs = append(refs, ref{Pos: r.pos.String(), Pkg: r.pkg, Def: r.def})
 	}
 	return map[string]any{
 		"status": "ok", "symbol": pkgPath + "." + sym,
@@ -257,9 +508,9 @@ func (s *Snapshot) Refs(pkgPath, sym string) (map[string]any, error) {
 	}, nil
 }
 
-// SetBody replaces a function's body and validates by re-typechecking only
-// the target package against the in-memory dependency graph. A body edit
-// cannot change the package's exported API, so importers are unaffected.
+// SetBody replaces a function's body. A body edit cannot change the
+// package's exported API, so the dirty set is just the packages compiling
+// the edited file (the package and its internal-test variant).
 func (s *Snapshot) SetBody(pkgPath, sym, body string) (map[string]any, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -286,94 +537,32 @@ func (s *Snapshot) SetBody(pkgPath, sym, body string) (map[string]any, error) {
 	if err != nil {
 		return nil, err
 	}
-	lbrace := p.Fset.Position(decl.Body.Lbrace).Offset
-	rbrace := p.Fset.Position(decl.Body.Rbrace).Offset
-	var buf strings.Builder
-	buf.Write(src[:lbrace])
-	buf.WriteString("{\n")
-	buf.WriteString(body)
-	buf.WriteString("\n}")
-	buf.Write(src[rbrace+1:])
-	formatted, err := format.Source([]byte(buf.String()))
-	if err != nil {
-		return nil, &Reject{Reason: "new body does not parse", Detail: err.Error()}
+	lbrace := s.fset.Position(decl.Body.Lbrace).Offset
+	rbrace := s.fset.Position(decl.Body.Rbrace).Offset
+	formatted, ferr := spliceBody(src, lbrace, rbrace, body)
+	if ferr != nil {
+		return nil, &Reject{Reason: "new body does not parse", Detail: ferr.Error()}
 	}
 
-	start := time.Now()
-	diags, rej := s.checkPackage(p, filename, formatted)
-	checkMS := time.Since(start).Milliseconds()
-	if rej != nil {
-		return nil, rej
-	}
-	if len(diags) > 0 {
-		return nil, &Reject{Reason: "edit does not typecheck", Diagnostics: diags}
-	}
 	if err := os.WriteFile(filename, formatted, 0o644); err != nil {
 		return nil, err
 	}
-	s.stale = true
+	start := time.Now()
+	diags, n, err := s.retypecheck(s.dirtyByFiles(map[string]bool{filename: true}))
+	checkMS := time.Since(start).Milliseconds()
+	if err != nil {
+		s.rollback(map[string][]byte{filename: src})
+		return nil, err
+	}
+	if len(diags) > 0 {
+		s.rollback(map[string][]byte{filename: src})
+		return nil, &Reject{Reason: "edit does not typecheck", Diagnostics: diags}
+	}
+	s.noteWrite(filename)
 	return map[string]any{
 		"status": "accepted", "symbol": pkgPath + "." + sym, "file": filename,
-		"load_ms": ms, "check_ms": checkMS,
+		"load_ms": ms, "check_ms": checkMS, "packages_rechecked": n,
 	}, nil
-}
-
-// checkPackage re-typechecks one package with edited bytes substituted for
-// one file. Deps come from the snapshot's *types.Package graph.
-func (s *Snapshot) checkPackage(p *packages.Package, edited string, content []byte) ([]Diagnostic, *Reject) {
-	fset := token.NewFileSet()
-	var files []*ast.File
-	for _, name := range p.CompiledGoFiles {
-		var src any
-		if name == edited {
-			src = content
-		}
-		f, err := parser.ParseFile(fset, name, src, parser.ParseComments|parser.SkipObjectResolution)
-		if err != nil {
-			return nil, &Reject{Reason: "package does not parse", Detail: err.Error()}
-		}
-		if hasImportC(f) {
-			// ponytail: cgo packages skip scoped checking; full reload on
-			// next query still validates. Upgrade path: overlay packages.Load.
-			return nil, nil
-		}
-		files = append(files, f)
-	}
-	var diags []Diagnostic
-	conf := types.Config{
-		Importer: importerFunc(func(path string) (*types.Package, error) {
-			if imp, ok := p.Imports[path]; ok && imp.Types != nil {
-				return imp.Types, nil
-			}
-			return nil, fmt.Errorf("package %q not in snapshot", path)
-		}),
-		Sizes: types.SizesFor("gc", runtime.GOARCH),
-		Error: func(err error) {
-			if te, ok := err.(types.Error); ok {
-				diags = append(diags, Diagnostic{Pos: te.Fset.Position(te.Pos).String(), Msg: te.Msg})
-			} else {
-				diags = append(diags, Diagnostic{Msg: err.Error()})
-			}
-		},
-	}
-	if p.Module != nil && p.Module.GoVersion != "" {
-		conf.GoVersion = "go" + p.Module.GoVersion
-	}
-	conf.Check(p.PkgPath, fset, files, nil)
-	return diags, nil
-}
-
-type importerFunc func(string) (*types.Package, error)
-
-func (f importerFunc) Import(path string) (*types.Package, error) { return f(path) }
-
-func hasImportC(f *ast.File) bool {
-	for _, imp := range f.Imports {
-		if imp.Path.Value == `"C"` {
-			return true
-		}
-	}
-	return false
 }
 
 func findFuncDecl(p *packages.Package, fn *types.Func) (*ast.FuncDecl, string) {

@@ -86,16 +86,42 @@ func TestSetBodyAccept(t *testing.T) {
 	if !strings.Contains(string(b), "return v + v") {
 		t.Errorf("edit not written:\n%s", b)
 	}
-	// Snapshot is stale after an accept; next query must reload and see it.
+	// The accept spliced the package in place; queries must see the result
+	// with no full reload.
 	res, err = s.Refs("demo/lib", "Double")
 	if err != nil {
 		t.Fatal(err)
 	}
 	if res["count"].(int) != 2 {
-		t.Errorf("post-reload refs: got %v", res)
+		t.Errorf("post-splice refs: got %v", res)
 	}
-	if res["load_ms"].(int64) == 0 {
-		t.Error("expected a reload after accepted mutation")
+	if res["load_ms"].(int64) != 0 {
+		t.Error("accepted mutation triggered a full reload; splice should suffice")
+	}
+}
+
+// A body edit shifts the positions of every later declaration in the file.
+// Cross-package references to those declarations live in packages that were
+// not re-typechecked, so identity must survive the drift.
+func TestSpliceKeepsIdentityAcrossPositionDrift(t *testing.T) {
+	s := demo(t)
+	before, err := s.Refs("demo/lib", "Tail")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := s.SetBody("demo/lib", "Double", "w := v\nw += v\nreturn w"); err != nil {
+		t.Fatal(err)
+	}
+	after, err := s.Refs("demo/lib", "Tail")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if after["count"].(int) != before["count"].(int) {
+		t.Errorf("refs of later decl changed after body splice: before %v after %v",
+			before["count"], after["count"])
+	}
+	if after["load_ms"].(int64) != 0 {
+		t.Error("query after splice paid a full reload")
 	}
 }
 

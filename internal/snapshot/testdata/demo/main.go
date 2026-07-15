@@ -9,5 +9,5 @@ import (
 func main() {
 	s := &lib.Store{}
 	s.Put(lib.Double(lib.Limit))
-	fmt.Println(s)
+	fmt.Println(s, lib.Tail(1))
 }

@@ -70,6 +70,8 @@ func handle(conn net.Conn, snap *snapshot.Snapshot) (stop bool) {
 		res, err = snap.Refs(req.Pkg, req.Sym)
 	case "set-body":
 		res, err = snap.SetBody(req.Pkg, req.Sym, req.Body)
+	case "rename":
+		res, err = snap.Rename(req.Pkg, req.Sym, req.To)
 	case "stop":
 		writeJSON(conn, map[string]any{"status": "stopping"})
 		return true

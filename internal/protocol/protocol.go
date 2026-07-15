@@ -7,4 +7,5 @@ type Request struct {
 	Pkg  string `json:"pkg,omitempty"`
 	Sym  string `json:"sym,omitempty"`
 	Body string `json:"body,omitempty"`
+	To   string `json:"to,omitempty"`
 }
