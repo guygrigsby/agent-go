@@ -1,0 +1,47 @@
+{
+ "agent_error": true,
+ "capped": true,
+ "iter": 0,
+ "mode": "raw",
+ "pass": false,
+ "predicate": false,
+ "prompt": "Rename some variables to remove Nodee",
+ "specs": [
+  {
+   "baseline_refs": 11,
+   "new_refs": 0,
+   "ok": false,
+   "old_refs_left": 11,
+   "sym": "github.com/hashicorp/boundary/internal/daemon/worker.Worker.nodeeSplitListener",
+   "to": "workerAuthSplitListener"
+  },
+  {
+   "baseline_refs": 7,
+   "new_refs": 0,
+   "ok": false,
+   "old_refs_left": 0,
+   "sym": "github.com/hashicorp/boundary/internal/daemon/worker.Worker.NodeeFileStorage",
+   "to": "WorkerAuthStorage"
+  },
+  {
+   "baseline_refs": 4,
+   "new_refs": 0,
+   "ok": false,
+   "old_refs_left": 0,
+   "sym": "github.com/hashicorp/boundary/internal/daemon/worker.Worker.NodeeCurrentKeyId",
+   "to": "WorkerAuthCurrentKeyId"
+  },
+  {
+   "baseline_refs": 4,
+   "new_refs": 0,
+   "ok": false,
+   "old_refs_left": 0,
+   "sym": "github.com/hashicorp/boundary/internal/daemon/worker.Worker.NodeeRegistrationRequest",
+   "to": "WorkerAuthRegistrationRequest"
+  }
+ ],
+ "task": "boundary_caf19f86",
+ "tests": false,
+ "typecheck": true,
+ "wall_s": 1200.034184375
+}

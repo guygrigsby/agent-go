@@ -144,6 +144,9 @@ func episode(b *testing.B, c config, t Manifest, mode string, iter int) bool {
 	for _, r := range t.Renames {
 		baseline[r.Pkg+"."+r.Sym] = refCount(c, wt, r.Pkg, r.Sym)
 	}
+	// Old parents can carry rot (test files that no longer typecheck).
+	// Typecheck scoring is "no new errors", so capture the baseline set.
+	baseErrs := errorSet(agoJSON(c, wt, "status"))
 	if mode == "raw" {
 		agoStop(c, wt) // raw mode gets no daemon; scoring respawns it later
 	}
@@ -157,7 +160,7 @@ func episode(b *testing.B, c config, t Manifest, mode string, iter int) bool {
 	wall := time.Since(start)
 	b.StopTimer()
 
-	res := score(c, wt, t, baseline)
+	res := score(c, wt, t, baseline, baseErrs)
 	res["task"] = t.Repo + "_" + t.SHA[:8]
 	res["mode"] = mode
 	res["iter"] = iter
@@ -190,7 +193,21 @@ func record(c config, epDir, wt, transcript string, res map[string]any) {
 	appendResult(filepath.Join(c.results, c.runID, "episodes.jsonl"), res)
 }
 
-func score(c config, wt string, t Manifest, baseline map[string]int) map[string]any {
+func errorSet(status map[string]any) map[string]bool {
+	set := map[string]bool{}
+	if status == nil {
+		return set
+	}
+	errs, _ := status["errors"].([]any)
+	for _, e := range errs {
+		if m, ok := e.(map[string]any); ok {
+			set[fmt.Sprint(m["pos"])+"|"+fmt.Sprint(m["msg"])] = true
+		}
+	}
+	return set
+}
+
+func score(c config, wt string, t Manifest, baseline map[string]int, baseErrs map[string]bool) map[string]any {
 	predicate := true
 	var specs []map[string]any
 	for _, r := range t.Renames {
@@ -207,9 +224,15 @@ func score(c config, wt string, t Manifest, baseline map[string]int) map[string]
 		}
 	}
 	typecheck := false
-	if out := agoJSON(c, wt, "status"); out != nil {
-		errs, _ := out["errors"].([]any)
-		typecheck = out["status"] == "ok" && len(errs) == 0
+	var newErrs []string
+	if out := agoJSON(c, wt, "status"); out != nil && out["status"] == "ok" {
+		typecheck = true
+		for e := range errorSet(out) {
+			if !baseErrs[e] {
+				newErrs = append(newErrs, e)
+				typecheck = false
+			}
+		}
 	}
 	tests := false
 	if predicate && typecheck {
@@ -218,6 +241,7 @@ func score(c config, wt string, t Manifest, baseline map[string]int) map[string]
 	return map[string]any{
 		"predicate": predicate, "typecheck": typecheck, "tests": tests,
 		"pass": predicate && typecheck && tests, "specs": specs,
+		"new_errors": newErrs,
 	}
 }
 

@@ -29,9 +29,6 @@ func (s *Snapshot) UpsertDecl(pkgPath, text string) (map[string]any, error) {
 	if err != nil {
 		return nil, err
 	}
-	if diags := s.errors(); len(diags) > 0 {
-		return nil, &Reject{Reason: "workspace has pre-existing errors", Diagnostics: diags}
-	}
 	name, sym, rej := parseDeclText(text)
 	if rej != nil {
 		return nil, rej
@@ -75,6 +72,10 @@ func (s *Snapshot) UpsertDecl(pkgPath, text string) (map[string]any, error) {
 		return nil, &Reject{Reason: "declaration does not parse in place", Detail: err.Error()}
 	}
 
+	preDirty := append(s.dirtyByFiles(map[string]bool{file: true}), s.affected(pkgPath)...)
+	if diags := errorsIn(preDirty); len(diags) > 0 {
+		return nil, &Reject{Reason: "affected packages have pre-existing errors", Diagnostics: diags}
+	}
 	created := ""
 	if _, err := os.Stat(file); err != nil {
 		created = file

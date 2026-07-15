@@ -1,0 +1,30 @@
+diff --git a/pkg/provider/docker/shared.go b/pkg/provider/docker/shared.go
+index 97c8d519..625f5f1e 100644
+--- a/pkg/provider/docker/shared.go
++++ b/pkg/provider/docker/shared.go
+@@ -208,8 +208,8 @@ func getPort(container dockerData, serverPort string) string {
+ func getServiceName(container dockerData) string {
+ 	serviceName := container.ServiceName
+ 
+-	if values, err := getStringMultipleStrict(container.Labels, labelDockerComposeProject, labelDockerComposeService); err == nil {
+-		serviceName = values[labelDockerComposeService] + "_" + values[labelDockerComposeProject]
++	if values, err := getStringMultipleStrict(container.Labels, labelSwarmComposeProject, labelSwarmComposeService); err == nil {
++		serviceName = values[labelSwarmComposeService] + "_" + values[labelSwarmComposeProject]
+ 	}
+ 
+ 	return provider.Normalize(serviceName)
+diff --git a/pkg/provider/docker/shared_labels.go b/pkg/provider/docker/shared_labels.go
+index f17e5150..79053451 100644
+--- a/pkg/provider/docker/shared_labels.go
++++ b/pkg/provider/docker/shared_labels.go
+@@ -7,8 +7,8 @@ import (
+ )
+ 
+ const (
+-	labelDockerComposeProject = "com.docker.compose.project"
+-	labelDockerComposeService = "com.docker.compose.service"
++	labelSwarmComposeProject = "com.docker.compose.project"
++	labelSwarmComposeService = "com.docker.compose.service"
+ )
+ 
+ // configuration Contains information from the labels that are globals (not related to the dynamic configuration)

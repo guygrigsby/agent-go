@@ -31,9 +31,6 @@ func (s *Snapshot) AddParam(pkgPath, sym, name, typ, defaultExpr string) (map[st
 	if err != nil {
 		return nil, err
 	}
-	if diags := s.errors(); len(diags) > 0 {
-		return nil, &Reject{Reason: "workspace has pre-existing errors", Diagnostics: diags}
-	}
 	p, obj, rej := s.findObject(pkgPath, sym)
 	if rej != nil {
 		return nil, rej
@@ -96,11 +93,16 @@ func (s *Snapshot) AddParam(pkgPath, sym, name, typ, defaultExpr string) (map[st
 	}
 
 	byFile := map[string][]insertion{}
+	editedFiles := map[string]bool{}
 	for _, e := range edits {
 		byFile[e.file] = append(byFile[e.file], e)
+		editedFiles[e.file] = true
+	}
+	preDirty := append(s.dirtyByFiles(editedFiles), s.affected(pkgPath)...)
+	if diags := errorsIn(preDirty); len(diags) > 0 {
+		return nil, &Reject{Reason: "affected packages have pre-existing errors", Diagnostics: diags}
 	}
 	originals := map[string][]byte{}
-	editedFiles := map[string]bool{}
 	for file, fedits := range byFile {
 		src, err := os.ReadFile(file)
 		if err != nil {
@@ -108,7 +110,6 @@ func (s *Snapshot) AddParam(pkgPath, sym, name, typ, defaultExpr string) (map[st
 			return nil, err
 		}
 		originals[file] = src
-		editedFiles[file] = true
 		sort.Slice(fedits, func(i, j int) bool { return fedits[i].offset > fedits[j].offset })
 		out := src
 		for _, e := range fedits {

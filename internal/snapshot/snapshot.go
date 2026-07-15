@@ -121,6 +121,23 @@ func (s *Snapshot) errors() []Diagnostic {
 	return diags
 }
 
+// errorsIn reports diagnostics recorded on exactly these packages. Used to
+// scope mutation preflight to the dirty set: rot elsewhere in the workspace
+// must not block an unrelated edit.
+func errorsIn(pkgs []*packages.Package) []Diagnostic {
+	var diags []Diagnostic
+	seen := map[string]bool{}
+	for _, p := range pkgs {
+		for _, e := range p.Errors {
+			if key := e.Pos + e.Msg; !seen[key] {
+				seen[key] = true
+				diags = append(diags, Diagnostic{Pos: e.Pos, Msg: e.Msg})
+			}
+		}
+	}
+	return diags
+}
+
 // primary returns the non-test variant of a package.
 func (s *Snapshot) primary(pkgPath string) *packages.Package {
 	var fallback *packages.Package
@@ -583,9 +600,6 @@ func (s *Snapshot) SetBody(pkgPath, sym, body string) (map[string]any, error) {
 	if err != nil {
 		return nil, err
 	}
-	if diags := s.errors(); len(diags) > 0 {
-		return nil, &Reject{Reason: "workspace has pre-existing errors", Diagnostics: diags}
-	}
 	p, obj, rej := s.findObject(pkgPath, sym)
 	if rej != nil {
 		return nil, rej
@@ -597,6 +611,9 @@ func (s *Snapshot) SetBody(pkgPath, sym, body string) (map[string]any, error) {
 	decl, filename := findFuncDecl(p, fn)
 	if decl == nil || decl.Body == nil {
 		return nil, &Reject{Reason: "function declaration not found", Detail: sym}
+	}
+	if diags := errorsIn(s.dirtyByFiles(map[string]bool{filename: true})); len(diags) > 0 {
+		return nil, &Reject{Reason: "affected packages have pre-existing errors", Diagnostics: diags}
 	}
 	src, err := os.ReadFile(filename)
 	if err != nil {

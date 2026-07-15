@@ -1,0 +1,39 @@
+{
+ "agent_error": true,
+ "capped": true,
+ "iter": 0,
+ "mode": "semantic",
+ "pass": false,
+ "predicate": false,
+ "prompt": "Rename the UI passthrough dir flag/env var",
+ "specs": [
+  {
+   "baseline_refs": 3,
+   "new_refs": 0,
+   "ok": false,
+   "old_refs_left": 3,
+   "sym": "github.com/hashicorp/boundary/internal/cmd/commands/dev.Command.flagPassthroughDirectory",
+   "to": "flagUiPassthroughDir"
+  },
+  {
+   "baseline_refs": 2,
+   "new_refs": 0,
+   "ok": false,
+   "old_refs_left": 2,
+   "sym": "github.com/hashicorp/boundary/internal/servers/controller.devPassthroughHandler",
+   "to": "devUiPassthroughHandler"
+  },
+  {
+   "baseline_refs": 4,
+   "new_refs": 0,
+   "ok": false,
+   "old_refs_left": 4,
+   "sym": "github.com/hashicorp/boundary/internal/cmd/config.Config.PassthroughDirectory",
+   "to": "DevUiPassthroughDir"
+  }
+ ],
+ "task": "boundary_c0532428",
+ "tests": false,
+ "typecheck": true,
+ "wall_s": 1200.033478583
+}

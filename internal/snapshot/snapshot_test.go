@@ -174,6 +174,33 @@ func TestSetBodyRejectBadParse(t *testing.T) {
 	}
 }
 
+// Rot in an unrelated package must not block a mutation: mined-repo parents
+// often carry test files that no longer typecheck against a new toolchain.
+func TestMutationAllowedDespiteUnrelatedRot(t *testing.T) {
+	s := demo(t)
+	rotDir := filepath.Join(s.dir, "rot")
+	if err := os.MkdirAll(rotDir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	rot := "package rot\n\nfunc Broken() int { return undefinedThing }\n"
+	if err := os.WriteFile(filepath.Join(rotDir, "rot.go"), []byte(rot), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	res, err := s.Rename("demo/lib", "Double", "Twice")
+	if err != nil {
+		t.Fatalf("rename blocked by unrelated rot: %v", err)
+	}
+	if res["status"] != "accepted" {
+		t.Fatalf("got %v", res)
+	}
+	// But a mutation whose dirty set includes the rot is still refused.
+	_, err = s.UpsertDecl("demo/rot", "func Fine() int {\n\treturn 1\n}")
+	rej, ok := err.(*Reject)
+	if !ok || rej.Reason != "affected packages have pre-existing errors" {
+		t.Fatalf("want scoped preflight reject, got %v", err)
+	}
+}
+
 func TestExternalEditInvalidates(t *testing.T) {
 	s := demo(t)
 	if _, err := s.Status(); err != nil {

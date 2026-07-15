@@ -31,9 +31,6 @@ func (s *Snapshot) Rename(pkgPath, sym, to string) (map[string]any, error) {
 	if err != nil {
 		return nil, err
 	}
-	if diags := s.errors(); len(diags) > 0 {
-		return nil, &Reject{Reason: "workspace has pre-existing errors", Diagnostics: diags}
-	}
 	_, obj, rej := s.findObject(pkgPath, sym)
 	if rej != nil {
 		return nil, rej
@@ -57,13 +54,18 @@ func (s *Snapshot) Rename(pkgPath, sym, to string) (map[string]any, error) {
 		}
 	}
 
-	// Apply per file, descending offset so earlier offsets stay valid.
 	byFile := map[string][]edit{}
+	editedFiles := map[string]bool{}
 	for _, e := range edits {
 		byFile[e.file] = append(byFile[e.file], e)
+		editedFiles[e.file] = true
 	}
+	preDirty := append(s.dirtyByFiles(editedFiles), s.affected(pkgPath)...)
+	if diags := errorsIn(preDirty); len(diags) > 0 {
+		return nil, &Reject{Reason: "affected packages have pre-existing errors", Diagnostics: diags}
+	}
+	// Apply per file, descending offset so earlier offsets stay valid.
 	originals := map[string][]byte{}
-	editedFiles := map[string]bool{}
 	for file, fedits := range byFile {
 		src, err := os.ReadFile(file)
 		if err != nil {
@@ -71,7 +73,6 @@ func (s *Snapshot) Rename(pkgPath, sym, to string) (map[string]any, error) {
 			return nil, err
 		}
 		originals[file] = src
-		editedFiles[file] = true
 		sort.Slice(fedits, func(i, j int) bool { return fedits[i].offset > fedits[j].offset })
 		out := src
 		for _, e := range fedits {
