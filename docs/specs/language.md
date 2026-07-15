@@ -134,6 +134,47 @@ statements, complex composite literals); `help` says so per gap. If bench
 evidence shows a missing op mattering, it gets added — the catalog is
 versioned.
 
+### Test ops
+
+Tests are declarations underneath, but they get dedicated ops for three
+reasons: placement is constrained (a `_test.go` file, correct test
+package), the naming is constrained (`TestXxx(t *testing.T)`), and the
+idiomatic form humans expect — table-driven — is structured enough that an
+agent should compose it from data, not synthesize its shape.
+
+| op | args | notes |
+|---|---|---|
+| `add_test` | pkg, target (sym under test), name? | scaffolds a table-driven test: case struct derived from the target's signature (inputs from params, `want` from results), rows slice, `range` + `t.Run` loop, one starter failure message. Returns the table handle. Name defaults to `Test<Target>` |
+| `add_test_case` | at (table handle) or test name, name, args[], want[] | appends one row; values are expression atoms typechecked against the case struct |
+| `set_test_case` / `remove_test_case` | case addressed by test + row name | |
+| `add_bench` | pkg, target, name? | `BenchmarkXxx(b *testing.B)` skeleton |
+
+Placement and form rules, enforced at validation:
+
+- New tests land in `<declfile>_test.go` next to the target, created on
+  demand. Internal vs external test package follows the package's
+  existing tests; a package with no tests gets internal.
+- Assertion style follows the package's dominant existing convention
+  (stdlib `t.Errorf` vs testify `require`/`assert`), detected from the
+  test files already present; stdlib when there is no precedent.
+- The canonical skeleton is fixed by this spec (name/args/want struct,
+  `got` := call, comparison, `t.Errorf("Target(%v) = %v, want %v", ...)`)
+  so generated tests read the same everywhere; gofmt applies as always.
+- Generated helpers call `t.Helper()`.
+
+Arbitrary non-table tests remain expressible with `upsert_decl` into a
+`_test.go` path — the ops cover the idiomatic 90%.
+
+### The test tool
+
+Semantic mode has no shell, so running tests is part of the language: a
+`test {pkg?, run?}` tool executes `go test` scoped to a package (and
+optionally `-run` filter) and returns structured results — pass/fail per
+test, failure messages with positions, elapsed time. Per Guy's workflow
+rule, validation of mutations stays compiler-only; `test` is how the agent
+closes the behavior loop per set of changes, at its own judgment. The
+bench's scoring runs tests independently either way.
+
 ### Project ops
 
 | op | args | notes |
