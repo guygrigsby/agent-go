@@ -165,6 +165,63 @@ round with one model first (validate the ago extension route, purity,
 and evidence capture), then widen to the matrix. Full model-x-harness
 is the target grid; corners get filled in the roster's fill order.
 
+## MLflow for bench data: yes, as a derived layer
+
+The goal is every bit of data, comparable and transparent. Two facts
+set the design:
+
+- The bench's stated stance is that evidence is committed: transcripts,
+  diffs, configs, scores live under `bench/results/` in git, because
+  reproducibility is part of the result. That stance is the
+  transparency guarantee, and an MLflow backend store (sqlite, not
+  diffable, not in the repo) must not replace it.
+- MLflow 3.6+ removed the language objection: the server exposes an
+  OTLP `/v1/traces` endpoint speaking the OTel GenAI semantic
+  conventions, so Go code emits to it with the official OTel Go SDK.
+  No Python client, no hand-rolled REST.
+
+So: git stays canonical, MLflow becomes the comparison and browsing
+layer, fed one-way from the canonical data. Two phases:
+
+1. **Exporter first.** `bench export --mlflow <uri>` reads run dirs and
+   episodes.jsonl and creates one MLflow run per episode, nested under
+   the bench run: params = serving profile + mode + harness + task,
+   metrics = pass, predicate/typecheck/tests, wall_s, tokens in/out,
+   time-to-first-mutation and the counters, tags = ago rev, server
+   build, evidence path in git. Exporter over live logging deliberately:
+   it is idempotent, it backfills every run already recorded, a wiped
+   MLflow instance rebuilds entirely from git, and an MLflow outage can
+   never touch a bench run. Artifacts stay in git; runs carry pointers
+   (rev + path), not copies.
+2. **OTel traces if the span view earns it.** The daemon request log
+   maps naturally onto spans (episode → turn → tool call → daemon op),
+   and MLflow's trace UI would make rejection-repair loops visually
+   obvious. Same one-way discipline: emit from the recorded logs, not
+   from inside a live episode.
+
+Both MLflow and Grafana already run in the lab on bee, so there is no
+setup cost either way. They are not interchangeable for this, though:
+bench data is experiment-shaped (params per run, metrics compared
+across runs), which is MLflow's native model; Grafana is
+time-series-first, and forcing run comparison through it means bending
+a dashboard around data it wasn't shaped for. Use both for what each
+is for:
+
+- **MLflow (bee): experiment comparison.** The exporter target above;
+  model x mode x harness grids, run history, trace UI later.
+- **Grafana (bee): live round monitoring.** llama-server exposes
+  Prometheus metrics natively, and ds4 has status endpoints; a small
+  dashboard (tokens/s, slot occupancy, RAM, canary pass/fail as a
+  metric) watches serving health while a round runs. That is the
+  real-time complement to the canary probe: the GLM wedge shows up as
+  a RAM ramp on a graph minutes before it would poison episodes.
+
+Considered and passed on: Langfuse and Aim (each adds a service for
+capability MLflow on bee already has), W&B (hosted, results should not
+require a third party to inspect). The comparison UI is the payoff; the
+report subcommand (section 5) still exists for the committed, citable
+tables.
+
 ## What not to build, after looking outside
 
 - **Harbor / Terminal-Bench** (containerized agent evals, parallel
