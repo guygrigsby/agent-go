@@ -133,34 +133,37 @@ numbers ever matter (publication), adopt SWE-rebench's answer: mine
 commits newer than the model's cutoff, which our miner already supports
 by construction (it takes a repo and a date range).
 
-## Harness: opencode stays primary, Pi is the sensitivity check
+## Harness: both, as a first-class axis
 
-Both candidates are installed and both record per-message token usage
-in inspectable local files (opencode: sqlite db; Pi: session JSONL with
-`usage` per entry, verified locally on both). The comparison:
+Guy's call: opencode and Pi are both very popular, both get tested.
+The harness becomes a recorded dimension of every episode
+(`harness: opencode|pi`), not a footnote, and the report compares
+across it. If the mode margin holds under both drivers it is a protocol
+result, not a harness artifact; if it doesn't, that divergence is
+itself a finding about harness sensitivity, and either way the bench
+speaks to both user populations.
 
-- **opencode** is wired, MCP-native (the semantic arm's ago tools drop
-  in), and its purity problems are already solved and paid for (tool
-  denylist, XDG isolation, the round-3 skill-leak fix). Continuity with
-  recorded results argues for keeping it as the primary driver.
-- **Pi** (0.80.2, already serving Qwen locally here) makes purity
-  first-class on the CLI: `--no-tools`, `--tools` allowlist,
-  `-ne -ns -nc -na` kill extensions, skills, context files, and
-  project-local config per invocation, no config-file dance. It also
-  exposes `--thinking off..xhigh` per run, which maps directly onto the
-  thinking/effort bench axis, and `--mode json`/`--mode rpc` for
-  programmatic driving. The catch: no built-in MCP; ago's tools would
-  arrive via a small TypeScript extension (registering tools that call
-  the ago CLI), which is real if modest work and a second toolchain in
-  the repo.
+Both are installed and both record per-message token usage in
+inspectable local files (opencode: sqlite db; Pi: session JSONL with
+`usage` per entry; both verified locally). What each needs:
 
-Proposal: don't switch, add. Keep opencode as the primary harness; once
-multi-model rounds produce a stable result on one task kind, rerun a
-subset (one model, rename round) under Pi as a harness-sensitivity
-check. If the mode margin survives a harness swap, it is a protocol
-result, not an opencode artifact; that is the same logic as the oracle
-arm, applied to the driver. The Pi extension for ago is the
-prerequisite and can wait until then.
+- **opencode**: already wired. MCP-native, purity solved (tool
+  denylist, XDG isolation, the round-3 skill-leak fix), continuity with
+  recorded results.
+- **Pi** (0.80.2, already serving Qwen locally here): extension-based
+  by design, and MCP-server extensions exist, so ago's tools arrive
+  either through an MCP extension or a thin native-tool extension
+  calling the ago CLI; test the MCP route first since it reuses the
+  exact server opencode runs. Purity is first-class on the CLI
+  (`--no-tools`, `--tools` allowlist, `-ne -ns -nc -na`), which
+  replaces opencode's config dance with flags, and `--thinking
+  off..xhigh` maps directly onto the thinking bench axis. `--mode
+  json`/`--mode rpc` cover programmatic driving.
+
+Sequencing still matters under time-box: bring Pi up on the rename
+round with one model first (validate the ago extension route, purity,
+and evidence capture), then widen to the matrix. Full model-x-harness
+is the target grid; corners get filled in the roster's fill order.
 
 ## What not to build, after looking outside
 
@@ -207,8 +210,9 @@ prerequisite and can wait until then.
 
 Resolved (Guy, 2026-07-15): daemon request log is a general daemon
 flag, off by default, not always-on and not bench-only. Token usage is
-recorded by both candidate harnesses locally; no server scraping.
-Harness: opencode primary, Pi as a later sensitivity check.
+recorded by both harnesses locally; no server scraping. Harness: both
+opencode and Pi run as a first-class bench axis; Pi's ago tools come
+via its extension model (MCP extension route first).
 
 ## References
 
