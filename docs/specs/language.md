@@ -146,8 +146,8 @@ agent should compose it from data, not synthesize its shape.
 
 | op | args | notes |
 |---|---|---|
-| `add_test` | pkg, target (sym under test), name? | scaffolds a table-driven test: case struct derived from the target's signature (inputs from params, `want` from results), rows slice, `range` + `t.Run` loop, one starter failure message. Returns the table handle. Name defaults to `Test<Target>` |
-| `add_test_case` | at (table handle) or test name, name, args[], want[] | appends one row; values are expression atoms typechecked against the case struct |
+| `add_test` | pkg, target (sym under test), name? | scaffolds a table-driven test: case struct derived from the target's signature (inputs from params, `want` from results), rows slice, `range` + `t.Run` loop, one starter failure message. v1: address the test by name in follow-up ops. Name defaults to `Test<Target>` |
+| `add_test_case` | test (name), name, args[], want[] | appends one row; values are expression atoms typechecked against the case struct. v1 addresses tests by name; table handles are future |
 | `set_test_case` / `remove_test_case` | case addressed by test + row name | |
 | `add_bench` | pkg, target, name? | `BenchmarkXxx(b *testing.B)` skeleton |
 
@@ -158,7 +158,9 @@ Placement and form rules, enforced at validation:
   existing tests; a package with no tests gets internal.
 - Assertion style follows the package's dominant existing convention
   (stdlib `t.Errorf` vs testify `require`/`assert`), detected from the
-  test files already present; stdlib when there is no precedent.
+  test files already present; stdlib when there is no precedent (v1
+  detection: any existing `_test.go` importing testify/require flips to
+  `require.Equal`; `assert` unsupported).
 - The canonical skeleton is fixed by this spec (name/args/want struct,
   `got` := call, comparison, `t.Errorf("Target(%v) = %v, want %v", ...)`)
   so generated tests read the same everywhere; gofmt applies as always.

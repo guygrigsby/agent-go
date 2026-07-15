@@ -29,6 +29,14 @@ type patchCtx struct {
 	fileLastOp map[string]int // file -> op index that last edited it, for
 	// attributing end-of-list typecheck diagnostics to the nearest op.
 
+	// createdFiles lists every file an op created outright this patch (only
+	// add_test's new-file path does, today) rather than editing through
+	// ctx.src. Those files bypass the ctx.src/originals rollback entirely —
+	// there is no "original" to restore a file that didn't exist before the
+	// patch to — so patchComposable's own cleanupCreatedFiles is the only
+	// thing that deletes them on any path that doesn't end in a commit.
+	createdFiles []string
+
 	// declOrig/declEdits back the decl ops' (rename, set_body, add_param,
 	// upsert_decl, delete_decl, set_doc, add_field, remove_field) shared
 	// splice ledger: each op computes its edits' byte offsets against the
@@ -198,6 +206,12 @@ func (s *Snapshot) patchComposable(env patchEnvelope, names []string) (map[strin
 		}
 		op := opRegistry[names[i]]()
 		if rej := op.apply(ctx, resolved); rej != nil {
+			// The op that just ran (this one, or an earlier one in the same
+			// list) may have created a file outright (add_test's new-file
+			// path). No disk write from ctx.src has happened yet at this
+			// point in the pipeline, so there is nothing else to roll back —
+			// only a created file needs cleaning up.
+			ctx.cleanupCreatedFiles()
 			return nil, rej
 		}
 	}
@@ -213,6 +227,7 @@ func (s *Snapshot) patchComposable(env patchEnvelope, names []string) (map[strin
 	for file, b := range ctx.src {
 		out, ferr := imports.Process(file, b, nil)
 		if ferr != nil {
+			ctx.cleanupCreatedFiles()
 			return nil, &Reject{Reason: "patch result does not format", Detail: file + ": " + ferr.Error()}
 		}
 		formatted[file] = out
@@ -227,6 +242,7 @@ func (s *Snapshot) patchComposable(env patchEnvelope, names []string) (map[strin
 	for _, file := range touched {
 		b, err := os.ReadFile(file)
 		if err != nil {
+			ctx.cleanupCreatedFiles()
 			return nil, err
 		}
 		originals[file] = b
@@ -234,6 +250,7 @@ func (s *Snapshot) patchComposable(env patchEnvelope, names []string) (map[strin
 	for _, file := range touched {
 		if err := os.WriteFile(file, formatted[file], 0o644); err != nil {
 			s.rollback(originals)
+			ctx.cleanupCreatedFiles()
 			return nil, err
 		}
 	}
@@ -266,6 +283,7 @@ func (s *Snapshot) patchComposable(env patchEnvelope, names []string) (map[strin
 	diags, n, err := s.retypecheck(dirty)
 	if err != nil {
 		s.rollback(originals)
+		ctx.cleanupCreatedFiles()
 		return nil, err
 	}
 	// postChecks (rename's verifyResolution, add_param's post-edit sanity
@@ -283,6 +301,13 @@ func (s *Snapshot) patchComposable(env patchEnvelope, names []string) (map[strin
 	if env.DryRun {
 		s.rollback(originals)
 		s.retypecheck(dirty)
+		// cleanupCreatedFiles must run before the gens restore below: its
+		// forced full reload (when add_test created a file this patch) bumps
+		// every workspace package's generation counter same as any reload,
+		// which would clobber a restore done first. dry_run never leaves
+		// artifacts, on the accept preview or the reject preview alike, so
+		// this runs unconditionally rather than only in the reject arms.
+		ctx.cleanupCreatedFiles()
 		for pkg, g := range savedGens {
 			s.gens[pkg] = g
 		}
@@ -296,6 +321,7 @@ func (s *Snapshot) patchComposable(env patchEnvelope, names []string) (map[strin
 	}
 	if len(diags) > 0 {
 		s.rollback(originals)
+		ctx.cleanupCreatedFiles()
 		return nil, &Reject{Reason: "patch does not typecheck", Diagnostics: annotateDiagnostics(diags, ctx.fileLastOp)}
 	}
 	if opRej != nil {
@@ -311,6 +337,11 @@ func (s *Snapshot) patchComposable(env patchEnvelope, names []string) (map[strin
 		// stale view after a failed patch is safe (it just forces a re-view),
 		// where restoring counters to un-bump them is not worth tracking.
 		s.retypecheck(dirty)
+		// Runs after the resync above for the same reason as the dry_run
+		// arm: cleanupCreatedFiles' own reload (when this patch's op list
+		// created a file) would otherwise be redone by, or race with, the
+		// resync's incremental splice.
+		ctx.cleanupCreatedFiles()
 		return nil, opRej
 	}
 	for _, file := range touched {
@@ -404,6 +435,27 @@ func (ctx *patchCtx) addAffected(pkg string) {
 		ctx.affectedPkgs = map[string]bool{}
 	}
 	ctx.affectedPkgs[pkg] = true
+}
+
+// cleanupCreatedFiles deletes every file ctx.createdFiles registered and
+// forces a full reload, so the snapshot forgets a file that must not
+// survive: any rejection after the op that created it (whether that op's
+// own failure or a later op's), and unconditionally on dry_run (which never
+// leaves artifacts on disk regardless of accept/reject). A plain
+// s.retypecheck resync is not enough here — that splices dirty *packages*
+// in place, it never re-globs a package's CompiledGoFiles, so a deleted
+// file would stay listed against a now-missing path. Only a full s.load()
+// drops it. No-op when nothing was created, so the common op list (no
+// add_test new-file path) pays nothing extra.
+func (ctx *patchCtx) cleanupCreatedFiles() {
+	if len(ctx.createdFiles) == 0 {
+		return
+	}
+	for _, f := range ctx.createdFiles {
+		os.Remove(f)
+	}
+	ctx.s.loaded = false
+	ctx.s.load()
 }
 
 // dollarRefPattern matches a bare "$N" intra-patch handle reference: N is

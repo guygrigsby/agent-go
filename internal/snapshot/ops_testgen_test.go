@@ -81,10 +81,12 @@ func TestAddTestNonComparable(t *testing.T) {
 }
 
 // addTestDouble is the shared setup for the add_test_case/set_test_case/
-// remove_test_case tests: scaffold TestDouble in its own patch (add_test's
-// new-file path reloads the whole workspace; see its own v1-ceiling
-// comment), matching the realistic two-step flow — scaffold, then append
-// rows in later patches.
+// remove_test_case tests: scaffold TestDouble in its own patch, matching
+// the realistic two-step flow — scaffold, then append rows in later
+// patches. (Composing the scaffold and the first row into one patch is no
+// longer a correctness ceiling — see TestPatchCreatedFileRolledBack — but
+// the two-step flow is still the shape a real caller uses, since it wants
+// to see the scaffold accepted before deciding what rows to add.)
 func addTestDouble(t *testing.T) *Snapshot {
 	t.Helper()
 	s := demo(t)
@@ -244,5 +246,92 @@ func TestAddTestDefaultNameAndDuplicate(t *testing.T) {
 	rej, ok := err.(*Reject)
 	if !ok || rej.Reason != "test already exists" {
 		t.Fatalf("got %v", err)
+	}
+}
+
+// TestPatchCreatedFileRolledBack is the Task 10 review's Guarantee-2 fix:
+// add_test's new-file creation, composed in ONE patch with a later op that
+// then rejects, must not leave the created lib_test.go behind. Before the
+// fix, the end-of-list rollback only restored ctx.src's touched files (the
+// ORIGINAL bytes read from disk before the patch ran); a file that didn't
+// exist before the patch has no "original" to restore to, so it survived a
+// rejected patch untouched.
+func TestPatchCreatedFileRolledBack(t *testing.T) {
+	s := demo(t)
+	_, err := s.Patch([]byte(`{"pkg":"demo/lib","ops":[
+		{"op":"add_test","target":"Double"},
+		{"op":"add_test_case","test":"TestDouble","name":"bad","args":["2"],"want":["\"x\""]}
+	]}`))
+	rej, ok := err.(*Reject)
+	if !ok {
+		t.Fatalf("want reject, got %v", err)
+	}
+	if rej.Reason != "patch does not typecheck" {
+		t.Fatalf("got reason %q: %v", rej.Reason, rej)
+	}
+	testFile := filepath.Join(s.dir, "lib", "lib_test.go")
+	if _, statErr := os.Stat(testFile); statErr == nil {
+		t.Errorf("rejected patch left lib_test.go behind")
+	} else if !os.IsNotExist(statErr) {
+		t.Fatalf("stat lib_test.go: %v", statErr)
+	}
+	st, err := s.Status()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if diags, _ := st["errors"].([]Diagnostic); len(diags) != 0 {
+		t.Errorf("follow-up Status shows errors: %v", diags)
+	}
+}
+
+// TestAddTestPreexistingRotNotBlamed is Task 10 review Fix 3: a package
+// with pre-existing rot elsewhere in the package must not have that rot
+// blamed on the newly generated test. Before the fix, add_test's new-file
+// path typechecked the whole reloaded workspace and rejected ANY
+// diagnostic as "generated test does not typecheck", even a preexisting
+// one the new file didn't cause.
+func TestAddTestPreexistingRotNotBlamed(t *testing.T) {
+	s := demo(t)
+	useFile := filepath.Join(s.dir, "lib", "use.go")
+	b, err := os.ReadFile(useFile)
+	if err != nil {
+		t.Fatal(err)
+	}
+	rotten := string(b) + "\nfunc Rot() int { return undefinedSymbol }\n"
+	if err := os.WriteFile(useFile, []byte(rotten), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	_, err = s.Patch([]byte(`{"pkg":"demo/lib",
+		"ops":[{"op":"add_test","target":"Double"}]}`))
+	rej, ok := err.(*Reject)
+	if !ok {
+		t.Fatalf("want reject, got %v", err)
+	}
+	if rej.Reason != "affected packages have pre-existing errors" {
+		t.Fatalf("got reason %q (want the rot misattribution fixed): %v", rej.Reason, rej)
+	}
+	if _, statErr := os.Stat(filepath.Join(s.dir, "lib", "lib_test.go")); statErr == nil {
+		t.Errorf("rejected add_test left lib_test.go behind")
+	}
+}
+
+// TestPatchDryRunAddTest proves dry_run never leaves artifacts: a dry_run
+// add_test previews "would: accepted" but the file it would have created
+// must be gone once the call returns.
+func TestPatchDryRunAddTest(t *testing.T) {
+	s := demo(t)
+	res, err := s.Patch([]byte(`{"pkg":"demo/lib","dry_run":true,
+		"ops":[{"op":"add_test","target":"Double"}]}`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if res["would"] != "accepted" {
+		t.Fatalf("got %v", res)
+	}
+	testFile := filepath.Join(s.dir, "lib", "lib_test.go")
+	if _, statErr := os.Stat(testFile); statErr == nil {
+		t.Errorf("dry_run add_test left lib_test.go behind")
+	} else if !os.IsNotExist(statErr) {
+		t.Fatalf("stat lib_test.go: %v", statErr)
 	}
 }
