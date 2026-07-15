@@ -187,3 +187,48 @@ func TestTestRunBuildError(t *testing.T) {
 		t.Errorf("detail should surface the compiler error, got %q", rej.Detail)
 	}
 }
+
+// TestBoundedWrite verifies that boundedWrite caps memory use to 2*maxTestOutput
+// during streaming, preventing daemon memory bloat from large test outputs.
+func TestBoundedWrite(t *testing.T) {
+	const cap = 2 * maxTestOutput
+
+	// Simulate a large output stream: write 10MB in 1KB chunks.
+	var b strings.Builder
+	chunk := strings.Repeat("x", 1024)
+
+	for range 10 * 1024 {
+		boundedWrite(&b, chunk)
+		if b.Len() > cap {
+			t.Errorf("builder exceeded cap: got %d bytes, max %d", b.Len(), cap)
+		}
+	}
+
+	// After streaming large output, builder holds at most cap bytes.
+	if b.Len() > cap {
+		t.Fatalf("final builder size %d exceeds cap %d", b.Len(), cap)
+	}
+
+	// The final content is the tail of the accumulated stream.
+	result := b.String()
+	if len(result) != b.Len() {
+		t.Errorf("builder len mismatch: Len()=%d, actual=%d", b.Len(), len(result))
+	}
+
+	// Verify tail semantics: the last bytes should end with the last chunk.
+	if !strings.HasSuffix(result, chunk) {
+		t.Errorf("builder does not end with expected chunk tail")
+	}
+}
+
+// TestBoundedWriteSmall verifies that boundedWrite preserves small outputs unchanged.
+func TestBoundedWriteSmall(t *testing.T) {
+	var b strings.Builder
+	small := "test output"
+	boundedWrite(&b, small)
+
+	result := b.String()
+	if result != small {
+		t.Errorf("small output changed: got %q, want %q", result, small)
+	}
+}

@@ -107,7 +107,7 @@ func (s *Snapshot) TestRun(pkg, run string) (map[string]any, error) {
 			// the compiler's own error text lands (test-level events never
 			// fire in that case).
 			if ev.Action == "output" || ev.Action == "build-output" {
-				buildOutput.WriteString(ev.Output)
+				boundedWrite(&buildOutput, ev.Output)
 			}
 			continue
 		}
@@ -120,7 +120,7 @@ func (s *Snapshot) TestRun(pkg, run string) (map[string]any, error) {
 		}
 		switch ev.Action {
 		case "output":
-			a.out.WriteString(ev.Output)
+			boundedWrite(&a.out, ev.Output)
 		case "pass", "fail", "skip":
 			a.result.Pass = ev.Action != "fail"
 			a.result.Elapsed = ev.Elapsed
@@ -167,7 +167,7 @@ func (s *Snapshot) TestRun(pkg, run string) (map[string]any, error) {
 			failed++
 			out := byKey[k].out.String()
 			if len(out) > maxTestOutput {
-				out = out[:maxTestOutput]
+				out = tail(out)
 			}
 			r.Output = out
 		}
@@ -205,4 +205,22 @@ func tail(s string) string {
 		return s
 	}
 	return s[len(s)-maxTestOutput:]
+}
+
+// boundedWrite appends s to b, maintaining tail semantics: the builder
+// never holds more than 2*maxTestOutput bytes in memory. When adding s
+// would exceed that threshold, the builder is compacted to its last
+// maxTestOutput bytes before appending, preserving the tail while
+// bounding memory use during streaming.
+func boundedWrite(b *strings.Builder, s string) {
+	const cap = 2 * maxTestOutput
+	if b.Len()+len(s) <= cap {
+		b.WriteString(s)
+		return
+	}
+	// Compaction needed: reset builder to its tail and re-append s.
+	current := b.String()
+	b.Reset()
+	b.WriteString(tail(current))
+	b.WriteString(s)
 }
