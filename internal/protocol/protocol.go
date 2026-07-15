@@ -8,4 +8,7 @@ type Request struct {
 	Sym  string `json:"sym,omitempty"`
 	Body string `json:"body,omitempty"`
 	To   string `json:"to,omitempty"`
+	Name string `json:"name,omitempty"`
+	Type string `json:"type,omitempty"`
+	Def  string `json:"default,omitempty"`
 }

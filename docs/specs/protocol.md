@@ -53,11 +53,9 @@ auto-spawned, idle-exit; gopls `-remote=auto` precedent, ADR 0001):
 
 ## Op catalog
 
-Implemented: status, inspect, refs, rename, set_body.
+Implemented: status, search, inspect, refs, rename, set_body, add_param.
 
 Planned, in order (bench task counts drive priority):
-- `add_param` — add a parameter to a function/method; callers updated with
-  an explicit default expression or rejected with the caller list.
 - `upsert_decl` — add or replace a whole top-level declaration from
   checked source text; the greenfield authoring op (zerolang's
   `upsertFunction` analog). Includes import management.

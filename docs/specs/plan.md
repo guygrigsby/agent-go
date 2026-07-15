@@ -30,9 +30,9 @@ op catalog. Status as of 2026-07-14 night.
 
 ## Next builds (order fixed by bench task counts and the greenfield gap)
 
-1. `add_param` (13 tasks): first API-changing op; exercises reverse-importer
-   dirty sets; caller updates with explicit default or structured rejection
-   listing call sites.
+1. ~~`add_param`~~ done: callers updated with explicit default, value uses
+   rejected with positions, verified on boundary (2 cross-package callers,
+   75 pkgs rechecked, 1.6s).
 2. `upsert_decl`: authoring op so the protocol covers new code, not just
    refactors; unblocks the `ago init` greenfield story; needs import
    management (add/remove imports as part of validation).
