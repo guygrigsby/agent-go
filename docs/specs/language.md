@@ -116,8 +116,8 @@ text atoms, parsed and typechecked in scope at the target position.
 | `add_assign` | lhs, rhs, define? | `:=` when define |
 | `add_return` | exprs[] | arity/type checked against signature |
 | `add_call` | expr | expression statement |
-| `add_if` | cond, else? | creates empty block(s); returns handles |
-| `add_for` | init?, cond?, post? or range? | empty body; returns handle |
+| `add_if` | cond, else? | creates empty block(s); returns the then-block handle (else block addressed via a fresh view) |
+| `add_for` | cond? or range? | empty body; returns handle. v1 ceiling: no init/post clauses; use upsert_decl/set_body for classic three-clause loops |
 | `add_switch` | tag? | empty; extend with add_case |
 | `add_case` | at (switch handle), exprs[] or default | returns body handle |
 | `add_defer` | expr | |
