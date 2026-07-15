@@ -36,3 +36,15 @@ func TestViewNonFunction(t *testing.T) {
 		t.Fatalf("got %v", res)
 	}
 }
+
+func TestViewFieldRejectsWithOwner(t *testing.T) {
+	s := demo(t)
+	_, err := s.View("demo/lib", "Store.n")
+	rej, ok := err.(*Reject)
+	if !ok || !strings.Contains(rej.Reason, "containing type") {
+		t.Fatalf("want containing-type reject, got %v", err)
+	}
+	if len(rej.DidYouMean) == 0 || rej.DidYouMean[0] != "Store" {
+		t.Fatalf("want owner suggestion, got %v", rej.DidYouMean)
+	}
+}

@@ -78,10 +78,10 @@ func (s *Snapshot) nodeTableFor(pkgPath, sym string) (*nodeTable, *Reject) {
 
 // declText returns the source text of obj's top-level declaration, including
 // its doc comment, for symbols that are not functions (const, var, type).
-func (s *Snapshot) declText(p *packages.Package, obj types.Object) (string, error) {
+func (s *Snapshot) declText(p *packages.Package, obj types.Object, sym string) (string, error) {
 	file, start, end := s.findDeclRange(p, obj.Name(), obj.Name())
 	if file == "" {
-		return "", &Reject{Reason: "declaration not found", Detail: obj.Name()}
+		return "", &Reject{Reason: "declaration not found", Detail: sym}
 	}
 	src, err := os.ReadFile(file)
 	if err != nil {
@@ -104,7 +104,13 @@ func (s *Snapshot) View(pkgPath, sym string) (map[string]any, error) {
 	gen := s.generation(pkgPath, sym)
 	// Non-functions: plain source slice, no handles.
 	if _, isFn := obj.(*types.Func); !isFn {
-		text, err := s.declText(p, obj)
+		// Fields (e.g. "Store.n") are not independently viewable.
+		if strings.Contains(sym, ".") {
+			owner, _, _ := strings.Cut(sym, ".")
+			return nil, &Reject{Reason: "fields are not independently viewable; view the containing type",
+				Detail: pkgPath + "." + sym, DidYouMean: []string{owner}}
+		}
+		text, err := s.declText(p, obj, sym)
 		if err != nil {
 			return nil, err
 		}
