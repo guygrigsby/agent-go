@@ -148,8 +148,9 @@ func declInFile(fset *token.FileSet, filename string, src []byte, sym string) (*
 }
 
 // blockOf returns the block a handle's node owns, for "first"/"last"
-// insertion, or false if the node does not own one. Switch/case bodies are
-// deliberately excluded: a case clause has no brace pair to anchor on.
+// insertion or delete_node's emptiness check, or false if the node does not
+// own one. Switch/case bodies are deliberately excluded: a case clause has
+// no brace pair to anchor on.
 func blockOf(n ast.Node) (*ast.BlockStmt, bool) {
 	switch s := n.(type) {
 	case *ast.BlockStmt:
@@ -283,7 +284,199 @@ func (addCallOp) apply(ctx *patchCtx, raw json.RawMessage) *Reject {
 	return nil
 }
 
+// addReturnOp inserts a return statement. Arity and result-type errors (too
+// few/many values, wrong type) are not checked here; end-of-list typecheck
+// catches them like any other op's mistakes, attributed back to this op's
+// index by ctx.fileLastOp. No exprs renders a bare "return".
+type addReturnOp struct{}
+
+func (addReturnOp) name() string { return "add_return" }
+
+func (addReturnOp) apply(ctx *patchCtx, raw json.RawMessage) *Reject {
+	var a struct {
+		At    string   `json:"at"`
+		Where string   `json:"where"`
+		Exprs []string `json:"exprs"`
+	}
+	if err := json.Unmarshal(raw, &a); err != nil {
+		return &Reject{Reason: "malformed op args", Detail: err.Error()}
+	}
+	parts := make([]string, len(a.Exprs))
+	for i, e := range a.Exprs {
+		v, rej := ctx.exprAtom(e)
+		if rej != nil {
+			return rej
+		}
+		parts[i] = v
+	}
+	stmt := "return"
+	if len(parts) > 0 {
+		stmt = "return " + strings.Join(parts, ", ")
+	}
+	h, rej := ctx.insertStmt(a.At, a.Where, stmt)
+	if rej != nil {
+		return rej
+	}
+	ctx.bindResult(h)
+	return nil
+}
+
+// addDeferOp inserts a defer statement. go/parser itself rejects a defer
+// whose expression is not a call or method call (see parser.checkExpr for
+// DeferStmt/GoStmt) — that is a syntax rule, not a typecheck one — so a
+// non-call expr surfaces from insertStmt's re-parse after splicing as
+// "insertion does not parse". add_call needs its own call-shape check
+// because a plain ExprStmt parses for any expression; defer/go do not need
+// the same special-casing.
+type addDeferOp struct{}
+
+func (addDeferOp) name() string { return "add_defer" }
+
+func (addDeferOp) apply(ctx *patchCtx, raw json.RawMessage) *Reject {
+	var a struct {
+		At    string `json:"at"`
+		Where string `json:"where"`
+		Expr  string `json:"expr"`
+	}
+	if err := json.Unmarshal(raw, &a); err != nil {
+		return &Reject{Reason: "malformed op args", Detail: err.Error()}
+	}
+	expr, rej := ctx.exprAtom(a.Expr)
+	if rej != nil {
+		return rej
+	}
+	h, rej := ctx.insertStmt(a.At, a.Where, "defer "+expr)
+	if rej != nil {
+		return rej
+	}
+	ctx.bindResult(h)
+	return nil
+}
+
+// addGoOp inserts a go statement. Same parser-enforced call-shape guarantee
+// as addDeferOp.
+type addGoOp struct{}
+
+func (addGoOp) name() string { return "add_go" }
+
+func (addGoOp) apply(ctx *patchCtx, raw json.RawMessage) *Reject {
+	var a struct {
+		At    string `json:"at"`
+		Where string `json:"where"`
+		Expr  string `json:"expr"`
+	}
+	if err := json.Unmarshal(raw, &a); err != nil {
+		return &Reject{Reason: "malformed op args", Detail: err.Error()}
+	}
+	expr, rej := ctx.exprAtom(a.Expr)
+	if rej != nil {
+		return rej
+	}
+	h, rej := ctx.insertStmt(a.At, a.Where, "go "+expr)
+	if rej != nil {
+		return rej
+	}
+	ctx.bindResult(h)
+	return nil
+}
+
+// deleteNodeOp splices a statement, or an empty block/case-owning statement,
+// out of the source. A block-owner with statements inside it rejects rather
+// than silently discarding them; the caller deletes children first. An if
+// with a populated else likewise rejects even when its then-block is empty,
+// since deleting the whole statement would discard the else content too.
+type deleteNodeOp struct{}
+
+func (deleteNodeOp) name() string { return "delete_node" }
+
+func (deleteNodeOp) apply(ctx *patchCtx, raw json.RawMessage) *Reject {
+	var a struct {
+		At string `json:"at"`
+	}
+	if err := json.Unmarshal(raw, &a); err != nil {
+		return &Reject{Reason: "malformed op args", Detail: err.Error()}
+	}
+	return ctx.deleteNode(a.At)
+}
+
+// deleteNode re-parses ctx.src fresh (same rationale as insertStmt: prior
+// ops may have shifted every handle) and splices out at's whole line range.
+func (ctx *patchCtx) deleteNode(at string) *Reject {
+	src := ctx.src[ctx.file]
+	fset := token.NewFileSet()
+	decl, err := declInFile(fset, ctx.file, src, ctx.sym)
+	if err != nil {
+		return &Reject{Reason: "declaration does not parse", Detail: err.Error()}
+	}
+	nt := buildNodeTable(decl)
+	node, ok := nt.nodes[at]
+	if !ok {
+		return &Reject{Reason: "unknown handle",
+			Detail:     fmt.Sprintf("op %d: %s", ctx.opIndex, at),
+			DidYouMean: nearestHandles(at, nt.order)}
+	}
+	if ifs, ok := node.(*ast.IfStmt); ok && ifs.Else != nil {
+		return &Reject{Reason: "block is not empty", Detail: at + " has an else clause"}
+	}
+	if list, ok := childList(node); ok && len(list) > 0 {
+		return &Reject{Reason: "block is not empty",
+			Detail: at + " has children: " + strings.Join(directChildHandles(nt, list), ", ")}
+	}
+
+	start := lineStart(src, fset.Position(node.Pos()).Offset)
+	end := lineEndNL(src, fset.Position(node.End()).Offset)
+	out := make([]byte, 0, len(src)-(end-start))
+	out = append(out, src[:start]...)
+	out = append(out, src[end:]...)
+
+	fset2 := token.NewFileSet()
+	if _, err := declInFile(fset2, ctx.file, out, ctx.sym); err != nil {
+		return &Reject{Reason: "deletion does not parse", Detail: err.Error()}
+	}
+
+	ctx.src[ctx.file] = out
+	ctx.fileLastOp[ctx.file] = ctx.opIndex
+	return nil
+}
+
+// childList returns the direct statement children a handle's node owns, for
+// delete_node's emptiness check: a case clause's body (no brace pair to
+// anchor on, so not reachable through blockOf), or a block-owning
+// statement's block list. False means the node is a plain statement, owning
+// neither.
+func childList(n ast.Node) ([]ast.Stmt, bool) {
+	if cc, ok := n.(*ast.CaseClause); ok {
+		return cc.Body, true
+	}
+	if block, ok := blockOf(n); ok {
+		return block.List, true
+	}
+	return nil, false
+}
+
+// directChildHandles names the handles of list's elements, for reporting
+// which children block a non-empty deletion. list's elements are exactly the
+// same AST node pointers handleWalk visited when nt was built, so identity
+// (pointer) comparison finds them exactly.
+func directChildHandles(nt *nodeTable, list []ast.Stmt) []string {
+	set := make(map[ast.Stmt]bool, len(list))
+	for _, st := range list {
+		set[st] = true
+	}
+	var out []string
+	for _, h := range nt.order {
+		if st, ok := nt.nodes[h].(ast.Stmt); ok && set[st] {
+			out = append(out, h)
+		}
+	}
+	return out
+}
+
 func init() {
 	opRegistry["add_assign"] = func() patchOp { return addAssignOp{} }
 	opRegistry["add_call"] = func() patchOp { return addCallOp{} }
+	opRegistry["add_return"] = func() patchOp { return addReturnOp{} }
+	opRegistry["add_defer"] = func() patchOp { return addDeferOp{} }
+	opRegistry["add_go"] = func() patchOp { return addGoOp{} }
+	opRegistry["delete_node"] = func() patchOp { return deleteNodeOp{} }
 }
