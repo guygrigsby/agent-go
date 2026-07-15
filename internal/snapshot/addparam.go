@@ -127,7 +127,7 @@ func (s *Snapshot) AddParam(pkgPath, sym, name, typ, defaultExpr string) (map[st
 		sort.Slice(fedits, func(i, j int) bool { return fedits[i].offset > fedits[j].offset })
 		out := src
 		for _, e := range fedits {
-			out = append(append(append([]byte{}, out[:e.offset]...), e.text...), out[e.offset:]...)
+			out = append(append(append([]byte{}, out[:e.offset]...), e.text...), out[e.offset+e.length:]...)
 		}
 		if err := os.WriteFile(file, out, 0o644); err != nil {
 			s.rollback(originals)
@@ -154,10 +154,15 @@ func (s *Snapshot) AddParam(pkgPath, sym, name, typ, defaultExpr string) (map[st
 	for file := range editedFiles {
 		s.noteWrite(file)
 	}
+	files := make([]string, 0, len(byFile))
+	for file := range byFile {
+		files = append(files, file)
+	}
+	sort.Strings(files)
 	return map[string]any{
 		"status": "accepted", "symbol": pkgPath + "." + sym,
 		"param": name + " " + typ, "callers_updated": callersUpdated,
-		"files": len(byFile), "load_ms": ms, "packages_rechecked": n,
+		"files": files, "load_ms": ms, "packages_rechecked": n,
 		"generation": s.generation(pkgPath, sym),
 	}, nil
 }

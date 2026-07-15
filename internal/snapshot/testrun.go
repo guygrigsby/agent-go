@@ -53,7 +53,10 @@ const testTimeout = 15 * time.Minute
 //
 // It does not hold s.mu: go test can run for minutes, and this only reads
 // the workspace on disk through the real go toolchain — s.dir never changes
-// after New, so reading it without the lock is safe. Validation of
+// after New, so reading it without the lock is safe. That said, the
+// daemon's Accept loop (internal/daemon) serves one connection at a time,
+// so a long test run still blocks other clients until it returns; holding
+// no lock only matters once a concurrent-daemon task lands. Validation of
 // mutations stays compiler-only (Patch); TestRun is the agent's separate
 // behavior-verification loop, run at its own judgment per set of changes.
 func (s *Snapshot) TestRun(pkg, run string) (map[string]any, error) {
@@ -207,11 +210,13 @@ func tail(s string) string {
 	return s[len(s)-maxTestOutput:]
 }
 
-// boundedWrite appends s to b, maintaining tail semantics: the builder
-// never holds more than 2*maxTestOutput bytes in memory. When adding s
-// would exceed that threshold, the builder is compacted to its last
-// maxTestOutput bytes before appending, preserving the tail while
-// bounding memory use during streaming.
+// boundedWrite appends s to b, maintaining tail semantics: when adding s
+// would push the builder past 2*maxTestOutput bytes, the builder is first
+// compacted to its last maxTestOutput bytes, then s is appended in full.
+// The bound is event-bounded, not a hard cap: s always lands whole even
+// when it exceeds maxTestOutput on its own, so the builder can hold up to
+// 2*maxTestOutput plus the largest single event appended, not a flat
+// 2*maxTestOutput.
 func boundedWrite(b *strings.Builder, s string) {
 	const cap = 2 * maxTestOutput
 	if b.Len()+len(s) <= cap {

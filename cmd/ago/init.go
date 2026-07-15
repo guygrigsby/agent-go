@@ -88,11 +88,12 @@ methods and fields.
   an in-memory copy, the dirty set re-typechecks once, then everything
   writes together or nothing does. An op can reference a handle an earlier
   op in the same list returned, as $1, $2, ... (1-based op index).
-  dry_run:true previews the outcome without writing. A decl op (rename,
-  set_body, add_param, upsert_decl, delete_decl, set_doc, add_field,
-  remove_field) and a statement op cannot edit the same file in one patch;
-  run them as separate patches. ago_help lists every op; the four below are
-  also reachable standalone, each as sugar for a one-op patch.
+  dry_run:true previews the outcome without writing. A decl or test op
+  (rename, set_body, add_param, upsert_decl, delete_decl, set_doc,
+  add_field, remove_field, add_test, add_test_case, set_test_case,
+  remove_test_case) and a statement op cannot edit the same file in one
+  patch; run them as separate patches. ago_help lists every op; the four
+  below are also reachable standalone, each as sugar for a one-op patch.
 - ago_test {pkg, run} — run go test, scoped to a package and optionally
   filtered by name; structured pass/fail, elapsed time, failure output.
   Validation of mutations stays compiler-only — this is how you close the

@@ -20,7 +20,7 @@
 
 ## Deferred (follow-up plan, not this one)
 
-`move_decl`, `set_signature`, `remove_param`, `implement_interface`, `add_bench`, project ops (`add_dependency`, `move_file`, `delete_file`, `mod_tidy`, `remove_dependency`), structured expression nodes, SSA query tier, handle migration on stale generations.
+`move_decl`, `set_signature`, `remove_param`, `implement_interface`, `add_bench`, project ops (`add_dependency`, `move_file`, `delete_file`, `mod_tidy`, `remove_dependency`), structured expression nodes, SSA query tier, handle migration on stale generations, `possible_repairs` (rejection field; v1 emits `did_you_mean` only).
 
 ---
 

@@ -217,8 +217,9 @@ decoder).
 
 A rejection is the agent's error channel and must always answer "what is
 the correct next call": diagnostics say what broke, `did_you_mean` fixes
-addressing misses, `possible_repairs` names ops. Patch rejections say
-which op index failed; earlier ops in the patch have no effect.
+addressing misses, `possible_repairs` names ops (future; v1 emits
+`did_you_mean`). Patch rejections say which op index failed; earlier ops
+in the patch have no effect.
 
 ## Guarantees
 

@@ -187,9 +187,14 @@ func (s *Snapshot) Rename(pkgPath, sym, to string) (map[string]any, error) {
 	for file := range editedFiles {
 		s.noteWrite(file)
 	}
+	files := make([]string, 0, len(byFile))
+	for file := range byFile {
+		files = append(files, file)
+	}
+	sort.Strings(files)
 	return map[string]any{
 		"status": "accepted", "symbol": pkgPath + "." + sym, "new_name": to,
-		"references": len(edits), "files": len(byFile),
+		"references": len(edits), "files": files,
 		"load_ms": ms, "packages_rechecked": n,
 		"generation": s.generation(pkgPath, newSym),
 	}, nil

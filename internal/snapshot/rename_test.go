@@ -13,7 +13,7 @@ func TestRename(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if res["status"] != "accepted" || res["references"].(int) != 2 || res["files"].(int) != 2 {
+	if res["status"] != "accepted" || res["references"].(int) != 2 || len(res["files"].([]string)) != 2 {
 		t.Fatalf("got %v", res)
 	}
 	b, _ := os.ReadFile(filepath.Join(s.dir, "main.go"))
