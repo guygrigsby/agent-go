@@ -156,7 +156,10 @@ func extract(repo, sha, subject string) ([]RenameSpec, string) {
 		if cands[i].n != cands[j].n {
 			return cands[i].n > cands[j].n
 		}
-		return cands[i].lo < cands[j].lo
+		if cands[i].lo != cands[j].lo {
+			return cands[i].lo < cands[j].lo
+		}
+		return cands[i].gn < cands[j].gn
 	})
 	usedLo, usedGn := map[string]bool{}, map[string]bool{}
 	var specs []RenameSpec
