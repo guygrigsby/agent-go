@@ -265,6 +265,76 @@ func TestQuerySymMissRepairs(t *testing.T) {
 	}
 }
 
+// A sugar mutation naming a missing symbol repairs with the corrected
+// call, all arguments echoed; executed verbatim it is accepted.
+func TestRenameSymMissRepair(t *testing.T) {
+	s := demo(t)
+	_, err := s.Rename("demo/lib", "Doub", "Twice")
+	rej, ok := err.(*Reject)
+	if !ok {
+		t.Fatalf("want Reject, got %v", err)
+	}
+	if len(rej.PossibleRepairs) == 0 {
+		t.Fatalf("reject carries no repairs: %+v", rej)
+	}
+	r := rej.PossibleRepairs[0]
+	if r.Call["tool"] != "rename" {
+		t.Fatalf("repair tool = %v, want rename", r.Call["tool"])
+	}
+	args := r.Call["args"].(map[string]any)
+	if args["to"] != "Twice" {
+		t.Fatalf("repair dropped args: %v", args)
+	}
+	res, err := s.Rename(args["pkg"].(string), args["sym"].(string), args["to"].(string))
+	if err != nil {
+		t.Fatalf("repair rejected: %v", err)
+	}
+	if res["status"] != "accepted" {
+		t.Fatalf("repair not accepted: %v", res)
+	}
+}
+
+func TestSetBodySymMissRepair(t *testing.T) {
+	s := demo(t)
+	_, err := s.SetBody("demo/lib", "Doub", "return v * 3")
+	rej, ok := err.(*Reject)
+	if !ok {
+		t.Fatalf("want Reject, got %v", err)
+	}
+	if len(rej.PossibleRepairs) == 0 {
+		t.Fatalf("reject carries no repairs: %+v", rej)
+	}
+	args := rej.PossibleRepairs[0].Call["args"].(map[string]any)
+	res, err := s.SetBody(args["pkg"].(string), args["sym"].(string), args["body"].(string))
+	if err != nil {
+		t.Fatalf("repair rejected: %v", err)
+	}
+	if res["status"] != "accepted" {
+		t.Fatalf("repair not accepted: %v", res)
+	}
+}
+
+func TestAddParamSymMissRepair(t *testing.T) {
+	s := demo(t)
+	_, err := s.AddParam("demo/lib", "Doub", "n", "int", "0")
+	rej, ok := err.(*Reject)
+	if !ok {
+		t.Fatalf("want Reject, got %v", err)
+	}
+	if len(rej.PossibleRepairs) == 0 {
+		t.Fatalf("reject carries no repairs: %+v", rej)
+	}
+	args := rej.PossibleRepairs[0].Call["args"].(map[string]any)
+	res, err := s.AddParam(args["pkg"].(string), args["sym"].(string),
+		args["name"].(string), args["type"].(string), args["default"].(string))
+	if err != nil {
+		t.Fatalf("repair rejected: %v", err)
+	}
+	if res["status"] != "accepted" {
+		t.Fatalf("repair not accepted: %v", res)
+	}
+}
+
 // Viewing a field redirects to the containing type; the repair is the
 // view call for that type, executable verbatim.
 func TestViewFieldRepairViewsOwner(t *testing.T) {

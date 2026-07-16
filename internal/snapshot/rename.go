@@ -127,6 +127,8 @@ func (s *Snapshot) Rename(pkgPath, sym, to string) (map[string]any, error) {
 	}
 	edits, old, declPos, newSym, rej := renameEdits(s, pkgPath, sym, to)
 	if rej != nil {
+		s.sugarRepairs(rej, "rename",
+			map[string]any{"pkg": pkgPath, "sym": sym, "to": to}, s.resolves)
 		return nil, rej
 	}
 

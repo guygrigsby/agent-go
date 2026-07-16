@@ -107,6 +107,9 @@ func (s *Snapshot) AddParam(pkgPath, sym, name, typ, defaultExpr string) (map[st
 	}
 	edits, callersUpdated, rej := addParamEdits(s, pkgPath, sym, name, typ, defaultExpr)
 	if rej != nil {
+		s.sugarRepairs(rej, "add_param",
+			map[string]any{"pkg": pkgPath, "sym": sym, "name": name,
+				"type": typ, "default": defaultExpr}, s.resolvesToFunc)
 		return nil, rej
 	}
 

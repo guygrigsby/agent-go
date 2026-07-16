@@ -3,6 +3,7 @@ package snapshot
 import (
 	"encoding/json"
 	"go/types"
+	"maps"
 	"strings"
 )
 
@@ -63,6 +64,22 @@ func (s *Snapshot) viewRepairs(rej *Reject, pkgPath, sym string) {
 	addressRepairs(rej, pkgPath, sym, viewCall, s.viewable)
 }
 
+// resolves reports whether the address names any object.
+func (s *Snapshot) resolves(pkg, sym string) bool {
+	_, _, miss := s.findObject(pkg, sym)
+	return miss == nil
+}
+
+// resolvesToFunc reports whether the address names a function or method.
+func (s *Snapshot) resolvesToFunc(pkg, sym string) bool {
+	_, obj, miss := s.findObject(pkg, sym)
+	if miss != nil {
+		return false
+	}
+	_, ok := obj.(*types.Func)
+	return ok
+}
+
 // queryRepairs builds complete query calls of the same kind for a query
 // addressing miss. Takes mu itself: Query's sub-handlers have already
 // released it by the time the reject surfaces.
@@ -72,24 +89,36 @@ func (s *Snapshot) queryRepairs(rej *Reject, kind, pkgPath, sym string) {
 	}
 	s.mu.Lock()
 	defer s.mu.Unlock()
+	// Call-graph kinds only accept functions; a resolving candidate of
+	// the wrong kind would still reject.
+	accept := s.resolves
+	if kind == "callers" || kind == "callees" {
+		accept = s.resolvesToFunc
+	}
 	addressRepairs(rej, pkgPath, sym,
 		func(pkg, sym string) map[string]any {
 			return map[string]any{"tool": "query",
 				"args": map[string]any{"kind": kind, "pkg": pkg, "sym": sym}}
-		},
-		func(pkg, sym string) bool {
-			_, obj, miss := s.findObject(pkg, sym)
-			if miss != nil {
-				return false
-			}
-			// Call-graph kinds only accept functions; a resolving
-			// candidate of the wrong kind would still reject.
-			if kind == "callers" || kind == "callees" {
-				_, ok := obj.(*types.Func)
-				return ok
-			}
-			return true
-		})
+		}, accept)
+}
+
+// sugarRepairs builds the corrected single-op call for an addressing miss
+// on a sugar mutation: the full argument list is echoed with the missed
+// address part substituted. accept gates candidates on what the tool
+// itself requires. Caller holds mu.
+func (s *Snapshot) sugarRepairs(rej *Reject, tool string, args map[string]any,
+	accept func(pkg, sym string) bool) {
+	if !addressingReason(rej.Reason) {
+		return
+	}
+	pkg, _ := args["pkg"].(string)
+	sym, _ := args["sym"].(string)
+	addressRepairs(rej, pkg, sym, func(p, y string) map[string]any {
+		out := make(map[string]any, len(args))
+		maps.Copy(out, args)
+		out["pkg"], out["sym"] = p, y
+		return map[string]any{"tool": tool, "args": out}
+	}, accept)
 }
 
 // repairField maps op-reject reasons whose did_you_mean candidates are

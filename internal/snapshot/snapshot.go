@@ -786,6 +786,8 @@ func (s *Snapshot) SetBody(pkgPath, sym, body string) (map[string]any, error) {
 	}
 	filename, lbrace, rbrace, rej := setBodyEdit(s, pkgPath, sym)
 	if rej != nil {
+		s.sugarRepairs(rej, "set_body",
+			map[string]any{"pkg": pkgPath, "sym": sym, "body": body}, s.resolvesToFunc)
 		return nil, rej
 	}
 	src, err := os.ReadFile(filename)
