@@ -233,6 +233,38 @@ func TestPatchUnknownOpNoRepairWithoutNearMiss(t *testing.T) {
 	}
 }
 
+// A query addressing miss repairs with complete query calls of the same
+// kind, executable verbatim.
+func TestQuerySymMissRepairs(t *testing.T) {
+	s := demo(t)
+	for _, kind := range []string{"inspect", "refs", "callers"} {
+		_, err := s.Query(kind, "demo/lib", "Doub", "")
+		rej, ok := err.(*Reject)
+		if !ok {
+			t.Fatalf("%s: want Reject, got %v", kind, err)
+		}
+		if len(rej.PossibleRepairs) == 0 {
+			t.Fatalf("%s: reject carries no repairs: %+v", kind, rej)
+		}
+		for _, r := range rej.PossibleRepairs {
+			if r.Call["tool"] != "query" {
+				t.Fatalf("%s: repair tool = %v, want query", kind, r.Call["tool"])
+			}
+			args := r.Call["args"].(map[string]any)
+			if args["kind"] != kind {
+				t.Fatalf("%s: repair kind = %v", kind, args["kind"])
+			}
+			res, err := s.Query(kind, args["pkg"].(string), args["sym"].(string), "")
+			if err != nil {
+				t.Fatalf("%s: repair %v rejected: %v", kind, r.Call, err)
+			}
+			if res["status"] != "ok" {
+				t.Fatalf("%s: repair %v: %v", kind, r.Call, res)
+			}
+		}
+	}
+}
+
 // Viewing a field redirects to the containing type; the repair is the
 // view call for that type, executable verbatim.
 func TestViewFieldRepairViewsOwner(t *testing.T) {

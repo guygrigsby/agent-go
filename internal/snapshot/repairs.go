@@ -13,31 +13,83 @@ func viewCall(pkgPath, sym string) map[string]any {
 	return map[string]any{"tool": "view", "args": map[string]any{"pkg": pkgPath, "sym": sym}}
 }
 
-// viewRepairs fills rej.PossibleRepairs with complete view calls built by
+// addressingReason reports whether a reject's did_you_mean candidates are
+// substitutions for the missed part of a pkg/sym address.
+func addressingReason(r string) bool {
+	switch r {
+	case "symbol not found", "method or field not found",
+		"receiver type not found", "package not found":
+		return true
+	}
+	return false
+}
+
+// substituteAddress applies one candidate to the part of the address the
+// reject's reason says was missed.
+func substituteAddress(reason, pkgPath, sym, cand string) (string, string) {
+	switch reason {
+	case "package not found":
+		return cand, sym
+	case "receiver type not found":
+		_, name, _ := strings.Cut(sym, ".")
+		return pkgPath, cand + "." + name
+	default:
+		return pkgPath, cand
+	}
+}
+
+// addressRepairs fills rej.PossibleRepairs with complete calls built by
 // substituting the missed part of the address with each did_you_mean
-// candidate. Only substitutions View itself would accept survive: a repair
-// that rejects when pasted back is worse than none. Caller holds mu.
-func (s *Snapshot) viewRepairs(rej *Reject, pkgPath, sym string) {
+// candidate. Only substitutions the accepting predicate admits survive: a
+// repair that rejects when pasted back is worse than none.
+func addressRepairs(rej *Reject, pkgPath, sym string,
+	build func(pkg, sym string) map[string]any, accept func(pkg, sym string) bool) {
 	for _, c := range rej.DidYouMean {
-		pkg, symc := pkgPath, sym
-		switch rej.Reason {
-		case "package not found":
-			pkg = c
-		case "receiver type not found":
-			_, name, _ := strings.Cut(sym, ".")
-			symc = c + "." + name
-		default:
-			symc = c
-		}
-		if !s.viewable(pkg, symc) {
+		pkg, symc := substituteAddress(rej.Reason, pkgPath, sym, c)
+		if !accept(pkg, symc) {
 			continue
 		}
 		rej.PossibleRepairs = append(rej.PossibleRepairs,
-			Repair{Why: pkg + "." + symc + " resolves", Call: viewCall(pkg, symc)})
+			Repair{Why: pkg + "." + symc + " resolves", Call: build(pkg, symc)})
 		if len(rej.PossibleRepairs) == maxRepairs {
 			return
 		}
 	}
+}
+
+// viewRepairs builds complete view calls for a view addressing miss.
+// Caller holds mu.
+func (s *Snapshot) viewRepairs(rej *Reject, pkgPath, sym string) {
+	addressRepairs(rej, pkgPath, sym, viewCall, s.viewable)
+}
+
+// queryRepairs builds complete query calls of the same kind for a query
+// addressing miss. Takes mu itself: Query's sub-handlers have already
+// released it by the time the reject surfaces.
+func (s *Snapshot) queryRepairs(rej *Reject, kind, pkgPath, sym string) {
+	if !addressingReason(rej.Reason) {
+		return
+	}
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	addressRepairs(rej, pkgPath, sym,
+		func(pkg, sym string) map[string]any {
+			return map[string]any{"tool": "query",
+				"args": map[string]any{"kind": kind, "pkg": pkg, "sym": sym}}
+		},
+		func(pkg, sym string) bool {
+			_, obj, miss := s.findObject(pkg, sym)
+			if miss != nil {
+				return false
+			}
+			// Call-graph kinds only accept functions; a resolving
+			// candidate of the wrong kind would still reject.
+			if kind == "callers" || kind == "callees" {
+				_, ok := obj.(*types.Func)
+				return ok
+			}
+			return true
+		})
 }
 
 // repairField maps op-reject reasons whose did_you_mean candidates are
@@ -83,10 +135,7 @@ func (s *Snapshot) patchOpRepairs(rej *Reject, env patchEnvelope, i int) {
 // is the whole patch with the op's pkg or sym substituted by a candidate
 // that resolves. Caller holds mu.
 func (s *Snapshot) patchAddressRepairs(rej *Reject, env patchEnvelope, i int) {
-	switch rej.Reason {
-	case "symbol not found", "method or field not found",
-		"receiver type not found", "package not found":
-	default:
+	if !addressingReason(rej.Reason) {
 		return
 	}
 	// The op's effective addressing, with envelope defaults applied.
@@ -105,16 +154,10 @@ func (s *Snapshot) patchAddressRepairs(rej *Reject, env patchEnvelope, i int) {
 		sym = env.Sym
 	}
 	for _, c := range rej.DidYouMean {
-		pkgc, symc, field, val := pkg, sym, "sym", c
-		switch rej.Reason {
-		case "package not found":
-			pkgc, field, val = c, "pkg", c
-		case "receiver type not found":
-			_, name, _ := strings.Cut(sym, ".")
-			symc = c + "." + name
-			val = symc
-		default:
-			symc = c
+		pkgc, symc := substituteAddress(rej.Reason, pkg, sym, c)
+		field, val := "sym", symc
+		if rej.Reason == "package not found" {
+			field, val = "pkg", pkgc
 		}
 		if _, _, miss := s.findObject(pkgc, symc); miss != nil {
 			continue

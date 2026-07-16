@@ -16,6 +16,14 @@ import (
 // wire protocol can keep reusing one field the way the standalone search
 // op already does (see protocol.Request.Sym).
 func (s *Snapshot) Query(kind, pkgPath, sym, q string) (map[string]any, error) {
+	res, err := s.query(kind, pkgPath, sym, q)
+	if rej, ok := err.(*Reject); ok {
+		s.queryRepairs(rej, kind, pkgPath, sym)
+	}
+	return res, err
+}
+
+func (s *Snapshot) query(kind, pkgPath, sym, q string) (map[string]any, error) {
 	switch kind {
 	case "search":
 		query := q
