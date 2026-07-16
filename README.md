@@ -1,9 +1,11 @@
 # agent-go
 
+`ago` is a semantic edit protocol for Go: agents query the typechecked
+workspace and submit compiler-checked mutations instead of editing text.
 
-Go as a language for agents. `ago` puts a semantic protocol over the Go
-toolchain so a coding agent queries the workspace and submits
-compiler-checked mutations instead of editing text.
+Go as a language for agents. The protocol puts the Go toolchain between
+the model and the files, so every edit is validated before anything
+touches disk.
 
 The thesis under test: weak local models become effective repo-scale Go
 editors when raw file editing is replaced by semantic queries and validated

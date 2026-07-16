@@ -38,17 +38,9 @@ the thesis.
 
 ## Guarantees
 
-1. A mutation never introduces a new compiler diagnostic. Pre-existing
-   diagnostics in the affected packages are tolerated (baselined at
-   preflight, filtered post-splice, surfaced as `pre_existing`), so
-   unrelated rot never blocks an edit.
-2. A rejected mutation changes nothing on disk or in the snapshot.
-3. Rename additionally proves resolution: every rewritten reference must
-   resolve to the renamed object afterward, so shadowing capture is
-   rejected even when the compiler is satisfied.
-4. Queries reflect all accepted mutations immediately (no reload window).
-5. External (non-protocol) edits are detected per request and trigger a
-   full reload; correctness over latency in that path.
+The canonical guarantees list lives in language.md (its list is the
+superset: atomicity, generations, rot tolerance, embedded views). In
+one line: a mutation introduces no new diagnostic or it changes nothing.
 
 ## Surface
 
