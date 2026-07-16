@@ -1,0 +1,739 @@
+diff --git a/internal/credential/vault/credential_store.go b/internal/credential/vault/credential_store.go
+index a796ee5ce..8a84305a5 100644
+--- a/internal/credential/vault/credential_store.go
++++ b/internal/credential/vault/credential_store.go
+@@ -1,6 +1,7 @@
+ package vault
+ 
+ import (
++	"context"
+ 	"strings"
+ 
+ 	"github.com/hashicorp/boundary/internal/credential/vault/store"
+@@ -168,7 +169,7 @@ func (cs *CredentialStore) ClientCertificate() *ClientCertificate {
+ 	return cs.clientCert
+ }
+ 
+-func (cs *CredentialStore) client() (*client, error) {
++func (cs *CredentialStore) client(ctx context.Context) (*client, error) {
+ 	const op = "vault.(CredentialStore).client"
+ 	clientConfig := &clientConfig{
+ 		Addr:          cs.VaultAddress,
+@@ -183,7 +184,7 @@ func (cs *CredentialStore) client() (*client, error) {
+ 		clientConfig.ClientKey = cs.clientCert.GetCertificateKey()
+ 	}
+ 
+-	c, err := newClient(clientConfig)
++	c, err := newClient(clientConfig, context.Background())
+ 	if err != nil {
+ 		return nil, errors.WrapDeprecated(err, op)
+ 	}
+diff --git a/internal/credential/vault/jobs.go b/internal/credential/vault/jobs.go
+index 0ff5c79fc..5d3188a0e 100644
+--- a/internal/credential/vault/jobs.go
++++ b/internal/credential/vault/jobs.go
+@@ -181,13 +181,13 @@ func (r *TokenRenewalJob) renewToken(ctx context.Context, s *privateStore) error
+ 		return nil
+ 	}
+ 
+-	vc, err := s.client()
++	vc, err := s.client(context.Background())
+ 	if err != nil {
+ 		return errors.Wrap(ctx, err, op)
+ 	}
+ 
+ 	var respErr *vault.ResponseError
+-	renewedToken, err := vc.renewToken()
++	renewedToken, err := vc.renewToken(context.Background())
+ 	if ok := errors.As(err, &respErr); ok && respErr.StatusCode == http.StatusForbidden {
+ 		// Vault returned a 403 when attempting a renew self, the token is either expired
+ 		// or malformed.  Set status to "expired" so credentials created with token can be
+@@ -411,13 +411,13 @@ func (r *TokenRevocationJob) revokeToken(ctx context.Context, s *privateStore) e
+ 		return nil
+ 	}
+ 
+-	vc, err := s.client()
++	vc, err := s.client(context.Background())
+ 	if err != nil {
+ 		return errors.Wrap(ctx, err, op)
+ 	}
+ 
+ 	var respErr *vault.ResponseError
+-	err = vc.revokeToken()
++	err = vc.revokeToken(context.Background())
+ 	if ok := errors.As(err, &respErr); ok && respErr.StatusCode == http.StatusForbidden {
+ 		// Vault returned a 403 when attempting a revoke self, the token is already expired.
+ 		// Clobber error and set status to "revoked" below.
+@@ -561,7 +561,7 @@ func (r *CredentialRenewalJob) renewCred(ctx context.Context, c *privateCredenti
+ 		return errors.Wrap(ctx, err, op)
+ 	}
+ 
+-	vc, err := c.client()
++	vc, err := c.client(context.Background())
+ 	if err != nil {
+ 		return errors.Wrap(ctx, err, op)
+ 	}
+@@ -570,7 +570,7 @@ func (r *CredentialRenewalJob) renewCred(ctx context.Context, c *privateCredenti
+ 	var respErr *vault.ResponseError
+ 	// Subtract last renewal time from previous expiration time to get lease duration
+ 	leaseDuration := c.ExpirationTime.AsTime().Sub(c.LastRenewalTime.AsTime())
+-	renewedCred, err := vc.renewLease(c.ExternalId, leaseDuration)
++	renewedCred, err := vc.renewLease(c.ExternalId, leaseDuration, context.Background())
+ 	if ok := errors.As(err, &respErr); ok && respErr.StatusCode == http.StatusBadRequest {
+ 		// Vault returned a 400 when attempting a renew lease, the lease is either expired
+ 		// or the leaseId is malformed.  Set status to "expired".
+@@ -720,14 +720,14 @@ func (r *CredentialRevocationJob) revokeCred(ctx context.Context, c *privateCred
+ 		return errors.Wrap(ctx, err, op)
+ 	}
+ 
+-	vc, err := c.client()
++	vc, err := c.client(context.Background())
+ 	if err != nil {
+ 		return errors.Wrap(ctx, err, op)
+ 	}
+ 
+ 	cred := c.toCredential()
+ 	var respErr *vault.ResponseError
+-	err = vc.revokeLease(c.ExternalId)
++	err = vc.revokeLease(c.ExternalId, context.Background())
+ 	if ok := errors.As(err, &respErr); ok && respErr.StatusCode == http.StatusBadRequest {
+ 		// Vault returned a 400 when attempting a revoke lease, the lease is already expired.
+ 		// Clobber error and set status to "revoked" below.
+diff --git a/internal/credential/vault/jobs_test.go b/internal/credential/vault/jobs_test.go
+index d850a23c3..b3ba8684f 100644
+--- a/internal/credential/vault/jobs_test.go
++++ b/internal/credential/vault/jobs_test.go
+@@ -105,9 +105,9 @@ func testVaultCred(t *testing.T,
+ 	var err error
+ 	switch Method(cl.HttpMethod) {
+ 	case MethodGet:
+-		secret, err = client.get(cl.VaultPath)
++		secret, err = client.get(cl.VaultPath, context.Background())
+ 	case MethodPost:
+-		secret, err = client.post(cl.VaultPath, cl.HttpRequestBody)
++		secret, err = client.post(cl.VaultPath, cl.HttpRequestBody, context.Background())
+ 	}
+ 	require.NoError(err)
+ 	require.NotNil(secret)
+diff --git a/internal/credential/vault/private_credential.go b/internal/credential/vault/private_credential.go
+index 657669bdd..e07888ef9 100644
+--- a/internal/credential/vault/private_credential.go
++++ b/internal/credential/vault/private_credential.go
+@@ -79,7 +79,7 @@ func (pc *privateCredential) decrypt(ctx context.Context, cipher wrapping.Wrappe
+ 	return nil
+ }
+ 
+-func (pc *privateCredential) client() (*client, error) {
++func (pc *privateCredential) client(ctx context.Context) (*client, error) {
+ 	const op = "vault.(privateCredential).client"
+ 	clientConfig := &clientConfig{
+ 		Addr:          pc.VaultAddress,
+@@ -95,7 +95,7 @@ func (pc *privateCredential) client() (*client, error) {
+ 		clientConfig.ClientKey = pc.ClientKey
+ 	}
+ 
+-	client, err := newClient(clientConfig)
++	client, err := newClient(clientConfig, context.Background())
+ 	if err != nil {
+ 		return nil, errors.WrapDeprecated(err, op, errors.WithMsg("unable to create vault client"))
+ 	}
+diff --git a/internal/credential/vault/private_library.go b/internal/credential/vault/private_library.go
+index 8531e4a69..657d08307 100644
+--- a/internal/credential/vault/private_library.go
++++ b/internal/credential/vault/private_library.go
+@@ -257,7 +257,7 @@ func (pl *privateLibrary) decrypt(ctx context.Context, cipher wrapping.Wrapper)
+ 	return nil
+ }
+ 
+-func (pl *privateLibrary) client() (*client, error) {
++func (pl *privateLibrary) client(ctx context.Context) (*client, error) {
+ 	const op = "vault.(privateLibrary).client"
+ 	clientConfig := &clientConfig{
+ 		Addr:          pl.VaultAddress,
+@@ -273,7 +273,7 @@ func (pl *privateLibrary) client() (*client, error) {
+ 		clientConfig.ClientKey = pl.ClientKey
+ 	}
+ 
+-	client, err := newClient(clientConfig)
++	client, err := newClient(clientConfig, context.Background())
+ 	if err != nil {
+ 		return nil, errors.WrapDeprecated(err, op, errors.WithMsg("unable to create vault client"))
+ 	}
+@@ -297,7 +297,7 @@ func (pl *privateLibrary) retrieveCredential(ctx context.Context, op errors.Op,
+ 		return nil, errors.Wrap(ctx, err, op)
+ 	}
+ 
+-	client, err := pl.client()
++	client, err := pl.client(context.Background())
+ 	if err != nil {
+ 		return nil, errors.Wrap(ctx, err, op)
+ 	}
+@@ -305,9 +305,9 @@ func (pl *privateLibrary) retrieveCredential(ctx context.Context, op errors.Op,
+ 	var secret *vault.Secret
+ 	switch Method(pl.HttpMethod) {
+ 	case MethodGet:
+-		secret, err = client.get(pl.VaultPath)
++		secret, err = client.get(pl.VaultPath, context.Background())
+ 	case MethodPost:
+-		secret, err = client.post(pl.VaultPath, pl.HttpRequestBody)
++		secret, err = client.post(pl.VaultPath, pl.HttpRequestBody, context.Background())
+ 	default:
+ 		return nil, errors.New(ctx, errors.Internal, op, fmt.Sprintf("unknown http method: library: %s", pl.PublicId))
+ 	}
+diff --git a/internal/credential/vault/private_store.go b/internal/credential/vault/private_store.go
+index 0194b547b..1ce90c723 100644
+--- a/internal/credential/vault/private_store.go
++++ b/internal/credential/vault/private_store.go
+@@ -182,7 +182,7 @@ func (ps *privateStore) decrypt(ctx context.Context, cipher wrapping.Wrapper) er
+ 	return nil
+ }
+ 
+-func (ps *privateStore) client() (*client, error) {
++func (ps *privateStore) client(ctx context.Context) (*client, error) {
+ 	const op = "vault.(privateStore).client"
+ 	clientConfig := &clientConfig{
+ 		Addr:          ps.VaultAddress,
+@@ -198,7 +198,7 @@ func (ps *privateStore) client() (*client, error) {
+ 		clientConfig.ClientKey = ps.ClientKey
+ 	}
+ 
+-	client, err := newClient(clientConfig)
++	client, err := newClient(clientConfig, context.Background())
+ 	if err != nil {
+ 		return nil, errors.WrapDeprecated(err, op, errors.WithMsg("unable to create vault client"))
+ 	}
+diff --git a/internal/credential/vault/repository_credential_store.go b/internal/credential/vault/repository_credential_store.go
+index f66773544..952948ff0 100644
+--- a/internal/credential/vault/repository_credential_store.go
++++ b/internal/credential/vault/repository_credential_store.go
+@@ -74,11 +74,11 @@ func (r *Repository) CreateCredentialStore(ctx context.Context, cs *CredentialSt
+ 		cs.clientCert.StoreId = id
+ 	}
+ 
+-	client, err := cs.client()
++	client, err := cs.client(context.Background())
+ 	if err != nil {
+ 		return nil, errors.Wrap(ctx, err, op, errors.WithMsg("unable to create vault client"))
+ 	}
+-	tokenLookup, err := client.lookupToken()
++	tokenLookup, err := client.lookupToken(context.Background())
+ 	if err != nil {
+ 		return nil, errors.Wrap(ctx, err, op, errors.WithMsg("unable to lookup vault token"))
+ 	}
+@@ -86,7 +86,7 @@ func (r *Repository) CreateCredentialStore(ctx context.Context, cs *CredentialSt
+ 		return nil, err
+ 	}
+ 
+-	available, err := client.capabilities(requiredCapabilities.paths())
++	available, err := client.capabilities(requiredCapabilities.paths(), context.Background())
+ 	if err != nil {
+ 		return nil, errors.Wrap(ctx, err, op, errors.WithMsg("unable to get vault capabilities"))
+ 	}
+@@ -96,7 +96,7 @@ func (r *Repository) CreateCredentialStore(ctx context.Context, cs *CredentialSt
+ 			errors.New(ctx, errors.VaultTokenMissingCapabilities, op, fmt.Sprintf("missing capabilites: %v", missing))
+ 	}
+ 
+-	renewedToken, err := client.renewToken()
++	renewedToken, err := client.renewToken(context.Background())
+ 	if err != nil {
+ 		return nil, errors.Wrap(ctx, err, op, errors.WithMsg("unable to renew vault token"))
+ 	}
+@@ -473,12 +473,12 @@ func (r *Repository) UpdateCredentialStore(ctx context.Context, cs *CredentialSt
+ 	}
+ 
+ 	var token *Token
+-	client, err := updatedStore.client()
++	client, err := updatedStore.client(context.Background())
+ 	if err != nil {
+ 		return nil, db.NoRowsAffected, errors.Wrap(ctx, err, op, errors.WithMsg("unable to get client for updated store"))
+ 	}
+ 	if validateToken {
+-		tokenLookup, err := client.lookupToken()
++		tokenLookup, err := client.lookupToken(context.Background())
+ 		if err != nil {
+ 			return nil, db.NoRowsAffected, errors.Wrap(ctx, err, op, errors.WithMsg("cannot lookup token for updated store"))
+ 		}
+@@ -486,7 +486,7 @@ func (r *Repository) UpdateCredentialStore(ctx context.Context, cs *CredentialSt
+ 			return nil, db.NoRowsAffected, errors.Wrap(ctx, err, op)
+ 		}
+ 
+-		available, err := client.capabilities(requiredCapabilities.paths())
++		available, err := client.capabilities(requiredCapabilities.paths(), context.Background())
+ 		if err != nil {
+ 			return nil, db.NoRowsAffected, errors.Wrap(ctx, err, op, errors.WithMsg("unable to get vault capabilities"))
+ 		}
+@@ -498,7 +498,7 @@ func (r *Repository) UpdateCredentialStore(ctx context.Context, cs *CredentialSt
+ 		}
+ 	}
+ 	if updateToken {
+-		renewedToken, err := client.renewToken()
++		renewedToken, err := client.renewToken(context.Background())
+ 		if err != nil {
+ 			return nil, db.NoRowsAffected, errors.Wrap(ctx, err, op, errors.WithMsg("unable to renew vault token"))
+ 		}
+diff --git a/internal/credential/vault/testing.go b/internal/credential/vault/testing.go
+index 3a17a9a0f..9995cf9f7 100644
+--- a/internal/credential/vault/testing.go
++++ b/internal/credential/vault/testing.go
+@@ -636,10 +636,10 @@ func (v *TestVaultServer) clientUsingToken(t testing.TB, token string) *client {
+ 		ClientKey:  v.ClientKey,
+ 	}
+ 
+-	client, err := newClient(conf)
++	client, err := newClient(conf, context.Background())
+ 	require.NoError(err)
+ 	require.NotNil(client)
+-	require.NoError(client.ping())
++	require.NoError(client.ping(context.Background()))
+ 	return client
+ }
+ 
+@@ -826,7 +826,7 @@ func (v *TestVaultServer) CreateKVSecret(t testing.TB, p string, data []byte) *v
+ 	require := require.New(t)
+ 
+ 	vc := v.client(t)
+-	cred, err := vc.post(path.Join("secret", "data", p), data)
++	cred, err := vc.post(path.Join("secret", "data", p), data, context.Background())
+ 	require.NoError(err)
+ 	return cred
+ }
+diff --git a/internal/credential/vault/testing_test.go b/internal/credential/vault/testing_test.go
+index ed244434c..bb078100c 100644
+--- a/internal/credential/vault/testing_test.go
++++ b/internal/credential/vault/testing_test.go
+@@ -1,6 +1,7 @@
+ package vault
+ 
+ import (
++	"context"
+ 	"crypto/ecdsa"
+ 	"crypto/elliptic"
+ 	"crypto/rand"
+@@ -237,10 +238,10 @@ func TestNewVaultServer(t *testing.T) {
+ 			Token: TokenSecret(v.RootToken),
+ 		}
+ 
+-		client, err := newClient(conf)
++		client, err := newClient(conf, context.Background())
+ 		require.NoError(err)
+ 		require.NotNil(client)
+-		require.NoError(client.ping())
++		require.NoError(client.ping(context.Background()))
+ 	})
+ 	t.Run("TestServerTLS", func(t *testing.T) {
+ 		assert, require := assert.New(t), require.New(t)
+@@ -257,10 +258,10 @@ func TestNewVaultServer(t *testing.T) {
+ 			CaCert: v.CaCert,
+ 		}
+ 
+-		client, err := newClient(conf)
++		client, err := newClient(conf, context.Background())
+ 		require.NoError(err)
+ 		require.NotNil(client)
+-		require.NoError(client.ping())
++		require.NoError(client.ping(context.Background()))
+ 	})
+ 	t.Run("TestClientTLS", func(t *testing.T) {
+ 		assert, require := assert.New(t), require.New(t)
+@@ -281,10 +282,10 @@ func TestNewVaultServer(t *testing.T) {
+ 			ClientKey:  v.ClientKey,
+ 		}
+ 
+-		client, err := newClient(conf)
++		client, err := newClient(conf, context.Background())
+ 		require.NoError(err)
+ 		require.NotNil(client)
+-		require.NoError(client.ping())
++		require.NoError(client.ping(context.Background()))
+ 	})
+ 	t.Run("TestClientTLS-with-client-key", func(t *testing.T) {
+ 		assert, require := assert.New(t), require.New(t)
+@@ -313,10 +314,10 @@ func TestNewVaultServer(t *testing.T) {
+ 			ClientKey:  v.ClientKey,
+ 		}
+ 
+-		client, err := newClient(conf)
++		client, err := newClient(conf, context.Background())
+ 		require.NoError(err)
+ 		require.NotNil(client)
+-		require.NoError(client.ping())
++		require.NoError(client.ping(context.Background()))
+ 	})
+ }
+ 
+@@ -469,14 +470,14 @@ func TestTestVaultServer_LookupLease(t *testing.T) {
+ 		Token:      TokenSecret(v.RootToken),
+ 	}
+ 
+-	client, err := newClient(conf)
++	client, err := newClient(conf, context.Background())
+ 	require.NoError(err)
+ 	require.NotNil(client)
+-	assert.NoError(client.ping())
++	assert.NoError(client.ping(context.Background()))
+ 
+ 	// Create secret
+ 	credPath := path.Join("database", "creds", "opened")
+-	cred, err := client.get(credPath)
++	cred, err := client.get(credPath, context.Background())
+ 	require.NoError(err)
+ 
+ 	// Sleep to move ttl
+@@ -504,7 +505,7 @@ func TestTestVaultServer_VerifyTokenInvalid(t *testing.T) {
+ 
+ 	_, token := v.CreateToken(t)
+ 	client := v.clientUsingToken(t, token)
+-	err := client.revokeToken()
++	err := client.revokeToken(context.Background())
+ 	require.NoError(err)
+ 	v.VerifyTokenInvalid(t, token)
+ 
+@@ -556,7 +557,7 @@ func TestTestVaultServer_AddKVPolicy(t *testing.T) {
+ 		require.NotNil(token)
+ 		client := v.clientUsingToken(t, token)
+ 
+-		_, err := client.get("/secret/data/my-secret")
++		_, err := client.get("/secret/data/my-secret", context.Background())
+ 		assert.Error(err)
+ 
+ 		// An attempt to get my-secret should now fail with a 403
+@@ -571,7 +572,7 @@ func TestTestVaultServer_AddKVPolicy(t *testing.T) {
+ 		require.NotNil(token)
+ 		client = v.clientUsingToken(t, token)
+ 
+-		_, err = client.get("/secret/data/my-secret")
++		_, err = client.get("/secret/data/my-secret", context.Background())
+ 		assert.NoError(err)
+ 	})
+ }
+diff --git a/internal/credential/vault/vault.go b/internal/credential/vault/vault.go
+index b9c6baf5b..5256b4a59 100644
+--- a/internal/credential/vault/vault.go
++++ b/internal/credential/vault/vault.go
+@@ -44,7 +44,7 @@ type client struct {
+ 	token TokenSecret
+ }
+ 
+-func newClient(c *clientConfig) (*client, error) {
++func newClient(c *clientConfig, ctx context.Context) (*client, error) {
+ 	const op = "vault.newClient"
+ 	if !c.isValid() {
+ 		return nil, errors.NewDeprecated(errors.InvalidParameter, op, "invalid configuration")
+@@ -93,7 +93,7 @@ func newClient(c *clientConfig) (*client, error) {
+ // response is returned. This endpoint is accessible with the default
+ // policy in Vault 1.7.2. See
+ // https://www.vaultproject.io/api-docs/system/health#read-health-information.
+-func (c *client) ping() error {
++func (c *client) ping(ctx context.Context) error {
+ 	const op = "vault.(client).ping"
+ 	h, err := c.cl.Sys().Health()
+ 	switch {
+@@ -112,7 +112,7 @@ func (c *client) ping() error {
+ // the vault.Secret response. This endpoint is accessible with the default
+ // policy in Vault 1.7.2. See
+ // https://www.vaultproject.io/api-docs/auth/token#renew-a-token-self.
+-func (c *client) renewToken() (*vault.Secret, error) {
++func (c *client) renewToken(ctx context.Context) (*vault.Secret, error) {
+ 	const op = "vault.(client).renewToken"
+ 	t, err := c.cl.Auth().Token().RenewSelf(0)
+ 	if err != nil {
+@@ -124,7 +124,7 @@ func (c *client) renewToken() (*vault.Secret, error) {
+ // revokeToken calls the /auth/token/revoke-self Vault endpoint. This
+ // endpoint is accessible with the default policy in Vault 1.7.2. See
+ // https://www.vaultproject.io/api-docs/auth/token#revoke-a-token-self.
+-func (c *client) revokeToken() error {
++func (c *client) revokeToken(ctx context.Context) error {
+ 	const op = "vault.(client).revokeToken"
+ 	// The `token` parameter is kept for backwards compatibility but is ignored, so use ""
+ 	if err := c.cl.Auth().Token().RevokeSelf(""); err != nil {
+@@ -137,7 +137,7 @@ func (c *client) revokeToken() error {
+ // vault.Secret response. This endpoint is accessible with the default
+ // policy in Vault 1.7.2. See
+ // https://www.vaultproject.io/api-docs/system/leases#renew-lease.
+-func (c *client) renewLease(leaseId string, leaseDuration time.Duration) (*vault.Secret, error) {
++func (c *client) renewLease(leaseId string, leaseDuration time.Duration, ctx context.Context) (*vault.Secret, error) {
+ 	const op = "vault.(client).renewLease"
+ 	t, err := c.cl.Sys().Renew(leaseId, int(leaseDuration.Round(time.Second).Seconds()))
+ 	if err != nil {
+@@ -149,7 +149,7 @@ func (c *client) renewLease(leaseId string, leaseDuration time.Duration) (*vault
+ // revokeLease calls the /sys/leases/revoke Vault endpoint. This endpoint
+ // is NOT accessible with the default policy in Vault 1.7.2. See
+ // https://www.vaultproject.io/api-docs/system/leases#revoke-lease.
+-func (c *client) revokeLease(leaseId string) error {
++func (c *client) revokeLease(leaseId string, ctx context.Context) error {
+ 	const op = "vault.(client).revokeLease"
+ 	if err := c.cl.Sys().Revoke(leaseId); err != nil {
+ 		return errors.WrapDeprecated(err, op, errors.WithCode(errors.Unknown), errors.WithMsg(fmt.Sprintf("vault: %s", c.cl.Address())))
+@@ -161,7 +161,7 @@ func (c *client) revokeLease(leaseId string) error {
+ // the vault.Secret response. This endpoint is accessible with the default
+ // policy in Vault 1.7.2. See
+ // https://www.vaultproject.io/api-docs/auth/token#lookup-a-token-self.
+-func (c *client) lookupToken() (*vault.Secret, error) {
++func (c *client) lookupToken(ctx context.Context) (*vault.Secret, error) {
+ 	const op = "vault.(client).lookupToken"
+ 	t, err := c.cl.Auth().Token().LookupSelf()
+ 	if err != nil {
+@@ -172,13 +172,13 @@ func (c *client) lookupToken() (*vault.Secret, error) {
+ 
+ // swapToken replaces the token in the Vault client with t and returns the
+ // token that was replaced.
+-func (c *client) swapToken(new TokenSecret) (old TokenSecret) {
++func (c *client) swapToken(new TokenSecret, ctx context.Context) (old TokenSecret) {
+ 	old = TokenSecret(c.cl.Token())
+ 	c.cl.SetToken(string(new))
+ 	return
+ }
+ 
+-func (c *client) get(path string) (*vault.Secret, error) {
++func (c *client) get(path string, ctx context.Context) (*vault.Secret, error) {
+ 	const op = "vault.(client).get"
+ 	s, err := c.cl.Logical().Read(path)
+ 	if err != nil {
+@@ -187,7 +187,7 @@ func (c *client) get(path string) (*vault.Secret, error) {
+ 	return s, nil
+ }
+ 
+-func (c *client) post(path string, data []byte) (*vault.Secret, error) {
++func (c *client) post(path string, data []byte, ctx context.Context) (*vault.Secret, error) {
+ 	const op = "vault.(client).post"
+ 
+ 	if len(data) == 0 {
+@@ -206,7 +206,7 @@ func (c *client) post(path string, data []byte) (*vault.Secret, error) {
+ // the vault.Secret response. This endpoint is accessible with the default
+ // policy in Vault 1.7.2. See
+ // https://www.vaultproject.io/api-docs/system/capabilities-self.
+-func (c *client) capabilities(paths []string) (pathCapabilities, error) {
++func (c *client) capabilities(paths []string, ctx context.Context) (pathCapabilities, error) {
+ 	const op = "vault.(client).capabilities"
+ 	if len(paths) == 0 {
+ 		return nil, errors.NewDeprecated(errors.InvalidParameter, op, "empty paths")
+diff --git a/internal/credential/vault/vault_test.go b/internal/credential/vault/vault_test.go
+index 1d2cf4744..3785e2743 100644
+--- a/internal/credential/vault/vault_test.go
++++ b/internal/credential/vault/vault_test.go
+@@ -1,6 +1,7 @@
+ package vault
+ 
+ import (
++	"context"
+ 	"fmt"
+ 	"net/http"
+ 	"path"
+@@ -52,7 +53,7 @@ func Test_newClient(t *testing.T) {
+ 		tt := tt
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			assert, require := assert.New(t), require.New(t)
+-			client, err := newClient(tt.clientConfig)
++			client, err := newClient(tt.clientConfig, context.Background())
+ 			if tt.wantErr {
+ 				require.Error(err)
+ 				assert.Nil(client)
+@@ -76,7 +77,7 @@ func TestClient_RenewToken(t *testing.T) {
+ 	time.Sleep(100 * time.Millisecond)
+ 
+ 	client := v.clientUsingToken(t, token)
+-	renewedToken, err := client.renewToken()
++	renewedToken, err := client.renewToken(context.Background())
+ 	require.NoError(t, err)
+ 	assert.NotNil(renewedToken)
+ 
+@@ -109,7 +110,7 @@ func TestClient_LookupToken(t *testing.T) {
+ 	secretLookup := v.LookupToken(t, token)
+ 
+ 	client := v.clientUsingToken(t, token)
+-	tokenLookup, err := client.lookupToken()
++	tokenLookup, err := client.lookupToken(context.Background())
+ 	assert.NoError(err)
+ 	require.NotNil(tokenLookup)
+ 
+@@ -125,14 +126,14 @@ func TestClient_RevokeToken(t *testing.T) {
+ 	_, token := v.CreateToken(t)
+ 
+ 	client := v.clientUsingToken(t, token)
+-	tokenLookup, err := client.lookupToken()
++	tokenLookup, err := client.lookupToken(context.Background())
+ 	assert.NoError(err)
+ 	assert.NotNil(tokenLookup)
+ 
+-	require.NoError(client.revokeToken())
++	require.NoError(client.revokeToken(context.Background()))
+ 
+ 	// An attempt to lookup should now fail with a 403
+-	tokenLookup, err = client.lookupToken()
++	tokenLookup, err = client.lookupToken(context.Background())
+ 	require.Error(err)
+ 	assert.Nil(tokenLookup)
+ 
+@@ -150,7 +151,7 @@ func TestClient_Get(t *testing.T) {
+ 
+ 	client := v.client(t)
+ 
+-	cred, err := client.get(path.Join("database", "creds", "opened"))
++	cred, err := client.get(path.Join("database", "creds", "opened"), context.Background())
+ 	assert.NoError(err)
+ 	assert.NotNil(cred)
+ }
+@@ -164,13 +165,13 @@ func TestClient_Post(t *testing.T) {
+ 	t.Run("post-body", func(t *testing.T) {
+ 		assert := assert.New(t)
+ 		credData := []byte(`{"common_name":"boundary.com"}`)
+-		cred, err := client.post(credPath, credData)
++		cred, err := client.post(credPath, credData, context.Background())
+ 		assert.NoError(err)
+ 		assert.NotNil(cred)
+ 	})
+ 	t.Run("nil-body", func(t *testing.T) {
+ 		assert := assert.New(t)
+-		cred, err := client.post(credPath, nil)
++		cred, err := client.post(credPath, nil, context.Background())
+ 		assert.Error(err)
+ 		assert.Contains(err.Error(), "common_name field is required")
+ 		assert.Nil(cred)
+@@ -187,7 +188,7 @@ func TestClient_RenewLease(t *testing.T) {
+ 	client := v.clientUsingToken(t, token)
+ 
+ 	// Create secret
+-	cred, err := client.get(path.Join("database", "creds", "opened"))
++	cred, err := client.get(path.Join("database", "creds", "opened"), context.Background())
+ 	assert.NoError(err)
+ 	require.NotNil(cred)
+ 
+@@ -198,7 +199,7 @@ func TestClient_RenewLease(t *testing.T) {
+ 	// Verify lease has not been renewed
+ 	assert.Empty(leaseLookup.Data["last_renewal"])
+ 
+-	renewedLease, err := client.renewLease(cred.LeaseID, time.Hour)
++	renewedLease, err := client.renewLease(cred.LeaseID, time.Hour, context.Background())
+ 	assert.NoError(err)
+ 	require.NotNil(renewedLease)
+ 	assert.Equal(cred.LeaseID, renewedLease.LeaseID)
+@@ -245,7 +246,7 @@ func TestClient_capabilities(t *testing.T) {
+ 			_, token := v.CreateToken(t, WithPolicies(tt.polices))
+ 			client := v.clientUsingToken(t, token)
+ 
+-			have, err := client.capabilities(tt.require.paths())
++			have, err := client.capabilities(tt.require.paths(), context.Background())
+ 			assert.NoError(err)
+ 			got := have.missing(tt.require)
+ 			assert.Equalf(tt.wantMissing, got, "pathCapabilities: want: {%s} got: {%s}", tt.wantMissing, got)
+@@ -262,7 +263,7 @@ func TestClient_revokeLease(t *testing.T) {
+ 	_, token := v.CreateToken(t, WithPolicies([]string{"boundary-controller", "database"}))
+ 	client := v.clientUsingToken(t, token)
+ 
+-	cred, err := client.get(path.Join("database", "creds", "opened"))
++	cred, err := client.get(path.Join("database", "creds", "opened"), context.Background())
+ 	assert.NoError(err)
+ 	require.NotNil(cred)
+ 
+@@ -270,7 +271,7 @@ func TestClient_revokeLease(t *testing.T) {
+ 	assert.NoError(testDatabase.ValidateCredential(t, cred))
+ 
+ 	// revoke the database credentials
+-	assert.NoError(client.revokeLease(cred.LeaseID))
++	assert.NoError(client.revokeLease(cred.LeaseID, context.Background()))
+ 
+ 	// verify the database credentials no longer work
+ 	assert.Error(testDatabase.ValidateCredential(t, cred))
+diff --git a/internal/daemon/controller/handlers/credentialstores/credentialstore_service.go b/internal/daemon/controller/handlers/credentialstores/credentialstore_service.go
+index fb2ba7c79..2db5f679a 100644
+--- a/internal/daemon/controller/handlers/credentialstores/credentialstore_service.go
++++ b/internal/daemon/controller/handlers/credentialstores/credentialstore_service.go
+@@ -183,7 +183,7 @@ func (s Service) ListCredentialStores(ctx context.Context, req *pbs.ListCredenti
+ 			outputOpts = append(outputOpts, handlers.WithAuthorizedCollectionActions(collectionActions))
+ 		}
+ 
+-		item, err := toProto(item, outputOpts...)
++		item, err := toProto(item, context.Background(), outputOpts...)
+ 		if err != nil {
+ 			return nil, err
+ 		}
+@@ -236,7 +236,7 @@ func (s Service) GetCredentialStore(ctx context.Context, req *pbs.GetCredentialS
+ 		outputOpts = append(outputOpts, handlers.WithAuthorizedCollectionActions(collectionActions))
+ 	}
+ 
+-	item, err := toProto(cs, outputOpts...)
++	item, err := toProto(cs, context.Background(), outputOpts...)
+ 	if err != nil {
+ 		return nil, err
+ 	}
+@@ -281,7 +281,7 @@ func (s Service) CreateCredentialStore(ctx context.Context, req *pbs.CreateCrede
+ 		outputOpts = append(outputOpts, handlers.WithAuthorizedCollectionActions(collectionActions))
+ 	}
+ 
+-	item, err := toProto(cs, outputOpts...)
++	item, err := toProto(cs, context.Background(), outputOpts...)
+ 	if err != nil {
+ 		return nil, err
+ 	}
+@@ -329,7 +329,7 @@ func (s Service) UpdateCredentialStore(ctx context.Context, req *pbs.UpdateCrede
+ 		outputOpts = append(outputOpts, handlers.WithAuthorizedCollectionActions(collectionActions))
+ 	}
+ 
+-	item, err := toProto(cs, outputOpts...)
++	item, err := toProto(cs, context.Background(), outputOpts...)
+ 	if err != nil {
+ 		return nil, err
+ 	}
+@@ -424,7 +424,7 @@ func (s Service) createInRepo(ctx context.Context, projId string, item *pb.Crede
+ 
+ 	switch item.Type {
+ 	case vault.Subtype.String():
+-		cs, err := toStorageVaultStore(projId, item)
++		cs, err := toStorageVaultStore(projId, item, context.Background())
+ 		if err != nil {
+ 			return nil, errors.Wrap(ctx, err, op)
+ 		}
+@@ -439,7 +439,7 @@ func (s Service) createInRepo(ctx context.Context, projId string, item *pb.Crede
+ 		return out, nil
+ 
+ 	case static.Subtype.String():
+-		cs, err := toStorageStaticStore(projId, item)
++		cs, err := toStorageStaticStore(projId, item, context.Background())
+ 		if err != nil {
+ 			return nil, errors.Wrap(ctx, err, op)
+ 		}
+@@ -471,7 +471,7 @@ func (s Service) updateInRepo(ctx context.Context, projId, id string, mask []str
+ 
+ 	switch subtypes.SubtypeFromId(domain, id) {
+ 	case vault.Subtype:
+-		cs, err := toStorageVaultStore(projId, item)
++		cs, err := toStorageVaultStore(projId, item, context.Background())
+ 		if err != nil {
+ 			return nil, errors.Wrap(ctx, err, op)
+ 		}
+@@ -487,7 +487,7 @@ func (s Service) updateInRepo(ctx context.Context, projId, id string, mask []str
+ 		}
+ 
+ 	case static.Subtype:
+-		cs, err := toStorageStaticStore(projId, item)
++		cs, err := toStorageStaticStore(projId, item, context.Background())
+ 		if err != nil {
+ 			return nil, errors.Wrap(ctx, err, op)
+ 		}
+@@ -607,7 +607,7 @@ func (s Service) authResult(ctx context.Context, id string, a action.Type) auth.
+ 	return auth.Verify(ctx, opts...)
+ }
+ 
+-func toProto(in credential.Store, opt ...handlers.Option) (*pb.CredentialStore, error) {
++func toProto(in credential.Store, ctx context.Context, opt ...handlers.Option) (*pb.CredentialStore, error) {
+ 	const op = "credentialstores.toProto"
+ 
+ 	opts := handlers.GetOpts(opt...)
+@@ -695,7 +695,7 @@ func toProto(in credential.Store, opt ...handlers.Option) (*pb.CredentialStore,
+ 	return &out, nil
+ }
+ 
+-func toStorageStaticStore(scopeId string, in *pb.CredentialStore) (out *static.CredentialStore, err error) {
++func toStorageStaticStore(scopeId string, in *pb.CredentialStore, ctx context.Context) (out *static.CredentialStore, err error) {
+ 	const op = "credentialstores.toStorageStaticStore"
+ 	var opts []static.Option
+ 	if in.GetName() != nil {
+@@ -712,7 +712,7 @@ func toStorageStaticStore(scopeId string, in *pb.CredentialStore) (out *static.C
+ 	return cs, err
+ }
+ 
+-func toStorageVaultStore(scopeId string, in *pb.CredentialStore) (out *vault.CredentialStore, err error) {
++func toStorageVaultStore(scopeId string, in *pb.CredentialStore, ctx context.Context) (out *vault.CredentialStore, err error) {
+ 	const op = "credentialstores.toStorageVaultStore"
+ 	var opts []vault.Option
+ 	if in.GetName() != nil {
