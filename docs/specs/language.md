@@ -238,21 +238,21 @@ the total, truncated responses carry `truncated` and `next_offset`, and
 
 ## Guarantees
 
-1. No accepted operation introduces a new diagnostic. Pre-existing
-   issues in the affected packages (real codebases carry history) are
-   tolerated: baselined at preflight, filtered after the splice, and
-   surfaced on the accepted response as `pre_existing`.
+1. An accepted edit introduces no new compiler diagnostic. Problems the
+   code already had never block it; they are measured up front and
+   reported separately as `pre_existing`.
 2. A rejected patch changes nothing: disk, snapshot, or generation.
-3. Rename (and move) prove resolution: every rewritten reference resolves
-   to the intended object afterward; capture rejects even when the
-   compiler is satisfied.
-4. Patches are atomic and generation-checked; generations are monotonic.
-5. Queries reflect accepted mutations immediately, and an accepted
-   mutation that reshaped exactly one declaration embeds that
-   declaration's fresh view (`{text, nodes, generation}`) in its own
-   response; the next edit needs no view call. Multi-declaration patches
-   say why the view was omitted (`views_omitted`).
-6. External edits are detected per request and trigger reload.
+3. Rename and move prove every rewritten reference still points at the
+   intended object. A reference captured by shadowing is rejected even
+   when the compiler would accept it.
+4. Patches apply whole or not at all; a patch built on a stale
+   generation is rejected.
+5. Queries see accepted mutations immediately. A patch that reshapes one
+   declaration gets that declaration's fresh view back in the response,
+   so the next edit needs no extra call; multi-declaration patches say
+   why the view was omitted (`views_omitted`).
+6. Edits made outside the protocol are detected on the next request and
+   trigger a full reload.
 
 ## Future, named
 
