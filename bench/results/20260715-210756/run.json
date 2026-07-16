@@ -1,0 +1,25 @@
+{
+ "ago_rev": "a31a03f9492ca42b5f6e96e248c33527726c45c4",
+ "cap": "12m0s",
+ "endpoint": "https://llama.lab.aeryx.ai/v1",
+ "model": "unsloth/GLM-4.7-Flash-GGUF:UD-Q4_K_XL",
+ "profiles": [
+  {
+   "name": "glm-flash",
+   "endpoint": "https://llama.lab.aeryx.ai/v1",
+   "model": "unsloth/GLM-4.7-Flash-GGUF:UD-Q4_K_XL",
+   "sampler": {
+    "repeat_penalty": 1,
+    "temperature": 0.7,
+    "top_k": 40,
+    "top_p": 0.95
+   },
+   "quant": "UD-Q4_K_XL",
+   "context": 65536,
+   "notes": "incumbent; llama-server on the rig. repeat_penalty 1.0 is deliberate: op JSON repeats keys and handles by design (glm4.7-flash.md)."
+  }
+ ],
+ "raw_prompt_tokens": 129,
+ "semantic_prompt_tokens": 109,
+ "started": "2026-07-15T21:07:56-06:00"
+}

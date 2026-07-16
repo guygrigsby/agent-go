@@ -63,6 +63,30 @@ func addressRepairs(rej *Reject, pkgPath, sym string,
 // Caller holds mu.
 func (s *Snapshot) viewRepairs(rej *Reject, pkgPath, sym string) {
 	addressRepairs(rej, pkgPath, sym, viewCall, s.viewable)
+	fileAddressRepair(rej, sym)
+}
+
+// fileAddressRepair catches a raw-mode habit: a file name or file:line
+// position passed as a sym ("proxy.go", "pswarm.go:232"). No substitution
+// can fix it, so the repair is the search call that turns the file's base
+// name into real symbol addresses. Only fires when nothing better exists.
+func fileAddressRepair(rej *Reject, sym string) {
+	if len(rej.PossibleRepairs) > 0 {
+		return
+	}
+	base, _, _ := strings.Cut(sym, ":")
+	name, ok := strings.CutSuffix(base, ".go")
+	if !ok {
+		return
+	}
+	name = name[strings.LastIndexAny(name, "/\\")+1:]
+	if name == "" {
+		return
+	}
+	rej.PossibleRepairs = append(rej.PossibleRepairs,
+		Repair{Why: "sym takes symbol addresses, not file names; search lists the symbols matching " + name,
+			Call: map[string]any{"tool": "query",
+				"args": map[string]any{"kind": "search", "q": name}}})
 }
 
 // resolves reports whether the address names any object.
@@ -101,6 +125,7 @@ func (s *Snapshot) queryRepairs(rej *Reject, kind, pkgPath, sym string) {
 			return map[string]any{"tool": "query",
 				"args": map[string]any{"kind": kind, "pkg": pkg, "sym": sym}}
 		}, accept)
+	fileAddressRepair(rej, sym)
 }
 
 // sugarRepairs builds the corrected single-op call for an addressing miss

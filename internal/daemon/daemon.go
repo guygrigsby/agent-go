@@ -51,6 +51,7 @@ func Run(dir string, idle time.Duration, logPath string) error {
 	defer os.Remove(sock)
 
 	snap := snapshot.New(dir)
+	breaker := newResendBreaker()
 	timer := time.AfterFunc(idle, func() { l.Close() })
 	for {
 		conn, err := l.Accept()
@@ -58,13 +59,17 @@ func Run(dir string, idle time.Duration, logPath string) error {
 			return nil // idle close or shutdown
 		}
 		timer.Reset(idle)
-		if stop := handle(conn, snap, rlog); stop {
+		if stop := handleWithBreaker(conn, snap, rlog, breaker); stop {
 			return nil
 		}
 	}
 }
 
 func handle(conn net.Conn, snap *snapshot.Snapshot, rlog *requestLog) (stop bool) {
+	return handleWithBreaker(conn, snap, rlog, nil)
+}
+
+func handleWithBreaker(conn net.Conn, snap *snapshot.Snapshot, rlog *requestLog, breaker *resendBreaker) (stop bool) {
 	defer conn.Close()
 	var req protocol.Request
 	if err := json.NewDecoder(conn).Decode(&req); err != nil {
@@ -122,6 +127,15 @@ func handle(conn net.Conn, snap *snapshot.Snapshot, rlog *requestLog) (stop bool
 			"possible_repairs": rej.PossibleRepairs}
 	} else if err != nil {
 		res = map[string]any{"status": "error", "error": err.Error()}
+	}
+	sha := reqSHA(req)
+	if res["status"] == "rejected" {
+		if n := breaker.bump(sha); n > 0 {
+			res["resent"] = n
+			res["escalation"] = "this exact call was already rejected; do not resend it unchanged — send a possible_repairs call verbatim, or change the arguments"
+		}
+	} else {
+		breaker.clear(sha)
 	}
 	rlog.note(req, res, start)
 	writeJSON(conn, res)

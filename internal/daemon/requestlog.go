@@ -1,8 +1,6 @@
 package daemon
 
 import (
-	"crypto/sha256"
-	"encoding/hex"
 	"encoding/json"
 	"os"
 	"sync"
@@ -41,13 +39,11 @@ func (l *requestLog) note(req protocol.Request, res map[string]any, start time.T
 	if l == nil {
 		return
 	}
-	raw, _ := json.Marshal(req)
-	sum := sha256.Sum256(raw)
 	rec := map[string]any{
 		"ts":      start.UTC().Format(time.RFC3339Nano),
 		"op":      req.Op,
 		"ms":      time.Since(start).Milliseconds(),
-		"req_sha": hex.EncodeToString(sum[:8]),
+		"req_sha": reqSHA(req),
 	}
 	if req.Pkg != "" {
 		rec["pkg"] = req.Pkg

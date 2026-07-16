@@ -4,7 +4,7 @@ package bench
 // asymmetry would confound the mode comparison (proposal §6).
 const promptCommon = "You are completing a repository-wide Go refactoring task."
 
-const promptSemantic = " Work only through the ago tools. Workflow: ago_search with a name fragment to find exact symbol addresses, ago_refs to see every usage, ago_rename to rename a symbol everywhere, ago_set_body to change a function body. Renames of a naming family need one ago_rename per symbol. Mutations are validated by the compiler; a rejection tells you exactly what to fix, adjust and retry."
+const promptSemantic = " Work only through the ago tools. Workflow: ago_search with a name fragment to find exact symbol addresses, ago_refs to see every usage, ago_rename to rename a symbol everywhere, ago_set_body to change a function body, ago_add_param to add a parameter. sym arguments are symbol addresses like Type.Method, never file names. Mutations are validated by the compiler. When a rejection carries possible_repairs, resend the first repair's call exactly as given; never resend a rejected call unchanged."
 
 const promptRaw = " Use the shell and file editing tools. Workflow: grep with a name fragment to find every file mentioning the symbol, read the surrounding code to confirm which occurrences are the symbol and not a lookalike, edit the declaration and every reference, then run go build to check your work. Renames of a naming family need every symbol updated at all of its references. The compiler is your validator; a build error tells you exactly what to fix, adjust and retry."
 

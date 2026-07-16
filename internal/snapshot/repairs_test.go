@@ -382,6 +382,28 @@ func TestAddParamSymMissRepair(t *testing.T) {
 	}
 }
 
+// A file name (or file:line) passed as a sym is a raw-mode habit with no
+// candidate substitution; the repair is the search call that turns the
+// file's base name into real symbol addresses.
+func TestViewFilenameSymRepairIsSearch(t *testing.T) {
+	s := demo(t)
+	for _, sym := range []string{"lib.go", "lib.go:9"} {
+		_, err := s.View("demo/lib", sym)
+		rej, ok := err.(*Reject)
+		if !ok {
+			t.Fatalf("%s: want Reject, got %v", sym, err)
+		}
+		if len(rej.PossibleRepairs) == 0 {
+			t.Fatalf("%s: reject carries no repairs: %+v", sym, rej)
+		}
+		r := rej.PossibleRepairs[0]
+		args, _ := r.Call["args"].(map[string]any)
+		if r.Call["tool"] != "query" || args["kind"] != "search" || args["q"] != "lib" {
+			t.Fatalf("%s: want search repair for lib, got %v", sym, r.Call)
+		}
+	}
+}
+
 // Viewing a field redirects to the containing type; the repair is the
 // view call for that type, executable verbatim.
 func TestViewFieldRepairViewsOwner(t *testing.T) {

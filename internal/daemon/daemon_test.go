@@ -88,6 +88,60 @@ func TestHandlePreservesPossibleRepairs(t *testing.T) {
 	}
 }
 
+// An exact resend of a just-rejected request escalates: the response gains
+// a resent count and a hard imperative instead of letting the loop spin to
+// the cap. The smoke episode 20260715-210756 resent one rejected view 23
+// times unchanged.
+func TestHandleEscalatesIdenticalResend(t *testing.T) {
+	dir, err := filepath.Abs("../snapshot/testdata/demo")
+	if err != nil {
+		t.Fatal(err)
+	}
+	snap := snapshot.New(dir)
+	breaker := newResendBreaker()
+	send := func() map[string]any {
+		client, server := net.Pipe()
+		done := make(chan bool, 1)
+		go func() { done <- handleWithBreaker(server, snap, nil, breaker) }()
+		req := protocol.Request{Op: "view", Pkg: "demo/lib", Sym: "proxy.go"}
+		if err := json.NewEncoder(client).Encode(req); err != nil {
+			t.Fatal(err)
+		}
+		var res map[string]any
+		if err := json.NewDecoder(client).Decode(&res); err != nil {
+			t.Fatal(err)
+		}
+		<-done
+		return res
+	}
+	first := send()
+	if first["status"] != "rejected" {
+		t.Fatalf("want rejected, got %v", first)
+	}
+	if _, ok := first["resent"]; ok {
+		t.Fatalf("first rejection must not carry resent: %v", first)
+	}
+	second := send()
+	if second["resent"].(float64) != 1 {
+		t.Fatalf("second identical send must carry resent=1: %v", second)
+	}
+	esc, _ := second["escalation"].(string)
+	if esc == "" {
+		t.Fatalf("second identical send must carry an escalation: %v", second)
+	}
+	// A successful call must not trip the breaker.
+	client, server := net.Pipe()
+	done := make(chan bool, 1)
+	go func() { done <- handleWithBreaker(server, snap, nil, breaker) }()
+	json.NewEncoder(client).Encode(protocol.Request{Op: "view", Pkg: "demo/lib", Sym: "Double"})
+	var res map[string]any
+	json.NewDecoder(client).Decode(&res)
+	<-done
+	if res["status"] != "ok" || res["resent"] != nil {
+		t.Fatalf("ok call polluted by breaker: %v", res)
+	}
+}
+
 // With a request log open, every handled request appends one JSONL record
 // carrying op, outcome, rejection evidence, and latency — the raw material
 // for the per-episode counters.
