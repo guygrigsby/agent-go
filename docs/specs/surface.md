@@ -1,0 +1,92 @@
+# Protocol surface: shipped and foreseen
+
+The running list of every call an agent can make (or will be able to),
+one row per tool and op. `TestSurfaceDocCurrent` asserts every op in the
+live help catalog appears here, so shipped rows cannot drift. Statuses:
+**shipped** (in the catalog today), **planned** (has a tracked issue),
+**candidate** (named, waiting on evidence).
+
+## Tools (the ten-call MCP surface, all shipped)
+
+| tool | role |
+|---|---|
+| `status` | workspace snapshot: packages, files, errors |
+| `help` | versioned op catalog with examples |
+| `query` | search, inspect, refs, callers, callees, implementations, doc |
+| `view` | declaration source with statement handles + generation |
+| `patch` | atomic, generation-checked multi-op transaction |
+| `test` | scoped go test with structured results |
+| `rename` | one-op sugar over patch |
+| `set_body` | one-op sugar over patch |
+| `add_param` | one-op sugar over patch |
+| `upsert_decl` | one-op sugar over patch |
+
+## Patch ops
+
+| op | status | notes |
+|---|---|---|
+| `rename` | shipped | capture-proof, atomic multi-rename |
+| `set_body` | shipped | |
+| `add_param` | shipped | ceilings: func-as-value, variadic spread call sites |
+| `upsert_decl` | shipped | manages imports; creates packages on demand |
+| `delete_decl` | shipped | |
+| `set_doc` | shipped | |
+| `add_field` | shipped | |
+| `remove_field` | shipped | |
+| `add_assign` | shipped | |
+| `add_call` | shipped | expression statements only |
+| `add_return` | shipped | |
+| `add_defer` | shipped | |
+| `add_go` | shipped | |
+| `delete_node` | shipped | blocks must be empty |
+| `add_if` | shipped | |
+| `add_for` | shipped | no init/post clauses (v1 ceiling) |
+| `add_switch` | shipped | |
+| `add_case` | shipped | |
+| `set_cond` | shipped | |
+| `replace_expr` | shipped | condition / whole expression statement only |
+| `wrap_stmts` | shipped | with: if, for, block |
+| `wrap_error` | shipped | same-package arity resolution (v1 ceiling) |
+| `add_test` | shipped | table-driven scaffold |
+| `add_test_case` | shipped | |
+| `set_test_case` | shipped | |
+| `remove_test_case` | shipped | |
+| `set_signature` | planned | [agent-go-596]; oracle-proven need: func-as-value, spread sites, interface+implementors atomic change |
+| `move_decl` | planned | [agent-go-596]; 24 mined move tasks blocked |
+| `remove_param` | planned | [agent-go-596] |
+| `implement_interface` | planned | [agent-go-596] |
+| `add_bench` | planned | [agent-go-596] |
+| `add_dependency` | planned | [agent-go-9mg] project tier |
+| `remove_dependency` | planned | [agent-go-9mg] |
+| `move_file` | planned | [agent-go-9mg] |
+| `delete_file` | planned | [agent-go-9mg] |
+| `mod_tidy` | planned | [agent-go-9mg] |
+| `wrap_stmts with:go` | candidate | [agent-go-96n]; needs mined concurrency tasks |
+| `guard_with_mutex` | candidate | [agent-go-96n] |
+| channel send statement | candidate | [agent-go-96n]; `ch <- v` has no home today |
+
+## Query kinds
+
+| kind | status | notes |
+|---|---|---|
+| `search` | shipped | |
+| `inspect` | shipped | |
+| `refs` | shipped | |
+| `callers` | shipped | static call edges |
+| `callees` | shipped | static call edges |
+| `implementations` | shipped | both directions; no method-set candidate bridges (v1 ceiling) |
+| `doc` | shipped | |
+| SSA tier | planned | [agent-go-07u]; candidate expansion, dataflow |
+| async call edges | candidate | [agent-go-96n]; distinguish `go f()` in callers/callees |
+
+## Rejection channel (shipped)
+
+`did_you_mean` bare candidates; `possible_repairs` complete paste-ready
+calls for addressing misses, stale generations, unknown handles/ops, bad
+keywords, missing required args (help fallback), undefined identifiers
+(search fallback), filename-as-sym (search fallback); resend breaker
+escalates exact resends daemon-wide.
+
+Foreseen: structured expression nodes for constrained decoding
+([agent-go-dzk]), handle migration across generations ([agent-go-4j5]),
+subsequence matching for renamed symbols ([agent-go-oa9]).
