@@ -17,8 +17,8 @@ import (
 // a stale copy they can't detect. When this fails: bump catalogVersion in
 // help.go AND update wantCatalogHash here to the printed value.
 func TestCatalogVersionBumpedOnShapeChange(t *testing.T) {
-	const wantVersion = "v4"
-	const wantCatalogHash = "0e7c3c30317a9220"
+	const wantVersion = "v5"
+	const wantCatalogHash = "26a77dedb3e48ec1"
 	var parts []string
 	for _, op := range opCatalog {
 		names := make([]string, len(op.Args))

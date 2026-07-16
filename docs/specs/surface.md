@@ -56,11 +56,11 @@ live help catalog appears here, so shipped rows cannot drift. Statuses:
 | `remove_param` | planned | [agent-go-596] |
 | `implement_interface` | planned | [agent-go-596] |
 | `add_bench` | planned | [agent-go-596] |
-| `add_dependency` | planned | [agent-go-9mg] project tier |
-| `remove_dependency` | planned | [agent-go-9mg] |
+| `add_dependency` | shipped | go get with byte-for-byte go.mod/go.sum restore |
+| `remove_dependency` | shipped | go get @none, rejects while imported |
 | `move_file` | shipped | same dir renames; cross package rewrites the clause, rejects while externally referenced |
 | `delete_file` | shipped | rejects while the file declares referenced symbols |
-| `mod_tidy` | planned | [agent-go-9mg] |
+| `mod_tidy` | shipped | restore-and-validate wrapper |
 | `wrap_stmts with:go` | candidate | [agent-go-96n]; needs mined concurrency tasks |
 | `guard_with_mutex` | candidate | [agent-go-96n] |
 | channel send statement | candidate | [agent-go-96n]; `ch <- v` has no home today |

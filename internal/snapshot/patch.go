@@ -39,6 +39,11 @@ type patchCtx struct {
 	createdFiles []string
 	deletedFiles map[string][]byte
 
+	// modifiedFiles maps non-Go files a module op rewrote through the go
+	// tool (go.mod, go.sum) to their pre-patch bytes; nil bytes mark a file
+	// that did not exist. cleanupFileOps restores these too.
+	modifiedFiles map[string][]byte
+
 	// declOrig/declEdits back the decl ops' (rename, set_body, add_param,
 	// upsert_decl, delete_decl, set_doc, add_field, remove_field) shared
 	// splice ledger: each op computes its edits' byte offsets against the
@@ -577,7 +582,7 @@ func (ctx *patchCtx) addBaseline(set map[string]bool) {
 // re-globs. No-op when the file set never changed, so the common op list
 // pays nothing extra.
 func (ctx *patchCtx) cleanupFileOps() {
-	if len(ctx.createdFiles) == 0 && len(ctx.deletedFiles) == 0 {
+	if len(ctx.createdFiles) == 0 && len(ctx.deletedFiles) == 0 && len(ctx.modifiedFiles) == 0 {
 		return
 	}
 	for _, f := range ctx.createdFiles {
@@ -585,6 +590,13 @@ func (ctx *patchCtx) cleanupFileOps() {
 	}
 	for f, b := range ctx.deletedFiles {
 		os.WriteFile(f, b, 0o644)
+	}
+	for f, b := range ctx.modifiedFiles {
+		if b == nil {
+			os.Remove(f)
+		} else {
+			os.WriteFile(f, b, 0o644)
+		}
 	}
 	ctx.s.loaded = false
 	ctx.s.load()

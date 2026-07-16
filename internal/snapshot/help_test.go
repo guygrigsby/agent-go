@@ -126,6 +126,10 @@ func TestHelpExamplesAcceptedByFixture(t *testing.T) {
 	}
 
 	for _, op := range opCatalog {
+		if op.execCeiling != "" {
+			t.Logf("%s: example execution skipped: %s", op.Op, op.execCeiling)
+			continue
+		}
 		pkg, sym := "demo/lib", ""
 		if !declOps[op.Op] {
 			sym = "UseHelper"
@@ -161,7 +165,9 @@ func TestHelpExamplesAcceptedByFixture(t *testing.T) {
 // stops being useful as a weak model's only reference.
 func TestHelpArgsHaveDescriptions(t *testing.T) {
 	for _, op := range opCatalog {
-		if len(op.Args) == 0 {
+		// mod_tidy is the one genuinely argument-free op; anything else
+		// with an empty Args list is a copy-paste gap.
+		if len(op.Args) == 0 && op.Op != "mod_tidy" {
 			t.Errorf("%s: no args documented", op.Op)
 		}
 		for _, a := range op.Args {
