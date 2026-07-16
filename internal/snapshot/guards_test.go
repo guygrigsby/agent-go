@@ -187,6 +187,33 @@ func TestQueryDeterministicBytes(t *testing.T) {
 	}
 }
 
+// Protocol output is plain text everywhere: models mirror formatting, so
+// one markdown fence in a help note or rejection teaches every model to
+// wrap its own calls in fences.
+func TestNoMarkdownFencesInProtocolOutput(t *testing.T) {
+	s := demo(t)
+	help, err := s.Help()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if b, _ := json.Marshal(help); strings.Contains(string(b), "```") {
+		t.Error("help catalog contains a markdown fence")
+	}
+	view, err := s.View("demo/lib", "Double")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if b, _ := json.Marshal(view); strings.Contains(string(b), "```") {
+		t.Error("view output contains a markdown fence")
+	}
+	_, err = s.View("demo/lib", "Nope")
+	if rej, ok := err.(*Reject); ok {
+		if b, _ := json.Marshal(rej); strings.Contains(string(b), "```") {
+			t.Error("rejection contains a markdown fence")
+		}
+	}
+}
+
 // Every JSON code block in language.md must parse, and any block shaped
 // like a patch envelope or ops array must name only registered ops with
 // arguments their schemas accept. Docs examples are few-shot material;
