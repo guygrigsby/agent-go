@@ -273,6 +273,45 @@ func TestPatchUpsertDeclNewFileRejectionCleansUp(t *testing.T) {
 	}
 }
 
+// A brand-new package mid-patch composes with ops that need the package to
+// exist: create demo/util, then move Double into it, one atomic patch.
+func TestPatchUpsertDeclCreatesNewPackage(t *testing.T) {
+	s := demo(t)
+	res, err := s.Patch([]byte(`{"pkg":"demo/util",
+		"ops":[{"op":"upsert_decl","text":"func Seed() int {\n\treturn 1\n}"},
+		       {"op":"move_decl","pkg":"demo/lib","sym":"Double","to_pkg":"demo/util"}]}`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if res["status"] != "accepted" {
+		t.Fatalf("got %v", res)
+	}
+	if _, err := s.Inspect("demo/util", "Double"); err != nil {
+		t.Errorf("moved decl not queryable in new package: %v", err)
+	}
+	if _, err := s.Inspect("demo/lib", "Double"); err == nil {
+		t.Error("Double still in demo/lib")
+	}
+}
+
+// A rejected patch must remove the created package file; the directory a
+// failed create leaves behind is harmless (Go ignores .go-less dirs).
+func TestPatchUpsertDeclNewPackageRejectionCleansUp(t *testing.T) {
+	s := demo(t)
+	_, err := s.Patch([]byte(`{"pkg":"demo/util",
+		"ops":[{"op":"upsert_decl","text":"func Seed() int {\n\treturn 1\n}"},
+		       {"op":"upsert_decl","text":"func Broken() int {\n\treturn undefinedIdent\n}"}]}`))
+	if err == nil {
+		t.Fatal("want rejection")
+	}
+	if _, serr := os.Stat(filepath.Join(s.dir, "util", "agent.go")); serr == nil {
+		t.Fatal("util/agent.go survived a rejected patch")
+	}
+	if _, err := s.Inspect("demo/lib", "Double"); err != nil {
+		t.Errorf("snapshot broken after cleanup: %v", err)
+	}
+}
+
 func TestPatchUpsertDeclNewFileDryRun(t *testing.T) {
 	s := demo(t)
 	res, err := s.Patch([]byte(`{"pkg":"demo/lib","dry_run":true,

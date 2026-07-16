@@ -97,7 +97,7 @@ var opCatalog = []helpOp{
 			{"text", "string", true, "complete declaration source, including doc comment if any; the symbol name is parsed from it"},
 		},
 		Example: json.RawMessage(`[{"op":"upsert_decl","pkg":"demo/lib","text":"// Double doubles v.\nfunc Double(v int) int {\n\treturn v + v\n}"}]`),
-		Notes:   "add or replace a whole top-level declaration; goimports runs in the loop. New declarations land in agent.go, created on demand even mid-patch. v1 ceiling: cannot create a brand-new package inside a composable multi-op patch — use the standalone upsert_decl tool for that one case",
+		Notes:   "add or replace a whole top-level declaration; goimports runs in the loop. New declarations land in agent.go, created on demand — including a brand-new file or package mid-patch, so one atomic patch can create a package and move declarations into it",
 	},
 	{
 		Op: "delete_decl",

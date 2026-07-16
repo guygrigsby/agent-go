@@ -6,6 +6,7 @@ import (
 	"go/token"
 	"go/types"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"golang.org/x/tools/go/packages"
@@ -46,10 +47,9 @@ func (setBodyOp) apply(ctx *patchCtx, raw json.RawMessage) *Reject {
 
 // upsertDeclOp is upsert_decl's composable form: same upsertDeclEdit core
 // (locate an existing declaration to replace, or an existing agent.go to
-// append to), applied through the decl-op ledger. A brand-new agent.go is
-// created via the add_test-style write-and-reload path below; a brand-new
-// PACKAGE remains a v1 ceiling of the composable form (the standalone
-// upsert_decl tool handles it).
+// append to), applied through the decl-op ledger. A brand-new agent.go or a
+// brand-new package is created via createFileInPatch, so a patch can create
+// a package and move declarations into it atomically.
 type upsertDeclOp struct{}
 
 func (upsertDeclOp) name() string { return "upsert_decl" }
@@ -67,44 +67,35 @@ func (upsertDeclOp) apply(ctx *patchCtx, raw json.RawMessage) *Reject {
 	if rej != nil {
 		return rej
 	}
+	if ctx.s.primary(pkg) == nil {
+		// Brand-new package: mirror upsertNewPackage (upsert.go) inside the
+		// patch via the same write-and-reload path a brand-new file takes.
+		s := ctx.s
+		if len(s.pkgs) == 0 || s.pkgs[0].Module == nil {
+			return &Reject{Reason: "package not found", Detail: pkg,
+				DidYouMean: s.suggestPackages(pkg)}
+		}
+		mod := s.pkgs[0].Module
+		rel, ok := strings.CutPrefix(pkg, mod.Path+"/")
+		if !ok {
+			return &Reject{Reason: "package is outside the module",
+				Detail: pkg + " not under " + mod.Path}
+		}
+		file := filepath.Join(mod.Dir, rel, "agent.go")
+		if _, err := os.Stat(file); err == nil {
+			return &Reject{Reason: "package exists but did not load", Detail: pkg}
+		}
+		src := "package " + filepath.Base(rel) + "\n\n" + strings.TrimSpace(a.Text) + "\n"
+		return createFileInPatch(ctx, pkg, file, src, sym)
+	}
 	file, start, end, _, needsCreate, rej := upsertDeclEdit(ctx.s, pkg, name, sym)
 	if rej != nil {
 		return rej
 	}
 	if needsCreate {
-		// Mirrors add_test's new-file path (ops_testgen.go): a new file
-		// changes the package's CompiledGoFiles, which the incremental
-		// retypecheck never picks up, so write and reload immediately rather
-		// than through the ctx.src ledger. cleanupCreatedFiles owns removal
-		// on every failure and dry_run path once the file registers in
-		// ctx.createdFiles; later ops in the same patch compose against the
-		// reloaded snapshot, where the file simply exists.
-		before := errorSet(errorsIn(ctx.s.affected(pkg)))
-		ctx.addBaseline(before)
 		p := ctx.s.primary(pkg)
 		src := "package " + p.Types.Name() + "\n\n" + strings.TrimSpace(a.Text) + "\n"
-		fixed, err := imports.Process(file, []byte(src), nil)
-		if err != nil {
-			return &Reject{Reason: "declaration does not parse in place", Detail: err.Error()}
-		}
-		if err := os.WriteFile(file, fixed, 0o644); err != nil {
-			return &Reject{Reason: "failed to create file", Detail: err.Error()}
-		}
-		ctx.createdFiles = append(ctx.createdFiles, file)
-		ctx.s.loaded = false
-		if _, err := ctx.s.load(); err != nil {
-			return &Reject{Reason: "workspace failed to reload", Detail: err.Error()}
-		}
-		if diags := filterNew(errorsIn(ctx.s.affected(pkg)), before); len(diags) > 0 {
-			return diagnosticRepairs(&Reject{Reason: "declaration does not typecheck", Diagnostics: diags})
-		}
-		if _, _, rej := ctx.s.findObject(pkg, sym); rej != nil {
-			return &Reject{Reason: "declaration missing after edit", Detail: sym}
-		}
-		ctx.s.noteWrite(file)
-		ctx.addAffected(pkg)
-		ctx.noteTouched(pkg, sym, false)
-		return nil
+		return createFileInPatch(ctx, pkg, file, src, sym)
 	}
 	ctx.addBaseline(preflightBaseline(ctx.s, file, pkg))
 	prefix := ""
@@ -123,6 +114,44 @@ func (upsertDeclOp) apply(ctx *patchCtx, raw json.RawMessage) *Reject {
 		}
 		return nil
 	})
+	return nil
+}
+
+// createFileInPatch is the one way a changed file set becomes visible
+// mid-patch (mirrors add_test's new-file path, ops_testgen.go): parse-check
+// the generated source, write the brand-new file, force a full workspace
+// reload, and reject on NEW workspace diagnostics. The baseline and the
+// check are both workspace-wide because the reload's blast radius is.
+// cleanupCreatedFiles owns removal on every failure and dry_run path once
+// the file registers in ctx.createdFiles; later ops in the same patch
+// compose against the reloaded snapshot, where the file simply exists.
+func createFileInPatch(ctx *patchCtx, pkg, file, src, sym string) *Reject {
+	fixed, err := imports.Process(file, []byte(src), nil)
+	if err != nil {
+		return &Reject{Reason: "declaration does not parse in place", Detail: err.Error()}
+	}
+	before := errorSet(ctx.s.errors())
+	ctx.addBaseline(before)
+	if err := os.MkdirAll(filepath.Dir(file), 0o755); err != nil {
+		return &Reject{Reason: "failed to create file", Detail: err.Error()}
+	}
+	if err := os.WriteFile(file, fixed, 0o644); err != nil {
+		return &Reject{Reason: "failed to create file", Detail: err.Error()}
+	}
+	ctx.createdFiles = append(ctx.createdFiles, file)
+	ctx.s.loaded = false
+	if _, err := ctx.s.load(); err != nil {
+		return &Reject{Reason: "workspace failed to reload", Detail: err.Error()}
+	}
+	if diags := filterNew(ctx.s.errors(), before); len(diags) > 0 {
+		return diagnosticRepairs(&Reject{Reason: "declaration does not typecheck", Diagnostics: diags})
+	}
+	if _, _, rej := ctx.s.findObject(pkg, sym); rej != nil {
+		return &Reject{Reason: "declaration missing after edit", Detail: pkg + "." + sym}
+	}
+	ctx.s.noteWrite(file)
+	ctx.addAffected(pkg)
+	ctx.noteTouched(pkg, sym, false)
 	return nil
 }
 
