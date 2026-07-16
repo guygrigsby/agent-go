@@ -10,6 +10,8 @@ import (
 	"go/types"
 	"os"
 	"strings"
+
+	"golang.org/x/tools/go/packages"
 )
 
 // sigText is a parsed signature argument: the op's "(params) results"
@@ -147,11 +149,18 @@ func setSignatureEdits(s *Snapshot, pkgPath, sym, sigStr string, defaults map[st
 	if !ok {
 		return nil, &Reject{Reason: "symbol is not a function", Detail: objKind(obj)}
 	}
-	decl, declFile := findFuncDecl(p, fn)
-	if decl == nil {
+	var ft *ast.FuncType
+	var declFile string
+	if decl, file := findFuncDecl(p, fn); decl != nil {
+		ft, declFile = decl.Type, file
+	} else if fld, file := findInterfaceMethodField(s.fset, p, fn); fld != nil {
+		// Interface methods have no FuncDecl; the signature lives on the
+		// interface's method field.
+		ft, declFile = fld.Type.(*ast.FuncType), file
+	} else {
 		return nil, &Reject{Reason: "function declaration not found", Detail: sym}
 	}
-	oldSig := sigFromFuncType(s.fset, decl.Type)
+	oldSig := sigFromFuncType(s.fset, ft)
 	calls, _ := s.callSites(fn)
 	plan, rej := planArgs(oldSig, newSig, defaults, len(calls))
 	if rej != nil {
@@ -159,10 +168,10 @@ func setSignatureEdits(s *Snapshot, pkgPath, sym, sigStr string, defaults map[st
 	}
 
 	var edits []edit
-	start := s.fset.Position(decl.Type.Params.Opening).Offset
-	end := s.fset.Position(decl.Type.Params.Closing).Offset + 1
-	if decl.Type.Results != nil {
-		end = s.fset.Position(decl.Type.Results.End()).Offset
+	start := s.fset.Position(ft.Params.Opening).Offset
+	end := s.fset.Position(ft.Params.Closing).Offset + 1
+	if ft.Results != nil {
+		end = s.fset.Position(ft.Results.End()).Offset
 	}
 	edits = append(edits, edit{declFile, start, end - start, newSig.text})
 
@@ -194,6 +203,37 @@ func setSignatureEdits(s *Snapshot, pkgPath, sym, sigStr string, defaults map[st
 		edits = append(edits, edit{file, lp, rp - lp, strings.Join(newArgs, ", ")})
 	}
 	return edits, nil
+}
+
+// findInterfaceMethodField locates the *ast.Field declaring an interface
+// method by the method name identifier's exact position.
+func findInterfaceMethodField(fset *token.FileSet, p *packages.Package, fn *types.Func) (*ast.Field, string) {
+	pos := fn.Pos()
+	for _, f := range p.Syntax {
+		if pos < f.Pos() || pos > f.End() {
+			continue
+		}
+		var found *ast.Field
+		ast.Inspect(f, func(n ast.Node) bool {
+			it, ok := n.(*ast.InterfaceType)
+			if !ok {
+				return found == nil
+			}
+			for _, fld := range it.Methods.List {
+				for _, id := range fld.Names {
+					if id.Pos() == pos {
+						found = fld
+						return false
+					}
+				}
+			}
+			return true
+		})
+		if found != nil {
+			return found, fset.Position(found.Pos()).Filename
+		}
+	}
+	return nil, ""
 }
 
 // setSignatureOp is the composable form; there is no single-op sugar —

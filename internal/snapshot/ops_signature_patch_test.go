@@ -48,6 +48,45 @@ func TestSetSignatureDropParam(t *testing.T) {
 	}
 }
 
+// The interface-plus-implementors shape (oracle blocker boundary_9354a4eb):
+// changing the interface method and every implementor in ONE atomic patch,
+// with interface-typed call sites rewritten too.
+func TestSetSignatureInterfaceAndImplementors(t *testing.T) {
+	s := demo(t)
+	res, err := s.Patch([]byte(`{"pkg":"demo/sig","ops":[
+		{"op":"set_signature","sym":"Job.Run","signature":"(a int, threshold int) int","defaults":{"threshold":"0"}},
+		{"op":"set_signature","sym":"job.Run","signature":"(a int, threshold int) int","defaults":{"threshold":"0"}}]}`))
+	if err != nil {
+		t.Fatalf("rejected: %v", err)
+	}
+	if res["status"] != "accepted" {
+		t.Fatalf("got %v", res)
+	}
+	out, err := s.View("demo/sig", "RunAll")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if text := out["text"].(string); !strings.Contains(text, "j.Run(1, 0)") {
+		t.Fatalf("interface call site not rewritten:\n%s", text)
+	}
+	out, _ = s.View("demo/sig", "Job")
+	if text := out["text"].(string); !strings.Contains(text, "Run(a int, threshold int) int") {
+		t.Fatalf("interface method not rewritten:\n%s", text)
+	}
+}
+
+// Changing only the implementor breaks interface satisfaction; the patch
+// rejects atomically.
+func TestSetSignatureImplementorAloneRejects(t *testing.T) {
+	s := demo(t)
+	_, err := s.Patch([]byte(`{"pkg":"demo/sig","ops":[
+		{"op":"set_signature","sym":"job.Run","signature":"(a int, threshold int) int","defaults":{"threshold":"0"}}]}`))
+	rej, ok := err.(*Reject)
+	if !ok || rej.Reason != "patch does not typecheck" {
+		t.Fatalf("want typecheck reject, got %v", err)
+	}
+}
+
 // Dropping a parameter the body still uses rejects at end-of-list
 // typecheck and changes nothing; pairing the same drop with a set_body
 // that repairs the body in the same patch is accepted. This is the
