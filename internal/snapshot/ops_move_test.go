@@ -2,6 +2,8 @@ package snapshot
 
 import (
 	"encoding/json"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 )
@@ -82,6 +84,61 @@ func TestMoveDeclMissingTargetOffersCreateRepair(t *testing.T) {
 	}
 	if !found {
 		t.Fatalf("no create_pkg repair offered: %+v", rej.PossibleRepairs)
+	}
+}
+
+// A directory that already holds Go files but is not a loaded workspace
+// package (a nested module, an excluded dir) must never be silently
+// overwritten by create_pkg: vault's sdk/helper/consts is exactly this
+// shape, and the first oracle run truncated its agent.go.
+func TestMoveDeclCreatePkgRefusesExistingFiles(t *testing.T) {
+	s := demo(t)
+	dir := filepath.Join(s.dir, "util")
+	if err := os.MkdirAll(dir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	orig := "module demo/util\n\ngo 1.24\n"
+	if err := os.WriteFile(filepath.Join(dir, "go.mod"), []byte(orig), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	content := "package util\n\nfunc Precious() int { return 42 }\n"
+	if err := os.WriteFile(filepath.Join(dir, "agent.go"), []byte(content), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	_, err := s.Patch([]byte(`{"pkg":"demo/sig","ops":[
+		{"op":"move_decl","sym":"Fetch","to_pkg":"demo/util","create_pkg":true}]}`))
+	rej, ok := err.(*Reject)
+	if !ok || rej.Reason != "package exists but did not load" {
+		t.Fatalf("got %v", err)
+	}
+	after, _ := os.ReadFile(filepath.Join(dir, "agent.go"))
+	if string(after) != content {
+		t.Fatalf("existing file clobbered:\n%s", after)
+	}
+}
+
+// A declaration living in a _test.go file lands in a _test.go file of the
+// target package — created on demand when the target has none — never in a
+// non-test file where go test would ignore it (boundary dd2c3807 moves
+// TestNewDerivedReader alongside NewDerivedReader).
+func TestMoveDeclTestFileLandsInTestFile(t *testing.T) {
+	s := demo(t)
+	res, err := s.Patch([]byte(`{"pkg":"demo/sig","ops":[
+		{"op":"move_decl","sym":"TestSelfContained","to_pkg":"demo/lib"}]}`))
+	if err != nil {
+		t.Fatalf("rejected: %v", err)
+	}
+	if res["status"] != "accepted" {
+		t.Fatalf("got %v", res)
+	}
+	b, rerr := os.ReadFile(filepath.Join(s.dir, "lib", "agent_test.go"))
+	if rerr != nil || !strings.Contains(string(b), "TestSelfContained") {
+		t.Fatalf("test decl not in lib/agent_test.go: %v\n%s", rerr, b)
+	}
+	for _, f := range []string{"lib.go", "use.go"} {
+		if b, _ := os.ReadFile(filepath.Join(s.dir, "lib", f)); strings.Contains(string(b), "TestSelfContained") {
+			t.Fatalf("test decl leaked into non-test file %s", f)
+		}
 	}
 }
 

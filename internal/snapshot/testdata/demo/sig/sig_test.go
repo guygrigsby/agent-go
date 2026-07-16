@@ -23,3 +23,11 @@ func TestScale(t *testing.T) {
 		})
 	}
 }
+
+// TestSelfContained exercises nothing package-local, so move_decl can
+// relocate it whole (the test-file landing path).
+func TestSelfContained(t *testing.T) {
+	if 1+1 != 2 {
+		t.Fatal("arithmetic broke")
+	}
+}

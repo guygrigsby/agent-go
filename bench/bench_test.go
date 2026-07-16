@@ -392,16 +392,34 @@ func runOracle(c config, wt string, t Manifest) (string, error) {
 			}
 		}
 	case "move":
-		for _, m := range t.Moves {
+		// Deferred-retry queue: a move blocked on a package-local sibling
+		// that is itself in the move set becomes unblocked once the sibling
+		// moves (its reference requalifies to the target package). A full
+		// pass of deferrals with no acceptance is a genuine blocker.
+		queue := append([]MoveSpec(nil), t.Moves...)
+		deferred := 0
+		for len(queue) > 0 {
+			m := queue[0]
+			queue = queue[1:]
+			// create_pkg unconditionally: the oracle replays ground truth, and
+			// the commit either created the target package or it already
+			// existed (the flag is a no-op then).
 			env, _ := json.Marshal(map[string]any{"pkg": m.Pkg, "ops": []map[string]any{
-				{"op": "move_decl", "sym": m.Sym, "to_pkg": m.ToPkg}}})
+				{"op": "move_decl", "sym": m.Sym, "to_pkg": m.ToPkg, "create_pkg": true}}})
 			out := agoJSONStdin(c, wt, string(env), "patch", "-body-file", "-")
 			rec, _ := json.Marshal(map[string]any{"call": []string{"patch", string(env)}, "res": out})
 			b.Write(rec)
 			b.WriteByte('\n')
 			if status, _ := out["status"].(string); status != "accepted" {
+				reason, _ := out["reason"].(string)
+				if strings.Contains(reason, "depends on package-local symbols") && deferred <= len(queue) {
+					queue = append(queue, m)
+					deferred++
+					continue
+				}
 				return b.String(), fmt.Errorf("oracle move %s.%s: %v", m.Pkg, m.Sym, out)
 			}
+			deferred = 0
 		}
 	default:
 		return "", fmt.Errorf("oracle has no replay for kind %q", t.Kind)

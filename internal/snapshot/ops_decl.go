@@ -126,6 +126,12 @@ func (upsertDeclOp) apply(ctx *patchCtx, raw json.RawMessage) *Reject {
 // the file registers in ctx.createdFiles; later ops in the same patch
 // compose against the reloaded snapshot, where the file simply exists.
 func createFileInPatch(ctx *patchCtx, pkg, file, src, sym string) *Reject {
+	// Belt against clobbering: every caller has already established the file
+	// should not exist, but a truncated real file is unrecoverable enough to
+	// check again at the layer that writes.
+	if _, err := os.Stat(file); err == nil {
+		return &Reject{Reason: "file exists", Detail: file}
+	}
 	fixed, err := imports.Process(file, []byte(src), nil)
 	if err != nil {
 		return &Reject{Reason: "declaration does not parse in place", Detail: err.Error()}

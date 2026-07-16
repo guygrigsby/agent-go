@@ -89,16 +89,32 @@ func moveDeclEdits(s *Snapshot, pkgPath, sym, toPkg string) ([]edit, *Reject) {
 
 	edits := []edit{{declFile, start, end - start, ""}}
 
-	// Land in the target's first non-test file, appended at the end; the
-	// patch pipeline's imports.Process fixes both files' import blocks.
+	// Land in a target file of the same test-ness as the source: a decl
+	// from a _test.go must land in a _test.go (go test ignores it anywhere
+	// else), everything else in a non-test file. Test files live on the
+	// test-variant package, so collect candidates across every variant of
+	// toPkg. Appended at the end; the patch pipeline's imports.Process
+	// fixes both files' import blocks.
+	fromTest := strings.HasSuffix(declFile, "_test.go")
 	tgtFile := ""
-	for _, f := range tgt.CompiledGoFiles {
-		if !strings.HasSuffix(f, "_test.go") {
-			tgtFile = f
+	for _, tp := range s.pkgs {
+		if tp.PkgPath != toPkg {
+			continue
+		}
+		for _, f := range tp.CompiledGoFiles {
+			if strings.HasSuffix(f, "_test.go") == fromTest {
+				tgtFile = f
+				break
+			}
+		}
+		if tgtFile != "" {
 			break
 		}
 	}
 	if tgtFile == "" {
+		if fromTest {
+			return nil, &Reject{Reason: "target package has no test file", Detail: toPkg}
+		}
 		return nil, &Reject{Reason: "target package has no non-test file", Detail: toPkg}
 	}
 	tgtSrc, err := os.ReadFile(tgtFile)
@@ -245,11 +261,33 @@ func (moveDeclOp) apply(ctx *patchCtx, raw json.RawMessage) *Reject {
 				Detail: a.ToPkg + " not under " + mod.Path}
 		}
 		file := filepath.Join(mod.Dir, rel, "agent.go")
+		// A directory that already holds files but no loaded package is a
+		// nested module or an excluded dir (vault's sdk/), never a create
+		// target — writing there would truncate real code.
+		if ents, err := os.ReadDir(filepath.Dir(file)); err == nil && len(ents) > 0 {
+			return &Reject{Reason: "package exists but did not load", Detail: a.ToPkg +
+				": its directory already holds files (a nested module or an excluded dir); move_decl cannot target packages outside the loaded workspace"}
+		}
 		if rej := createFileInPatch(ctx, a.ToPkg, file, "package "+filepath.Base(rel)+"\n", ""); rej != nil {
 			return rej
 		}
 	}
 	edits, rej := moveDeclEdits(ctx.s, pkg, sym, a.ToPkg)
+	if rej != nil && rej.Reason == "target package has no test file" {
+		// Moving a test declaration needs a _test.go to land in; creating
+		// one is unambiguous (no typo risk — the target package itself
+		// already resolved), so no opt-in flag. Internal test package only:
+		// the created file carries the target's own package clause.
+		tgt := ctx.s.primary(a.ToPkg)
+		if tgt == nil || len(tgt.CompiledGoFiles) == 0 {
+			return rej
+		}
+		file := filepath.Join(filepath.Dir(tgt.CompiledGoFiles[0]), "agent_test.go")
+		if crej := createFileInPatch(ctx, a.ToPkg, file, "package "+tgt.Types.Name()+"\n", ""); crej != nil {
+			return crej
+		}
+		edits, rej = moveDeclEdits(ctx.s, pkg, sym, a.ToPkg)
+	}
 	if rej != nil {
 		return rej
 	}
