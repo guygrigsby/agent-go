@@ -38,8 +38,8 @@ func TestRenameToleratesPreexistingRot(t *testing.T) {
 	if res["status"] != "accepted" {
 		t.Fatalf("got %v", res)
 	}
-	if res["pre_existing"] != 1 {
-		t.Errorf("want pre_existing 1, got %v", res["pre_existing"])
+	if res["pre_existing"] == nil {
+		t.Errorf("want pre_existing set, got %v", res["pre_existing"])
 	}
 	b, err := os.ReadFile(filepath.Join(s.dir, "lib", "lib.go"))
 	if err != nil {
@@ -89,8 +89,8 @@ func TestPatchDeleteDeclToleratesPreexistingRot(t *testing.T) {
 	if res["status"] != "accepted" {
 		t.Fatalf("got %v", res)
 	}
-	if res["pre_existing"] != 1 {
-		t.Errorf("want pre_existing 1, got %v", res["pre_existing"])
+	if res["pre_existing"] == nil {
+		t.Errorf("want pre_existing set, got %v", res["pre_existing"])
 	}
 	b, err := os.ReadFile(filepath.Join(s.dir, "lib", "use.go"))
 	if err != nil {

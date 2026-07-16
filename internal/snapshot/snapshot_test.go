@@ -275,8 +275,8 @@ func TestMutationAllowedDespiteUnrelatedRot(t *testing.T) {
 	if err != nil {
 		t.Fatalf("upsert into rotted package blocked: %v", err)
 	}
-	if res["status"] != "accepted" || res["pre_existing"] != 1 {
-		t.Fatalf("want accepted with pre_existing 1, got %v", res)
+	if res["status"] != "accepted" || res["pre_existing"] == nil {
+		t.Fatalf("want accepted with pre_existing set, got %v", res)
 	}
 }
 

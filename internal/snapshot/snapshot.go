@@ -15,7 +15,6 @@ package snapshot
 import (
 	"fmt"
 	"go/ast"
-	"go/importer"
 	"go/parser"
 	"go/token"
 	"go/types"
@@ -81,7 +80,6 @@ type Snapshot struct {
 	// must resolve to one *types.Package, or cross-package uses of its
 	// types mismatch ("context.Context does not implement context.Context").
 	importCache map[string]*types.Package
-	stdImp      types.Importer
 	impMu       sync.Mutex // importCache/stdImp: workers race during parallel retypecheck
 }
 
@@ -103,7 +101,6 @@ func (s *Snapshot) load() (int64, error) {
 	s.fset = cfg.Fset
 	s.rev = nil
 	s.importCache = nil
-	s.stdImp = nil
 	s.mtimes = map[string]time.Time{}
 	for _, p := range pkgs {
 		for _, f := range p.CompiledGoFiles {
@@ -145,6 +142,9 @@ func (s *Snapshot) errors() []Diagnostic {
 	seen := map[string]bool{}
 	packages.Visit(s.pkgs, nil, func(p *packages.Package) {
 		for _, e := range p.Errors {
+			if e.Pos == "" && strings.HasPrefix(e.Msg, "# ") {
+				continue // go list compile-header noise, not a diagnostic
+			}
 			if key := e.Pos + e.Msg; !seen[key] {
 				seen[key] = true
 				diags = append(diags, Diagnostic{Pos: e.Pos, Msg: e.Msg})
@@ -162,6 +162,9 @@ func errorsIn(pkgs []*packages.Package) []Diagnostic {
 	seen := map[string]bool{}
 	for _, p := range pkgs {
 		for _, e := range p.Errors {
+			if e.Pos == "" && strings.HasPrefix(e.Msg, "# ") {
+				continue // go list compile-header noise, not a diagnostic
+			}
 			if key := e.Pos + e.Msg; !seen[key] {
 				seen[key] = true
 				diags = append(diags, Diagnostic{Pos: e.Pos, Msg: e.Msg})
@@ -652,7 +655,9 @@ func (s *Snapshot) retypecheck(dirty []*packages.Package, baseline map[string]bo
 	// flattened in topo order, so diagnostics stay byte-identical to the
 	// serial driver (AGO_SERIAL_TYPECHECK=1 forces one worker for A/B).
 	primaryIdx := map[string]int{}
+	idxByID := map[string]int{}
 	for i, p := range order {
+		idxByID[p.ID] = i
 		if p.ID == p.PkgPath {
 			primaryIdx[p.PkgPath] = i
 		}
@@ -664,7 +669,18 @@ func (s *Snapshot) retypecheck(dirty []*packages.Package, baseline map[string]bo
 		for _, f := range filesBy[i] {
 			for _, imp := range f.Imports {
 				path := strings.Trim(imp.Path.Value, `"`)
-				j, ok := primaryIdx[path]
+				// The graph knows which VARIANT this import resolves to —
+				// a test-variant importer may depend on a test-variant dep
+				// ("config [foo.test]"), and binding to the primary would
+				// let this package check before its actual import target
+				// spliced. The primary map only catches imports the edit
+				// itself introduced, which the pre-edit graph cannot know.
+				j, ok := -1, false
+				if node := order[i].Imports[path]; node != nil {
+					j, ok = idxByID[node.ID]
+				} else {
+					j, ok = primaryIdx[path]
+				}
 				if !ok || j == i || seenDep[j] {
 					continue
 				}
@@ -823,21 +839,43 @@ func (s *Snapshot) importFallback(path string) (*types.Package, error) {
 	if pkg, ok := s.importCache[path]; ok {
 		return pkg, nil
 	}
+	// Identity matters: the returned package must be the same object the
+	// loader gave every workspace root, or cross-package uses mismatch.
+	// Dependencies are not source-loaded (no NeedDeps); a root's DIRECT
+	// imports were read from their own export files and are complete, but
+	// anything deeper is a shallow stub holding only the names the export
+	// data happened to reference — unusable as an importer result.
 	var found *types.Package
-	packages.Visit(s.pkgs, nil, func(p *packages.Package) {
-		if found == nil && p.PkgPath == path && p.Types != nil {
+	for _, p := range s.pkgs {
+		if p.Types == nil {
+			continue
+		}
+		if p.PkgPath == path {
 			found = p.Types
+			break
 		}
-	})
+		for _, imp := range p.Types.Imports() {
+			if imp.Path() == path {
+				found = imp
+				break
+			}
+		}
+		if found != nil {
+			break
+		}
+	}
 	if found == nil {
-		if s.stdImp == nil {
-			s.stdImp = importer.Default()
-		}
-		pkg, err := s.stdImp.Import(path)
-		if err != nil {
+		// A path in no root's closure is genuinely new to the snapshot, so
+		// a fresh on-demand load cannot mismatch any existing usage.
+		// ponytail: two new imports loaded separately in one round get
+		// separate universes for their shared internals; a third package
+		// mixing their types would mismatch — reload-the-world territory.
+		cfg := &packages.Config{Mode: packages.NeedName | packages.NeedTypes | packages.NeedImports | packages.NeedDeps, Dir: s.dir}
+		pkgs, err := packages.Load(cfg, path)
+		if err != nil || len(pkgs) == 0 || pkgs[0].Types == nil {
 			return nil, fmt.Errorf("package %q not in snapshot", path)
 		}
-		found = pkg
+		found = pkgs[0].Types
 	}
 	if s.importCache == nil {
 		s.importCache = map[string]*types.Package{}

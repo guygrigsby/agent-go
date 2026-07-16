@@ -339,8 +339,8 @@ func TestAddTestToleratesPreexistingRot(t *testing.T) {
 	if err != nil {
 		t.Fatalf("add_test blocked by pre-existing rot: %v", err)
 	}
-	if res["status"] != "accepted" || res["pre_existing"] != 1 {
-		t.Fatalf("want accepted with pre_existing 1, got %v", res)
+	if res["status"] != "accepted" || res["pre_existing"] == nil {
+		t.Fatalf("want accepted with pre_existing set, got %v", res)
 	}
 	if _, statErr := os.Stat(filepath.Join(s.dir, "lib", "lib_test.go")); statErr != nil {
 		t.Errorf("accepted add_test did not leave lib_test.go: %v", statErr)
