@@ -27,7 +27,7 @@ live help catalog appears here, so shipped rows cannot drift. Statuses:
 |---|---|---|
 | `rename` | shipped | capture-proof, atomic multi-rename |
 | `set_body` | shipped | |
-| `add_param` | shipped | ceilings: func-as-value, variadic spread call sites |
+| `add_param` | shipped | inserts before a variadic tail (spread sites included); ceiling: func-as-value |
 | `upsert_decl` | shipped | manages imports; creates packages on demand |
 | `delete_decl` | shipped | |
 | `set_doc` | shipped | |
