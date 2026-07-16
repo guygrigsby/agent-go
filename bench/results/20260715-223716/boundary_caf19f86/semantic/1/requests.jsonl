@@ -1,0 +1,47 @@
+{"ms":1155,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/daemon/worker","req_sha":"f3309667bd4f3a3c","sym":"Worker.nodeeSplitListener","ts":"2026-07-16T12:13:06.115503Z"}
+{"ms":15,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/daemon/worker","req_sha":"8b6c2dc684edf64c","sym":"Worker.NodeeFileStorage","ts":"2026-07-16T12:13:07.276689Z"}
+{"ms":14,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/daemon/worker","req_sha":"1b4a39b071f5c396","sym":"Worker.NodeeCurrentKeyId","ts":"2026-07-16T12:13:07.2968Z"}
+{"ms":15,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/daemon/worker","req_sha":"4ef743db7317538d","sym":"Worker.NodeeRegistrationRequest","ts":"2026-07-16T12:13:07.315446Z"}
+{"ms":3,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T12:13:07.335156Z"}
+{"ms":1499,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T12:14:05.441198Z"}
+{"ms":20,"op":"query","outcome":"ok","req_sha":"570acdafed28000d","sym":"nodeeSplitListener","ts":"2026-07-16T12:14:19.14506Z"}
+{"ms":18,"op":"query","outcome":"ok","req_sha":"b62daab251996fb3","sym":"NodeeFileStorage","ts":"2026-07-16T12:14:21.751626Z"}
+{"ms":18,"op":"query","outcome":"ok","req_sha":"1f98a89dfa187fc7","sym":"NodeeCurrentKeyId","ts":"2026-07-16T12:14:24.354009Z"}
+{"ms":18,"op":"query","outcome":"ok","req_sha":"516ed46ed7c2ea8f","sym":"NodeeRegistrationRequest","ts":"2026-07-16T12:14:26.955843Z"}
+{"ms":6,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/daemon/worker","req_sha":"83c2a51df3dee16f","sym":"Worker","ts":"2026-07-16T12:14:43.214086Z"}
+{"ms":28,"op":"query","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/daemon/worker","req_sha":"af9537abffe4ba19","sym":"Worker.nodeeSplitListener","ts":"2026-07-16T12:14:57.679387Z"}
+{"ms":29,"op":"query","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/daemon/worker","req_sha":"b2b68e3e1556a1d5","sym":"Worker.NodeeFileStorage","ts":"2026-07-16T12:15:02.755903Z"}
+{"ms":28,"op":"query","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/daemon/worker","req_sha":"b373ff7333fd8a48","sym":"Worker.NodeeCurrentKeyId","ts":"2026-07-16T12:15:07.83475Z"}
+{"ms":33,"op":"query","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/daemon/worker","req_sha":"3487e8a3ee785393","sym":"Worker.NodeeRegistrationRequest","ts":"2026-07-16T12:15:12.892362Z"}
+{"ms":10,"op":"rename","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/daemon/worker","reason":"new name is not a valid identifier","repairs":0,"req_sha":"41b3d08e29e3b6b0","sym":"Worker.nodeeSplitListener","ts":"2026-07-16T12:15:40.136882Z"}
+{"ms":6,"op":"rename","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/daemon/worker","reason":"symbol not found","repairs":0,"req_sha":"c2495259cfb68431","sym":"nodeeSplitListener","ts":"2026-07-16T12:15:42.59411Z"}
+{"ms":18,"op":"rename","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/daemon/worker","reason":"symbol not found","repairs":0,"req_sha":"c2495259cfb68431","sym":"nodeeSplitListener","ts":"2026-07-16T12:15:47.231669Z"}
+{"ms":0,"op":"help","outcome":"ok","req_sha":"0b56758d64d8a078","ts":"2026-07-16T12:15:49.003413Z"}
+{"ms":69,"op":"rename","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/daemon/worker","reason":"new name is not a valid identifier","repairs":0,"req_sha":"41b3d08e29e3b6b0","sym":"Worker.nodeeSplitListener","ts":"2026-07-16T12:16:39.388467Z"}
+{"ms":6,"op":"rename","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/daemon/worker","reason":"symbol not found","repairs":0,"req_sha":"c2495259cfb68431","sym":"nodeeSplitListener","ts":"2026-07-16T12:16:46.495792Z"}
+{"ms":363,"op":"patch","outcome":"accepted","req_sha":"a0a8dca98728cec1","ts":"2026-07-16T12:16:53.256102Z"}
+{"ms":640,"op":"patch","outcome":"rejected","reason":"patch does not typecheck","repairs":0,"req_sha":"9ab2e781bc385754","ts":"2026-07-16T12:16:57.927009Z"}
+{"ms":684,"op":"patch","outcome":"rejected","reason":"reference captured by another declaration","repairs":0,"req_sha":"1ac35d7acbe48996","ts":"2026-07-16T12:17:03.909022Z"}
+{"ms":6,"op":"patch","outcome":"rejected","reason":"method or field not found","repairs":0,"req_sha":"7a3923b377642698","ts":"2026-07-16T12:17:12.105159Z"}
+{"ms":6,"op":"view","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/daemon/worker","reason":"method or field not found","repairs":0,"req_sha":"1e2454572398af23","sym":"Worker.nodeeSplitListener","ts":"2026-07-16T12:17:15.075019Z"}
+{"ms":6,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/daemon/worker","req_sha":"83c2a51df3dee16f","sym":"Worker","ts":"2026-07-16T12:17:17.448268Z"}
+{"ms":6,"op":"rename","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/daemon/worker","reason":"symbol not found","repairs":0,"req_sha":"14f1c7bb366d2b7b","sym":"NodeeFileStorage","ts":"2026-07-16T12:17:25.152161Z"}
+{"ms":6,"op":"patch","outcome":"rejected","reason":"symbol not found","repairs":0,"req_sha":"ed5ffe8f37b4a173","ts":"2026-07-16T12:17:31.828113Z"}
+{"ms":5,"op":"set-body","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/daemon/worker","reason":"symbol is not a function","repairs":0,"req_sha":"fd29cb1f66ac53f9","sym":"Worker","ts":"2026-07-16T12:17:43.869255Z"}
+{"ms":64,"op":"patch","outcome":"rejected","reason":"symbol not found","repairs":0,"req_sha":"066928a6331c9856","ts":"2026-07-16T12:17:53.317691Z"}
+{"ms":7,"op":"view","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/daemon/worker","reason":"receiver type not found","repairs":1,"req_sha":"7da26c8e922b0027","sym":"worker.go","ts":"2026-07-16T12:17:57.160935Z"}
+{"ms":9,"op":"query","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/daemon/worker","req_sha":"365f022b72d17e5f","sym":"NodeeFileStorage","ts":"2026-07-16T12:18:01.966396Z"}
+{"ms":657,"op":"patch","outcome":"rejected","reason":"reference captured by another declaration","repairs":0,"req_sha":"1ac35d7acbe48996","ts":"2026-07-16T12:18:09.113111Z"}
+{"ms":29,"op":"query","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/daemon/worker","req_sha":"b2b68e3e1556a1d5","sym":"Worker.NodeeFileStorage","ts":"2026-07-16T12:18:19.466138Z"}
+{"ms":7,"op":"view","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/daemon/worker","reason":"receiver type not found","repairs":1,"req_sha":"7da26c8e922b0027","sym":"worker.go","ts":"2026-07-16T12:18:33.128242Z"}
+{"ms":14,"op":"query","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/daemon/worker","req_sha":"f367eccf4e1ed7da","sym":"New","ts":"2026-07-16T12:18:40.921405Z"}
+{"ms":46,"op":"patch","outcome":"rejected","reason":"package not found","repairs":0,"req_sha":"ce23979857047aaf","ts":"2026-07-16T12:22:23.299682Z"}
+{"ms":1292,"op":"refs","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/daemon/worker","reason":"method or field not found","repairs":0,"req_sha":"f3309667bd4f3a3c","sym":"Worker.nodeeSplitListener","ts":"2026-07-16T12:25:07.411448Z"}
+{"ms":17,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/daemon/worker","req_sha":"24d683fbc547152b","sym":"Worker.workerAuthSplitListener","ts":"2026-07-16T12:25:08.709011Z"}
+{"ms":16,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/daemon/worker","req_sha":"8b6c2dc684edf64c","sym":"Worker.NodeeFileStorage","ts":"2026-07-16T12:25:08.730711Z"}
+{"ms":2,"op":"refs","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/daemon/worker","reason":"method or field not found","repairs":0,"req_sha":"fa38591e128d7365","sym":"Worker.WorkerAuthStorage","ts":"2026-07-16T12:25:08.751241Z"}
+{"ms":15,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/daemon/worker","req_sha":"1b4a39b071f5c396","sym":"Worker.NodeeCurrentKeyId","ts":"2026-07-16T12:25:08.75764Z"}
+{"ms":3,"op":"refs","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/daemon/worker","reason":"method or field not found","repairs":0,"req_sha":"0933e2e135951376","sym":"Worker.WorkerAuthCurrentKeyId","ts":"2026-07-16T12:25:08.77747Z"}
+{"ms":15,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/daemon/worker","req_sha":"4ef743db7317538d","sym":"Worker.NodeeRegistrationRequest","ts":"2026-07-16T12:25:08.784623Z"}
+{"ms":2,"op":"refs","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/daemon/worker","reason":"method or field not found","repairs":0,"req_sha":"75a5e728c1b9ff64","sym":"Worker.WorkerAuthRegistrationRequest","ts":"2026-07-16T12:25:08.804651Z"}
+{"ms":3,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T12:25:08.810785Z"}

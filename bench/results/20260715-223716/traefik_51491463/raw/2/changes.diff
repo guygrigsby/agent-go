@@ -1,0 +1,119 @@
+diff --git a/pkg/provider/docker/config_test.go b/pkg/provider/docker/config_test.go
+index adddd6468..d43957a2a 100644
+--- a/pkg/provider/docker/config_test.go
++++ b/pkg/provider/docker/config_test.go
+@@ -3995,7 +3995,7 @@ func TestDynConfBuilder_getIPAddress_swarm(t *testing.T) {
+ 		{
+ 			service: swarmService(
+ 				serviceLabels(map[string]string{
+-					"traefik.docker.network": "barnet",
++					"traefik.swarm.network": "barnet",
+ 				}),
+ 				withEndpointSpec(modeVIP),
+ 				withEndpoint(
+diff --git a/pkg/provider/docker/pswarm.go b/pkg/provider/docker/pswarm.go
+index 07f5dbd0b..d4b42c984 100644
+--- a/pkg/provider/docker/pswarm.go
++++ b/pkg/provider/docker/pswarm.go
+@@ -229,7 +229,7 @@ func (p *SwarmProvider) parseService(ctx context.Context, service swarmtypes.Ser
+ 		NetworkSettings: networkSettings{},
+ 	}
+ 
+-	extraConf, err := p.extractLabels(dData)
++	extraConf, err := p.extractSwarmLabels(dData)
+ 	if err != nil {
+ 		return dockerData{}, err
+ 	}
+diff --git a/pkg/provider/docker/pswarm_test.go b/pkg/provider/docker/pswarm_test.go
+index c9fae5f12..3f03c21a8 100644
+--- a/pkg/provider/docker/pswarm_test.go
++++ b/pkg/provider/docker/pswarm_test.go
+@@ -100,8 +100,8 @@ func TestSwarmProvider_listServices(t *testing.T) {
+ 				swarmService(
+ 					serviceName("service1"),
+ 					serviceLabels(map[string]string{
+-						"traefik.docker.network": "barnet",
+-						"traefik.docker.LBSwarm": "true",
++						"traefik.swarm.network": "barnet",
++						"traefik.swarm.LBSwarm": "true",
+ 					}),
+ 					withEndpointSpec(modeVIP),
+ 					withEndpoint(
+@@ -111,8 +111,8 @@ func TestSwarmProvider_listServices(t *testing.T) {
+ 				swarmService(
+ 					serviceName("service2"),
+ 					serviceLabels(map[string]string{
+-						"traefik.docker.network": "barnet",
+-						"traefik.docker.LBSwarm": "true",
++						"traefik.swarm.network": "barnet",
++						"traefik.swarm.LBSwarm": "true",
+ 					}),
+ 					withEndpointSpec(modeDNSRR)),
+ 			},
+@@ -126,8 +126,8 @@ func TestSwarmProvider_listServices(t *testing.T) {
+ 				swarmService(
+ 					serviceName("service1"),
+ 					serviceLabels(map[string]string{
+-						"traefik.docker.network": "barnet",
+-						"traefik.docker.LBSwarm": "true",
++						"traefik.swarm.network": "barnet",
++						"traefik.swarm.LBSwarm": "true",
+ 					}),
+ 					withEndpointSpec(modeVIP),
+ 					withEndpoint(
+@@ -137,8 +137,8 @@ func TestSwarmProvider_listServices(t *testing.T) {
+ 				swarmService(
+ 					serviceName("service2"),
+ 					serviceLabels(map[string]string{
+-						"traefik.docker.network": "barnet",
+-						"traefik.docker.LBSwarm": "true",
++						"traefik.swarm.network": "barnet",
++						"traefik.swarm.LBSwarm": "true",
+ 					}),
+ 					withEndpointSpec(modeDNSRR)),
+ 			},
+@@ -173,7 +173,7 @@ func TestSwarmProvider_listServices(t *testing.T) {
+ 				swarmService(
+ 					serviceName("service1"),
+ 					serviceLabels(map[string]string{
+-						"traefik.docker.network": "barnet",
++						"traefik.swarm.network": "barnet",
+ 					}),
+ 					withEndpointSpec(modeVIP),
+ 					withEndpoint(
+@@ -183,7 +183,7 @@ func TestSwarmProvider_listServices(t *testing.T) {
+ 				swarmService(
+ 					serviceName("service2"),
+ 					serviceLabels(map[string]string{
+-						"traefik.docker.network": "barnet",
++						"traefik.swarm.network": "barnet",
+ 					}),
+ 					withEndpointSpec(modeDNSRR)),
+ 			},
+diff --git a/pkg/provider/docker/shared_labels.go b/pkg/provider/docker/shared_labels.go
+index f17e51508..1ffffd23f 100644
+--- a/pkg/provider/docker/shared_labels.go
++++ b/pkg/provider/docker/shared_labels.go
+@@ -39,6 +39,22 @@ func (p *Shared) extractLabels(container dockerData) (configuration, error) {
+ 	return conf, nil
+ }
+ 
++func (p *Shared) extractSwarmLabels(container dockerData) (configuration, error) {
++	conf := configuration{
++		Enable: p.ExposedByDefault,
++		Docker: specificConfiguration{
++			Network: p.Network,
++		},
++	}
++
++	err := label.Decode(container.Labels, &conf, "traefik.swarm.", "traefik.enable")
++	if err != nil {
++		return configuration{}, err
++	}
++
++	return conf, nil
++}
++
+ // getStringMultipleStrict get multiple string values associated to several labels.
+ // Fail if one label is missing.
+ func getStringMultipleStrict(labels map[string]string, labelNames ...string) (map[string]string, error) {

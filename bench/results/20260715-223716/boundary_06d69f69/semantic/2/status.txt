@@ -1,0 +1,11 @@
+ M testing/internal/e2e/boundary/credential.go
+ M testing/internal/e2e/tests/base/credential_store_test.go
+ M testing/internal/e2e/tests/base/paginate_credential_test.go
+ M testing/internal/e2e/tests/base/target_tcp_connect_cassandra_test.go
+ M testing/internal/e2e/tests/base/target_tcp_connect_mongo_test.go
+ M testing/internal/e2e/tests/base/target_tcp_connect_mysql_test.go
+ M testing/internal/e2e/tests/base/target_tcp_connect_redis_test.go
+ M testing/internal/e2e/tests/base_plus/target_tcp_connect_postgres_test.go
+ M testing/internal/e2e/tests/database/migration_test.go
+?? internal/auth/oidc/tmp-all-events-Test_StartAuth_to_Callback2174473179
+?? opencode.json

@@ -1,0 +1,24 @@
+{"ms":2293,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T05:53:47.555384Z"}
+{"ms":2568,"op":"query","outcome":"ok","req_sha":"57753974c6c9b715","sym":"backend.instanceIamRoleARN","ts":"2026-07-16T05:54:51.89811Z"}
+{"ms":79,"op":"query","outcome":"ok","req_sha":"8e0cdb1c7f82b5d5","sym":"instanceIamRoleARN","ts":"2026-07-16T05:55:02.11298Z"}
+{"ms":8,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/vault/builtin/credential/aws","req_sha":"49ef9825b7a8a2f6","sym":"backend.instanceIamRoleARN","ts":"2026-07-16T05:55:14.155121Z"}
+{"ms":84,"op":"query","outcome":"ok","pkg":"github.com/hashicorp/vault/builtin/credential/aws","req_sha":"c5cf0e582285d08b","sym":"backend.instanceIamRoleARN","ts":"2026-07-16T05:55:32.523925Z"}
+{"ms":7,"op":"view","outcome":"rejected","pkg":"github.com/hashicorp/vault/builtin/credential/aws","reason":"receiver type not found","repairs":1,"req_sha":"761bc7557e651e3f","sym":"path_login.go","ts":"2026-07-16T05:55:37.310734Z"}
+{"ms":5,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/vault/builtin/credential/aws","req_sha":"2f4d1a003704c1bd","sym":"backend","ts":"2026-07-16T05:55:39.413458Z"}
+{"ms":5,"op":"view","outcome":"rejected","pkg":"github.com/hashicorp/vault/builtin/credential/aws","reason":"method or field not found","repairs":3,"req_sha":"10bd856490a53cbb","sym":"backend.Login","ts":"2026-07-16T05:55:45.892954Z"}
+{"ms":5,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/vault/builtin/credential/aws","req_sha":"5f8d3c7122240dc6","sym":"backend.handleRoleTagLogin","ts":"2026-07-16T05:55:49.448621Z"}
+{"ms":6,"op":"query","outcome":"rejected","pkg":"github.com/hashicorp/vault/builtin/credential/aws","reason":"symbol not found","repairs":3,"req_sha":"f47fab011ed05fbf","ts":"2026-07-16T05:55:57.299468Z"}
+{"ms":28,"op":"query","outcome":"ok","req_sha":"8e0cdb1c7f82b5d5","sym":"instanceIamRoleARN","ts":"2026-07-16T05:56:00.748408Z"}
+{"ms":7,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/vault/builtin/credential/aws","req_sha":"9c3a213ea6d8adb5","sym":"backend.pathLogin","ts":"2026-07-16T05:56:03.857116Z"}
+{"ms":63,"op":"query","outcome":"ok","req_sha":"ba447dbb8d21b612","sym":"path_login.go","ts":"2026-07-16T05:56:11.980253Z"}
+{"ms":7,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/vault/builtin/credential/aws","req_sha":"2f4d1a003704c1bd","sym":"backend","ts":"2026-07-16T05:56:13.817725Z"}
+{"ms":20,"op":"view","outcome":"rejected","pkg":"github.com/hashicorp/vault/builtin/credential/aws","reason":"method or field not found","repairs":3,"req_sha":"84dc106afdace3c0","sym":"backend.GetCallerIdentity","ts":"2026-07-16T05:56:20.602755Z"}
+{"ms":29,"op":"query","outcome":"ok","req_sha":"d5c72d268610c691","sym":"IAM","ts":"2026-07-16T05:56:24.550365Z"}
+{"ms":66,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/vault/builtin/credential/aws","req_sha":"ae5b993851495baa","sym":"backend.pathLoginResolveRoleIam","ts":"2026-07-16T05:57:25.232407Z"}
+{"ms":7,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/vault/builtin/credential/aws","req_sha":"9fce8028c207292f","sym":"backend.pathLoginIamGetRoleNameCallerIdAndEntity","ts":"2026-07-16T05:57:29.540482Z"}
+{"ms":6,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/vault/builtin/credential/aws","req_sha":"9fce8028c207292f","sym":"backend.pathLoginIamGetRoleNameCallerIdAndEntity","ts":"2026-07-16T05:57:44.250029Z"}
+{"ms":28,"op":"query","outcome":"ok","req_sha":"8e0cdb1c7f82b5d5","sym":"instanceIamRoleARN","ts":"2026-07-16T05:57:58.636932Z"}
+{"ms":31,"op":"query","outcome":"ok","req_sha":"89cf102ad915bf9c","sym":"backend","ts":"2026-07-16T05:58:02.377566Z"}
+{"ms":92,"op":"query","outcome":"ok","req_sha":"82596438632ecf62","sym":"path_loginIamGetRoleNameCallerIdAndEntity","ts":"2026-07-16T06:01:53.794934Z"}
+{"ms":2369,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/vault/builtin/credential/aws","req_sha":"60337aa18f3ae54e","sym":"backend.instanceIamRoleARN","ts":"2026-07-16T06:05:49.966519Z"}
+{"ms":4,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T06:05:52.340284Z"}

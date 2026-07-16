@@ -1,0 +1,28 @@
+{"ms":1126,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/cmd/commands/dev","req_sha":"5c4f4cfbb23e8fee","sym":"Command.flagPassthroughDirectory","ts":"2026-07-16T10:48:04.095983Z"}
+{"ms":14,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/servers/controller","req_sha":"c07055e73cac992c","sym":"devPassthroughHandler","ts":"2026-07-16T10:48:05.226739Z"}
+{"ms":14,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/cmd/config","req_sha":"578686e47b141b78","sym":"Config.PassthroughDirectory","ts":"2026-07-16T10:48:05.245116Z"}
+{"ms":3,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T10:48:05.263424Z"}
+{"ms":1411,"op":"query","outcome":"ok","req_sha":"48ab9bb8d3427374","sym":"flagPassthroughDirectory","ts":"2026-07-16T10:49:12.047859Z"}
+{"ms":6,"op":"query","outcome":"rejected","reason":"package not found","repairs":0,"req_sha":"c2fd73dc1794db98","sym":"Command.flagPassthroughDirectory","ts":"2026-07-16T10:49:21.064184Z"}
+{"ms":27,"op":"query","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/cmd/commands/dev","req_sha":"8f8621f6ec6c0a69","sym":"Command.flagPassthroughDirectory","ts":"2026-07-16T10:49:24.128401Z"}
+{"ms":19,"op":"query","outcome":"ok","req_sha":"f45bf4204e1620c0","sym":"devPassthroughHandler","ts":"2026-07-16T10:49:27.523371Z"}
+{"ms":17,"op":"query","outcome":"ok","req_sha":"0a7e0c378cfcbb65","sym":"PassthroughDirectory","ts":"2026-07-16T10:49:29.847818Z"}
+{"ms":31,"op":"query","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/servers/controller","req_sha":"91473e5abbb61195","sym":"devPassthroughHandler","ts":"2026-07-16T10:49:33.403332Z"}
+{"ms":27,"op":"query","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/cmd/config","req_sha":"6270bb9f04d38fef","sym":"Config.PassthroughDirectory","ts":"2026-07-16T10:49:36.186186Z"}
+{"ms":5,"op":"rename","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/cmd/commands/dev","reason":"new name is not a valid identifier","repairs":0,"req_sha":"6d09f15873283cf6","sym":"Command.flagPassthroughDirectory","ts":"2026-07-16T10:49:41.435402Z"}
+{"ms":44,"op":"rename","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/cmd/commands/dev","reason":"symbol not found","repairs":0,"req_sha":"19fb0649d9a378b7","sym":"flagPassthroughDirectory","ts":"2026-07-16T10:49:44.073604Z"}
+{"ms":5,"op":"view","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/cmd/commands/dev","reason":"fields are not independently viewable; view the containing type","repairs":1,"req_sha":"5f3763be35c9b171","sym":"Command.flagPassthroughDirectory","ts":"2026-07-16T10:49:45.753363Z"}
+{"ms":5,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/cmd/commands/dev","req_sha":"6e88070787836b79","sym":"Command","ts":"2026-07-16T10:49:47.88589Z"}
+{"ms":55,"op":"rename","outcome":"accepted","pkg":"github.com/hashicorp/boundary/internal/cmd/commands/dev","req_sha":"fabe6f58d396455a","sym":"Command.flagPassthroughDirectory","ts":"2026-07-16T10:49:52.014474Z"}
+{"ms":82,"op":"rename","outcome":"accepted","pkg":"github.com/hashicorp/boundary/internal/servers/controller","req_sha":"d2c1f7659cf0b703","sym":"devPassthroughHandler","ts":"2026-07-16T10:49:58.916281Z"}
+{"ms":146,"op":"rename","outcome":"accepted","pkg":"github.com/hashicorp/boundary/internal/cmd/config","req_sha":"be0b42e59b9ccbf5","sym":"Config.PassthroughDirectory","ts":"2026-07-16T10:50:06.184599Z"}
+{"ms":2553,"op":"test","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/cmd/commands/dev","req_sha":"655f9defeba8ee4f","ts":"2026-07-16T10:50:13.858554Z"}
+{"ms":1468,"op":"test","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/cmd/config","req_sha":"febd529edceab18d","ts":"2026-07-16T10:50:17.599193Z"}
+{"ms":1941,"op":"test","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/servers/controller","req_sha":"712ec6c85159803c","ts":"2026-07-16T10:50:23.1831Z"}
+{"ms":1000,"op":"refs","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/cmd/commands/dev","reason":"method or field not found","repairs":0,"req_sha":"5c4f4cfbb23e8fee","sym":"Command.flagPassthroughDirectory","ts":"2026-07-16T10:50:45.990995Z"}
+{"ms":21,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/cmd/commands/dev","req_sha":"edb99cc331a37496","sym":"Command.flagUiPassthroughDir","ts":"2026-07-16T10:50:47.013527Z"}
+{"ms":2,"op":"refs","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/servers/controller","reason":"symbol not found","repairs":0,"req_sha":"c07055e73cac992c","sym":"devPassthroughHandler","ts":"2026-07-16T10:50:47.039261Z"}
+{"ms":13,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/servers/controller","req_sha":"1fe4a266709d6382","sym":"devUiPassthroughHandler","ts":"2026-07-16T10:50:47.045833Z"}
+{"ms":1,"op":"refs","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/cmd/config","reason":"method or field not found","repairs":0,"req_sha":"578686e47b141b78","sym":"Config.PassthroughDirectory","ts":"2026-07-16T10:50:47.064139Z"}
+{"ms":13,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/cmd/config","req_sha":"616a87311c5ac43a","sym":"Config.DevUiPassthroughDir","ts":"2026-07-16T10:50:47.069669Z"}
+{"ms":3,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T10:50:47.08707Z"}

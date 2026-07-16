@@ -1,0 +1,98 @@
+{"ms":12,"op":"refs","outcome":"rejected","reason":"package not found","repairs":0,"req_sha":"ef3b44d6002a79fd","sym":"Command.IsHelpCommand","ts":"2026-07-16T06:50:08.936737Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T06:50:08.953266Z"}
+{"ms":57,"op":"query","outcome":"ok","req_sha":"e724b3c860add371","sym":"IsHelpCommand","ts":"2026-07-16T06:51:00.344518Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T06:51:06.954727Z"}
+{"ms":0,"op":"help","outcome":"ok","req_sha":"0b56758d64d8a078","ts":"2026-07-16T06:51:11.883269Z"}
+{"ms":0,"op":"query","outcome":"ok","req_sha":"5ecde7f292500195","sym":"help","ts":"2026-07-16T06:51:58.856994Z"}
+{"ms":0,"op":"query","outcome":"ok","req_sha":"300d67a01fd64da1","sym":"command","ts":"2026-07-16T06:52:04.076014Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T06:52:06.836817Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":".","reason":"package not found","repairs":0,"req_sha":"b6f218e37ef925fb","sym":"*","ts":"2026-07-16T06:52:29.252083Z"}
+{"ms":0,"op":"query","outcome":"ok","req_sha":"0b3286a493bd087e","sym":"Help","ts":"2026-07-16T06:52:50.285832Z"}
+{"ms":0,"op":"query","outcome":"ok","req_sha":"ec35b1bd4942f873","sym":"Is","ts":"2026-07-16T06:52:52.064795Z"}
+{"ms":0,"op":"query","outcome":"rejected","pkg":".","reason":"package not found","repairs":0,"req_sha":"b2aea22f1491adf8","ts":"2026-07-16T06:52:53.957229Z"}
+{"ms":0,"op":"help","outcome":"ok","req_sha":"0b56758d64d8a078","ts":"2026-07-16T06:52:55.931781Z"}
+{"ms":0,"op":"rename","outcome":"rejected","pkg":".","reason":"package not found","repairs":0,"req_sha":"cec6f33c399d2941","sym":"IsHelpCommand","ts":"2026-07-16T06:53:56.441545Z"}
+{"ms":54,"op":"refs","outcome":"rejected","reason":"package not found","repairs":0,"req_sha":"ef3b44d6002a79fd","sym":"Command.IsHelpCommand","ts":"2026-07-16T07:02:09.056203Z"}
+{"ms":0,"op":"refs","outcome":"rejected","reason":"package not found","repairs":0,"req_sha":"f56d81dee418f382","sym":"Command.IsAdditionalHelpTopicCommand","ts":"2026-07-16T07:02:09.115253Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T07:02:09.118761Z"}
+{"ms":12,"op":"refs","outcome":"rejected","reason":"package not found","repairs":0,"req_sha":"ef3b44d6002a79fd","sym":"Command.IsHelpCommand","ts":"2026-07-16T07:02:09.549496Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T07:02:09.566325Z"}
+{"ms":21,"op":"query","outcome":"ok","req_sha":"e724b3c860add371","sym":"IsHelpCommand","ts":"2026-07-16T07:03:01.527347Z"}
+{"ms":0,"op":"query","outcome":"ok","req_sha":"73178407ee0cbe40","sym":"HelpCommand","ts":"2026-07-16T07:03:11.308533Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T07:03:15.562671Z"}
+{"ms":0,"op":"help","outcome":"ok","req_sha":"0b56758d64d8a078","ts":"2026-07-16T07:03:38.595432Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T07:04:27.540186Z"}
+{"ms":0,"op":"query","outcome":"ok","req_sha":"8cddbccd581f3bac","sym":"IsHelp","ts":"2026-07-16T07:04:52.335226Z"}
+{"ms":0,"op":"query","outcome":"ok","req_sha":"9aff806522c5a051","sym":"Command","ts":"2026-07-16T07:05:01.041289Z"}
+{"ms":0,"op":"query","outcome":"rejected","pkg":"cobra","reason":"package not found","repairs":0,"req_sha":"56d8160073deed3a","sym":"HelpCommand","ts":"2026-07-16T07:05:17.939974Z"}
+{"ms":0,"op":"query","outcome":"ok","pkg":"github.com/spf13/cobra","req_sha":"dcf670c1adf6b2e5","sym":"IsHelpCommand","ts":"2026-07-16T07:05:28.070065Z"}
+{"ms":0,"op":"query","outcome":"ok","req_sha":"0b3286a493bd087e","sym":"Help","ts":"2026-07-16T07:05:35.397653Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T07:05:39.639724Z"}
+{"ms":0,"op":"query","outcome":"ok","req_sha":"73178407ee0cbe40","sym":"HelpCommand","ts":"2026-07-16T07:05:51.07977Z"}
+{"ms":0,"op":"query","outcome":"ok","req_sha":"8cddbccd581f3bac","sym":"IsHelp","ts":"2026-07-16T07:05:58.029449Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T07:06:11.449848Z"}
+{"ms":0,"op":"query","outcome":"ok","pkg":".","req_sha":"1c44783cc4ee08ce","sym":"IsHelpCommand","ts":"2026-07-16T07:06:25.822627Z"}
+{"ms":0,"op":"query","outcome":"ok","pkg":"github.com/spf13/cobra","req_sha":"5db3f291ccd61427","sym":"HelpCommand","ts":"2026-07-16T07:06:37.802679Z"}
+{"ms":0,"op":"query","outcome":"ok","pkg":"cobra/command","req_sha":"6b7ac2f824ab2b55","sym":"IsHelpCommand","ts":"2026-07-16T07:06:56.513374Z"}
+{"ms":0,"op":"query","outcome":"ok","pkg":"github.com/spf13/cobra/command","req_sha":"cca210f5fb8040ba","sym":"HelpCommand","ts":"2026-07-16T07:07:07.798554Z"}
+{"ms":0,"op":"query","outcome":"ok","pkg":"github.com/spf13/cobra/pkg","req_sha":"700b5ab3a1adebaf","sym":"HelpCommand","ts":"2026-07-16T07:07:20.06544Z"}
+{"ms":0,"op":"query","outcome":"ok","pkg":"github.com/spf13/cobra/cmd","req_sha":"d475e4293f5cbdd2","sym":"HelpCommand","ts":"2026-07-16T07:07:32.721439Z"}
+{"ms":0,"op":"query","outcome":"ok","pkg":"github.com/spf13/cobra","req_sha":"dcf670c1adf6b2e5","sym":"IsHelpCommand","ts":"2026-07-16T07:07:45.753018Z"}
+{"ms":0,"op":"query","outcome":"ok","pkg":"github.com/spf13/cobra/root","req_sha":"9edf5c29a6dbf324","sym":"HelpCommand","ts":"2026-07-16T07:07:59.111464Z"}
+{"ms":0,"op":"query","outcome":"ok","pkg":"github.com/spf13/cobra/util","req_sha":"3608f99da50ee9e7","sym":"HelpCommand","ts":"2026-07-16T07:08:12.677324Z"}
+{"ms":0,"op":"query","outcome":"ok","pkg":"github.com/spf13/cobra/util/cmd","req_sha":"9d9941fa1f786c06","sym":"HelpCommand","ts":"2026-07-16T07:08:26.715418Z"}
+{"ms":0,"op":"query","outcome":"ok","pkg":"github.com/spf13/cobra/util/flag","req_sha":"37f1a96d3ea4d578","sym":"HelpCommand","ts":"2026-07-16T07:08:41.147277Z"}
+{"ms":0,"op":"query","outcome":"ok","pkg":"github.com/spf13/cobra/util/edit","req_sha":"3e7ae085e587d213","sym":"HelpCommand","ts":"2026-07-16T07:08:55.585097Z"}
+{"ms":0,"op":"query","outcome":"ok","pkg":"github.com/spf13/cobra/util/bashcomp","req_sha":"cbe97adefc357911","sym":"HelpCommand","ts":"2026-07-16T07:09:10.427613Z"}
+{"ms":0,"op":"query","outcome":"ok","pkg":"github.com/spf13/cobra/util/appdirs","req_sha":"ecdea7217f3b9cb6","sym":"HelpCommand","ts":"2026-07-16T07:09:25.546216Z"}
+{"ms":0,"op":"query","outcome":"ok","pkg":"github.com/spf13/cobra/util/appname","req_sha":"942628c662ea2217","sym":"HelpCommand","ts":"2026-07-16T07:09:40.879752Z"}
+{"ms":0,"op":"query","outcome":"ok","pkg":"github.com/spf13/cobra/util/pflag","req_sha":"bfbc1b2f004e429b","sym":"HelpCommand","ts":"2026-07-16T07:09:56.46204Z"}
+{"ms":0,"op":"query","outcome":"ok","pkg":"github.com/spf13/cobra/util/fishcomp","req_sha":"e983dd4dd1df4e09","sym":"HelpCommand","ts":"2026-07-16T07:10:12.548637Z"}
+{"ms":0,"op":"query","outcome":"ok","pkg":"github.com/spf13/cobra/util/zshcomp","req_sha":"ff102e7b579a26df","sym":"HelpCommand","ts":"2026-07-16T07:10:28.860474Z"}
+{"ms":0,"op":"query","outcome":"ok","pkg":"github.com/spf13/cobra/util/completion","req_sha":"f0523d18f7019db8","sym":"HelpCommand","ts":"2026-07-16T07:10:45.224966Z"}
+{"ms":0,"op":"query","outcome":"ok","pkg":"github.com/spf13/cobra/util/edit","req_sha":"3e7ae085e587d213","sym":"HelpCommand","ts":"2026-07-16T07:11:01.615548Z"}
+{"ms":0,"op":"query","outcome":"ok","pkg":"github.com/spf13/cobra/util/appdirs","req_sha":"ecdea7217f3b9cb6","sym":"HelpCommand","ts":"2026-07-16T07:11:18.486023Z"}
+{"ms":0,"op":"query","outcome":"ok","pkg":"github.com/spf13/cobra/util/appname","req_sha":"942628c662ea2217","sym":"HelpCommand","ts":"2026-07-16T07:11:35.60716Z"}
+{"ms":0,"op":"query","outcome":"ok","pkg":"github.com/spf13/cobra/util/pflag","req_sha":"bfbc1b2f004e429b","sym":"HelpCommand","ts":"2026-07-16T07:11:52.838279Z"}
+{"ms":0,"op":"query","outcome":"ok","pkg":"github.com/spf13/cobra/util/fishcomp","req_sha":"e983dd4dd1df4e09","sym":"HelpCommand","ts":"2026-07-16T07:12:02.64794Z"}
+{"ms":0,"op":"query","outcome":"ok","pkg":"github.com/spf13/cobra/util/zshcomp","req_sha":"ff102e7b579a26df","sym":"HelpCommand","ts":"2026-07-16T07:12:13.60724Z"}
+{"ms":0,"op":"query","outcome":"ok","pkg":"github.com/spf13/cobra/util/completion","req_sha":"f0523d18f7019db8","sym":"HelpCommand","ts":"2026-07-16T07:12:16.637993Z"}
+{"ms":0,"op":"query","outcome":"ok","pkg":"github.com/spf13/cobra/util/edit","req_sha":"3e7ae085e587d213","sym":"HelpCommand","ts":"2026-07-16T07:12:19.649633Z"}
+{"ms":0,"op":"query","outcome":"ok","pkg":"github.com/spf13/cobra/util/appdirs","req_sha":"ecdea7217f3b9cb6","sym":"HelpCommand","ts":"2026-07-16T07:12:22.686427Z"}
+{"ms":0,"op":"query","outcome":"ok","pkg":"github.com/spf13/cobra/util/appname","req_sha":"942628c662ea2217","sym":"HelpCommand","ts":"2026-07-16T07:12:25.730585Z"}
+{"ms":0,"op":"query","outcome":"ok","pkg":"github.com/spf13/cobra/util/pflag","req_sha":"bfbc1b2f004e429b","sym":"HelpCommand","ts":"2026-07-16T07:12:28.768469Z"}
+{"ms":0,"op":"query","outcome":"ok","pkg":"github.com/spf13/cobra/util/fishcomp","req_sha":"e983dd4dd1df4e09","sym":"HelpCommand","ts":"2026-07-16T07:12:31.825467Z"}
+{"ms":0,"op":"query","outcome":"ok","pkg":"github.com/spf13/cobra/util/zshcomp","req_sha":"ff102e7b579a26df","sym":"HelpCommand","ts":"2026-07-16T07:12:34.889508Z"}
+{"ms":0,"op":"query","outcome":"ok","pkg":"github.com/spf13/cobra/util/completion","req_sha":"f0523d18f7019db8","sym":"HelpCommand","ts":"2026-07-16T07:12:37.921411Z"}
+{"ms":0,"op":"query","outcome":"ok","pkg":"github.com/spf13/cobra/util/edit","req_sha":"3e7ae085e587d213","sym":"HelpCommand","ts":"2026-07-16T07:12:40.923112Z"}
+{"ms":0,"op":"query","outcome":"ok","pkg":"github.com/spf13/cobra/util/appdirs","req_sha":"ecdea7217f3b9cb6","sym":"HelpCommand","ts":"2026-07-16T07:12:43.952Z"}
+{"ms":0,"op":"query","outcome":"ok","pkg":"github.com/spf13/cobra/util/appname","req_sha":"942628c662ea2217","sym":"HelpCommand","ts":"2026-07-16T07:12:46.982735Z"}
+{"ms":0,"op":"query","outcome":"ok","pkg":"github.com/spf13/cobra/util/pflag","req_sha":"bfbc1b2f004e429b","sym":"HelpCommand","ts":"2026-07-16T07:12:50.011651Z"}
+{"ms":0,"op":"query","outcome":"ok","pkg":"github.com/spf13/cobra/util/fishcomp","req_sha":"e983dd4dd1df4e09","sym":"HelpCommand","ts":"2026-07-16T07:12:53.061107Z"}
+{"ms":0,"op":"query","outcome":"ok","pkg":"github.com/spf13/cobra/util/zshcomp","req_sha":"ff102e7b579a26df","sym":"HelpCommand","ts":"2026-07-16T07:12:56.118464Z"}
+{"ms":0,"op":"query","outcome":"ok","pkg":"github.com/spf13/cobra/util/completion","req_sha":"f0523d18f7019db8","sym":"HelpCommand","ts":"2026-07-16T07:12:59.14445Z"}
+{"ms":0,"op":"query","outcome":"ok","pkg":"github.com/spf13/cobra/util/edit","req_sha":"3e7ae085e587d213","sym":"HelpCommand","ts":"2026-07-16T07:13:02.14141Z"}
+{"ms":0,"op":"query","outcome":"ok","pkg":"github.com/spf13/cobra/util/appdirs","req_sha":"ecdea7217f3b9cb6","sym":"HelpCommand","ts":"2026-07-16T07:13:05.169021Z"}
+{"ms":0,"op":"query","outcome":"ok","pkg":"github.com/spf13/cobra/util/appname","req_sha":"942628c662ea2217","sym":"HelpCommand","ts":"2026-07-16T07:13:08.195217Z"}
+{"ms":0,"op":"query","outcome":"ok","pkg":"github.com/spf13/cobra/util/pflag","req_sha":"bfbc1b2f004e429b","sym":"HelpCommand","ts":"2026-07-16T07:13:11.216149Z"}
+{"ms":0,"op":"query","outcome":"ok","pkg":"github.com/spf13/cobra/util/fishcomp","req_sha":"e983dd4dd1df4e09","sym":"HelpCommand","ts":"2026-07-16T07:13:14.277225Z"}
+{"ms":0,"op":"query","outcome":"ok","pkg":"github.com/spf13/cobra/util/zshcomp","req_sha":"ff102e7b579a26df","sym":"HelpCommand","ts":"2026-07-16T07:13:17.340276Z"}
+{"ms":0,"op":"query","outcome":"ok","pkg":"github.com/spf13/cobra/util/completion","req_sha":"f0523d18f7019db8","sym":"HelpCommand","ts":"2026-07-16T07:13:20.382117Z"}
+{"ms":0,"op":"query","outcome":"ok","pkg":"github.com/spf13/cobra/util/edit","req_sha":"3e7ae085e587d213","sym":"HelpCommand","ts":"2026-07-16T07:13:23.391394Z"}
+{"ms":0,"op":"query","outcome":"ok","pkg":"github.com/spf13/cobra/util/appdirs","req_sha":"ecdea7217f3b9cb6","sym":"HelpCommand","ts":"2026-07-16T07:13:26.408842Z"}
+{"ms":0,"op":"query","outcome":"ok","pkg":"github.com/spf13/cobra/util/appname","req_sha":"942628c662ea2217","sym":"HelpCommand","ts":"2026-07-16T07:13:29.437244Z"}
+{"ms":0,"op":"query","outcome":"ok","pkg":"github.com/spf13/cobra/util/pflag","req_sha":"bfbc1b2f004e429b","sym":"HelpCommand","ts":"2026-07-16T07:13:32.46378Z"}
+{"ms":0,"op":"query","outcome":"ok","pkg":"github.com/spf13/cobra/util/fishcomp","req_sha":"e983dd4dd1df4e09","sym":"HelpCommand","ts":"2026-07-16T07:13:35.510728Z"}
+{"ms":0,"op":"query","outcome":"ok","pkg":"github.com/spf13/cobra/util/zshcomp","req_sha":"ff102e7b579a26df","sym":"HelpCommand","ts":"2026-07-16T07:13:38.590739Z"}
+{"ms":0,"op":"query","outcome":"ok","pkg":"github.com/spf13/cobra/util/completion","req_sha":"f0523d18f7019db8","sym":"HelpCommand","ts":"2026-07-16T07:13:41.65671Z"}
+{"ms":0,"op":"query","outcome":"ok","pkg":"github.com/spf13/cobra/util/edit","req_sha":"3e7ae085e587d213","sym":"HelpCommand","ts":"2026-07-16T07:13:44.707242Z"}
+{"ms":0,"op":"query","outcome":"ok","pkg":"github.com/spf13/cobra/util/appdirs","req_sha":"ecdea7217f3b9cb6","sym":"HelpCommand","ts":"2026-07-16T07:13:47.795798Z"}
+{"ms":0,"op":"query","outcome":"ok","pkg":"github.com/spf13/cobra/util/appname","req_sha":"942628c662ea2217","sym":"HelpCommand","ts":"2026-07-16T07:13:50.894024Z"}
+{"ms":0,"op":"query","outcome":"ok","pkg":"github.com/spf13/cobra/util/pflag","req_sha":"bfbc1b2f004e429b","sym":"HelpCommand","ts":"2026-07-16T07:13:53.988011Z"}
+{"ms":0,"op":"query","outcome":"ok","pkg":"github.com/spf13/cobra/util/fishcomp","req_sha":"e983dd4dd1df4e09","sym":"HelpCommand","ts":"2026-07-16T07:13:57.135894Z"}
+{"ms":0,"op":"query","outcome":"ok","pkg":"github.com/spf13/cobra/util/zshcomp","req_sha":"ff102e7b579a26df","sym":"HelpCommand","ts":"2026-07-16T07:14:00.306516Z"}
+{"ms":0,"op":"query","outcome":"ok","pkg":"github.com/spf13/cobra/util/completion","req_sha":"f0523d18f7019db8","sym":"HelpCommand","ts":"2026-07-16T07:14:03.458044Z"}
+{"ms":0,"op":"query","outcome":"ok","pkg":"github.com/spf13/cobra/util/edit","req_sha":"3e7ae085e587d213","sym":"HelpCommand","ts":"2026-07-16T07:14:06.599508Z"}
+{"ms":52,"op":"refs","outcome":"rejected","reason":"package not found","repairs":0,"req_sha":"ef3b44d6002a79fd","sym":"Command.IsHelpCommand","ts":"2026-07-16T07:14:09.65216Z"}
+{"ms":0,"op":"refs","outcome":"rejected","reason":"package not found","repairs":0,"req_sha":"f56d81dee418f382","sym":"Command.IsAdditionalHelpTopicCommand","ts":"2026-07-16T07:14:09.708426Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T07:14:09.71191Z"}

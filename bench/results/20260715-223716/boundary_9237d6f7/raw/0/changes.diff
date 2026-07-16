@@ -1,0 +1,234 @@
+diff --git a/api/targets/custom.go b/api/targets/custom.go
+index 0be0837b2..da7b5ee2f 100644
+--- a/api/targets/custom.go
++++ b/api/targets/custom.go
+@@ -25,9 +25,9 @@ func (n SessionAuthorizationResult) GetResponseMap() map[string]interface{} {
+ 	return n.responseMap
+ }
+ 
+-func (c *Client) Authorize(ctx context.Context, targetId string, opt ...Option) (*SessionAuthorizationResult, error) {
++func (c *Client) AuthorizeSession(ctx context.Context, targetId string, opt ...Option) (*SessionAuthorizationResult, error) {
+ 	if targetId == "" {
+-		return nil, fmt.Errorf("empty targetId value passed into Authorize request")
++		return nil, fmt.Errorf("empty targetId value passed into AuthorizeSession request")
+ 	}
+ 
+ 	opts, apiOpts := getOpts(opt...)
+@@ -38,7 +38,7 @@ func (c *Client) Authorize(ctx context.Context, targetId string, opt ...Option)
+ 
+ 	req, err := c.client.NewRequest(ctx, "POST", fmt.Sprintf("targets/%s:authorize", targetId), opts.postMap, apiOpts...)
+ 	if err != nil {
+-		return nil, fmt.Errorf("error creating Authorize request: %w", err)
++		return nil, fmt.Errorf("error creating AuthorizeSession request: %w", err)
+ 	}
+ 
+ 	if len(opts.queryMap) > 0 {
+@@ -51,14 +51,14 @@ func (c *Client) Authorize(ctx context.Context, targetId string, opt ...Option)
+ 
+ 	resp, err := c.client.Do(req)
+ 	if err != nil {
+-		return nil, fmt.Errorf("error performing client request during Authorize call: %w", err)
++		return nil, fmt.Errorf("error performing client request during AuthorizeSession call: %w", err)
+ 	}
+ 
+ 	sar := new(SessionAuthorizationResult)
+ 	sar.Item = new(SessionAuthorization)
+ 	apiErr, err := resp.Decode(sar.Item)
+ 	if err != nil {
+-		return nil, fmt.Errorf("error decoding Authorize response: %w", err)
++		return nil, fmt.Errorf("error decoding AuthorizeSession response: %w", err)
+ 	}
+ 	if apiErr != nil {
+ 		return nil, apiErr
+diff --git a/internal/auth/additional_verification_test.go b/internal/auth/additional_verification_test.go
+index a01bf03b7..7efe1f011 100644
+--- a/internal/auth/additional_verification_test.go
++++ b/internal/auth/additional_verification_test.go
+@@ -87,16 +87,16 @@ func TestAdditionalVerification(t *testing.T) {
+ 						auth.WithType(resource.HostSet),
+ 					},
+ 				},
+-				{
+-					name: "good target",
+-					opts: []auth.Option{
+-						auth.WithId("ttcp_1234567890"),
+-						auth.WithAction(action.Authorize),
+-						auth.WithScopeId(proj.PublicId),
+-						auth.WithType(resource.Target),
+-					},
+-					allowed: true,
+-				},
++		{
++			name: "good target",
++			opts: []auth.Option{
++				auth.WithId("ttcp_1234567890"),
++				auth.WithAction(action.AuthorizeSession),
++				auth.WithScopeId(proj.PublicId),
++				auth.WithType(resource.Target),
++			},
++			allowed: true,
++		},
+ 				{
+ 					name: "cross scope",
+ 					opts: []auth.Option{
+diff --git a/internal/cmd/commands/proxy/proxy.go b/internal/cmd/commands/proxy/proxy.go
+index 70f9131fb..a0cf35e3f 100644
+--- a/internal/cmd/commands/proxy/proxy.go
++++ b/internal/cmd/commands/proxy/proxy.go
+@@ -438,13 +438,13 @@ func (c *Command) Run(args []string) (retCode int) {
+ 			opts = append(opts, targets.WithHostId(c.flagHostId))
+ 		}
+ 
+-		sar, err := targetClient.Authorize(c.Context, c.flagTargetId, opts...)
++		sar, err := targetClient.AuthorizeSession(c.Context, c.flagTargetId, opts...)
+ 		if err != nil {
+ 			if api.AsServerError(err) != nil {
+-				c.UI.Error(fmt.Sprintf("Error from controller when performing authorize on a session against target: %s", err.Error()))
++				c.UI.Error(fmt.Sprintf("Error from controller when performing authorize-session on a session against target: %s", err.Error()))
+ 				return 1
+ 			}
+-			c.UI.Error(fmt.Sprintf("Error trying to authorize a session against target: %s", err.Error()))
++			c.UI.Error(fmt.Sprintf("Error trying to authorize-session a session against target: %s", err.Error()))
+ 			return 2
+ 		}
+ 		c.sessionAuthz = sar.GetItem().(*targets.SessionAuthorization)
+diff --git a/internal/cmd/commands/targets/target.go b/internal/cmd/commands/targets/target.go
+index d38500714..f97afabde 100644
+--- a/internal/cmd/commands/targets/target.go
++++ b/internal/cmd/commands/targets/target.go
+@@ -39,7 +39,7 @@ func (c *Command) Synopsis() string {
+ }
+ 
+ var flagsMap = map[string][]string{
+-	"authorize":        {"id", "host-id"},
++	"authorize-session": {"id", "host-id"},
+ 	"read":             {"id"},
+ 	"delete":           {"id"},
+ 	"list":             {"scope-id"},
+@@ -118,15 +118,15 @@ func (c *Command) Help() string {
+ 			"",
+ 			`      $ boundary targets set-host-sets -id ttcp_1234567890 -host-set hsst_1234567890`,
+ 		})
+-	case "authorize":
++	case "authorize-session":
+ 		helpStr = base.WrapForHelpText([]string{
+-			"Usage: boundary target authorize [options] [args]",
++			"Usage: boundary target authorize-session [options] [args]",
+ 			"",
+ 			"  This command allows fetching session authorization credentials against a target. Example:",
+ 			"",
+ 			"    Set host-set resources on a tcp-type target:",
+ 			"",
+-			`      $ boundary targets authorize -id ttcp_1234567890`,
++			`      $ boundary targets authorize-session -id ttcp_1234567890`,
+ 		})
+ 	default:
+ 		helpStr = helpMap[c.Func]()
+@@ -282,15 +282,15 @@ func (c *Command) Run(args []string) int {
+ 		result, err = targetClient.RemoveHostSets(c.Context, c.FlagId, version, hostSets, opts...)
+ 	case "set-host-sets":
+ 		result, err = targetClient.SetHostSets(c.Context, c.FlagId, version, hostSets, opts...)
+-	case "authorize":
+-		sar, err = targetClient.Authorize(c.Context, c.FlagId, opts...)
++	case "authorize-session":
++		sar, err = targetClient.AuthorizeSession(c.Context, c.FlagId, opts...)
+ 	}
+ 
+ 	plural := "target"
+ 	switch c.Func {
+ 	case "list":
+ 		plural = "targets"
+-	case "authorize":
++	case "authorize-session":
+ 		plural = "a session against target"
+ 	}
+ 	if err != nil {
+diff --git a/internal/perms/grants_test.go b/internal/perms/grants_test.go
+index 3dfc49f3e..452dc3b30 100644
+--- a/internal/perms/grants_test.go
++++ b/internal/perms/grants_test.go
+@@ -54,14 +54,14 @@ func Test_ActionParsingValidation(t *testing.T) {
+ 		{
+ 			name: "all valid plus all",
+ 			input: Grant{
+-				actionsBeingParsed: []string{"list", "create", "update", "*", "read", "delete", "authenticate", "authorize"},
++				actionsBeingParsed: []string{"list", "create", "update", "*", "read", "delete", "authenticate", "authorize-session"},
+ 			},
+ 			errResult: `"*" cannot be specified with other actions`,
+ 		},
+ 		{
+ 			name: "all valid",
+ 			input: Grant{
+-				actionsBeingParsed: []string{"list", "create", "update", "read", "delete", "authenticate", "authorize"},
++				actionsBeingParsed: []string{"list", "create", "update", "read", "delete", "authenticate", "authorize-session"},
+ 			},
+ 			result: Grant{
+ 				actions: map[action.Type]bool{
+@@ -71,7 +71,7 @@ func Test_ActionParsingValidation(t *testing.T) {
+ 					action.Read:         true,
+ 					action.Delete:       true,
+ 					action.Authenticate: true,
+-					action.Authorize:    true,
++					action.AuthorizeSession: true,
+ 				},
+ 			},
+ 		},
+diff --git a/internal/servers/controller/handlers/targets/target_service.go b/internal/servers/controller/handlers/targets/target_service.go
+index d4d8c3aaf..0e37f5610 100644
+--- a/internal/servers/controller/handlers/targets/target_service.go
++++ b/internal/servers/controller/handlers/targets/target_service.go
+@@ -230,7 +230,7 @@ func (s Service) AuthorizeSession(ctx context.Context, req *pbs.AuthorizeSession
+ 	if err := validateAuthorizeRequest(req); err != nil {
+ 		return nil, err
+ 	}
+-	authResults := s.authResult(ctx, req.GetId(), action.Authorize)
++	authResults := s.authResult(ctx, req.GetId(), action.AuthorizeSession)
+ 	if authResults.Error != nil {
+ 		return nil, authResults.Error
+ 	}
+diff --git a/internal/types/action/action.go b/internal/types/action/action.go
+index 421021e50..e7c33bd25 100644
+--- a/internal/types/action/action.go
++++ b/internal/types/action/action.go
+@@ -14,7 +14,7 @@ const (
+ 	Delete           Type = 5
+ 	Authenticate     Type = 6
+ 	All              Type = 7
+-	Authorize        Type = 8
++	AuthorizeSession Type = 8
+ 	AddGrants        Type = 9
+ 	RemoveGrants     Type = 10
+ 	SetGrants        Type = 11
+@@ -47,7 +47,7 @@ var Map = map[string]Type{
+ 	Delete.String():           Delete,
+ 	Authenticate.String():     Authenticate,
+ 	All.String():              All,
+-	Authorize.String():        Authorize,
++	AuthorizeSession.String(): AuthorizeSession,
+ 	AddGrants.String():        AddGrants,
+ 	RemoveGrants.String():     RemoveGrants,
+ 	SetGrants.String():        SetGrants,
+@@ -82,7 +82,7 @@ func (a Type) String() string {
+ 		"delete",
+ 		"authenticate",
+ 		"*",
+-		"authorize",
++		"authorize-session",
+ 		"add-grants",
+ 		"remove-grants",
+ 		"set-grants",
+diff --git a/internal/types/action/action_test.go b/internal/types/action/action_test.go
+index 01890bb51..b0f126696 100644
+--- a/internal/types/action/action_test.go
++++ b/internal/types/action/action_test.go
+@@ -44,8 +44,8 @@ func TestAction(t *testing.T) {
+ 			want:   "*",
+ 		},
+ 		{
+-			action: Authorize,
+-			want:   "authorize",
++			action: AuthorizeSession,
++			want:   "authorize-session",
+ 		},
+ 		{
+ 			action: AddGrants,

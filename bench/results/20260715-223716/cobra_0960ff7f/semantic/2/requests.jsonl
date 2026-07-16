@@ -1,0 +1,13 @@
+{"ms":12,"op":"refs","outcome":"rejected","reason":"package not found","repairs":0,"req_sha":"ef3b44d6002a79fd","sym":"Command.IsHelpCommand","ts":"2026-07-16T07:26:10.773837Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T07:26:10.790837Z"}
+{"ms":22,"op":"query","outcome":"ok","req_sha":"e724b3c860add371","sym":"IsHelpCommand","ts":"2026-07-16T07:27:17.377316Z"}
+{"ms":0,"op":"query","outcome":"ok","req_sha":"73178407ee0cbe40","sym":"HelpCommand","ts":"2026-07-16T07:27:23.303934Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T07:27:25.736778Z"}
+{"ms":0,"op":"help","outcome":"ok","req_sha":"0b56758d64d8a078","ts":"2026-07-16T07:27:28.930726Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T07:28:29.186533Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":".","reason":"package not found","repairs":0,"req_sha":"bb01f6f199d40273","sym":".","ts":"2026-07-16T07:28:56.713884Z"}
+{"ms":70,"op":"test","outcome":"rejected","reason":"tests could not run","repairs":0,"req_sha":"12ef5d31bdb89522","ts":"2026-07-16T07:29:58.044992Z"}
+{"ms":0,"op":"query","outcome":"ok","req_sha":"0b3286a493bd087e","sym":"Help","ts":"2026-07-16T07:31:05.017868Z"}
+{"ms":49,"op":"refs","outcome":"rejected","reason":"package not found","repairs":0,"req_sha":"ef3b44d6002a79fd","sym":"Command.IsHelpCommand","ts":"2026-07-16T07:32:04.988036Z"}
+{"ms":0,"op":"refs","outcome":"rejected","reason":"package not found","repairs":0,"req_sha":"f56d81dee418f382","sym":"Command.IsAdditionalHelpTopicCommand","ts":"2026-07-16T07:32:05.041581Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T07:32:05.044962Z"}

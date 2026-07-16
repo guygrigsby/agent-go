@@ -1,0 +1,3 @@
+ M internal/daemon/worker/listeners.go
+ M internal/daemon/worker/worker.go
+?? opencode.json

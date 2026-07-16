@@ -1,0 +1,34 @@
+{
+ "agent_done": "2026-07-16T16:02:37.555059375Z",
+ "agent_started": "2026-07-16T15:55:49.506171Z",
+ "cache_read": 235826,
+ "cache_write": 0,
+ "capped": false,
+ "failure_kind": "scored_fail",
+ "iter": 1,
+ "mode": "semantic",
+ "new_errors": null,
+ "pass": false,
+ "predicate": false,
+ "profile": "glm-flash",
+ "prompt": "Rename authorize to authorize-session\n\nSpecifically, rename: Authorize -\u003e AuthorizeSession",
+ "specs": [
+  {
+   "baseline_refs": 3,
+   "new_refs": 0,
+   "ok": false,
+   "old_refs_left": 3,
+   "sym": "github.com/hashicorp/boundary/api/targets.Client.Authorize",
+   "to": "AuthorizeSession"
+  }
+ ],
+ "steps": 17,
+ "task": "boundary_9237d6f7",
+ "tests": false,
+ "tests_baseline": true,
+ "tokens_in": 17340,
+ "tokens_out": 2008,
+ "tokens_reasoning": 0,
+ "typecheck": true,
+ "wall_s": 408.048888375
+}

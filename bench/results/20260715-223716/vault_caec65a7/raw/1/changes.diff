@@ -1,0 +1,485 @@
+diff --git a/helper/testhelpers/seal/sealhelper.go b/helper/testhelpers/seal/sealhelper.go
+index 458056b630..c8d79d1634 100644
+--- a/helper/testhelpers/seal/sealhelper.go
++++ b/helper/testhelpers/seal/sealhelper.go
+@@ -73,7 +73,7 @@ func (tss *TransitSealServer) MakeSeal(t testing.T, key string) (vault.Seal, err
+ 		t.Fatalf("error setting wrapper config: %v", err)
+ 	}
+ 
+-	access, err := seal.NewAccessFromSealInfo(tss.Logger, 1, true, []seal.SealInfo{
++	access, err := seal.NewAccessFromSealInfo(tss.Logger, 1, true, []*seal.SealWrapper{
+ 		{
+ 			Wrapper:  transitSealWrapper,
+ 			Priority: 1,
+diff --git a/vault/core.go b/vault/core.go
+index 5da2ade3bb..d7c465e30e 100644
+--- a/vault/core.go
++++ b/vault/core.go
+@@ -1103,7 +1103,7 @@ func CreateCore(conf *CoreConfig) (*Core, error) {
+ 		wrapper := aeadwrapper.NewShamirWrapper()
+ 		wrapper.SetConfig(context.Background(), awskms.WithLogger(c.logger.Named("shamir")))
+ 
+-		access, err := vaultseal.NewAccessFromSealInfo(c.logger, 1, true, []vaultseal.SealInfo{
++		access, err := vaultseal.NewAccessFromSealInfo(c.logger, 1, true, []*vaultseal.SealWrapper{
+ 			{
+ 				Wrapper:  wrapper,
+ 				Priority: 1,
+@@ -2872,7 +2872,7 @@ func (c *Core) adjustForSealMigration(unwrapSeal Seal) error {
+ 
+ 			// See note about creating a SealGenerationInfo for the unwrap seal in
+ 			// function setSeal in server.go.
+-			sealAccess, err := vaultseal.NewAccessFromSealInfo(c.logger, 1, true, []vaultseal.SealInfo{
++			sealAccess, err := vaultseal.NewAccessFromSealInfo(c.logger, 1, true, []*vaultseal.SealWrapper{
+ 				{
+ 					Wrapper:  aeadwrapper.NewShamirWrapper(),
+ 					Priority: 1,
+@@ -3100,7 +3100,7 @@ func (c *Core) unsealKeyToRootKey(ctx context.Context, seal Seal, combinedKey []
+ 		if useTestSeal {
+ 			// Note that the seal generation should not matter, since the only thing we are doing with
+ 			// this seal is calling GetStoredKeys (i.e. we are not encrypting anything).
+-			sealAccess, err := vaultseal.NewAccessFromSealInfo(c.logger, 1, true, []vaultseal.SealInfo{
++			sealAccess, err := vaultseal.NewAccessFromSealInfo(c.logger, 1, true, []*vaultseal.SealWrapper{
+ 				{
+ 					Wrapper:  aeadwrapper.NewShamirWrapper(),
+ 					Priority: 1,
+diff --git a/vault/logical_system.go b/vault/logical_system.go
+index 0f033a6489..690c042c2e 100644
+--- a/vault/logical_system.go
++++ b/vault/logical_system.go
+@@ -4833,10 +4833,10 @@ func (c *Core) GetSealBackendStatus(ctx context.Context) (*SealBackendStatusResp
+ 	if a, ok := c.seal.(*autoSeal); ok {
+ 		r.Healthy = c.seal.Healthy()
+ 		var uhMin time.Time
+-		for _, s := range a.GetAllSealInfoByPriority() {
++		for _, sw := range a.GetAllSealInfoByPriority() {
+ 			b := SealBackendStatus{
+-				Name:    s.Name,
+-				Healthy: s.Healthy,
++				Name:    sw.Name,
++				Healthy: sw.Healthy,
+ 			}
+ 			if !s.Healthy {
+ 				if !s.LastSeenHealthy.IsZero() {
+diff --git a/vault/rekey.go b/vault/rekey.go
+index 2d5766c23b..3319312242 100644
+--- a/vault/rekey.go
++++ b/vault/rekey.go
+@@ -400,7 +400,7 @@ func (c *Core) BarrierRekeyUpdate(ctx context.Context, key []byte, nonce string)
+ 		}
+ 	case c.seal.BarrierSealConfigType() == SealConfigTypeShamir:
+ 		if c.seal.StoredKeysSupported() == seal.StoredKeysSupportedShamirRoot {
+-			access, err := seal.NewAccessFromSealInfo(c.logger, c.seal.GetAccess().Generation(), true, []seal.SealInfo{
++			access, err := seal.NewAccessFromSealInfo(c.logger, c.seal.GetAccess().Generation(), true, []*seal.SealWrapper{
+ 				{
+ 					Wrapper:  aeadwrapper.NewShamirWrapper(),
+ 					Priority: 1,
+diff --git a/vault/seal/seal.go b/vault/seal/seal.go
+index 0ad9ad5b7d..f7fc2e4d01 100644
+--- a/vault/seal/seal.go
++++ b/vault/seal/seal.go
+@@ -158,7 +158,7 @@ func (sgi *SealGenerationInfo) UnmarshalJSON(b []byte) error {
+ 	return nil
+ }
+ 
+-type SealInfo struct {
++type SealWrapper struct {
+ 	wrapping.Wrapper
+ 	Priority int
+ 	Name     string
+@@ -176,8 +176,8 @@ type SealInfo struct {
+ 	Healthy         bool
+ }
+ 
+-func (si *SealInfo) keyId(ctx context.Context) string {
+-	if id, err := si.Wrapper.KeyId(ctx); err == nil {
++func (sw *SealWrapper) keyId(ctx context.Context) string {
++	if id, err := sw.Wrapper.KeyId(ctx); err == nil {
+ 		return id
+ 	}
+ 	return ""
+@@ -216,13 +216,13 @@ type Access interface {
+ 	SetShamirSealKey([]byte) error
+ 	GetShamirKeyBytes(ctx context.Context) ([]byte, error)
+ 
+-	// GetAllSealInfoByPriority returns all the SealInfo for all the seal wrappers, including disabled ones.
+-	GetAllSealInfoByPriority() []*SealInfo
++	// GetAllSealInfoByPriority returns all the SealWrapper for all the seal wrappers, including disabled ones.
++	GetAllSealInfoByPriority() []*SealWrapper
+ 
+-	// GetEnabledSealInfoByPriority returns the SealInfo for the enabled seal wrappers.
+-	GetEnabledSealInfoByPriority() []*SealInfo
++	// GetEnabledSealInfoByPriority returns the SealWrapper for the enabled seal wrappers.
++	GetEnabledSealInfoByPriority() []*SealWrapper
+ 
+-	// AllSealsHealthy returns whether all enabled SealInfos are currently healthy.
++	// AllSealsHealthy returns whether all enabled SealWrappers are currently healthy.
+ 	AllSealsHealthy() bool
+ 
+ 	GetSealGenerationInfo() *SealGenerationInfo
+@@ -230,14 +230,14 @@ type Access interface {
+ 
+ type access struct {
+ 	sealGenerationInfo *SealGenerationInfo
+-	wrappersByPriority []*SealInfo
++	wrappersByPriority []*SealWrapper
+ 	keyIdSet           keyIdSet
+ 	logger             hclog.Logger
+ }
+ 
+ var _ Access = (*access)(nil)
+ 
+-func NewAccess(logger hclog.Logger, sealGenerationInfo *SealGenerationInfo, sealInfos []SealInfo) Access {
++func NewAccess(logger hclog.Logger, sealGenerationInfo *SealGenerationInfo, sealInfos []SealWrapper) Access {
+ 	if logger == nil {
+ 		logger = hclog.NewNullLogger()
+ 	}
+@@ -251,7 +251,7 @@ func NewAccess(logger hclog.Logger, sealGenerationInfo *SealGenerationInfo, seal
+ 		sealGenerationInfo: sealGenerationInfo,
+ 		logger:             logger,
+ 	}
+-	a.wrappersByPriority = make([]*SealInfo, len(sealInfos))
++	a.wrappersByPriority = make([]*SealWrapper, len(sealInfos))
+ 	for i, sealInfo := range sealInfos {
+ 		v := sealInfo
+ 		a.wrappersByPriority[i] = &v
+@@ -264,7 +264,7 @@ func NewAccess(logger hclog.Logger, sealGenerationInfo *SealGenerationInfo, seal
+ 	return a
+ }
+ 
+-func NewAccessFromSealInfo(logger hclog.Logger, generation uint64, rewrapped bool, sealInfos []SealInfo) (Access, error) {
++func NewAccessFromSealInfo(logger hclog.Logger, generation uint64, rewrapped bool, sealInfos []SealWrapper) (Access, error) {
+ 	sealGenerationInfo := &SealGenerationInfo{
+ 		Generation: generation,
+ 	}
+@@ -284,36 +284,36 @@ func NewAccessFromSealInfo(logger hclog.Logger, generation uint64, rewrapped boo
+ 	return NewAccess(logger, sealGenerationInfo, sealInfos), nil
+ }
+ 
+-func (a *access) GetAllSealInfoByPriority() []*SealInfo {
++func (a *access) GetAllSealInfoByPriority() []*SealWrapper {
+ 	return copySealInfos(a.wrappersByPriority, false)
+ }
+ 
+-func (a *access) GetEnabledSealInfoByPriority() []*SealInfo {
++func (a *access) GetEnabledSealInfoByPriority() []*SealWrapper {
+ 	return copySealInfos(a.wrappersByPriority, true)
+ }
+ 
+ func (a *access) AllSealsHealthy() bool {
+-	for _, si := range a.wrappersByPriority {
++	for _, sw := range a.wrappersByPriority {
+ 		// Ignore disabled seals
+-		if si.Disabled {
++		if sw.Disabled {
+ 			continue
+ 		}
+-		si.HcLock.RLock()
+-		defer si.HcLock.RUnlock()
+-		if !si.Healthy {
++		sw.HcLock.RLock()
++		defer sw.HcLock.RUnlock()
++		if !sw.Healthy {
+ 			return false
+ 		}
+ 	}
+ 	return true
+ }
+ 
+-func copySealInfos(sealInfos []*SealInfo, enabledOnly bool) []*SealInfo {
+-	ret := make([]*SealInfo, 0, len(sealInfos))
+-	for _, si := range sealInfos {
+-		if enabledOnly && si.Disabled {
++func copySealInfos(sealInfos []*SealWrapper, enabledOnly bool) []*SealWrapper {
++	ret := make([]*SealWrapper, 0, len(sealInfos))
++	for _, sw := range sealInfos {
++		if enabledOnly && sw.Disabled {
+ 			continue
+ 		}
+-		ret = append(ret, si)
++		ret = append(ret, sw)
+ 	}
+ 	return ret
+ }
+@@ -328,23 +328,23 @@ func (a *access) Generation() uint64 {
+ 
+ func (a *access) GetEnabledWrappers() []wrapping.Wrapper {
+ 	var ret []wrapping.Wrapper
+-	for _, si := range a.GetEnabledSealInfoByPriority() {
+-		ret = append(ret, si.Wrapper)
++	for _, sw := range a.GetEnabledSealInfoByPriority() {
++		ret = append(ret, sw.Wrapper)
+ 	}
+ 	return ret
+ }
+ 
+ func (a *access) Init(ctx context.Context, options ...wrapping.Option) error {
+ 	var keyIds []string
+-	for _, sealInfo := range a.GetAllSealInfoByPriority() {
+-		if initWrapper, ok := sealInfo.Wrapper.(wrapping.InitFinalizer); ok {
++	for _, sw := range a.GetAllSealInfoByPriority() {
++		if initWrapper, ok := sw.Wrapper.(wrapping.InitFinalizer); ok {
+ 			if err := initWrapper.Init(ctx, options...); err != nil {
+ 				return err
+ 			}
+-			keyId, err := sealInfo.Wrapper.KeyId(ctx)
++			keyId, err := sw.Wrapper.KeyId(ctx)
+ 			if err != nil {
+-				a.logger.Warn("cannot determine key ID for seal", "seal", sealInfo.Name, "err", err)
+-				return fmt.Errorf("cannod determine key ID for seal %s: %w", sealInfo.Name, err)
++				a.logger.Warn("cannot determine key ID for seal", "seal", sw.Name, "err", err)
++				return fmt.Errorf("cannod determine key ID for seal %s: %w", sw.Name, err)
+ 			}
+ 			keyIds = append(keyIds, keyId)
+ 		}
+@@ -382,30 +382,30 @@ func (a *access) Encrypt(ctx context.Context, plaintext []byte, options ...wrapp
+ 	var slots []*wrapping.BlobInfo
+ 	errs := make(map[string]error)
+ 
+-	for _, sealInfo := range a.GetEnabledSealInfoByPriority() {
++	for _, sw := range a.GetEnabledSealInfoByPriority() {
+ 		var encryptErr error
+ 		defer func(now time.Time) {
+ 			metrics.MeasureSince([]string{"seal", "encrypt", "time"}, now)
+-			metrics.MeasureSince([]string{"seal", sealInfo.Name, "encrypt", "time"}, now)
++			metrics.MeasureSince([]string{"seal", sw.Name, "encrypt", "time"}, now)
+ 
+ 			if encryptErr != nil {
+ 				metrics.IncrCounter([]string{"seal", "encrypt", "error"}, 1)
+-				metrics.IncrCounter([]string{"seal", sealInfo.Name, "encrypt", "error"}, 1)
++				metrics.IncrCounter([]string{"seal", sw.Name, "encrypt", "error"}, 1)
+ 			}
+ 		}(time.Now())
+ 
+ 		metrics.IncrCounter([]string{"seal", "encrypt"}, 1)
+-		metrics.IncrCounter([]string{"seal", sealInfo.Name, "encrypt"}, 1)
++		metrics.IncrCounter([]string{"seal", sw.Name, "encrypt"}, 1)
+ 
+-		ciphertext, encryptErr := sealInfo.Wrapper.Encrypt(ctx, plaintext, options...)
++		ciphertext, encryptErr := sw.Wrapper.Encrypt(ctx, plaintext, options...)
+ 		if encryptErr != nil {
+-			a.logger.Warn("error encrypting with seal", "seal", sealInfo.Name)
+-			a.logger.Trace("error encrypting with seal", "seal", sealInfo.Name, "err", encryptErr)
++			a.logger.Warn("error encrypting with seal", "seal", sw.Name)
++			a.logger.Trace("error encrypting with seal", "seal", sw.Name, "err", encryptErr)
+ 
+-			errs[sealInfo.Name] = encryptErr
+-			sealInfo.Healthy = false
++			errs[sw.Name] = encryptErr
++			sw.Healthy = false
+ 		} else {
+-			a.logger.Trace("encrypted value using seal", "seal", sealInfo.Name, "keyId", ciphertext.KeyInfo.KeyId)
++			a.logger.Trace("encrypted value using seal", "seal", sw.Name, "keyId", ciphertext.KeyInfo.KeyId)
+ 
+ 			slots = append(slots, ciphertext)
+ 		}
+@@ -443,61 +443,61 @@ func (a *access) Decrypt(ctx context.Context, ciphertext *MultiWrapValue, option
+ 	}
+ 
+ 	// First, lets try the wrappers in order of priority and look for an exact key ID match
+-	for _, sealInfo := range a.GetAllSealInfoByPriority() {
+-		if keyId, err := sealInfo.Wrapper.KeyId(ctx); err == nil {
++	for _, sw := range a.GetAllSealInfoByPriority() {
++		if keyId, err := sw.Wrapper.KeyId(ctx); err == nil {
+ 			if blobInfo, ok := blobInfoMap[keyId]; ok {
+-				pt, oldKey, err := a.tryDecrypt(ctx, sealInfo, blobInfo, options)
++				pt, oldKey, err := a.tryDecrypt(ctx, sw, blobInfo, options)
+ 				if oldKey {
+-					a.logger.Trace("decrypted using OldKey", "seal", sealInfo.Name)
++					a.logger.Trace("decrypted using OldKey", "seal", sw.Name)
+ 					return pt, false, err
+ 				}
+ 				if err == nil {
+-					a.logger.Trace("decrypted value using seal", "seal", sealInfo.Name)
++					a.logger.Trace("decrypted value using seal", "seal", sw.Name)
+ 					return pt, isUpToDate, nil
+ 				}
+ 				// If there is an error, keep trying with the other wrappers
+-				a.logger.Trace("error decrypting with seal, will try other seals", "seal", sealInfo.Name, "keyId", keyId, "err", err)
++				a.logger.Trace("error decrypting with seal, will try other seals", "seal", sw.Name, "keyId", keyId, "err", err)
+ 			}
+ 		}
+ 	}
+ 
+ 	// No key ID match, so try each wrapper with all slots
+ 	errs := make(map[string]error)
+-	for _, sealInfo := range a.GetAllSealInfoByPriority() {
++	for _, sw := range a.GetAllSealInfoByPriority() {
+ 		for _, blobInfo := range ciphertext.Slots {
+-			pt, oldKey, err := a.tryDecrypt(ctx, sealInfo, blobInfo, options)
++			pt, oldKey, err := a.tryDecrypt(ctx, sw, blobInfo, options)
+ 			if oldKey {
+-				a.logger.Trace("decrypted using OldKey", "seal", sealInfo.Name)
++				a.logger.Trace("decrypted using OldKey", "seal", sw.Name)
+ 				return pt, false, err
+ 			}
+ 			if err == nil {
+-				a.logger.Trace("decrypted value using seal", "seal", sealInfo.Name)
++				a.logger.Trace("decrypted value using seal", "seal", sw.Name)
+ 				return pt, isUpToDate, nil
+ 			}
+-			errs[sealInfo.Name] = err
++			errs[sw.Name] = err
+ 		}
+ 	}
+ 
+ 	return nil, false, JoinSealWrapErrors("error decrypting seal wrapped value", errs)
+ }
+ 
+-func (a *access) tryDecrypt(ctx context.Context, sealInfo *SealInfo, ciphertext *wrapping.BlobInfo, options []wrapping.Option) ([]byte, bool, error) {
++func (a *access) tryDecrypt(ctx context.Context, sealWrapper *SealWrapper, ciphertext *wrapping.BlobInfo, options []wrapping.Option) ([]byte, bool, error) {
+ 	var decryptErr error
+ 	defer func(now time.Time) {
+ 		metrics.MeasureSince([]string{"seal", "decrypt", "time"}, now)
+-		metrics.MeasureSince([]string{"seal", sealInfo.Name, "decrypt", "time"}, now)
++		metrics.MeasureSince([]string{"seal", sealWrapper.Name, "decrypt", "time"}, now)
+ 
+ 		if decryptErr != nil {
+ 			metrics.IncrCounter([]string{"seal", "decrypt", "error"}, 1)
+-			metrics.IncrCounter([]string{"seal", sealInfo.Name, "decrypt", "error"}, 1)
++			metrics.IncrCounter([]string{"seal", sealWrapper.Name, "decrypt", "error"}, 1)
+ 		}
+ 		// TODO (multiseal): log an error?
+ 	}(time.Now())
+ 
+ 	metrics.IncrCounter([]string{"seal", "decrypt"}, 1)
+-	metrics.IncrCounter([]string{"seal", sealInfo.Name, "decrypt"}, 1)
++	metrics.IncrCounter([]string{"seal", sealWrapper.Name, "decrypt"}, 1)
+ 
+-	pt, err := sealInfo.Wrapper.Decrypt(ctx, ciphertext, options...)
++	pt, err := sealWrapper.Wrapper.Decrypt(ctx, ciphertext, options...)
+ 	isOldKey := false
+ 	if err != nil && err.Error() == "decrypted with old key" {
+ 		// This is for compatibility with sealWrapMigration
+@@ -517,8 +517,8 @@ func JoinSealWrapErrors(msg string, errorMap map[string]error) error {
+ func (a *access) Finalize(ctx context.Context, options ...wrapping.Option) error {
+ 	var errs []error
+ 
+-	for _, w := range a.GetAllSealInfoByPriority() {
+-		if finalizeWrapper, ok := w.Wrapper.(wrapping.InitFinalizer); ok {
++	for _, sw := range a.GetAllSealInfoByPriority() {
++		if finalizeWrapper, ok := sw.Wrapper.(wrapping.InitFinalizer); ok {
+ 			if err := finalizeWrapper.Finalize(ctx, options...); err != nil {
+ 				errs = append(errs, err)
+ 			}
+diff --git a/vault/seal/seal_testing.go b/vault/seal/seal_testing.go
+index 2776309fdc..eb5f9ffcbe 100644
+--- a/vault/seal/seal_testing.go
++++ b/vault/seal/seal_testing.go
+@@ -43,10 +43,10 @@ func NewTestSealOpts(opts *TestSealOpts) *TestSealOpts {
+ func NewTestSeal(opts *TestSealOpts) (Access, []*ToggleableWrapper) {
+ 	opts = NewTestSealOpts(opts)
+ 	wrappers := make([]*ToggleableWrapper, opts.WrapperCount)
+-	sealInfos := make([]SealInfo, opts.WrapperCount)
++	sealInfos := make([]*SealWrapper, opts.WrapperCount)
+ 	for i := 0; i < opts.WrapperCount; i++ {
+ 		wrappers[i] = &ToggleableWrapper{Wrapper: wrapping.NewTestWrapper(opts.Secret)}
+-		sealInfos[i] = SealInfo{
++		sealInfos[i] = &SealWrapper{
+ 			Wrapper:  wrappers[i],
+ 			Priority: i + 1,
+ 			Name:     fmt.Sprintf("%s-%d", opts.Name, i+1),
+@@ -64,12 +64,12 @@ func NewToggleableTestSeal(opts *TestSealOpts) (Access, []func(error)) {
+ 	opts = NewTestSealOpts(opts)
+ 
+ 	wrappers := make([]*ToggleableWrapper, opts.WrapperCount)
+-	sealInfos := make([]SealInfo, opts.WrapperCount)
++	sealInfos := make([]*SealWrapper, opts.WrapperCount)
+ 	funcs := make([]func(error), opts.WrapperCount)
+ 	for i := 0; i < opts.WrapperCount; i++ {
+ 		w := &ToggleableWrapper{Wrapper: wrapping.NewTestWrapper(opts.Secret)}
+ 		wrappers[i] = w
+-		sealInfos[i] = SealInfo{
++		sealInfos[i] = &SealWrapper{
+ 			Wrapper:  wrappers[i],
+ 			Priority: i + 1,
+ 			Name:     fmt.Sprintf("%s-%d", opts.Name, i+1),
+diff --git a/vault/seal_autoseal.go b/vault/seal_autoseal.go
+index 0ef8b27fde..8b2b08d352 100644
+--- a/vault/seal_autoseal.go
++++ b/vault/seal_autoseal.go
+@@ -475,45 +475,45 @@ func (d *autoSeal) StartHealthCheck() {
+ 
+ 			testVal := fmt.Sprintf("Heartbeat %d", mathrand.Intn(1000))
+ 			anyUnhealthy := false
+-			for _, w := range d.Access.GetAllSealInfoByPriority() {
++			for _, sw := range d.Access.GetAllSealInfoByPriority() {
+ 				func() {
+-					w.HcLock.Lock()
+-					defer w.HcLock.Unlock()
+-					mLabels := []metrics.Label{{Name: "seal_name", Value: w.Name}}
++					sw.HcLock.Lock()
++					defer sw.HcLock.Unlock()
++					mLabels := []metrics.Label{{Name: "seal_name", Value: sw.Name}}
+ 					fail := func(msg string, args ...interface{}) {
+ 						d.logger.Warn(msg, args...)
+-						if w.Healthy {
++						if sw.Healthy {
+ 							healthCheck.Reset(sealHealthTestIntervalUnhealthy)
+ 						}
+-						w.Healthy = false
+-						d.core.MetricSink().SetGaugeWithLabels(autoSealUnavailableDuration, float32(time.Since(w.LastSeenHealthy).Milliseconds()), mLabels)
++						sw.Healthy = false
++						d.core.MetricSink().SetGaugeWithLabels(autoSealUnavailableDuration, float32(time.Since(sw.LastSeenHealthy).Milliseconds()), mLabels)
+ 					}
+-					ciphertext, err := w.Encrypt(ctx, []byte(testVal), nil)
++					ciphertext, err := sw.Encrypt(ctx, []byte(testVal), nil)
+ 					checkTime := time.Now()
+-					w.LastHealthCheck = checkTime
++					sw.LastHealthCheck = checkTime
+ 
+ 					if err != nil {
+-						fail("failed to encrypt seal health test value, seal backend may be unreachable", "error", err, "seal_name", w.Name)
++						fail("failed to encrypt seal health test value, seal backend may be unreachable", "error", err, "seal_name", sw.Name)
+ 						anyUnhealthy = true
+ 					} else {
+ 						func() {
+ 							ctx, cancel := context.WithTimeout(ctx, sealHealthTestTimeout)
+ 							defer cancel()
+-							plaintext, err := w.Decrypt(ctx, ciphertext, nil)
++							plaintext, err := sw.Decrypt(ctx, ciphertext, nil)
+ 							if err != nil {
+-								fail("failed to decrypt seal health test value, seal backend may be unreachable", "error", err, "seal_name", w.Name)
++								fail("failed to decrypt seal health test value, seal backend may be unreachable", "error", err, "seal_name", sw.Name)
+ 							}
+ 							if !bytes.Equal([]byte(testVal), plaintext) {
+-								fail("seal health test value failed to decrypt to expected value", "seal_name", w.Name)
++								fail("seal health test value failed to decrypt to expected value", "seal_name", sw.Name)
+ 							} else {
+-								d.logger.Debug("seal health test passed", "seal_name", w.Name)
+-								if !w.Healthy {
+-									d.logger.Info("seal backend is now healthy again", "downtime", t.Sub(w.LastSeenHealthy).String(), "seal_name", w.Name)
++								d.logger.Debug("seal health test passed", "seal_name", sw.Name)
++								if !sw.Healthy {
++									d.logger.Info("seal backend is now healthy again", "downtime", t.Sub(sw.LastSeenHealthy).String(), "seal_name", sw.Name)
+ 									healthCheck.Reset(sealHealthTestIntervalNominal)
+ 								}
+ 
+-								w.Healthy = true
+-								w.LastSeenHealthy = checkTime
++								sw.Healthy = true
++								sw.LastSeenHealthy = checkTime
+ 								d.core.MetricSink().SetGaugeWithLabels(autoSealUnavailableDuration, 0, mLabels)
+ 							}
+ 						}()
+diff --git a/vault/seal_testing_util.go b/vault/seal_testing_util.go
+index b1e53bfd9e..8b1f5ebffd 100644
+--- a/vault/seal_testing_util.go
++++ b/vault/seal_testing_util.go
+@@ -18,7 +18,7 @@ func NewTestSeal(t testing.T, opts *seal.TestSealOpts) Seal {
+ 	switch opts.StoredKeys {
+ 	case seal.StoredKeysSupportedShamirRoot:
+ 		w := aeadwrapper.NewShamirWrapper()
+-		sealAccess, err := seal.NewAccessFromSealInfo(logger, opts.Generation, true, []seal.SealInfo{
++		sealAccess, err := seal.NewAccessFromSealInfo(logger, opts.Generation, true, []*seal.SealWrapper{
+ 			{
+ 				Wrapper:  w,
+ 				Priority: 1,
+@@ -38,7 +38,7 @@ func NewTestSeal(t testing.T, opts *seal.TestSealOpts) Seal {
+ 		return newSeal
+ 	case seal.StoredKeysNotSupported:
+ 		w := aeadwrapper.NewShamirWrapper()
+-		sealAccess, err := seal.NewAccessFromSealInfo(logger, opts.Generation, true, []seal.SealInfo{
++		sealAccess, err := seal.NewAccessFromSealInfo(logger, opts.Generation, true, []*seal.SealWrapper{
+ 			{
+ 				Wrapper:  w,
+ 				Priority: 1,

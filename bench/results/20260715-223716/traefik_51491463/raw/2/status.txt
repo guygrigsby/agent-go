@@ -1,0 +1,6 @@
+ M pkg/provider/docker/config_test.go
+ M pkg/provider/docker/pswarm.go
+ M pkg/provider/docker/pswarm_test.go
+ M pkg/provider/docker/shared_labels.go
+?? opencode.json
+?? pkg/provider/docker/pswarm_test.go.bak

@@ -1,0 +1,88 @@
+{"ms":1422,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/bsr","req_sha":"6f7365149f36729a","sym":"pubKeySelfSignatureFile","ts":"2026-07-16T08:47:02.739304Z"}
+{"ms":21,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/bsr","req_sha":"8629d6a517068633","sym":"pubKeyBsrSignatureFile","ts":"2026-07-16T08:47:04.16633Z"}
+{"ms":21,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/bsr","req_sha":"d0cbab9153806996","sym":"wrappedPrivKeyFile","ts":"2026-07-16T08:47:04.192302Z"}
+{"ms":22,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/bsr","req_sha":"b2a3870b2d20724b","sym":"wrappedBsrKeyFile","ts":"2026-07-16T08:47:04.21826Z"}
+{"ms":22,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/bsr","req_sha":"df81240fadbbe14c","sym":"sessionMetaFile","ts":"2026-07-16T08:47:04.244846Z"}
+{"ms":21,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/bsr","req_sha":"e1b5603337dd82d7","sym":"connectionFile","ts":"2026-07-16T08:47:04.271018Z"}
+{"ms":21,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/bsr","req_sha":"7108fb4766d5f0c1","sym":"bsrPubKeyFile","ts":"2026-07-16T08:47:04.296591Z"}
+{"ms":22,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/bsr","req_sha":"d558323391a6383e","sym":"messagesFile","ts":"2026-07-16T08:47:04.322068Z"}
+{"ms":21,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/bsr","req_sha":"242f4d752ec91f3e","sym":"requestsFile","ts":"2026-07-16T08:47:04.348327Z"}
+{"ms":21,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/bsr","req_sha":"53df91df6c1bd3c8","sym":"checksumFile","ts":"2026-07-16T08:47:04.373924Z"}
+{"ms":22,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/bsr","req_sha":"842e464c658c3790","sym":"channelFile","ts":"2026-07-16T08:47:04.399326Z"}
+{"ms":22,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/bsr","req_sha":"c3012e82c68d3f2e","sym":"metaFile","ts":"2026-07-16T08:47:04.425461Z"}
+{"ms":22,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/bsr","req_sha":"9551f8e27d35c789","sym":"bsrFile","ts":"2026-07-16T08:47:04.452041Z"}
+{"ms":22,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/bsr","req_sha":"8ea1c71ca07d6ab5","sym":"sigFile","ts":"2026-07-16T08:47:04.479091Z"}
+{"ms":4,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T08:47:04.506009Z"}
+{"ms":1780,"op":"refs","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/bsr","reason":"symbol not found","repairs":0,"req_sha":"6f7365149f36729a","sym":"pubKeySelfSignatureFile","ts":"2026-07-16T08:59:04.644531Z"}
+{"ms":26,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/bsr","req_sha":"83976cb9e4147de1","sym":"pubKeySelfSignatureFileName","ts":"2026-07-16T08:59:06.430306Z"}
+{"ms":5,"op":"refs","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/bsr","reason":"symbol not found","repairs":0,"req_sha":"8629d6a517068633","sym":"pubKeyBsrSignatureFile","ts":"2026-07-16T08:59:06.462085Z"}
+{"ms":25,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/bsr","req_sha":"93ea4e24ba555ec8","sym":"pubKeyBsrSignatureFileName","ts":"2026-07-16T08:59:06.472364Z"}
+{"ms":5,"op":"refs","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/bsr","reason":"symbol not found","repairs":0,"req_sha":"d0cbab9153806996","sym":"wrappedPrivKeyFile","ts":"2026-07-16T08:59:06.502843Z"}
+{"ms":26,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/bsr","req_sha":"61209a148e7306e7","sym":"wrappedPrivKeyFileName","ts":"2026-07-16T08:59:06.512324Z"}
+{"ms":5,"op":"refs","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/bsr","reason":"symbol not found","repairs":0,"req_sha":"b2a3870b2d20724b","sym":"wrappedBsrKeyFile","ts":"2026-07-16T08:59:06.543544Z"}
+{"ms":27,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/bsr","req_sha":"9daf7c3ec910b38a","sym":"wrappedBsrKeyFileName","ts":"2026-07-16T08:59:06.553852Z"}
+{"ms":5,"op":"refs","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/bsr","reason":"symbol not found","repairs":0,"req_sha":"df81240fadbbe14c","sym":"sessionMetaFile","ts":"2026-07-16T08:59:06.585932Z"}
+{"ms":26,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/bsr","req_sha":"04362c16ec15ee95","sym":"sessionMetaFileName","ts":"2026-07-16T08:59:06.596308Z"}
+{"ms":5,"op":"refs","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/bsr","reason":"symbol not found","repairs":0,"req_sha":"e1b5603337dd82d7","sym":"connectionFile","ts":"2026-07-16T08:59:06.627927Z"}
+{"ms":26,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/bsr","req_sha":"c7b6c16bbc587bed","sym":"connectionFileNameTemplate","ts":"2026-07-16T08:59:06.638369Z"}
+{"ms":5,"op":"refs","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/bsr","reason":"symbol not found","repairs":0,"req_sha":"7108fb4766d5f0c1","sym":"bsrPubKeyFile","ts":"2026-07-16T08:59:06.66938Z"}
+{"ms":26,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/bsr","req_sha":"3be74e3bc98bf01f","sym":"bsrPubKeyFileName","ts":"2026-07-16T08:59:06.679174Z"}
+{"ms":4,"op":"refs","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/bsr","reason":"symbol not found","repairs":0,"req_sha":"d558323391a6383e","sym":"messagesFile","ts":"2026-07-16T08:59:06.710805Z"}
+{"ms":25,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/bsr","req_sha":"6ef5b13ade6d9295","sym":"messagesFileNameTemplate","ts":"2026-07-16T08:59:06.720065Z"}
+{"ms":4,"op":"refs","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/bsr","reason":"symbol not found","repairs":0,"req_sha":"242f4d752ec91f3e","sym":"requestsFile","ts":"2026-07-16T08:59:06.752196Z"}
+{"ms":25,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/bsr","req_sha":"977e9814c96eb484","sym":"requestsFileNameTemplate","ts":"2026-07-16T08:59:06.762804Z"}
+{"ms":4,"op":"refs","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/bsr","reason":"symbol not found","repairs":0,"req_sha":"53df91df6c1bd3c8","sym":"checksumFile","ts":"2026-07-16T08:59:06.792906Z"}
+{"ms":25,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/bsr","req_sha":"bed54a0bc2eb57eb","sym":"checksumFileName","ts":"2026-07-16T08:59:06.802409Z"}
+{"ms":4,"op":"refs","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/bsr","reason":"symbol not found","repairs":0,"req_sha":"842e464c658c3790","sym":"channelFile","ts":"2026-07-16T08:59:06.833068Z"}
+{"ms":25,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/bsr","req_sha":"5b17f482586fb9bf","sym":"channelFileNameTemplate","ts":"2026-07-16T08:59:06.842434Z"}
+{"ms":4,"op":"refs","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/bsr","reason":"symbol not found","repairs":0,"req_sha":"c3012e82c68d3f2e","sym":"metaFile","ts":"2026-07-16T08:59:06.873151Z"}
+{"ms":26,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/bsr","req_sha":"6cc9113246f4f5c7","sym":"metaFileNameTemplate","ts":"2026-07-16T08:59:06.882922Z"}
+{"ms":5,"op":"refs","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/bsr","reason":"symbol not found","repairs":0,"req_sha":"9551f8e27d35c789","sym":"bsrFile","ts":"2026-07-16T08:59:06.915258Z"}
+{"ms":27,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/bsr","req_sha":"ca7b85db6f233a18","sym":"bsrFileNameTemplate","ts":"2026-07-16T08:59:06.925743Z"}
+{"ms":5,"op":"refs","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/bsr","reason":"symbol not found","repairs":0,"req_sha":"8ea1c71ca07d6ab5","sym":"sigFile","ts":"2026-07-16T08:59:06.960587Z"}
+{"ms":30,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/bsr","req_sha":"8abbf7b940fb29e0","sym":"sigFileName","ts":"2026-07-16T08:59:06.971397Z"}
+{"ms":5,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T08:59:07.006967Z"}
+{"ms":1404,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/bsr","req_sha":"6f7365149f36729a","sym":"pubKeySelfSignatureFile","ts":"2026-07-16T08:59:15.673573Z"}
+{"ms":22,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/bsr","req_sha":"8629d6a517068633","sym":"pubKeyBsrSignatureFile","ts":"2026-07-16T08:59:17.083392Z"}
+{"ms":22,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/bsr","req_sha":"d0cbab9153806996","sym":"wrappedPrivKeyFile","ts":"2026-07-16T08:59:17.109938Z"}
+{"ms":21,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/bsr","req_sha":"b2a3870b2d20724b","sym":"wrappedBsrKeyFile","ts":"2026-07-16T08:59:17.136614Z"}
+{"ms":21,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/bsr","req_sha":"df81240fadbbe14c","sym":"sessionMetaFile","ts":"2026-07-16T08:59:17.162607Z"}
+{"ms":21,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/bsr","req_sha":"e1b5603337dd82d7","sym":"connectionFile","ts":"2026-07-16T08:59:17.187853Z"}
+{"ms":21,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/bsr","req_sha":"7108fb4766d5f0c1","sym":"bsrPubKeyFile","ts":"2026-07-16T08:59:17.213404Z"}
+{"ms":21,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/bsr","req_sha":"d558323391a6383e","sym":"messagesFile","ts":"2026-07-16T08:59:17.239155Z"}
+{"ms":22,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/bsr","req_sha":"242f4d752ec91f3e","sym":"requestsFile","ts":"2026-07-16T08:59:17.26479Z"}
+{"ms":21,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/bsr","req_sha":"53df91df6c1bd3c8","sym":"checksumFile","ts":"2026-07-16T08:59:17.290614Z"}
+{"ms":21,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/bsr","req_sha":"842e464c658c3790","sym":"channelFile","ts":"2026-07-16T08:59:17.316142Z"}
+{"ms":22,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/bsr","req_sha":"c3012e82c68d3f2e","sym":"metaFile","ts":"2026-07-16T08:59:17.342075Z"}
+{"ms":22,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/bsr","req_sha":"9551f8e27d35c789","sym":"bsrFile","ts":"2026-07-16T08:59:17.368698Z"}
+{"ms":22,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/bsr","req_sha":"8ea1c71ca07d6ab5","sym":"sigFile","ts":"2026-07-16T08:59:17.395699Z"}
+{"ms":4,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T08:59:17.422521Z"}
+{"ms":1949,"op":"refs","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/bsr","reason":"symbol not found","repairs":0,"req_sha":"6f7365149f36729a","sym":"pubKeySelfSignatureFile","ts":"2026-07-16T09:11:17.561665Z"}
+{"ms":27,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/bsr","req_sha":"83976cb9e4147de1","sym":"pubKeySelfSignatureFileName","ts":"2026-07-16T09:11:19.517265Z"}
+{"ms":4,"op":"refs","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/bsr","reason":"symbol not found","repairs":0,"req_sha":"8629d6a517068633","sym":"pubKeyBsrSignatureFile","ts":"2026-07-16T09:11:19.550352Z"}
+{"ms":28,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/bsr","req_sha":"93ea4e24ba555ec8","sym":"pubKeyBsrSignatureFileName","ts":"2026-07-16T09:11:19.560292Z"}
+{"ms":4,"op":"refs","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/bsr","reason":"symbol not found","repairs":0,"req_sha":"d0cbab9153806996","sym":"wrappedPrivKeyFile","ts":"2026-07-16T09:11:19.593675Z"}
+{"ms":26,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/bsr","req_sha":"61209a148e7306e7","sym":"wrappedPrivKeyFileName","ts":"2026-07-16T09:11:19.602436Z"}
+{"ms":4,"op":"refs","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/bsr","reason":"symbol not found","repairs":0,"req_sha":"b2a3870b2d20724b","sym":"wrappedBsrKeyFile","ts":"2026-07-16T09:11:19.634068Z"}
+{"ms":25,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/bsr","req_sha":"9daf7c3ec910b38a","sym":"wrappedBsrKeyFileName","ts":"2026-07-16T09:11:19.643299Z"}
+{"ms":4,"op":"refs","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/bsr","reason":"symbol not found","repairs":0,"req_sha":"df81240fadbbe14c","sym":"sessionMetaFile","ts":"2026-07-16T09:11:19.673265Z"}
+{"ms":23,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/bsr","req_sha":"04362c16ec15ee95","sym":"sessionMetaFileName","ts":"2026-07-16T09:11:19.682211Z"}
+{"ms":4,"op":"refs","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/bsr","reason":"symbol not found","repairs":0,"req_sha":"e1b5603337dd82d7","sym":"connectionFile","ts":"2026-07-16T09:11:19.710828Z"}
+{"ms":23,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/bsr","req_sha":"c7b6c16bbc587bed","sym":"connectionFileNameTemplate","ts":"2026-07-16T09:11:19.719563Z"}
+{"ms":4,"op":"refs","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/bsr","reason":"symbol not found","repairs":0,"req_sha":"7108fb4766d5f0c1","sym":"bsrPubKeyFile","ts":"2026-07-16T09:11:19.747949Z"}
+{"ms":23,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/bsr","req_sha":"3be74e3bc98bf01f","sym":"bsrPubKeyFileName","ts":"2026-07-16T09:11:19.7569Z"}
+{"ms":4,"op":"refs","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/bsr","reason":"symbol not found","repairs":0,"req_sha":"d558323391a6383e","sym":"messagesFile","ts":"2026-07-16T09:11:19.785609Z"}
+{"ms":22,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/bsr","req_sha":"6ef5b13ade6d9295","sym":"messagesFileNameTemplate","ts":"2026-07-16T09:11:19.793948Z"}
+{"ms":4,"op":"refs","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/bsr","reason":"symbol not found","repairs":0,"req_sha":"242f4d752ec91f3e","sym":"requestsFile","ts":"2026-07-16T09:11:19.821206Z"}
+{"ms":23,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/bsr","req_sha":"977e9814c96eb484","sym":"requestsFileNameTemplate","ts":"2026-07-16T09:11:19.829736Z"}
+{"ms":4,"op":"refs","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/bsr","reason":"symbol not found","repairs":0,"req_sha":"53df91df6c1bd3c8","sym":"checksumFile","ts":"2026-07-16T09:11:19.858141Z"}
+{"ms":23,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/bsr","req_sha":"bed54a0bc2eb57eb","sym":"checksumFileName","ts":"2026-07-16T09:11:19.866712Z"}
+{"ms":4,"op":"refs","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/bsr","reason":"symbol not found","repairs":0,"req_sha":"842e464c658c3790","sym":"channelFile","ts":"2026-07-16T09:11:19.894569Z"}
+{"ms":23,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/bsr","req_sha":"5b17f482586fb9bf","sym":"channelFileNameTemplate","ts":"2026-07-16T09:11:19.903079Z"}
+{"ms":4,"op":"refs","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/bsr","reason":"symbol not found","repairs":0,"req_sha":"c3012e82c68d3f2e","sym":"metaFile","ts":"2026-07-16T09:11:19.93085Z"}
+{"ms":23,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/bsr","req_sha":"6cc9113246f4f5c7","sym":"metaFileNameTemplate","ts":"2026-07-16T09:11:19.939352Z"}
+{"ms":4,"op":"refs","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/bsr","reason":"symbol not found","repairs":0,"req_sha":"9551f8e27d35c789","sym":"bsrFile","ts":"2026-07-16T09:11:19.967108Z"}
+{"ms":23,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/bsr","req_sha":"ca7b85db6f233a18","sym":"bsrFileNameTemplate","ts":"2026-07-16T09:11:19.975626Z"}
+{"ms":4,"op":"refs","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/bsr","reason":"symbol not found","repairs":0,"req_sha":"8ea1c71ca07d6ab5","sym":"sigFile","ts":"2026-07-16T09:11:20.003561Z"}
+{"ms":23,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/bsr","req_sha":"8abbf7b940fb29e0","sym":"sigFileName","ts":"2026-07-16T09:11:20.011677Z"}
+{"ms":5,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T09:11:20.039921Z"}

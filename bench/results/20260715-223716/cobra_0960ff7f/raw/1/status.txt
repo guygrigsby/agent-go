@@ -1,0 +1,4 @@
+ M command.go
+ M doc/md_docs.go
+ M doc/yaml_docs.go
+?? opencode.json

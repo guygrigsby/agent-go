@@ -1,0 +1,257 @@
+diff --git a/internal/cmd/config/config.go b/internal/cmd/config/config.go
+index 144bb5769..1b296d759 100644
+--- a/internal/cmd/config/config.go
++++ b/internal/cmd/config/config.go
+@@ -216,7 +216,7 @@ type Controller struct {
+ 	SchedulerRunJobInterval time.Duration `hcl:"-"`
+ 
+ 	ApiRateLimits            ratelimit.Configs `hcl:"-"`
+-	ApiRateLimiterMaxEntries int               `hcl:"api_rate_limit_max_entries"`
++	ApiRateLimiterMaxQuotas int               `hcl:"api_rate_limit_max_entries"`
+ 	ApiRateLimitDisable      bool              `hcl:"api_rate_limit_disable"`
+ 
+ 	// License is the license used by HCP builds
+@@ -693,8 +693,8 @@ func Parse(d string) (*Config, error) {
+ 			return nil, err
+ 		}
+ 
+-		if result.Controller.ApiRateLimiterMaxEntries <= 0 {
+-			result.Controller.ApiRateLimiterMaxEntries = ratelimit.DefaultLimiterMaxEntries()
++		if result.Controller.ApiRateLimiterMaxQuotas <= 0 {
++			result.Controller.ApiRateLimiterMaxQuotas = ratelimit.DefaultLimiterMaxQuotas()
+ 		}
+ 	}
+ 
+diff --git a/internal/cmd/config/config_load_test.go b/internal/cmd/config/config_load_test.go
+index ac76012dd..0f7f55b69 100644
+--- a/internal/cmd/config/config_load_test.go
++++ b/internal/cmd/config/config_load_test.go
+@@ -419,14 +419,14 @@ func TestLoad(t *testing.T) {
+ 					WorkerStatusGracePeriodDuration: 0,
+ 					LivenessTimeToStaleDuration:     0,
+ 					ApiRateLimits:                   make(ratelimit.Configs, 0),
+-					ApiRateLimiterMaxEntries:        ratelimit.DefaultLimiterMaxEntries(),
++					ApiRateLimiterMaxQuotas:        ratelimit.DefaultLimiterMaxQuotas(),
+ 				},
+ 				DevController:           false,
+ 				DevUiPassthroughDir:     "",
+ 				DevControllerKey:        "",
+ 				DevWorkerAuthKey:        "",
+-				DevWorkerAuthStorageKey: "",
+ 				DevBsrKey:               "",
++				DevWorkerAuthStorageKey: "",
+ 				DevRecoveryKey:          "",
+ 				Eventing: &event.EventerConfig{
+ 					AuditEnabled:        false,
+@@ -1283,7 +1283,7 @@ func TestLoad(t *testing.T) {
+ 							Unlimited: false,
+ 						},
+ 					},
+-					ApiRateLimiterMaxEntries: ratelimit.DefaultLimiterMaxEntries(),
++					ApiRateLimiterMaxQuotas: ratelimit.DefaultLimiterMaxQuotas(),
+ 				},
+ 				DevController:           false,
+ 				DevUiPassthroughDir:     "",
+diff --git a/internal/cmd/config/config_test.go b/internal/cmd/config/config_test.go
+index 845edeb0f..c49bc1f95 100644
+--- a/internal/cmd/config/config_test.go
++++ b/internal/cmd/config/config_test.go
+@@ -113,7 +113,7 @@ func TestDevController(t *testing.T) {
+ 			Name:                     "dev-controller",
+ 			Description:              "A default controller created in dev mode",
+ 			ApiRateLimits:            make(ratelimit.Configs, 0),
+-			ApiRateLimiterMaxEntries: ratelimit.DefaultLimiterMaxEntries(),
++			ApiRateLimiterMaxQuotas: ratelimit.DefaultLimiterMaxQuotas(),
+ 		},
+ 		DevController: true,
+ 	}
+@@ -488,7 +488,7 @@ func TestDevCombined(t *testing.T) {
+ 			Name:                     "dev-controller",
+ 			Description:              "A default controller created in dev mode",
+ 			ApiRateLimits:            make(ratelimit.Configs, 0),
+-			ApiRateLimiterMaxEntries: ratelimit.DefaultLimiterMaxEntries(),
++			ApiRateLimiterMaxQuotas: ratelimit.DefaultLimiterMaxQuotas(),
+ 		},
+ 		DevController: true,
+ 		Worker: &Worker{
+diff --git a/internal/daemon/controller/rate_limiter_test.go b/internal/daemon/controller/rate_limiter_test.go
+index 704ac3976..a6aea8401 100644
+--- a/internal/daemon/controller/rate_limiter_test.go
++++ b/internal/daemon/controller/rate_limiter_test.go
+@@ -60,7 +60,7 @@ func Test_newRateLimiterConfig(t *testing.T) {
+ 		{
+ 			"defaults",
+ 			nil,
+-			ratelimit.DefaultLimiterMaxEntries(),
++			ratelimit.DefaultLimiterMaxQuotas(),
+ 			false,
+ 			&rateLimiterConfig{
+ 				maxSize:  296148,
+@@ -68,6 +68,7 @@ func Test_newRateLimiterConfig(t *testing.T) {
+ 				disabled: false,
+ 				limits:   defaultLimits,
+ 			},
++		},
+ 			nil,
+ 		},
+ 		{
+@@ -82,7 +83,7 @@ func Test_newRateLimiterConfig(t *testing.T) {
+ 					Unlimited: false,
+ 				},
+ 			},
+-			ratelimit.DefaultLimiterMaxEntries(),
++			ratelimit.DefaultLimiterMaxQuotas(),
+ 			true,
+ 			nil,
+ 			fmt.Errorf("controller.newRateLimiterConfig: disabled rate limiter with rate limit configs: configuration issue: error #5000"),
+@@ -131,7 +132,7 @@ func TestController_initializeRateLimiter(t *testing.T) {
+ 			"defaults",
+ 			&config.Config{
+ 				Controller: &config.Controller{
+-					ApiRateLimiterMaxEntries: ratelimit.DefaultLimiterMaxEntries(),
++					ApiRateLimiterMaxQuotas: ratelimit.DefaultLimiterMaxQuotas(),
+ 				},
+ 			},
+ 			false,
+@@ -151,7 +152,7 @@ func TestController_initializeRateLimiter(t *testing.T) {
+ 							Unlimited: false,
+ 						},
+ 					},
+-					ApiRateLimiterMaxEntries: ratelimit.DefaultLimiterMaxEntries(),
++					ApiRateLimiterMaxQuotas: ratelimit.DefaultLimiterMaxQuotas(),
+ 					ApiRateLimitDisable:      true,
+ 				},
+ 			},
+@@ -241,7 +242,7 @@ func TestControllerReloadRateLimiter(t *testing.T) {
+ 							Unlimited: false,
+ 						},
+ 					},
+-					ApiRateLimiterMaxEntries: ratelimit.DefaultLimiterMaxEntries(),
++					ApiRateLimiterMaxQuotas: ratelimit.DefaultLimiterMaxQuotas(),
+ 				},
+ 			},
+ 			true,
+@@ -252,7 +253,7 @@ func TestControllerReloadRateLimiter(t *testing.T) {
+ 			func() *Controller {
+ 				conf := &config.Config{
+ 					Controller: &config.Controller{
+-						ApiRateLimiterMaxEntries: ratelimit.DefaultLimiterMaxEntries(),
++						ApiRateLimiterMaxQuotas: ratelimit.DefaultLimiterMaxQuotas(),
+ 					},
+ 				}
+ 				c := &Controller{
+@@ -267,7 +268,7 @@ func TestControllerReloadRateLimiter(t *testing.T) {
+ 			}(),
+ 			&config.Config{
+ 				Controller: &config.Controller{
+-					ApiRateLimiterMaxEntries: 3000,
++					ApiRateLimiterMaxQuotas: 3000,
+ 				},
+ 			},
+ 			true,
+@@ -278,7 +279,7 @@ func TestControllerReloadRateLimiter(t *testing.T) {
+ 			func() *Controller {
+ 				conf := &config.Config{
+ 					Controller: &config.Controller{
+-						ApiRateLimiterMaxEntries: ratelimit.DefaultLimiterMaxEntries(),
++						ApiRateLimiterMaxQuotas: ratelimit.DefaultLimiterMaxQuotas(),
+ 					},
+ 				}
+ 				c := &Controller{
+@@ -304,7 +305,7 @@ func TestControllerReloadRateLimiter(t *testing.T) {
+ 			func() *Controller {
+ 				conf := &config.Config{
+ 					Controller: &config.Controller{
+-						ApiRateLimitDisable: true,
++						ApiRateLimiterMaxQuotas: ratelimit.DefaultLimiterMaxQuotas(),
+ 					},
+ 				}
+ 				c := &Controller{
+@@ -319,7 +320,7 @@ func TestControllerReloadRateLimiter(t *testing.T) {
+ 			}(),
+ 			&config.Config{
+ 				Controller: &config.Controller{
+-					ApiRateLimiterMaxEntries: ratelimit.DefaultLimiterMaxEntries(),
++					ApiRateLimiterMaxQuotas: ratelimit.DefaultLimiterMaxQuotas(),
+ 				},
+ 			},
+ 			true,
+@@ -330,7 +331,7 @@ func TestControllerReloadRateLimiter(t *testing.T) {
+ 			func() *Controller {
+ 				conf := &config.Config{
+ 					Controller: &config.Controller{
+-						ApiRateLimiterMaxEntries: ratelimit.DefaultLimiterMaxEntries(),
++						ApiRateLimiterMaxQuotas: ratelimit.DefaultLimiterMaxQuotas(),
+ 					},
+ 				}
+ 				c := &Controller{
+@@ -345,7 +346,7 @@ func TestControllerReloadRateLimiter(t *testing.T) {
+ 			}(),
+ 			&config.Config{
+ 				Controller: &config.Controller{
+-					ApiRateLimiterMaxEntries: ratelimit.DefaultLimiterMaxEntries(),
++					ApiRateLimiterMaxQuotas: ratelimit.DefaultLimiterMaxQuotas(),
+ 					ApiRateLimits: ratelimit.Configs{
+ 						{
+ 							Resources: []string{"*"},
+@@ -359,15 +360,15 @@ func TestControllerReloadRateLimiter(t *testing.T) {
+ 					ApiRateLimitDisable: true,
+ 				},
+ 			},
+-			false,
++			true,
+ 			fmt.Errorf("controller.newRateLimiterConfig: disabled rate limiter with rate limit configs: configuration issue: error #5000"),
+ 		},
+ 		{
+-			"newInvalidMaxSize",
++			"newInvalid2",
+ 			func() *Controller {
+ 				conf := &config.Config{
+ 					Controller: &config.Controller{
+-						ApiRateLimiterMaxEntries: ratelimit.DefaultLimiterMaxEntries(),
++						ApiRateLimiterMaxQuotas: ratelimit.DefaultLimiterMaxQuotas(),
+ 					},
+ 				}
+ 				c := &Controller{
+diff --git a/internal/ratelimit/config.go b/internal/ratelimit/config.go
+index 9162d5c2f..ac2453394 100644
+--- a/internal/ratelimit/config.go
++++ b/internal/ratelimit/config.go
+@@ -50,17 +50,17 @@ const (
+ 	DefaultListPeriod                = time.Second * 30
+ )
+ 
+-// defaultLimiterMaxEntries is the default maximum number of quotas that
++// defaultLimiterMaxQuotas is the default maximum number of quotas that
+ // can be tracked by the rate limiter.
+ // This is determined at initialization time based on the number of endpoints.
+-var defaultLimiterMaxEntries int
++var defaultLimiterMaxQuotas int
+ 
+-var initDefaultLimiterMaxEntries sync.Once
++var initDefaultLimiterMaxQuotas sync.Once
+ 
+-// DefaultLimiterMaxEntries returns the default maximum number of quotas that
++// DefaultLimiterMaxQuotas returns the default maximum number of quotas that
+ // can be tracked by the rate limiter.
+-func DefaultLimiterMaxEntries() int {
+-	initDefaultLimiterMaxEntries.Do(func() {
++func DefaultLimiterMaxQuotas() int {
++	initDefaultLimiterMaxQuotas.Do(func() {
+ 		// Calculate the default max number of quotas that the rate limiter can
+ 		// store. This is calculated based on the number of endpoints and a
+ 		// static number of quotas per endpoint. This seems like a reasonable
+@@ -86,11 +86,11 @@ func DefaultLimiterMaxEntries() int {
+ 			endpointCount += len(actions)
+ 		}
+ 
+-		defaultLimiterMaxEntries = (endpointCount * quotasPerInTotal) +
++		defaultLimiterMaxQuotas = (endpointCount * quotasPerInTotal) +
+ 			(endpointCount * quotasPerAuthToken) +
+ 			(endpointCount * quotasPerIpAddress)
+ 	})
+-	return defaultLimiterMaxEntries
++	return defaultLimiterMaxQuotas
+ }
+ 
+ // Config is used to configure rate limits. Each config is used to specify

@@ -1,0 +1,153 @@
+diff --git a/command/healthcheck/pki.go b/command/healthcheck/pki.go
+index b46f460a96..778a415f9b 100644
+--- a/command/healthcheck/pki.go
++++ b/command/healthcheck/pki.go
+@@ -8,7 +8,7 @@ import (
+ 	"github.com/hashicorp/vault/sdk/logical"
+ )
+ 
+-func pkiFetchIssuers(e *Executor, versionError func()) (bool, *PathFetch, []string, error) {
++func pkiFetchIssuersList(e *Executor, versionError func()) (bool, *PathFetch, []string, error) {
+ 	issuersRet, err := e.FetchIfNotFetched(logical.ListOperation, "/{{mount}}/issuers")
+ 	if err != nil {
+ 		return true, nil, nil, err
+@@ -178,7 +178,7 @@ func pkiFetchKeyEntry(e *Executor, key string, versionError func()) (bool, *Path
+ 	return false, keyRet, data, nil
+ }
+ 
+-func pkiFetchLeaves(e *Executor, versionError func()) (bool, *PathFetch, []string, error) {
++func pkiFetchLeavesList(e *Executor, versionError func()) (bool, *PathFetch, []string, error) {
+ 	leavesRet, err := e.FetchIfNotFetched(logical.ListOperation, "/{{mount}}/certs")
+ 	if err != nil {
+ 		return true, nil, nil, err
+@@ -229,7 +229,7 @@ func pkiFetchLeaf(e *Executor, serial string, versionError func()) (bool, *PathF
+ 	return false, leafRet, leafRet.ParsedCache["certificate"].(*x509.Certificate), nil
+ }
+ 
+-func pkiFetchRoles(e *Executor, versionError func()) (bool, *PathFetch, []string, error) {
++func pkiFetchRolesList(e *Executor, versionError func()) (bool, *PathFetch, []string, error) {
+ 	rolesRet, err := e.FetchIfNotFetched(logical.ListOperation, "/{{mount}}/roles")
+ 	if err != nil {
+ 		return true, nil, nil, err
+diff --git a/command/healthcheck/pki_ca_validity_period.go b/command/healthcheck/pki_ca_validity_period.go
+index 993de7cbad..c971aed522 100644
+--- a/command/healthcheck/pki_ca_validity_period.go
++++ b/command/healthcheck/pki_ca_validity_period.go
+@@ -97,7 +97,7 @@ func (h *CAValidityPeriod) LoadConfig(config map[string]interface{}) error {
+ }
+ 
+ func (h *CAValidityPeriod) FetchResources(e *Executor) error {
+-	exit, _, issuers, err := pkiFetchIssuers(e, func() {
++	exit, _, issuers, err := pkiFetchIssuersList(e, func() {
+ 		h.UnsupportedVersion = true
+ 	})
+ 	if exit || err != nil {
+diff --git a/command/healthcheck/pki_crl_validity_period.go b/command/healthcheck/pki_crl_validity_period.go
+index 16b1ebb80f..ae31e73324 100644
+--- a/command/healthcheck/pki_crl_validity_period.go
++++ b/command/healthcheck/pki_crl_validity_period.go
+@@ -70,7 +70,7 @@ func (h *CRLValidityPeriod) LoadConfig(config map[string]interface{}) error {
+ }
+ 
+ func (h *CRLValidityPeriod) FetchResources(e *Executor) error {
+-	exit, _, issuers, err := pkiFetchIssuers(e, func() {
++	exit, _, issuers, err := pkiFetchIssuersList(e, func() {
+ 		h.UnsupportedVersion = true
+ 	})
+ 	if exit || err != nil {
+diff --git a/command/healthcheck/pki_hardware_backed_root.go b/command/healthcheck/pki_hardware_backed_root.go
+index a978f120e2..e10e740b21 100644
+--- a/command/healthcheck/pki_hardware_backed_root.go
++++ b/command/healthcheck/pki_hardware_backed_root.go
+@@ -49,7 +49,7 @@ func (h *HardwareBackedRoot) LoadConfig(config map[string]interface{}) error {
+ }
+ 
+ func (h *HardwareBackedRoot) FetchResources(e *Executor) error {
+-	exit, _, issuers, err := pkiFetchIssuers(e, func() {
++	exit, _, issuers, err := pkiFetchIssuersList(e, func() {
+ 		h.UnsupportedVersion = true
+ 	})
+ 	if exit || err != nil {
+diff --git a/command/healthcheck/pki_role_allows_glob_wildcards.go b/command/healthcheck/pki_role_allows_glob_wildcards.go
+index 05362d3baf..6e8a3389c2 100644
+--- a/command/healthcheck/pki_role_allows_glob_wildcards.go
++++ b/command/healthcheck/pki_role_allows_glob_wildcards.go
+@@ -43,7 +43,7 @@ func (h *RoleAllowsGlobWildcards) LoadConfig(config map[string]interface{}) erro
+ }
+ 
+ func (h *RoleAllowsGlobWildcards) FetchResources(e *Executor) error {
+-	exit, _, roles, err := pkiFetchRoles(e, func() {
++	exit, _, roles, err := pkiFetchRolesList(e, func() {
+ 		h.UnsupportedVersion = true
+ 	})
+ 	if exit || err != nil {
+diff --git a/command/healthcheck/pki_role_allows_localhost.go b/command/healthcheck/pki_role_allows_localhost.go
+index 36068a88e7..992df0219d 100644
+--- a/command/healthcheck/pki_role_allows_localhost.go
++++ b/command/healthcheck/pki_role_allows_localhost.go
+@@ -42,7 +42,7 @@ func (h *RoleAllowsLocalhost) LoadConfig(config map[string]interface{}) error {
+ }
+ 
+ func (h *RoleAllowsLocalhost) FetchResources(e *Executor) error {
+-	exit, _, roles, err := pkiFetchRoles(e, func() {
++	exit, _, roles, err := pkiFetchRolesList(e, func() {
+ 		h.UnsupportedVersion = true
+ 	})
+ 	if exit || err != nil {
+diff --git a/command/healthcheck/pki_role_no_store_false.go b/command/healthcheck/pki_role_no_store_false.go
+index 0bef991b11..6146c16381 100644
+--- a/command/healthcheck/pki_role_no_store_false.go
++++ b/command/healthcheck/pki_role_no_store_false.go
+@@ -58,7 +58,7 @@ func (h *RoleNoStoreFalse) LoadConfig(config map[string]interface{}) error {
+ }
+ 
+ func (h *RoleNoStoreFalse) FetchResources(e *Executor) error {
+-	exit, _, roles, err := pkiFetchRoles(e, func() {
++	exit, _, roles, err := pkiFetchRolesList(e, func() {
+ 		h.UnsupportedVersion = true
+ 	})
+ 	if exit || err != nil {
+@@ -79,7 +79,7 @@ func (h *RoleNoStoreFalse) FetchResources(e *Executor) error {
+ 		h.RoleEntryMap[role] = entry
+ 	}
+ 
+-	exit, _, leaves, err := pkiFetchLeaves(e, func() {
++	exit, _, leaves, err := pkiFetchLeavesList(e, func() {
+ 		h.UnsupportedVersion = true
+ 	})
+ 	if exit || err != nil {
+diff --git a/command/healthcheck/pki_root_issued_leaves.go b/command/healthcheck/pki_root_issued_leaves.go
+index 86159094f4..9b3864f920 100644
+--- a/command/healthcheck/pki_root_issued_leaves.go
++++ b/command/healthcheck/pki_root_issued_leaves.go
+@@ -56,7 +56,7 @@ func (h *RootIssuedLeaves) LoadConfig(config map[string]interface{}) error {
+ }
+ 
+ func (h *RootIssuedLeaves) FetchResources(e *Executor) error {
+-	exit, _, issuers, err := pkiFetchIssuers(e, func() {
++	exit, _, issuers, err := pkiFetchIssuersList(e, func() {
+ 		h.UnsupportedVersion = true
+ 	})
+ 	if exit || err != nil {
+@@ -85,7 +85,7 @@ func (h *RootIssuedLeaves) FetchResources(e *Executor) error {
+ 		h.RootCertMap[issuer] = cert
+ 	}
+ 
+-	exit, _, leaves, err := pkiFetchLeaves(e, func() {
++	exit, _, leaves, err := pkiFetchLeavesList(e, func() {
+ 		h.UnsupportedVersion = true
+ 	})
+ 	if exit || err != nil {
+diff --git a/command/healthcheck/pki_too_many_certs.go b/command/healthcheck/pki_too_many_certs.go
+index 4210ca581d..8bd61003bc 100644
+--- a/command/healthcheck/pki_too_many_certs.go
++++ b/command/healthcheck/pki_too_many_certs.go
+@@ -57,7 +57,7 @@ func (h *TooManyCerts) LoadConfig(config map[string]interface{}) error {
+ }
+ 
+ func (h *TooManyCerts) FetchResources(e *Executor) error {
+-	exit, leavesRet, _, err := pkiFetchLeaves(e, func() {
++	exit, leavesRet, _, err := pkiFetchLeavesList(e, func() {
+ 		h.UnsupportedVersion = true
+ 	})
+ 	if exit {
