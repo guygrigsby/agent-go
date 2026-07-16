@@ -35,6 +35,16 @@ func TestLoadProfile(t *testing.T) {
 	}
 }
 
+func TestLoadProfilesCSV(t *testing.T) {
+	ps, err := loadProfiles("profiles.json", "glm-flash")
+	if err != nil || len(ps) != 1 || ps[0].Name != "glm-flash" {
+		t.Fatalf("got %v, %v", ps, err)
+	}
+	if _, err := loadProfiles("profiles.json", "glm-flash,nope"); err == nil {
+		t.Fatal("unknown profile in list must error")
+	}
+}
+
 // The committed profiles.json must always parse and its entries carry the
 // two fields the runner substitutes into config.
 func TestShippedProfilesLoad(t *testing.T) {

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"sort"
+	"strings"
 )
 
 // Profile pins everything about how a model is served for a run: one named
@@ -22,6 +23,20 @@ type Profile struct {
 	Quant    string         `json:"quant,omitempty"`
 	Context  int            `json:"context,omitempty"`
 	Notes    string         `json:"notes,omitempty"`
+}
+
+// loadProfiles resolves a comma-separated list of profile names; any
+// unknown name fails the whole list.
+func loadProfiles(path, csv string) ([]Profile, error) {
+	var out []Profile
+	for _, name := range strings.Split(csv, ",") {
+		p, err := loadProfile(path, strings.TrimSpace(name))
+		if err != nil {
+			return nil, err
+		}
+		out = append(out, p)
+	}
+	return out, nil
 }
 
 func loadProfile(path, name string) (Profile, error) {

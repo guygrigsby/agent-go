@@ -45,6 +45,7 @@ type config struct {
 	endpoint, model, scratch, agoBin, results, runID string
 	cap                                              time.Duration
 	profile                                          Profile
+	profiles                                         []Profile
 }
 
 func setup(b *testing.B) config {
@@ -56,18 +57,25 @@ func setup(b *testing.B) config {
 		results:  os.Getenv("AGO_BENCH_RESULTS"),
 		cap:      15 * time.Minute,
 	}
-	if name := os.Getenv("AGO_BENCH_PROFILE"); name != "" {
+	if csv := os.Getenv("AGO_BENCH_PROFILES"); csv != "" {
+		ps, err := loadProfiles("profiles.json", csv)
+		if err != nil {
+			b.Fatal(err)
+		}
+		c.profiles = ps
+	} else if name := os.Getenv("AGO_BENCH_PROFILE"); name != "" {
 		p, err := loadProfile("profiles.json", name)
 		if err != nil {
 			b.Fatal(err)
 		}
-		c.profile = p
-		c.endpoint, c.model = p.Endpoint, p.Model
+		c.profiles = []Profile{p}
 	} else {
 		// Bare env vars form an ad-hoc profile so every episode still
 		// carries a profile name and run.json a full record.
-		c.profile = Profile{Name: "adhoc", Endpoint: c.endpoint, Model: c.model}
+		c.profiles = []Profile{{Name: "adhoc", Endpoint: c.endpoint, Model: c.model}}
 	}
+	c.profile = c.profiles[0]
+	c.endpoint, c.model = c.profile.Endpoint, c.profile.Model
 	if c.endpoint == "" || c.model == "" || c.scratch == "" {
 		b.Skip("set AGO_BENCH_PROFILE (or AGO_BENCH_ENDPOINT + AGO_BENCH_MODEL) and AGO_BENCH_SCRATCH to run bench")
 	}
@@ -100,7 +108,7 @@ func setup(b *testing.B) config {
 		"ago_rev": strings.TrimSpace(string(rev)), "started": time.Now().Format(time.RFC3339),
 		"raw_prompt_tokens":      estimateTokens(promptCommon + promptRaw),
 		"semantic_prompt_tokens": estimateTokens(promptCommon + promptSemantic),
-		"profile":                c.profile,
+		"profiles":               c.profiles,
 	}
 	writeJSON(filepath.Join(c.results, c.runID, "run.json"), meta)
 	return c
@@ -121,20 +129,24 @@ func BenchmarkRename(b *testing.B) {
 	if err := json.Unmarshal(raw, &tasks); err != nil {
 		b.Fatal(err)
 	}
-	for _, t := range tasks {
-		if len(t.Renames) == 0 {
-			continue
-		}
-		for _, mode := range []string{"raw", "semantic"} {
-			b.Run(fmt.Sprintf("%s_%s/%s", t.Repo, t.SHA[:8], mode), func(b *testing.B) {
-				passes := 0
-				for i := range b.N {
-					if episode(b, c, t, mode, i) {
-						passes++
+	for _, p := range c.profiles {
+		c := c
+		c.profile, c.endpoint, c.model = p, p.Endpoint, p.Model
+		for _, t := range tasks {
+			if len(t.Renames) == 0 {
+				continue
+			}
+			for _, mode := range []string{"raw", "semantic"} {
+				b.Run(fmt.Sprintf("%s/%s_%s/%s", p.Name, t.Repo, t.SHA[:8], mode), func(b *testing.B) {
+					passes := 0
+					for i := range b.N {
+						if episode(b, c, t, mode, i) {
+							passes++
+						}
 					}
-				}
-				b.ReportMetric(float64(passes)/float64(b.N), "pass")
-			})
+					b.ReportMetric(float64(passes)/float64(b.N), "pass")
+				})
+			}
 		}
 	}
 }
