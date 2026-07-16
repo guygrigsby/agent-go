@@ -116,7 +116,7 @@ go test ./bench -bench Rename -benchtime 3x -timeout 0
 
 # oracle sweep: no model, episodes run in parallel
 AGO_BENCH_MODES=oracle AGO_BENCH_SCRATCH=<clones dir> \
-go test ./bench -run OracleSweep -parallel 6 -timeout 0
+go test ./bench -run OracleSweep -parallel 20 -timeout 0
 
 # mine candidate tasks from any clone; report across runs
 go run ./cmd/bench mine -scratch <clones dir> <repo>
