@@ -1,0 +1,156 @@
+{
+ "agent_done": "2026-07-16T21:05:35.855383958Z",
+ "agent_started": "2026-07-16T21:04:51.031898Z",
+ "cache_read": 170155,
+ "cache_write": 0,
+ "capped": false,
+ "failure_kind": "scored_fail",
+ "iter": 0,
+ "mode": "semantic",
+ "new_errors": null,
+ "op_mix": {
+  "query": {
+   "ok": 1,
+   "rejected": 0
+  },
+  "rename": {
+   "ok": 14,
+   "rejected": 0
+  },
+  "status": {
+   "ok": 2,
+   "rejected": 0
+  }
+ },
+ "pass": false,
+ "predicate": false,
+ "profile": "qwen3.5-9b",
+ "prompt": "refact(bsr): Rename const to denote when interpolation is needed\n\nSpecifically, rename: pubKeySelfSignatureFile -\u003e pubKeySelfSignatureFileName; pubKeyBsrSignatureFile -\u003e pubKeyBsrSignatureFileName; wrappedPrivKeyFile -\u003e wrappedPrivKeyFileName; wrappedBsrKeyFile -\u003e wrappedBsrKeyFileName; sessionMetaFile -\u003e sessionMetaFileName; connectionFile -\u003e connectionFileNameTemplate; bsrPubKeyFile -\u003e bsrPubKeyFileName; messagesFile -\u003e messagesFileNameTemplate; requestsFile -\u003e requestsFileNameTemplate; checksumFile -\u003e checksumFileName; channelFile -\u003e channelFileNameTemplate; metaFile -\u003e metaFileNameTemplate; bsrFile -\u003e bsrFileNameTemplate; sigFile -\u003e sigFileName",
+ "rejects_total": 0,
+ "repairs_offered": 0,
+ "resends": 0,
+ "specs": [
+  {
+   "baseline_refs": 3,
+   "new_refs": 3,
+   "ok": true,
+   "old_refs_left": 0,
+   "sym": "github.com/hashicorp/boundary/internal/bsr.pubKeySelfSignatureFile",
+   "to": "pubKeySelfSignatureFileName"
+  },
+  {
+   "baseline_refs": 3,
+   "new_refs": 3,
+   "ok": true,
+   "old_refs_left": 0,
+   "sym": "github.com/hashicorp/boundary/internal/bsr.pubKeyBsrSignatureFile",
+   "to": "pubKeyBsrSignatureFileName"
+  },
+  {
+   "baseline_refs": 3,
+   "new_refs": 3,
+   "ok": true,
+   "old_refs_left": 0,
+   "sym": "github.com/hashicorp/boundary/internal/bsr.wrappedPrivKeyFile",
+   "to": "wrappedPrivKeyFileName"
+  },
+  {
+   "baseline_refs": 3,
+   "new_refs": 3,
+   "ok": true,
+   "old_refs_left": 0,
+   "sym": "github.com/hashicorp/boundary/internal/bsr.wrappedBsrKeyFile",
+   "to": "wrappedBsrKeyFileName"
+  },
+  {
+   "baseline_refs": 4,
+   "new_refs": 4,
+   "ok": true,
+   "old_refs_left": 0,
+   "sym": "github.com/hashicorp/boundary/internal/bsr.sessionMetaFile",
+   "to": "sessionMetaFileName"
+  },
+  {
+   "baseline_refs": 3,
+   "new_refs": 0,
+   "ok": false,
+   "old_refs_left": 0,
+   "sym": "github.com/hashicorp/boundary/internal/bsr.connectionFile",
+   "to": "connectionFileNameTemplate"
+  },
+  {
+   "baseline_refs": 3,
+   "new_refs": 3,
+   "ok": true,
+   "old_refs_left": 0,
+   "sym": "github.com/hashicorp/boundary/internal/bsr.bsrPubKeyFile",
+   "to": "bsrPubKeyFileName"
+  },
+  {
+   "baseline_refs": 4,
+   "new_refs": 4,
+   "ok": true,
+   "old_refs_left": 0,
+   "sym": "github.com/hashicorp/boundary/internal/bsr.messagesFile",
+   "to": "messagesFileNameTemplate"
+  },
+  {
+   "baseline_refs": 4,
+   "new_refs": 4,
+   "ok": true,
+   "old_refs_left": 0,
+   "sym": "github.com/hashicorp/boundary/internal/bsr.requestsFile",
+   "to": "requestsFileNameTemplate"
+  },
+  {
+   "baseline_refs": 3,
+   "new_refs": 3,
+   "ok": true,
+   "old_refs_left": 0,
+   "sym": "github.com/hashicorp/boundary/internal/bsr.checksumFile",
+   "to": "checksumFileName"
+  },
+  {
+   "baseline_refs": 3,
+   "new_refs": 3,
+   "ok": true,
+   "old_refs_left": 0,
+   "sym": "github.com/hashicorp/boundary/internal/bsr.channelFile",
+   "to": "channelFileNameTemplate"
+  },
+  {
+   "baseline_refs": 3,
+   "new_refs": 3,
+   "ok": true,
+   "old_refs_left": 0,
+   "sym": "github.com/hashicorp/boundary/internal/bsr.metaFile",
+   "to": "metaFileNameTemplate"
+  },
+  {
+   "baseline_refs": 4,
+   "new_refs": 4,
+   "ok": true,
+   "old_refs_left": 0,
+   "sym": "github.com/hashicorp/boundary/internal/bsr.bsrFile",
+   "to": "bsrFileNameTemplate"
+  },
+  {
+   "baseline_refs": 3,
+   "new_refs": 3,
+   "ok": true,
+   "old_refs_left": 0,
+   "sym": "github.com/hashicorp/boundary/internal/bsr.sigFile",
+   "to": "sigFileName"
+  }
+ ],
+ "steps": 18,
+ "task": "boundary_9f2c83f3",
+ "tests": false,
+ "tests_baseline": true,
+ "time_to_first_mutation_s": 14.307706,
+ "tokens_in": 11373,
+ "tokens_out": 1814,
+ "tokens_reasoning": 0,
+ "typecheck": true,
+ "wall_s": 44.823485958
+}

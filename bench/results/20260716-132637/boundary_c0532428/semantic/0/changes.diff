@@ -1,0 +1,309 @@
+diff --git a/internal/cmd/base/servers.go b/internal/cmd/base/servers.go
+index 90d7671b3..8cb8d58a2 100644
+--- a/internal/cmd/base/servers.go
++++ b/internal/cmd/base/servers.go
+@@ -463,7 +463,7 @@ func (b *Server) SetupListeners(ui cli.Ui, config *configutil.SharedConfig, allo
+ 	return nil
+ }
+ 
+-func (b *Server) SetupKMSes(ui cli.Ui, config *config.Config) error {
++func (b *Server) SetupKMSes(ui cli.Ui, config *config.UiConfig) error {
+ 	sharedConfig := config.SharedConfig
+ 	for _, kms := range sharedConfig.Seals {
+ 		for _, purpose := range kms.Purpose {
+@@ -612,7 +612,7 @@ func (b *Server) DestroyDevDatabase(ctx context.Context) error {
+ 	return nil
+ }
+ 
+-func (b *Server) SetupControllerPublicClusterAddress(conf *config.Config, flagValue string) error {
++func (b *Server) SetupControllerPublicClusterAddress(conf *config.UiConfig, flagValue string) error {
+ 	if conf.Controller == nil {
+ 		conf.Controller = new(config.Controller)
+ 	}
+@@ -649,7 +649,7 @@ func (b *Server) SetupControllerPublicClusterAddress(conf *config.Config, flagVa
+ 	return nil
+ }
+ 
+-func (b *Server) SetupWorkerPublicAddress(conf *config.Config, flagValue string) error {
++func (b *Server) SetupWorkerPublicAddress(conf *config.UiConfig, flagValue string) error {
+ 	if conf.Worker == nil {
+ 		conf.Worker = new(config.Worker)
+ 	}
+diff --git a/internal/cmd/commands/database/init.go b/internal/cmd/commands/database/init.go
+index 6c8a81abf..9ca797aa3 100644
+--- a/internal/cmd/commands/database/init.go
++++ b/internal/cmd/commands/database/init.go
+@@ -29,7 +29,7 @@ type InitCommand struct {
+ 	ReloadedCh chan struct{}
+ 	SigUSR2Ch  chan struct{}
+ 
+-	Config *config.Config
++	Config *config.UiConfig
+ 
+ 	configWrapper wrapping.Wrapper
+ 
+diff --git a/internal/cmd/commands/database/migrate.go b/internal/cmd/commands/database/migrate.go
+index 514c453c3..81d30039a 100644
+--- a/internal/cmd/commands/database/migrate.go
++++ b/internal/cmd/commands/database/migrate.go
+@@ -27,7 +27,7 @@ type MigrateCommand struct {
+ 	ReloadedCh chan struct{}
+ 	SigUSR2Ch  chan struct{}
+ 
+-	Config *config.Config
++	Config *config.UiConfig
+ 
+ 	configWrapper wrapping.Wrapper
+ 
+diff --git a/internal/cmd/commands/dev/dev.go b/internal/cmd/commands/dev/dev.go
+index 8df71fd6c..a9d53db06 100644
+--- a/internal/cmd/commands/dev/dev.go
++++ b/internal/cmd/commands/dev/dev.go
+@@ -43,7 +43,7 @@ type Command struct {
+ 	ReloadedCh    chan struct{}
+ 	SigUSR2Ch     chan struct{}
+ 
+-	Config     *config.Config
++	Config     *config.UiConfig
+ 	controller *controller.Controller
+ 	worker     *worker.Worker
+ 
+@@ -66,7 +66,7 @@ type Command struct {
+ 	flagWorkerAuthKey                string
+ 	flagWorkerProxyListenAddr        string
+ 	flagWorkerPublicAddr             string
+-	flagPassthroughDirectory         string
++	flagUiPassthroughDir         string
+ 	flagRecoveryKey                  string
+ 	flagDatabaseUrl                  string
+ 	flagContainerImage               string
+@@ -251,7 +251,7 @@ func (c *Command) Flags() *base.FlagSets {
+ 
+ 	f.StringVar(&base.StringVar{
+ 		Name:   "passthrough-directory",
+-		Target: &c.flagPassthroughDirectory,
++		Target: &c.flagUiPassthroughDir,
+ 		EnvVar: "BOUNDARY_DEV_PASSTHROUGH_DIRECTORY",
+ 		Usage:  "Enables a passthrough directory in the webserver at /",
+ 	})
+@@ -408,7 +408,7 @@ func (c *Command) Run(args []string) int {
+ 	c.DevTargetSessionConnectionLimit = c.flagTargetSessionConnectionLimit
+ 	c.DevHostAddress = host
+ 
+-	c.Config.PassthroughDirectory = c.flagPassthroughDirectory
++	c.Config.UiPassthroughDir = c.flagUiPassthroughDir
+ 
+ 	for _, l := range c.Config.Listeners {
+ 		if len(l.Purpose) != 1 {
+diff --git a/internal/cmd/commands/server/server.go b/internal/cmd/commands/server/server.go
+index f21adf2c1..93d3ccfb3 100644
+--- a/internal/cmd/commands/server/server.go
++++ b/internal/cmd/commands/server/server.go
+@@ -45,7 +45,7 @@ type Command struct {
+ 	SighupCh  chan struct{}
+ 	SigUSR2Ch chan struct{}
+ 
+-	Config     *config.Config
++	Config     *config.UiConfig
+ 	controller *controller.Controller
+ 	worker     *worker.Worker
+ 
+@@ -640,7 +640,7 @@ func (c *Command) WaitForInterrupt() int {
+ 			// Check for new log level
+ 			var level hclog.Level
+ 			var err error
+-			var newConf *config.Config
++			var newConf *config.UiConfig
+ 
+ 			if c.flagConfig == "" && c.presetConfig == nil {
+ 				goto RUNRELOADFUNCS
+@@ -697,7 +697,7 @@ func (c *Command) WaitForInterrupt() int {
+ 	return base.CommandSuccess
+ }
+ 
+-func (c *Command) Reload(newConf *config.Config) error {
++func (c *Command) Reload(newConf *config.UiConfig) error {
+ 	c.ReloadFuncsLock.RLock()
+ 	defer c.ReloadFuncsLock.RUnlock()
+ 
+diff --git a/internal/cmd/config/config.go b/internal/cmd/config/config.go
+index 83e4f382c..559401a63 100644
+--- a/internal/cmd/config/config.go
++++ b/internal/cmd/config/config.go
+@@ -90,7 +90,7 @@ worker {
+ )
+ 
+ // Config is the configuration for the boundary controller
+-type Config struct {
++type UiConfig struct {
+ 	*configutil.SharedConfig `hcl:"-"`
+ 
+ 	Worker     *Worker     `hcl:"worker"`
+@@ -98,7 +98,7 @@ type Config struct {
+ 
+ 	// Dev-related options
+ 	DevController        bool   `hcl:"-"`
+-	PassthroughDirectory string `hcl:"-"`
++	UiPassthroughDir string `hcl:"-"`
+ 	DevControllerKey     string `hcl:"-"`
+ 	DevWorkerAuthKey     string `hcl:"-"`
+ 	DevRecoveryKey       string `hcl:"-"`
+@@ -188,7 +188,7 @@ type Database struct {
+ 
+ // DevWorker is a Config that is used for dev mode of Boundary
+ // workers
+-func DevWorker() (*Config, error) {
++func DevWorker() (*UiConfig, error) {
+ 	parsed, err := Parse(devConfig + devWorkerExtraConfig)
+ 	if err != nil {
+ 		return nil, fmt.Errorf("error parsing dev config: %w", err)
+@@ -218,7 +218,7 @@ func DevKeyGeneration() (string, string, string) {
+ 
+ // DevController is a Config that is used for dev mode of Boundary
+ // controllers
+-func DevController() (*Config, error) {
++func DevController() (*UiConfig, error) {
+ 	controllerKey, workerAuthKey, recoveryKey := DevKeyGeneration()
+ 
+ 	hclStr := fmt.Sprintf(devConfig+devControllerExtraConfig, controllerKey, workerAuthKey, recoveryKey)
+@@ -233,7 +233,7 @@ func DevController() (*Config, error) {
+ 	return parsed, nil
+ }
+ 
+-func DevCombined() (*Config, error) {
++func DevCombined() (*UiConfig, error) {
+ 	controllerKey, workerAuthKey, recoveryKey := DevKeyGeneration()
+ 	hclStr := fmt.Sprintf(devConfig+devControllerExtraConfig+devWorkerExtraConfig, controllerKey, workerAuthKey, recoveryKey)
+ 	parsed, err := Parse(hclStr)
+@@ -247,14 +247,14 @@ func DevCombined() (*Config, error) {
+ 	return parsed, nil
+ }
+ 
+-func New() *Config {
+-	return &Config{
++func New() *UiConfig {
++	return &UiConfig{
+ 		SharedConfig: new(configutil.SharedConfig),
+ 	}
+ }
+ 
+ // LoadFile loads the configuration from the given file.
+-func LoadFile(path string, wrapper wrapping.Wrapper) (*Config, error) {
++func LoadFile(path string, wrapper wrapping.Wrapper) (*UiConfig, error) {
+ 	d, err := ioutil.ReadFile(path)
+ 	if err != nil {
+ 		return nil, err
+@@ -272,7 +272,7 @@ func LoadFile(path string, wrapper wrapping.Wrapper) (*Config, error) {
+ 	return Parse(raw)
+ }
+ 
+-func Parse(d string) (*Config, error) {
++func Parse(d string) (*UiConfig, error) {
+ 	obj, err := hcl.Parse(d)
+ 	if err != nil {
+ 		return nil, err
+@@ -502,7 +502,7 @@ func parseEventing(eventObj *ast.ObjectItem) (*event.EventerConfig, error) {
+ // Specifically, the fields that this method strips are:
+ // - KMS.Config
+ // - Telemetry.CirconusAPIToken
+-func (c *Config) Sanitized() map[string]interface{} {
++func (c *UiConfig) Sanitized() map[string]interface{} {
+ 	// Create shared config if it doesn't exist (e.g. in tests) so that map
+ 	// keys are actually populated
+ 	if c.SharedConfig == nil {
+diff --git a/internal/cmd/config/config_test.go b/internal/cmd/config/config_test.go
+index 7e73a4cdd..b23cd7e1e 100644
+--- a/internal/cmd/config/config_test.go
++++ b/internal/cmd/config/config_test.go
+@@ -21,7 +21,7 @@ func TestDevController(t *testing.T) {
+ 
+ 	truePointer := new(bool)
+ 	*truePointer = true
+-	exp := &Config{
++	exp := &UiConfig{
+ 		Eventing: event.DefaultEventerConfig(),
+ 		SharedConfig: &configutil.SharedConfig{
+ 			DisableMlock: true,
+@@ -148,7 +148,7 @@ func TestDevWorker(t *testing.T) {
+ 		t.Fatal(err)
+ 	}
+ 
+-	exp := &Config{
++	exp := &UiConfig{
+ 		Eventing: event.DefaultEventerConfig(),
+ 		SharedConfig: &configutil.SharedConfig{
+ 			DisableMlock: true,
+diff --git a/internal/servers/controller/config.go b/internal/servers/controller/config.go
+index 9af7a5c04..8f1efdc70 100644
+--- a/internal/servers/controller/config.go
++++ b/internal/servers/controller/config.go
+@@ -11,7 +11,7 @@ type Config struct {
+ 	*base.Server
+ 	// The underlying configuration, passed in here to avoid duplicating values
+ 	// everywhere
+-	RawConfig *config.Config
++	RawConfig *config.UiConfig
+ 	// If set, authorization checking occurrs but failures are ignored
+ 	DisableAuthorizationFailures bool
+ }
+diff --git a/internal/servers/controller/handler_noui.go b/internal/servers/controller/handler_noui.go
+index 20bc64689..27c62897c 100644
+--- a/internal/servers/controller/handler_noui.go
++++ b/internal/servers/controller/handler_noui.go
+@@ -8,7 +8,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/observability/event"
+ )
+ 
+-func devPassthroughHandler(passthroughDir string) http.Handler {
++func devUiPassthroughHandler(passthroughDir string) http.Handler {
+ 	const op = "controller.devPassthroughHandler"
+ 	ctx := context.TODO()
+ 	// Panic may not be ideal but this is never a production call and it'll
+@@ -26,8 +26,8 @@ func devPassthroughHandler(passthroughDir string) http.Handler {
+ }
+ 
+ var handleUi = func(c *Controller) http.Handler {
+-	if c.conf.RawConfig.PassthroughDirectory != "" {
+-		return devPassthroughHandler(c.conf.RawConfig.PassthroughDirectory)
++	if c.conf.RawConfig.UiPassthroughDir != "" {
++		return devUiPassthroughHandler(c.conf.RawConfig.UiPassthroughDir)
+ 	}
+ 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+ 		w.WriteHeader(http.StatusNotFound)
+diff --git a/internal/servers/controller/testing.go b/internal/servers/controller/testing.go
+index 85c62ace7..22d1dc729 100644
+--- a/internal/servers/controller/testing.go
++++ b/internal/servers/controller/testing.go
+@@ -288,7 +288,7 @@ type TestControllerOpts struct {
+ 
+ 	// Config; if not provided a dev one will be created, unless ConfigHcl is
+ 	// set.
+-	Config *config.Config
++	Config *config.UiConfig
+ 
+ 	// DefaultPasswordAuthMethodId is the default password method ID to use, if set.
+ 	DefaultPasswordAuthMethodId string
+diff --git a/internal/servers/worker/config.go b/internal/servers/worker/config.go
+index 0c0ecd97a..a5c8dae4d 100644
+--- a/internal/servers/worker/config.go
++++ b/internal/servers/worker/config.go
+@@ -11,5 +11,5 @@ type Config struct {
+ 	*base.Server
+ 	// The underlying configuration, passed in here to avoid duplicating values
+ 	// everywhere
+-	RawConfig *config.Config
++	RawConfig *config.UiConfig
+ }
+diff --git a/internal/servers/worker/testing.go b/internal/servers/worker/testing.go
+index a9a06906a..496267f20 100644
+--- a/internal/servers/worker/testing.go
++++ b/internal/servers/worker/testing.go
+@@ -161,7 +161,7 @@ func (tw *TestWorker) Shutdown() {
+ 
+ type TestWorkerOpts struct {
+ 	// Config; if not provided a dev one will be created
+-	Config *config.Config
++	Config *config.UiConfig
+ 
+ 	// Sets initial controller addresses
+ 	InitialControllers []string

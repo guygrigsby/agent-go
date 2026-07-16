@@ -1,0 +1,55 @@
+{
+ "agent_done": "2026-07-16T20:31:45.586566166Z",
+ "agent_started": "2026-07-16T20:28:11.146091Z",
+ "cache_read": 2008917,
+ "cache_write": 0,
+ "capped": false,
+ "failure_kind": "",
+ "iter": 0,
+ "mode": "semantic",
+ "new_errors": null,
+ "op_mix": {
+  "help": {
+   "ok": 1,
+   "rejected": 0
+  },
+  "query": {
+   "ok": 6,
+   "rejected": 1
+  },
+  "status": {
+   "ok": 4,
+   "rejected": 0
+  },
+  "view": {
+   "ok": 0,
+   "rejected": 96
+  }
+ },
+ "pass": true,
+ "predicate": true,
+ "profile": "qwen3.5-9b",
+ "prompt": "Rename IsHelpCommand to IsAdditionalHelpTopicCommand",
+ "rejects_total": 97,
+ "repairs_offered": 96,
+ "resends": 75,
+ "specs": [
+  {
+   "baseline_refs": 0,
+   "new_refs": 0,
+   "ok": true,
+   "old_refs_left": 0,
+   "sym": ".Command.IsHelpCommand",
+   "to": "IsAdditionalHelpTopicCommand"
+  }
+ ],
+ "steps": 110,
+ "task": "cobra_0960ff7f",
+ "tests": false,
+ "tests_baseline": false,
+ "tokens_in": 63811,
+ "tokens_out": 9558,
+ "tokens_reasoning": 0,
+ "typecheck": true,
+ "wall_s": 214.440475166
+}

@@ -1,492 +1,500 @@
 [
- {
-  "repo": "boundary",
-  "sha": "fb1ea92a30a2888fbfb7c36ff30ed5f51e738e23",
-  "kind": "add-param",
-  "prompt": "Pass both the control and data context into handle\n\nSpecifically: add parameter controlCtx context.Context to handleProxy",
-  "go_files": 7,
-  "add_params": [
-   {
-    "pkg": "github.com/hashicorp/boundary/internal/daemon/worker/proxy/tcp",
-    "sym": "handleProxy",
-    "name": "controlCtx",
-    "type": "context.Context"
-   }
-  ]
- },
- {
-  "repo": "boundary",
-  "sha": "38b12394fd9dee751d5278bb404a4cb45c8a0186",
-  "kind": "add-param",
-  "prompt": "refactor (kms): add GetWrapperer for RewrapFn parameter",
-  "go_files": 12,
-  "needs_review": "no function gained a named parameter in the diff"
- },
- {
-  "repo": "boundary",
-  "sha": "57ffc71849385ed3f019d9e2d3bfbb0a493565cb",
-  "kind": "add-param",
-  "prompt": "refact(e2e): Add context as an argument for cli methods\n\nSpecifically: add parameter ctx context.Context to CreateNewAccountCli; add parameter ctx context.Context to AuthenticateCli; add parameter ctx context.Context to AuthenticateAdminCli; add parameter ctx context.Context to CreateNewCredentialStoreStaticCli; add parameter ctx context.Context to CreateNewHostCli; add parameter ctx context.Context to AddHostToHostSetCli; add parameter ctx context.Context to CreateNewHostCatalogCli; add parameter ctx context.Context to CreateNewHostSetCli; add parameter ctx context.Context to CreateNewOrgCli; add parameter ctx context.Context to CreateNewProjectCli; add parameter ctx context.Context to CreateNewTargetCli; add parameter ctx context.Context to AddHostSourceToTargetCli; add parameter ctx context.Context to CreateNewUserCli; add parameter ctx context.Context to SetAccountToUserCli",
-  "go_files": 15,
-  "add_params": [
-   {
-    "pkg": "github.com/hashicorp/boundary/testing/internal/e2e/boundary",
-    "sym": "CreateNewAccountCli",
-    "name": "ctx",
-    "type": "context.Context"
-   },
-   {
-    "pkg": "github.com/hashicorp/boundary/testing/internal/e2e/boundary",
-    "sym": "AuthenticateCli",
-    "name": "ctx",
-    "type": "context.Context"
-   },
-   {
-    "pkg": "github.com/hashicorp/boundary/testing/internal/e2e/boundary",
-    "sym": "AuthenticateAdminCli",
-    "name": "ctx",
-    "type": "context.Context"
-   },
-   {
-    "pkg": "github.com/hashicorp/boundary/testing/internal/e2e/boundary",
-    "sym": "CreateNewCredentialStoreStaticCli",
-    "name": "ctx",
-    "type": "context.Context"
-   },
-   {
-    "pkg": "github.com/hashicorp/boundary/testing/internal/e2e/boundary",
-    "sym": "CreateNewHostCli",
-    "name": "ctx",
-    "type": "context.Context"
-   },
-   {
-    "pkg": "github.com/hashicorp/boundary/testing/internal/e2e/boundary",
-    "sym": "AddHostToHostSetCli",
-    "name": "ctx",
-    "type": "context.Context"
-   },
-   {
-    "pkg": "github.com/hashicorp/boundary/testing/internal/e2e/boundary",
-    "sym": "CreateNewHostCatalogCli",
-    "name": "ctx",
-    "type": "context.Context"
-   },
-   {
-    "pkg": "github.com/hashicorp/boundary/testing/internal/e2e/boundary",
-    "sym": "CreateNewHostSetCli",
-    "name": "ctx",
-    "type": "context.Context"
-   },
-   {
-    "pkg": "github.com/hashicorp/boundary/testing/internal/e2e/boundary",
-    "sym": "CreateNewOrgCli",
-    "name": "ctx",
-    "type": "context.Context"
-   },
-   {
-    "pkg": "github.com/hashicorp/boundary/testing/internal/e2e/boundary",
-    "sym": "CreateNewProjectCli",
-    "name": "ctx",
-    "type": "context.Context"
-   },
-   {
-    "pkg": "github.com/hashicorp/boundary/testing/internal/e2e/boundary",
-    "sym": "CreateNewTargetCli",
-    "name": "ctx",
-    "type": "context.Context"
-   },
-   {
-    "pkg": "github.com/hashicorp/boundary/testing/internal/e2e/boundary",
-    "sym": "AddHostSourceToTargetCli",
-    "name": "ctx",
-    "type": "context.Context"
-   },
-   {
-    "pkg": "github.com/hashicorp/boundary/testing/internal/e2e/boundary",
-    "sym": "CreateNewUserCli",
-    "name": "ctx",
-    "type": "context.Context"
-   },
-   {
-    "pkg": "github.com/hashicorp/boundary/testing/internal/e2e/boundary",
-    "sym": "SetAccountToUserCli",
-    "name": "ctx",
-    "type": "context.Context"
-   }
-  ]
- },
- {
-  "repo": "boundary",
-  "sha": "bf1486f75efcde4568b2197379c54a7e94eb62b8",
-  "kind": "add-param",
-  "prompt": "refact(target): Add context to RepositoryFactory constructor\n\nSpecifically: add parameter ctx context.Context to NewRepository",
-  "go_files": 16,
-  "add_params": [
-   {
-    "pkg": "github.com/hashicorp/boundary/internal/target",
-    "sym": "NewRepository",
-    "name": "ctx",
-    "type": "context.Context"
-   }
-  ]
- },
- {
-  "repo": "boundary",
-  "sha": "b4b95e0f0e8f21ed3fa95370edfd2d62ad30d665",
-  "kind": "add-param",
-  "prompt": "refactor(vault): add context and remove deprecated errors\n\nSpecifically: add parameter ctx context.Context to CredentialStore.client; add parameter ctx context.Context to privateCredential.client; add parameter ctx context.Context to privateLibrary.client; add parameter ctx context.Context to privateStore.client; add parameter ctx context.Context to newClient; add parameter ctx context.Context to client.renewToken; add parameter ctx context.Context to client.renewLease; add parameter ctx context.Context to client.swapToken; add parameter ctx context.Context to client.get; add parameter ctx context.Context to client.capabilities; add parameter ctx context.Context to client.ping; add parameter ctx context.Context to client.revokeToken; add parameter ctx context.Context to client.revokeLease; add parameter ctx context.Context to client.lookupToken; add parameter ctx context.Context to client.post; add parameter ctx context.Context to toProto; add parameter ctx context.Context to toStorageStaticStore; add parameter ctx context.Context to toStorageVaultStore; add parameter ctx context.Context to NewService; add parameter ctx context.Context to validateUpdateRequest; add parameter ctx context.Context to validateCreateRequest; add parameter ctx context.Context to extractClientCertAndPk; add parameter ctx context.Context to decodePemBlocks",
-  "go_files": 16,
-  "add_params": [
-   {
-    "pkg": "github.com/hashicorp/boundary/internal/credential/vault",
-    "sym": "CredentialStore.client",
-    "name": "ctx",
-    "type": "context.Context"
-   },
-   {
-    "pkg": "github.com/hashicorp/boundary/internal/credential/vault",
-    "sym": "privateCredential.client",
-    "name": "ctx",
-    "type": "context.Context"
-   },
-   {
-    "pkg": "github.com/hashicorp/boundary/internal/credential/vault",
-    "sym": "privateLibrary.client",
-    "name": "ctx",
-    "type": "context.Context"
-   },
-   {
-    "pkg": "github.com/hashicorp/boundary/internal/credential/vault",
-    "sym": "privateStore.client",
-    "name": "ctx",
-    "type": "context.Context"
-   },
-   {
-    "pkg": "github.com/hashicorp/boundary/internal/credential/vault",
-    "sym": "newClient",
-    "name": "ctx",
-    "type": "context.Context"
-   },
-   {
-    "pkg": "github.com/hashicorp/boundary/internal/credential/vault",
-    "sym": "client.renewToken",
-    "name": "ctx",
-    "type": "context.Context"
-   },
-   {
-    "pkg": "github.com/hashicorp/boundary/internal/credential/vault",
-    "sym": "client.renewLease",
-    "name": "ctx",
-    "type": "context.Context"
-   },
-   {
-    "pkg": "github.com/hashicorp/boundary/internal/credential/vault",
-    "sym": "client.swapToken",
-    "name": "ctx",
-    "type": "context.Context"
-   },
-   {
-    "pkg": "github.com/hashicorp/boundary/internal/credential/vault",
-    "sym": "client.get",
-    "name": "ctx",
-    "type": "context.Context"
-   },
-   {
-    "pkg": "github.com/hashicorp/boundary/internal/credential/vault",
-    "sym": "client.capabilities",
-    "name": "ctx",
-    "type": "context.Context"
-   },
-   {
-    "pkg": "github.com/hashicorp/boundary/internal/credential/vault",
-    "sym": "client.ping",
-    "name": "ctx",
-    "type": "context.Context"
-   },
-   {
-    "pkg": "github.com/hashicorp/boundary/internal/credential/vault",
-    "sym": "client.revokeToken",
-    "name": "ctx",
-    "type": "context.Context"
-   },
-   {
-    "pkg": "github.com/hashicorp/boundary/internal/credential/vault",
-    "sym": "client.revokeLease",
-    "name": "ctx",
-    "type": "context.Context"
-   },
-   {
-    "pkg": "github.com/hashicorp/boundary/internal/credential/vault",
-    "sym": "client.lookupToken",
-    "name": "ctx",
-    "type": "context.Context"
-   },
-   {
-    "pkg": "github.com/hashicorp/boundary/internal/credential/vault",
-    "sym": "client.post",
-    "name": "ctx",
-    "type": "context.Context"
-   },
-   {
-    "pkg": "github.com/hashicorp/boundary/internal/daemon/controller/handlers/credentialstores",
-    "sym": "toProto",
-    "name": "ctx",
-    "type": "context.Context"
-   },
-   {
-    "pkg": "github.com/hashicorp/boundary/internal/daemon/controller/handlers/credentialstores",
-    "sym": "toStorageStaticStore",
-    "name": "ctx",
-    "type": "context.Context"
-   },
-   {
-    "pkg": "github.com/hashicorp/boundary/internal/daemon/controller/handlers/credentialstores",
-    "sym": "toStorageVaultStore",
-    "name": "ctx",
-    "type": "context.Context"
-   },
-   {
-    "pkg": "github.com/hashicorp/boundary/internal/daemon/controller/handlers/credentialstores",
-    "sym": "NewService",
-    "name": "ctx",
-    "type": "context.Context"
-   },
-   {
-    "pkg": "github.com/hashicorp/boundary/internal/daemon/controller/handlers/credentialstores",
-    "sym": "validateUpdateRequest",
-    "name": "ctx",
-    "type": "context.Context"
-   },
-   {
-    "pkg": "github.com/hashicorp/boundary/internal/daemon/controller/handlers/credentialstores",
-    "sym": "validateCreateRequest",
-    "name": "ctx",
-    "type": "context.Context"
-   },
-   {
-    "pkg": "github.com/hashicorp/boundary/internal/daemon/controller/handlers/credentialstores",
-    "sym": "extractClientCertAndPk",
-    "name": "ctx",
-    "type": "context.Context"
-   },
-   {
-    "pkg": "github.com/hashicorp/boundary/internal/daemon/controller/handlers/credentialstores",
-    "sym": "decodePemBlocks",
-    "name": "ctx",
-    "type": "context.Context"
-   }
-  ]
- },
- {
-  "repo": "boundary",
-  "sha": "eb61ac63045d6690f50565c9d48b36ef1669b78a",
-  "kind": "add-param",
-  "prompt": "refact(session): Add context to session factory\n\nSpecifically: add parameter ctx context.Context to NewRepository",
-  "go_files": 25,
-  "add_params": [
-   {
-    "pkg": "github.com/hashicorp/boundary/internal/session",
-    "sym": "NewRepository",
-    "name": "ctx",
-    "type": "context.Context"
-   }
-  ]
- },
- {
-  "repo": "boundary",
-  "sha": "9354a4ebcf72dad8a9b119af5ca94797d7238bd0",
-  "kind": "add-param",
-  "prompt": "refactor(scheduler): Add statusThreshold parameter to job.Run\n\nSpecifically: add parameter _ time.Duration to censusJob.Run; add parameter _ time.Duration to TokenRevocationJob.Run; add parameter _ time.Duration to CredentialRenewalJob.Run; add parameter _ time.Duration to TokenRenewalJob.Run; add parameter _ time.Duration to CredentialCleanupJob.Run; add parameter _ time.Duration to CredentialRevocationJob.Run; add parameter _ time.Duration to CredentialStoreCleanupJob.Run; add parameter _ time.Duration to OrphanedHostCleanupJob.Run; add parameter _ time.Duration to SetSyncJob.Run; add parameter _ time.Duration to dataKeyVersionDestructionMonitorJob.Run; add parameter _ time.Duration to tableRewrappingJob.Run; add parameter _ time.Duration to purgeJob.Run; add parameter _ time.Duration to cleanerJob.Run; add parameter statusThreshold time.Duration to testJob.Run; add parameter _ time.Duration to rotateRootsJob.Run; add parameter ctx context.Context to upsertWorkerStorageBucketJob.Run; add parameter _ time.Duration to deleteTerminatedJob.Run; add parameter _ time.Duration to sessionConnectionCleanupJob.Run; add parameter _ time.Duration to snapshotJob.Run",
-  "go_files": 27,
-  "add_params": [
-   {
-    "pkg": "github.com/hashicorp/boundary/internal/census",
-    "sym": "censusJob.Run",
-    "name": "_",
-    "type": "time.Duration"
-   },
-   {
-    "pkg": "github.com/hashicorp/boundary/internal/credential/vault",
-    "sym": "TokenRevocationJob.Run",
-    "name": "_",
-    "type": "time.Duration"
-   },
-   {
-    "pkg": "github.com/hashicorp/boundary/internal/credential/vault",
-    "sym": "CredentialRenewalJob.Run",
-    "name": "_",
-    "type": "time.Duration"
-   },
-   {
-    "pkg": "github.com/hashicorp/boundary/internal/credential/vault",
-    "sym": "TokenRenewalJob.Run",
-    "name": "_",
-    "type": "time.Duration"
-   },
-   {
-    "pkg": "github.com/hashicorp/boundary/internal/credential/vault",
-    "sym": "CredentialCleanupJob.Run",
-    "name": "_",
-    "type": "time.Duration"
-   },
-   {
-    "pkg": "github.com/hashicorp/boundary/internal/credential/vault",
-    "sym": "CredentialRevocationJob.Run",
-    "name": "_",
-    "type": "time.Duration"
-   },
-   {
-    "pkg": "github.com/hashicorp/boundary/internal/credential/vault",
-    "sym": "CredentialStoreCleanupJob.Run",
-    "name": "_",
-    "type": "time.Duration"
-   },
-   {
-    "pkg": "github.com/hashicorp/boundary/internal/host/plugin",
-    "sym": "OrphanedHostCleanupJob.Run",
-    "name": "_",
-    "type": "time.Duration"
-   },
-   {
-    "pkg": "github.com/hashicorp/boundary/internal/host/plugin",
-    "sym": "SetSyncJob.Run",
-    "name": "_",
-    "type": "time.Duration"
-   },
-   {
-    "pkg": "github.com/hashicorp/boundary/internal/kms/job",
-    "sym": "dataKeyVersionDestructionMonitorJob.Run",
-    "name": "_",
-    "type": "time.Duration"
-   },
-   {
-    "pkg": "github.com/hashicorp/boundary/internal/kms/job",
-    "sym": "tableRewrappingJob.Run",
-    "name": "_",
-    "type": "time.Duration"
-   },
-   {
-    "pkg": "github.com/hashicorp/boundary/internal/pagination/purge",
-    "sym": "purgeJob.Run",
-    "name": "_",
-    "type": "time.Duration"
-   },
-   {
-    "pkg": "github.com/hashicorp/boundary/internal/scheduler/cleaner",
-    "sym": "cleanerJob.Run",
-    "name": "_",
-    "type": "time.Duration"
-   },
-   {
-    "pkg": "github.com/hashicorp/boundary/internal/scheduler",
-    "sym": "testJob.Run",
-    "name": "statusThreshold",
-    "type": "time.Duration"
-   },
-   {
-    "pkg": "github.com/hashicorp/boundary/internal/server/job",
-    "sym": "rotateRootsJob.Run",
-    "name": "_",
-    "type": "time.Duration"
-   },
-   {
-    "pkg": "github.com/hashicorp/boundary/internal/server/job",
-    "sym": "upsertWorkerStorageBucketJob.Run",
-    "name": "ctx",
-    "type": "context.Context"
-   },
-   {
-    "pkg": "github.com/hashicorp/boundary/internal/session",
-    "sym": "deleteTerminatedJob.Run",
-    "name": "_",
-    "type": "time.Duration"
-   },
-   {
-    "pkg": "github.com/hashicorp/boundary/internal/session",
-    "sym": "sessionConnectionCleanupJob.Run",
-    "name": "_",
-    "type": "time.Duration"
-   },
-   {
-    "pkg": "github.com/hashicorp/boundary/internal/snapshot",
-    "sym": "snapshotJob.Run",
-    "name": "_",
-    "type": "time.Duration"
-   }
-  ]
- },
- {
-  "repo": "vault",
-  "sha": "cbdf16c5a1d49310daa8398be0e2930ca0320853",
-  "kind": "add-param",
-  "prompt": "Rebase #14178 / Add not_before_duration API parameter to Root/Intermediate CA generation",
-  "go_files": 5,
-  "needs_review": "no function gained a named parameter in the diff"
- },
- {
-  "repo": "vault",
-  "sha": "e8015313dded4a2f5f7b4b72c7cc64b634eb4475",
-  "kind": "add-param",
-  "prompt": "Add a new parameter \"allowed_managed_keys\" to mount config",
-  "go_files": 5,
-  "needs_review": "no function gained a named parameter in the diff"
- },
- {
-  "repo": "vault",
-  "sha": "4b7250e3c1c650edc34cfa43925bced83bdd6944",
-  "kind": "add-param",
-  "prompt": "Add role parameter to restrict issuance of wildcard certificates",
-  "go_files": 6,
-  "needs_review": "no function gained a named parameter in the diff"
- },
- {
-  "repo": "vault",
-  "sha": "2f4fe5345a0997cba6c69d1ca40e7795022c2734",
-  "kind": "add-param",
-  "prompt": "Backport fix: add timeout context around UpdateUser to prevent static role rotation hang into ce/main",
-  "go_files": 8,
-  "needs_review": "no function gained a named parameter in the diff"
- },
- {
-  "repo": "vault",
-  "sha": "cfff8d420e2f1479d7f16e9f349dd444e6f1c7b6",
-  "kind": "add-param",
-  "prompt": "aws: pass cancelable context with aws calls\n\nSpecifically: add parameter ctx context.Context to backend.instanceIamRoleARN",
-  "go_files": 11,
-  "add_params": [
-   {
-    "pkg": "github.com/hashicorp/vault/builtin/credential/aws",
-    "sym": "backend.instanceIamRoleARN",
-    "name": "ctx",
-    "type": "context.Context"
-   }
-  ]
- },
- {
-  "repo": "vault",
-  "sha": "7103bc2cdb45ff8c4e01ebb09f61e9b20a67fe10",
-  "kind": "add-param",
-  "prompt": "VAULT-17078: Add useEventLogger Argument to Audit Factory Functions",
-  "go_files": 12,
-  "add_params": [
-   {
-    "pkg": "github.com/hashicorp/vault/builtin/audit/file",
-    "sym": "Factory",
-    "name": "useEventLogger",
-    "type": "bool"
-   },
-   {
-    "pkg": "github.com/hashicorp/vault/builtin/audit/socket",
-    "sym": "Factory",
-    "name": "useEventLogger",
-    "type": "bool"
-   },
-   {
-    "pkg": "github.com/hashicorp/vault/builtin/audit/syslog",
-    "sym": "Factory",
-    "name": "useEventLogger",
-    "type": "bool"
-   }
-  ]
- }
+  {
+    "repo": "boundary",
+    "sha": "fb1ea92a30a2888fbfb7c36ff30ed5f51e738e23",
+    "kind": "add-param",
+    "prompt": "Pass both the control and data context into handle\n\nSpecifically: add parameter controlCtx context.Context to handleProxy",
+    "go_files": 7,
+    "add_params": [
+      {
+        "pkg": "github.com/hashicorp/boundary/internal/daemon/worker/proxy/tcp",
+        "sym": "handleProxy",
+        "name": "controlCtx",
+        "type": "context.Context"
+      }
+    ],
+    "certified": true
+  },
+  {
+    "repo": "boundary",
+    "sha": "38b12394fd9dee751d5278bb404a4cb45c8a0186",
+    "kind": "add-param",
+    "prompt": "refactor (kms): add GetWrapperer for RewrapFn parameter",
+    "go_files": 12,
+    "needs_review": "no function gained a named parameter in the diff"
+  },
+  {
+    "repo": "boundary",
+    "sha": "57ffc71849385ed3f019d9e2d3bfbb0a493565cb",
+    "kind": "add-param",
+    "prompt": "refact(e2e): Add context as an argument for cli methods\n\nSpecifically: add parameter ctx context.Context to CreateNewAccountCli; add parameter ctx context.Context to AuthenticateCli; add parameter ctx context.Context to AuthenticateAdminCli; add parameter ctx context.Context to CreateNewCredentialStoreStaticCli; add parameter ctx context.Context to CreateNewHostCli; add parameter ctx context.Context to AddHostToHostSetCli; add parameter ctx context.Context to CreateNewHostCatalogCli; add parameter ctx context.Context to CreateNewHostSetCli; add parameter ctx context.Context to CreateNewOrgCli; add parameter ctx context.Context to CreateNewProjectCli; add parameter ctx context.Context to CreateNewTargetCli; add parameter ctx context.Context to AddHostSourceToTargetCli; add parameter ctx context.Context to CreateNewUserCli; add parameter ctx context.Context to SetAccountToUserCli",
+    "go_files": 15,
+    "add_params": [
+      {
+        "pkg": "github.com/hashicorp/boundary/testing/internal/e2e/boundary",
+        "sym": "CreateNewAccountCli",
+        "name": "ctx",
+        "type": "context.Context"
+      },
+      {
+        "pkg": "github.com/hashicorp/boundary/testing/internal/e2e/boundary",
+        "sym": "AuthenticateCli",
+        "name": "ctx",
+        "type": "context.Context"
+      },
+      {
+        "pkg": "github.com/hashicorp/boundary/testing/internal/e2e/boundary",
+        "sym": "AuthenticateAdminCli",
+        "name": "ctx",
+        "type": "context.Context"
+      },
+      {
+        "pkg": "github.com/hashicorp/boundary/testing/internal/e2e/boundary",
+        "sym": "CreateNewCredentialStoreStaticCli",
+        "name": "ctx",
+        "type": "context.Context"
+      },
+      {
+        "pkg": "github.com/hashicorp/boundary/testing/internal/e2e/boundary",
+        "sym": "CreateNewHostCli",
+        "name": "ctx",
+        "type": "context.Context"
+      },
+      {
+        "pkg": "github.com/hashicorp/boundary/testing/internal/e2e/boundary",
+        "sym": "AddHostToHostSetCli",
+        "name": "ctx",
+        "type": "context.Context"
+      },
+      {
+        "pkg": "github.com/hashicorp/boundary/testing/internal/e2e/boundary",
+        "sym": "CreateNewHostCatalogCli",
+        "name": "ctx",
+        "type": "context.Context"
+      },
+      {
+        "pkg": "github.com/hashicorp/boundary/testing/internal/e2e/boundary",
+        "sym": "CreateNewHostSetCli",
+        "name": "ctx",
+        "type": "context.Context"
+      },
+      {
+        "pkg": "github.com/hashicorp/boundary/testing/internal/e2e/boundary",
+        "sym": "CreateNewOrgCli",
+        "name": "ctx",
+        "type": "context.Context"
+      },
+      {
+        "pkg": "github.com/hashicorp/boundary/testing/internal/e2e/boundary",
+        "sym": "CreateNewProjectCli",
+        "name": "ctx",
+        "type": "context.Context"
+      },
+      {
+        "pkg": "github.com/hashicorp/boundary/testing/internal/e2e/boundary",
+        "sym": "CreateNewTargetCli",
+        "name": "ctx",
+        "type": "context.Context"
+      },
+      {
+        "pkg": "github.com/hashicorp/boundary/testing/internal/e2e/boundary",
+        "sym": "AddHostSourceToTargetCli",
+        "name": "ctx",
+        "type": "context.Context"
+      },
+      {
+        "pkg": "github.com/hashicorp/boundary/testing/internal/e2e/boundary",
+        "sym": "CreateNewUserCli",
+        "name": "ctx",
+        "type": "context.Context"
+      },
+      {
+        "pkg": "github.com/hashicorp/boundary/testing/internal/e2e/boundary",
+        "sym": "SetAccountToUserCli",
+        "name": "ctx",
+        "type": "context.Context"
+      }
+    ],
+    "certified": true
+  },
+  {
+    "repo": "boundary",
+    "sha": "bf1486f75efcde4568b2197379c54a7e94eb62b8",
+    "kind": "add-param",
+    "prompt": "refact(target): Add context to RepositoryFactory constructor\n\nSpecifically: add parameter ctx context.Context to NewRepository",
+    "go_files": 16,
+    "add_params": [
+      {
+        "pkg": "github.com/hashicorp/boundary/internal/target",
+        "sym": "NewRepository",
+        "name": "ctx",
+        "type": "context.Context"
+      }
+    ],
+    "certified": true
+  },
+  {
+    "repo": "boundary",
+    "sha": "b4b95e0f0e8f21ed3fa95370edfd2d62ad30d665",
+    "kind": "add-param",
+    "prompt": "refactor(vault): add context and remove deprecated errors\n\nSpecifically: add parameter ctx context.Context to CredentialStore.client; add parameter ctx context.Context to privateCredential.client; add parameter ctx context.Context to privateLibrary.client; add parameter ctx context.Context to privateStore.client; add parameter ctx context.Context to newClient; add parameter ctx context.Context to client.renewToken; add parameter ctx context.Context to client.renewLease; add parameter ctx context.Context to client.swapToken; add parameter ctx context.Context to client.get; add parameter ctx context.Context to client.capabilities; add parameter ctx context.Context to client.ping; add parameter ctx context.Context to client.revokeToken; add parameter ctx context.Context to client.revokeLease; add parameter ctx context.Context to client.lookupToken; add parameter ctx context.Context to client.post; add parameter ctx context.Context to toProto; add parameter ctx context.Context to toStorageStaticStore; add parameter ctx context.Context to toStorageVaultStore; add parameter ctx context.Context to NewService; add parameter ctx context.Context to validateUpdateRequest; add parameter ctx context.Context to validateCreateRequest; add parameter ctx context.Context to extractClientCertAndPk; add parameter ctx context.Context to decodePemBlocks",
+    "go_files": 16,
+    "add_params": [
+      {
+        "pkg": "github.com/hashicorp/boundary/internal/credential/vault",
+        "sym": "CredentialStore.client",
+        "name": "ctx",
+        "type": "context.Context"
+      },
+      {
+        "pkg": "github.com/hashicorp/boundary/internal/credential/vault",
+        "sym": "privateCredential.client",
+        "name": "ctx",
+        "type": "context.Context"
+      },
+      {
+        "pkg": "github.com/hashicorp/boundary/internal/credential/vault",
+        "sym": "privateLibrary.client",
+        "name": "ctx",
+        "type": "context.Context"
+      },
+      {
+        "pkg": "github.com/hashicorp/boundary/internal/credential/vault",
+        "sym": "privateStore.client",
+        "name": "ctx",
+        "type": "context.Context"
+      },
+      {
+        "pkg": "github.com/hashicorp/boundary/internal/credential/vault",
+        "sym": "newClient",
+        "name": "ctx",
+        "type": "context.Context"
+      },
+      {
+        "pkg": "github.com/hashicorp/boundary/internal/credential/vault",
+        "sym": "client.renewToken",
+        "name": "ctx",
+        "type": "context.Context"
+      },
+      {
+        "pkg": "github.com/hashicorp/boundary/internal/credential/vault",
+        "sym": "client.renewLease",
+        "name": "ctx",
+        "type": "context.Context"
+      },
+      {
+        "pkg": "github.com/hashicorp/boundary/internal/credential/vault",
+        "sym": "client.swapToken",
+        "name": "ctx",
+        "type": "context.Context"
+      },
+      {
+        "pkg": "github.com/hashicorp/boundary/internal/credential/vault",
+        "sym": "client.get",
+        "name": "ctx",
+        "type": "context.Context"
+      },
+      {
+        "pkg": "github.com/hashicorp/boundary/internal/credential/vault",
+        "sym": "client.capabilities",
+        "name": "ctx",
+        "type": "context.Context"
+      },
+      {
+        "pkg": "github.com/hashicorp/boundary/internal/credential/vault",
+        "sym": "client.ping",
+        "name": "ctx",
+        "type": "context.Context"
+      },
+      {
+        "pkg": "github.com/hashicorp/boundary/internal/credential/vault",
+        "sym": "client.revokeToken",
+        "name": "ctx",
+        "type": "context.Context"
+      },
+      {
+        "pkg": "github.com/hashicorp/boundary/internal/credential/vault",
+        "sym": "client.revokeLease",
+        "name": "ctx",
+        "type": "context.Context"
+      },
+      {
+        "pkg": "github.com/hashicorp/boundary/internal/credential/vault",
+        "sym": "client.lookupToken",
+        "name": "ctx",
+        "type": "context.Context"
+      },
+      {
+        "pkg": "github.com/hashicorp/boundary/internal/credential/vault",
+        "sym": "client.post",
+        "name": "ctx",
+        "type": "context.Context"
+      },
+      {
+        "pkg": "github.com/hashicorp/boundary/internal/daemon/controller/handlers/credentialstores",
+        "sym": "toProto",
+        "name": "ctx",
+        "type": "context.Context"
+      },
+      {
+        "pkg": "github.com/hashicorp/boundary/internal/daemon/controller/handlers/credentialstores",
+        "sym": "toStorageStaticStore",
+        "name": "ctx",
+        "type": "context.Context"
+      },
+      {
+        "pkg": "github.com/hashicorp/boundary/internal/daemon/controller/handlers/credentialstores",
+        "sym": "toStorageVaultStore",
+        "name": "ctx",
+        "type": "context.Context"
+      },
+      {
+        "pkg": "github.com/hashicorp/boundary/internal/daemon/controller/handlers/credentialstores",
+        "sym": "NewService",
+        "name": "ctx",
+        "type": "context.Context"
+      },
+      {
+        "pkg": "github.com/hashicorp/boundary/internal/daemon/controller/handlers/credentialstores",
+        "sym": "validateUpdateRequest",
+        "name": "ctx",
+        "type": "context.Context"
+      },
+      {
+        "pkg": "github.com/hashicorp/boundary/internal/daemon/controller/handlers/credentialstores",
+        "sym": "validateCreateRequest",
+        "name": "ctx",
+        "type": "context.Context"
+      },
+      {
+        "pkg": "github.com/hashicorp/boundary/internal/daemon/controller/handlers/credentialstores",
+        "sym": "extractClientCertAndPk",
+        "name": "ctx",
+        "type": "context.Context"
+      },
+      {
+        "pkg": "github.com/hashicorp/boundary/internal/daemon/controller/handlers/credentialstores",
+        "sym": "decodePemBlocks",
+        "name": "ctx",
+        "type": "context.Context"
+      }
+    ],
+    "certified": true
+  },
+  {
+    "repo": "boundary",
+    "sha": "eb61ac63045d6690f50565c9d48b36ef1669b78a",
+    "kind": "add-param",
+    "prompt": "refact(session): Add context to session factory\n\nSpecifically: add parameter ctx context.Context to NewRepository",
+    "go_files": 25,
+    "add_params": [
+      {
+        "pkg": "github.com/hashicorp/boundary/internal/session",
+        "sym": "NewRepository",
+        "name": "ctx",
+        "type": "context.Context"
+      }
+    ],
+    "certified": true
+  },
+  {
+    "repo": "boundary",
+    "sha": "9354a4ebcf72dad8a9b119af5ca94797d7238bd0",
+    "kind": "add-param",
+    "prompt": "refactor(scheduler): Add statusThreshold parameter to job.Run\n\nSpecifically: add parameter _ time.Duration to censusJob.Run; add parameter _ time.Duration to TokenRevocationJob.Run; add parameter _ time.Duration to CredentialRenewalJob.Run; add parameter _ time.Duration to TokenRenewalJob.Run; add parameter _ time.Duration to CredentialCleanupJob.Run; add parameter _ time.Duration to CredentialRevocationJob.Run; add parameter _ time.Duration to CredentialStoreCleanupJob.Run; add parameter _ time.Duration to OrphanedHostCleanupJob.Run; add parameter _ time.Duration to SetSyncJob.Run; add parameter _ time.Duration to dataKeyVersionDestructionMonitorJob.Run; add parameter _ time.Duration to tableRewrappingJob.Run; add parameter _ time.Duration to purgeJob.Run; add parameter _ time.Duration to cleanerJob.Run; add parameter statusThreshold time.Duration to testJob.Run; add parameter _ time.Duration to rotateRootsJob.Run; add parameter ctx context.Context to upsertWorkerStorageBucketJob.Run; add parameter _ time.Duration to deleteTerminatedJob.Run; add parameter _ time.Duration to sessionConnectionCleanupJob.Run; add parameter _ time.Duration to snapshotJob.Run",
+    "go_files": 27,
+    "add_params": [
+      {
+        "pkg": "github.com/hashicorp/boundary/internal/census",
+        "sym": "censusJob.Run",
+        "name": "_",
+        "type": "time.Duration"
+      },
+      {
+        "pkg": "github.com/hashicorp/boundary/internal/credential/vault",
+        "sym": "TokenRevocationJob.Run",
+        "name": "_",
+        "type": "time.Duration"
+      },
+      {
+        "pkg": "github.com/hashicorp/boundary/internal/credential/vault",
+        "sym": "CredentialRenewalJob.Run",
+        "name": "_",
+        "type": "time.Duration"
+      },
+      {
+        "pkg": "github.com/hashicorp/boundary/internal/credential/vault",
+        "sym": "TokenRenewalJob.Run",
+        "name": "_",
+        "type": "time.Duration"
+      },
+      {
+        "pkg": "github.com/hashicorp/boundary/internal/credential/vault",
+        "sym": "CredentialCleanupJob.Run",
+        "name": "_",
+        "type": "time.Duration"
+      },
+      {
+        "pkg": "github.com/hashicorp/boundary/internal/credential/vault",
+        "sym": "CredentialRevocationJob.Run",
+        "name": "_",
+        "type": "time.Duration"
+      },
+      {
+        "pkg": "github.com/hashicorp/boundary/internal/credential/vault",
+        "sym": "CredentialStoreCleanupJob.Run",
+        "name": "_",
+        "type": "time.Duration"
+      },
+      {
+        "pkg": "github.com/hashicorp/boundary/internal/host/plugin",
+        "sym": "OrphanedHostCleanupJob.Run",
+        "name": "_",
+        "type": "time.Duration"
+      },
+      {
+        "pkg": "github.com/hashicorp/boundary/internal/host/plugin",
+        "sym": "SetSyncJob.Run",
+        "name": "_",
+        "type": "time.Duration"
+      },
+      {
+        "pkg": "github.com/hashicorp/boundary/internal/kms/job",
+        "sym": "dataKeyVersionDestructionMonitorJob.Run",
+        "name": "_",
+        "type": "time.Duration"
+      },
+      {
+        "pkg": "github.com/hashicorp/boundary/internal/kms/job",
+        "sym": "tableRewrappingJob.Run",
+        "name": "_",
+        "type": "time.Duration"
+      },
+      {
+        "pkg": "github.com/hashicorp/boundary/internal/pagination/purge",
+        "sym": "purgeJob.Run",
+        "name": "_",
+        "type": "time.Duration"
+      },
+      {
+        "pkg": "github.com/hashicorp/boundary/internal/scheduler/cleaner",
+        "sym": "cleanerJob.Run",
+        "name": "_",
+        "type": "time.Duration"
+      },
+      {
+        "pkg": "github.com/hashicorp/boundary/internal/scheduler",
+        "sym": "testJob.Run",
+        "name": "statusThreshold",
+        "type": "time.Duration"
+      },
+      {
+        "pkg": "github.com/hashicorp/boundary/internal/server/job",
+        "sym": "rotateRootsJob.Run",
+        "name": "_",
+        "type": "time.Duration"
+      },
+      {
+        "pkg": "github.com/hashicorp/boundary/internal/server/job",
+        "sym": "upsertWorkerStorageBucketJob.Run",
+        "name": "ctx",
+        "type": "context.Context"
+      },
+      {
+        "pkg": "github.com/hashicorp/boundary/internal/session",
+        "sym": "deleteTerminatedJob.Run",
+        "name": "_",
+        "type": "time.Duration"
+      },
+      {
+        "pkg": "github.com/hashicorp/boundary/internal/session",
+        "sym": "sessionConnectionCleanupJob.Run",
+        "name": "_",
+        "type": "time.Duration"
+      },
+      {
+        "pkg": "github.com/hashicorp/boundary/internal/snapshot",
+        "sym": "snapshotJob.Run",
+        "name": "_",
+        "type": "time.Duration"
+      }
+    ],
+    "certified": true
+  },
+  {
+    "repo": "vault",
+    "sha": "cbdf16c5a1d49310daa8398be0e2930ca0320853",
+    "kind": "add-param",
+    "prompt": "Rebase #14178 / Add not_before_duration API parameter to Root/Intermediate CA generation",
+    "go_files": 5,
+    "needs_review": "no function gained a named parameter in the diff"
+  },
+  {
+    "repo": "vault",
+    "sha": "e8015313dded4a2f5f7b4b72c7cc64b634eb4475",
+    "kind": "add-param",
+    "prompt": "Add a new parameter \"allowed_managed_keys\" to mount config",
+    "go_files": 5,
+    "needs_review": "no function gained a named parameter in the diff"
+  },
+  {
+    "repo": "vault",
+    "sha": "4b7250e3c1c650edc34cfa43925bced83bdd6944",
+    "kind": "add-param",
+    "prompt": "Add role parameter to restrict issuance of wildcard certificates",
+    "go_files": 6,
+    "needs_review": "no function gained a named parameter in the diff"
+  },
+  {
+    "repo": "vault",
+    "sha": "2f4fe5345a0997cba6c69d1ca40e7795022c2734",
+    "kind": "add-param",
+    "prompt": "Backport fix: add timeout context around UpdateUser to prevent static role rotation hang into ce/main",
+    "go_files": 8,
+    "needs_review": "no function gained a named parameter in the diff"
+  },
+  {
+    "repo": "vault",
+    "sha": "cfff8d420e2f1479d7f16e9f349dd444e6f1c7b6",
+    "kind": "add-param",
+    "prompt": "aws: pass cancelable context with aws calls\n\nSpecifically: add parameter ctx context.Context to backend.instanceIamRoleARN",
+    "go_files": 11,
+    "add_params": [
+      {
+        "pkg": "github.com/hashicorp/vault/builtin/credential/aws",
+        "sym": "backend.instanceIamRoleARN",
+        "name": "ctx",
+        "type": "context.Context"
+      }
+    ],
+    "certified": true
+  },
+  {
+    "repo": "vault",
+    "sha": "7103bc2cdb45ff8c4e01ebb09f61e9b20a67fe10",
+    "kind": "add-param",
+    "prompt": "VAULT-17078: Add useEventLogger Argument to Audit Factory Functions",
+    "go_files": 12,
+    "add_params": [
+      {
+        "pkg": "github.com/hashicorp/vault/builtin/audit/file",
+        "sym": "Factory",
+        "name": "useEventLogger",
+        "type": "bool"
+      },
+      {
+        "pkg": "github.com/hashicorp/vault/builtin/audit/socket",
+        "sym": "Factory",
+        "name": "useEventLogger",
+        "type": "bool"
+      },
+      {
+        "pkg": "github.com/hashicorp/vault/builtin/audit/syslog",
+        "sym": "Factory",
+        "name": "useEventLogger",
+        "type": "bool"
+      }
+    ],
+    "certified": true
+  }
 ]

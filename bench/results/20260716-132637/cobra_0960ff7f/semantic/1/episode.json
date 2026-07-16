@@ -1,0 +1,67 @@
+{
+ "agent_done": "2026-07-16T20:35:38.266651208Z",
+ "agent_started": "2026-07-16T20:31:46.12092Z",
+ "cache_read": 1646376,
+ "cache_write": 0,
+ "capped": false,
+ "failure_kind": "",
+ "iter": 1,
+ "mode": "semantic",
+ "new_errors": null,
+ "op_mix": {
+  "help": {
+   "ok": 2,
+   "rejected": 0
+  },
+  "query": {
+   "ok": 13,
+   "rejected": 33
+  },
+  "refs": {
+   "ok": 0,
+   "rejected": 1
+  },
+  "rename": {
+   "ok": 0,
+   "rejected": 5
+  },
+  "set-body": {
+   "ok": 0,
+   "rejected": 1
+  },
+  "status": {
+   "ok": 12,
+   "rejected": 0
+  },
+  "view": {
+   "ok": 0,
+   "rejected": 8
+  }
+ },
+ "pass": true,
+ "predicate": true,
+ "profile": "qwen3.5-9b",
+ "prompt": "Rename IsHelpCommand to IsAdditionalHelpTopicCommand",
+ "rejects_total": 48,
+ "repairs_offered": 41,
+ "resends": 11,
+ "specs": [
+  {
+   "baseline_refs": 0,
+   "new_refs": 0,
+   "ok": true,
+   "old_refs_left": 0,
+   "sym": ".Command.IsHelpCommand",
+   "to": "IsAdditionalHelpTopicCommand"
+  }
+ ],
+ "steps": 77,
+ "task": "cobra_0960ff7f",
+ "tests": false,
+ "tests_baseline": false,
+ "tokens_in": 56495,
+ "tokens_out": 11623,
+ "tokens_reasoning": 0,
+ "typecheck": true,
+ "wall_s": 232.145731208
+}

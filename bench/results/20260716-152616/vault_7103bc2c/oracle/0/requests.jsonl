@@ -1,0 +1,16 @@
+{"ms":3196,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T21:26:48.075039Z"}
+{"ms":25,"op":"add-param","outcome":"rejected","pkg":"github.com/hashicorp/vault/builtin/audit/file","reason":"function is used as a value; add_param cannot repair those sites","repairs":0,"req_sha":"bff0b09e3a08374a","sym":"Factory","ts":"2026-07-16T21:26:51.276516Z"}
+{"ms":4,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/vault/builtin/audit/file","req_sha":"4c3540a12b62c322","sym":"Factory","ts":"2026-07-16T21:26:51.30633Z"}
+{"ms":3,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/vault/builtin/audit/file","req_sha":"4c3540a12b62c322","sym":"Factory","ts":"2026-07-16T21:26:51.315026Z"}
+{"ms":3,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/vault/builtin/audit/socket","req_sha":"a0e3f335d0446612","sym":"Factory","ts":"2026-07-16T21:26:51.324144Z"}
+{"ms":4,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/vault/builtin/audit/socket","req_sha":"a0e3f335d0446612","sym":"Factory","ts":"2026-07-16T21:26:51.333354Z"}
+{"ms":2,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/vault/builtin/audit/syslog","req_sha":"14a613cd501bbcea","sym":"Factory","ts":"2026-07-16T21:26:51.342865Z"}
+{"ms":2,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/vault/builtin/audit/syslog","req_sha":"14a613cd501bbcea","sym":"Factory","ts":"2026-07-16T21:26:51.349962Z"}
+{"ms":1461,"op":"patch","outcome":"rejected","pkg":"github.com/hashicorp/vault/builtin/audit/file","reason":"patch does not typecheck","repairs":0,"req_sha":"748688070b7ecb48","sym":"Factory","ts":"2026-07-16T21:26:51.358244Z"}
+{"ms":4,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/vault/audit","req_sha":"a89ad5594201680e","sym":"Factory","ts":"2026-07-16T21:26:52.826782Z"}
+{"ms":1602,"op":"patch","outcome":"rejected","pkg":"github.com/hashicorp/vault/builtin/audit/file","reason":"patch does not typecheck","repairs":0,"req_sha":"51b3554acb97eb6f","sym":"Factory","ts":"2026-07-16T21:26:52.838968Z"}
+{"ms":2438,"op":"patch","outcome":"rejected","pkg":"github.com/hashicorp/vault/builtin/audit/file","reason":"patch does not typecheck","repairs":0,"req_sha":"dd1904cfb477a7b1","sym":"Factory","ts":"2026-07-16T21:26:54.448837Z"}
+{"ms":4,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/vault/builtin/audit/file","req_sha":"4c3540a12b62c322","sym":"Factory","ts":"2026-07-16T21:26:56.906889Z"}
+{"ms":4,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/vault/builtin/audit/socket","req_sha":"a0e3f335d0446612","sym":"Factory","ts":"2026-07-16T21:26:56.917086Z"}
+{"ms":3,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/vault/builtin/audit/syslog","req_sha":"14a613cd501bbcea","sym":"Factory","ts":"2026-07-16T21:26:56.926619Z"}
+{"ms":6,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T21:26:56.935211Z"}

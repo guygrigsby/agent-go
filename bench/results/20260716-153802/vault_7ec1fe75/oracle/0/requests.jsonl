@@ -1,0 +1,9 @@
+{"ms":1330,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T21:38:12.060034Z"}
+{"ms":4234,"op":"patch","outcome":"rejected","pkg":"github.com/hashicorp/vault/vault","reason":"declaration does not typecheck","repairs":0,"req_sha":"1ae8a2e2b43abe4d","ts":"2026-07-16T21:38:13.396827Z"}
+{"ms":3,"op":"inspect","outcome":"rejected","pkg":"github.com/hashicorp/vault/sdk/helper/consts","reason":"package not found","repairs":1,"req_sha":"bc8cb2150778d8dd","sym":"PerformanceReplicationALPN","ts":"2026-07-16T21:38:17.638507Z"}
+{"ms":3,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/vault/vault","req_sha":"ba8bcb38bb0415a2","sym":"PerformanceReplicationALPN","ts":"2026-07-16T21:38:17.649343Z"}
+{"ms":3,"op":"inspect","outcome":"rejected","pkg":"github.com/hashicorp/vault/sdk/helper/consts","reason":"package not found","repairs":1,"req_sha":"4c8e6cde9453f373","sym":"DRReplicationALPN","ts":"2026-07-16T21:38:17.659947Z"}
+{"ms":3,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/vault/vault","req_sha":"12052ca9778d8b19","sym":"DRReplicationALPN","ts":"2026-07-16T21:38:17.670058Z"}
+{"ms":3,"op":"inspect","outcome":"rejected","pkg":"github.com/hashicorp/vault/vault/cluster","reason":"package not found","repairs":1,"req_sha":"4c7013d40423e3b7","sym":"HeartbeatInterval","ts":"2026-07-16T21:38:17.680227Z"}
+{"ms":3,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/vault/vault","req_sha":"45850b1172a3baf5","sym":"HeartbeatInterval","ts":"2026-07-16T21:38:17.689979Z"}
+{"ms":5,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T21:38:17.700212Z"}

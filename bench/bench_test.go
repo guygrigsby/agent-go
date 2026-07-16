@@ -203,7 +203,10 @@ func BenchmarkRename(b *testing.B) {
 		c := c
 		c.profile, c.endpoint, c.model = p, p.Endpoint, p.Model
 		for _, t := range tasks {
-			if !t.HasSpecs() {
+			if !t.EligibleForModel() {
+				if t.HasSpecs() {
+					b.Logf("skipping %s_%s: specs present but not oracle certified; run the oracle sweep then `bench certify` (tenet 2)", t.Repo, t.SHA[:8])
+				}
 				continue
 			}
 			for _, mode := range c.modes {

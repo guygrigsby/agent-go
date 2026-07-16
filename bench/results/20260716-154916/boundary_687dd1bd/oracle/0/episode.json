@@ -1,0 +1,51 @@
+{
+ "agent_done": "2026-07-16T21:49:42.092440708Z",
+ "agent_started": "2026-07-16T21:49:41.990106Z",
+ "cache_read": 0,
+ "cache_write": 0,
+ "capped": false,
+ "failure_kind": "oracle_reject",
+ "iter": 0,
+ "kind": "move",
+ "mode": "oracle",
+ "new_errors": null,
+ "op_mix": {
+  "patch": {
+   "ok": 0,
+   "rejected": 3
+  }
+ },
+ "oracle_error": "oracle move github.com/hashicorp/boundary/internal/servers/controller.TestSessionConnectionCleanupJob: map[detail:TestSessionConnectionCleanupJob uses newSessionConnectionCleanupJob diagnostics:\u003cnil\u003e did_you_mean:\u003cnil\u003e escalation:this exact call was already rejected; do not resend it unchanged — send a possible_repairs call verbatim, or change the arguments possible_repairs:\u003cnil\u003e reason:declaration depends on package-local symbols; move_decl v1 moves self-contained declarations resent:1 status:rejected]",
+ "pass": false,
+ "predicate": false,
+ "profile": "adhoc",
+ "prompt": "Move the session cleanup job logic into the session package.\n\nSpecifically: move TestSessionConnectionCleanupJob from github.com/hashicorp/boundary/internal/servers/controller to github.com/hashicorp/boundary/internal/session; move TestSessionConnectionCleanupJobNewJobErr from github.com/hashicorp/boundary/internal/servers/controller to github.com/hashicorp/boundary/internal/session",
+ "rejects_total": 3,
+ "repairs_offered": 0,
+ "resends": 1,
+ "specs": [
+  {
+   "in_target": false,
+   "ok": false,
+   "still_in_source": true,
+   "sym": "github.com/hashicorp/boundary/internal/servers/controller.TestSessionConnectionCleanupJob",
+   "to_pkg": "github.com/hashicorp/boundary/internal/session"
+  },
+  {
+   "in_target": false,
+   "ok": false,
+   "still_in_source": true,
+   "sym": "github.com/hashicorp/boundary/internal/servers/controller.TestSessionConnectionCleanupJobNewJobErr",
+   "to_pkg": "github.com/hashicorp/boundary/internal/session"
+  }
+ ],
+ "steps": 0,
+ "task": "boundary_687dd1bd",
+ "tests": false,
+ "tests_baseline": true,
+ "tokens_in": 0,
+ "tokens_out": 0,
+ "tokens_reasoning": 0,
+ "typecheck": true,
+ "wall_s": 0.102334708
+}

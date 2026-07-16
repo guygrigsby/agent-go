@@ -1,0 +1,79 @@
+{"ms":47,"op":"refs","outcome":"rejected","reason":"package not found","repairs":0,"req_sha":"ef3b44d6002a79fd","sym":"Command.IsHelpCommand","ts":"2026-07-16T20:31:46.068932Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T20:31:46.120417Z"}
+{"ms":0,"op":"help","outcome":"ok","req_sha":"0b56758d64d8a078","ts":"2026-07-16T20:31:52.425825Z"}
+{"ms":19,"op":"query","outcome":"ok","req_sha":"e724b3c860add371","sym":"IsHelpCommand","ts":"2026-07-16T20:31:58.366138Z"}
+{"ms":0,"op":"query","outcome":"ok","req_sha":"5ecde7f292500195","sym":"help","ts":"2026-07-16T20:32:00.223264Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T20:32:01.619141Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"github.com/spf13/cobra","reason":"package not found","repairs":1,"req_sha":"dec4b2afef43eb5a","sym":"IsHelpCommand","ts":"2026-07-16T20:32:03.608041Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"cobra_0960ff7fsemantic1040964550/005/cobra","reason":"package not found","repairs":1,"req_sha":"5a9dd0336efd2af0","sym":"IsHelpCommand","ts":"2026-07-16T20:32:05.790153Z"}
+{"ms":0,"op":"query","outcome":"ok","pkg":"cobra_0960ff7fsemantic1040964550/005/cobra","req_sha":"fe1dfac565084b99","sym":"IsHelpCommand","ts":"2026-07-16T20:32:08.206988Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T20:32:09.368559Z"}
+{"ms":0,"op":"query","outcome":"rejected","pkg":"cobra_0960ff7fsemantic1040964550/005/cobra","reason":"package not found","repairs":1,"req_sha":"bf2debec7fd1dbbc","sym":"go.mod","ts":"2026-07-16T20:32:11.491171Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T20:32:12.479343Z"}
+{"ms":0,"op":"query","outcome":"rejected","pkg":"cobra_0960ff7fsemantic1040964550/005/cobra","reason":"package not found","repairs":1,"req_sha":"ef4a1d09c0f31048","sym":"main.go","ts":"2026-07-16T20:32:14.651095Z"}
+{"ms":0,"op":"query","outcome":"rejected","pkg":"cobra_0960ff7fsemantic1040964550/005/cobra","reason":"package not found","repairs":1,"req_sha":"55a2aa4983c4a9a7","sym":"main","ts":"2026-07-16T20:32:16.97102Z"}
+{"ms":0,"op":"query","outcome":"rejected","pkg":"cobra_0960ff7fsemantic1040964550/005/cobra","reason":"package not found","repairs":1,"req_sha":"ac832ae035e584bd","sym":"Go.mod","ts":"2026-07-16T20:32:19.469312Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"cobra_0960ff7fsemantic1040964550/005/cobra","reason":"package not found","repairs":1,"req_sha":"8d9fa09c9acd8c51","sym":"cobra.go","ts":"2026-07-16T20:32:21.567419Z"}
+{"ms":0,"op":"query","outcome":"rejected","pkg":"cobra_0960ff7fsemantic1040964550/005/cobra","reason":"package not found","repairs":1,"req_sha":"7f54dd0939a90175","sym":"Command","ts":"2026-07-16T20:32:23.679933Z"}
+{"ms":0,"op":"query","outcome":"ok","pkg":"cobra_0960ff7fsemantic1040964550/005/cobra","req_sha":"8c3cbec243c87cb9","sym":"command","ts":"2026-07-16T20:32:26.028675Z"}
+{"ms":0,"op":"query","outcome":"rejected","pkg":"cobra_0960ff7fsemantic1040964550/005/cobra","reason":"package not found","repairs":1,"req_sha":"9becca2e33473f3c","sym":"git.go","ts":"2026-07-16T20:32:28.20759Z"}
+{"ms":0,"op":"query","outcome":"rejected","pkg":"cobra_0960ff7fsemantic1040964550/005/cobra","reason":"package not found","repairs":1,"req_sha":"77014099f1d47264","sym":"CobraTest","ts":"2026-07-16T20:32:30.469636Z"}
+{"ms":0,"op":"query","outcome":"ok","pkg":"cobra_0960ff7fsemantic1040964550/005/cobra","req_sha":"251c31ffcb4dfa12","sym":"test","ts":"2026-07-16T20:32:32.720473Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T20:32:33.746665Z"}
+{"ms":0,"op":"rename","outcome":"rejected","pkg":"cobra_0960ff7fsemantic1040964550/005/cobra","reason":"package not found","repairs":0,"req_sha":"7627a2aff0066791","sym":"IsHelpCommand","ts":"2026-07-16T20:32:36.311028Z"}
+{"ms":0,"op":"query","outcome":"rejected","pkg":"cobra_0960ff7fsemantic1040964550/005/cobra","reason":"package not found","repairs":1,"req_sha":"3d4f261737a529d4","sym":".","ts":"2026-07-16T20:32:38.591498Z"}
+{"ms":0,"op":"query","outcome":"rejected","pkg":"cobra_0960ff7fsemantic1040964550/005/cobra","reason":"package not found","repairs":1,"req_sha":"2f8c421cd280c447","sym":"go","ts":"2026-07-16T20:32:40.768147Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T20:32:42.0696Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T20:32:44.00868Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T20:32:45.379703Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T20:32:46.745626Z"}
+{"ms":0,"op":"rename","outcome":"rejected","pkg":"cobra_0960ff7fsemantic1040964550/005/cobra","reason":"package not found","repairs":0,"req_sha":"7627a2aff0066791","sym":"IsHelpCommand","ts":"2026-07-16T20:32:49.211277Z"}
+{"ms":0,"op":"rename","outcome":"rejected","pkg":".","reason":"package not found","repairs":0,"req_sha":"cec6f33c399d2941","sym":"IsHelpCommand","ts":"2026-07-16T20:32:51.596378Z"}
+{"ms":0,"op":"query","outcome":"rejected","pkg":"cobra_0960ff7fsemantic1040964550/005/cobra","reason":"package not found","repairs":1,"req_sha":"3b4ecec664c38d11","sym":"cobra","ts":"2026-07-16T20:32:53.689001Z"}
+{"ms":0,"op":"query","outcome":"ok","pkg":"cobra_0960ff7fsemantic1040964550/005/cobra","req_sha":"fe1dfac565084b99","sym":"IsHelpCommand","ts":"2026-07-16T20:32:55.950441Z"}
+{"ms":0,"op":"query","outcome":"rejected","pkg":"cobra_0960ff7fsemantic1040964550/005/cobra","reason":"package not found","repairs":1,"req_sha":"b1f5e7dde0844712","sym":"IsHelpCommand","ts":"2026-07-16T20:32:58.187963Z"}
+{"ms":0,"op":"rename","outcome":"rejected","pkg":"cobra","reason":"package not found","repairs":0,"req_sha":"81a8de7b6bf5c688","sym":"IsHelpCommand","ts":"2026-07-16T20:33:00.298341Z"}
+{"ms":0,"op":"query","outcome":"rejected","pkg":"../","reason":"package not found","repairs":1,"req_sha":"bba8a86bc229f155","sym":"go.work","ts":"2026-07-16T20:33:02.22424Z"}
+{"ms":0,"op":"query","outcome":"rejected","pkg":"cobra_0960ff7fsemantic1040964550/005/cobra","reason":"package not found","repairs":1,"req_sha":"40a780780331d028","sym":"go.work","ts":"2026-07-16T20:33:04.380778Z"}
+{"ms":0,"op":"query","outcome":"rejected","pkg":".","reason":"package not found","repairs":1,"req_sha":"4769688c761077dc","sym":"go.mod","ts":"2026-07-16T20:33:06.312074Z"}
+{"ms":0,"op":"query","outcome":"rejected","pkg":"cobra_0960ff7fsemantic1040964550/005/cobra","reason":"package not found","repairs":1,"req_sha":"4b0e96a6b41af764","sym":".gitconfig","ts":"2026-07-16T20:33:09.182521Z"}
+{"ms":0,"op":"query","outcome":"rejected","pkg":"cobra_0960ff7fsemantic1040964550/005/cobra","reason":"package not found","repairs":1,"req_sha":"8937f687ac9bee16","sym":"workspace.go","ts":"2026-07-16T20:33:11.643474Z"}
+{"ms":0,"op":"query","outcome":"rejected","pkg":"cobra_0960ff7fsemantic1040964550/005/cobra","reason":"package not found","repairs":1,"req_sha":"c2e2bd2b5c091970","sym":"config","ts":"2026-07-16T20:33:14.158026Z"}
+{"ms":0,"op":"query","outcome":"rejected","pkg":"cobra_0960ff7fsemantic1040964550/005/cobra","reason":"package not found","repairs":1,"req_sha":"40a780780331d028","sym":"go.work","ts":"2026-07-16T20:33:17.852586Z"}
+{"ms":0,"op":"query","outcome":"rejected","pkg":"cobra_0960ff7fsemantic1040964550/005/cobra","reason":"package not found","repairs":1,"req_sha":"dbdacc9f1217a668","sym":"mod","ts":"2026-07-16T20:33:20.195987Z"}
+{"ms":0,"op":"query","outcome":"rejected","pkg":"cobra_0960ff7fsemantic1040964550/005/cobra","reason":"package not found","repairs":1,"req_sha":"b1f5e7dde0844712","sym":"IsHelpCommand","ts":"2026-07-16T20:33:22.811736Z"}
+{"ms":0,"op":"query","outcome":"ok","pkg":"cobra_0960ff7fsemantic1040964550/005/cobra","req_sha":"fe1dfac565084b99","sym":"IsHelpCommand","ts":"2026-07-16T20:33:25.006027Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T20:33:26.235164Z"}
+{"ms":0,"op":"query","outcome":"rejected","pkg":"cobra_0960ff7fsemantic1040964550/005/cobra","reason":"package not found","repairs":1,"req_sha":"e3fa3e783e078e0f","sym":"Package","ts":"2026-07-16T20:33:30.817229Z"}
+{"ms":0,"op":"rename","outcome":"rejected","pkg":"cobra_0960ff7fsemantic1040964550/005/cobra","reason":"package not found","repairs":0,"req_sha":"7627a2aff0066791","sym":"IsHelpCommand","ts":"2026-07-16T20:33:33.48338Z"}
+{"ms":0,"op":"query","outcome":"rejected","pkg":"cobra_0960ff7fsemantic1040964550/005/cobra","reason":"package not found","repairs":1,"req_sha":"7f54dd0939a90175","sym":"Command","ts":"2026-07-16T20:33:35.954981Z"}
+{"ms":0,"op":"query","outcome":"ok","pkg":"cobra_0960ff7fsemantic1040964550/005/cobra","req_sha":"1e1dda8166de6d4d","sym":"Command","ts":"2026-07-16T20:33:38.018022Z"}
+{"ms":0,"op":"set-body","outcome":"rejected","pkg":"cobra_0960ff7fsemantic1040964550/005/cobra","reason":"package not found","repairs":0,"req_sha":"8835f25f63020d10","sym":"IsHelpCommand","ts":"2026-07-16T20:33:41.958749Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"cobra_0960ff7fsemantic1040964550/005/cobra","reason":"package not found","repairs":1,"req_sha":"8d9fa09c9acd8c51","sym":"cobra.go","ts":"2026-07-16T20:33:45.161964Z"}
+{"ms":0,"op":"query","outcome":"ok","pkg":"cobra_0960ff7fsemantic1040964550/005/cobra","req_sha":"91a4fa8fec58ac40","sym":"cobra","ts":"2026-07-16T20:33:47.604022Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T20:33:49.965094Z"}
+{"ms":0,"op":"query","outcome":"rejected","pkg":"cobra_0960ff7fsemantic1040964550/005/cobra","reason":"package not found","repairs":1,"req_sha":"e3fa3e783e078e0f","sym":"Package","ts":"2026-07-16T20:33:52.697579Z"}
+{"ms":0,"op":"query","outcome":"rejected","pkg":"cobra_0960ff7fsemantic1040964550/005/cobra","reason":"package not found","repairs":1,"req_sha":"a848fb22bc6f1437","sym":"pkg","ts":"2026-07-16T20:33:55.257606Z"}
+{"ms":0,"op":"query","outcome":"rejected","pkg":"cobra_0960ff7fsemantic1040964550/005/cobra","reason":"package not found","repairs":1,"req_sha":"3d7a918ca6862b5a","sym":"func","ts":"2026-07-16T20:33:57.72985Z"}
+{"ms":0,"op":"query","outcome":"ok","pkg":"cobra_0960ff7fsemantic1040964550/005/cobra","req_sha":"592cc1591828b652","sym":"var","ts":"2026-07-16T20:33:59.914644Z"}
+{"ms":0,"op":"query","outcome":"rejected","pkg":"cobra_0960ff7fsemantic1040964550/005/cobra","reason":"package not found","repairs":1,"req_sha":"9147fffb3da0a8f3","sym":"Project","ts":"2026-07-16T20:34:03.372057Z"}
+{"ms":0,"op":"query","outcome":"rejected","pkg":"cobra_0960ff7fsemantic1040964550/005/cobra","reason":"package not found","repairs":1,"req_sha":"c94c86aa31429731","sym":"Type","ts":"2026-07-16T20:34:05.56045Z"}
+{"ms":0,"op":"query","outcome":"rejected","pkg":"cobra_0960ff7fsemantic1040964550/005/cobra","reason":"package not found","repairs":1,"req_sha":"2ea688eab5258d90","sym":"go.mod","ts":"2026-07-16T20:34:08.794885Z"}
+{"ms":0,"op":"query","outcome":"ok","pkg":"cobra_0960ff7fsemantic1040964550/005/cobra","req_sha":"5d853291543d8656","sym":"File","ts":"2026-07-16T20:34:12.748568Z"}
+{"ms":0,"op":"query","outcome":"rejected","pkg":"cobra_0960ff7fsemantic1040964550/005/cobra","reason":"package not found","repairs":1,"req_sha":"2ea688eab5258d90","sym":"go.mod","ts":"2026-07-16T20:34:15.677213Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T20:34:18.030608Z"}
+{"ms":0,"op":"query","outcome":"rejected","pkg":"cobra_0960ff7fsemantic1040964550/005/cobra","reason":"package not found","repairs":1,"req_sha":"79d83f1c8e31e61f","sym":"workspace","ts":"2026-07-16T20:34:20.193555Z"}
+{"ms":0,"op":"query","outcome":"rejected","pkg":"cobra_0960ff7fsemantic1040964550/005/cobra","reason":"package not found","repairs":1,"req_sha":"75af7e26507a7fbc","sym":"git","ts":"2026-07-16T20:34:23.139339Z"}
+{"ms":0,"op":"query","outcome":"rejected","pkg":"cobra_0960ff7fsemantic1040964550/005/cobra","reason":"package not found","repairs":1,"req_sha":"4b0e96a6b41af764","sym":".gitconfig","ts":"2026-07-16T20:34:25.477422Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T20:34:27.522862Z"}
+{"ms":0,"op":"query","outcome":"rejected","pkg":"cobra_0960ff7fsemantic1040964550/005/cobra","reason":"package not found","repairs":1,"req_sha":"c2e2bd2b5c091970","sym":"config","ts":"2026-07-16T20:34:32.611983Z"}
+{"ms":0,"op":"query","outcome":"ok","pkg":"cobra","req_sha":"0594d1508a844276","sym":"IsHelpCommand","ts":"2026-07-16T20:35:01.621496Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"cobra","reason":"package not found","repairs":1,"req_sha":"bd45070b0e77b457","sym":"RootCommand","ts":"2026-07-16T20:35:03.120997Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"cobra_0960ff7fsemantic1040964550/005/cobra","reason":"package not found","repairs":1,"req_sha":"5b237f6c45ab32d0","sym":".","ts":"2026-07-16T20:35:08.471835Z"}
+{"ms":0,"op":"help","outcome":"ok","req_sha":"0b56758d64d8a078","ts":"2026-07-16T20:35:10.770406Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"cobra","reason":"package not found","repairs":1,"req_sha":"bd45070b0e77b457","sym":"RootCommand","ts":"2026-07-16T20:35:19.273322Z"}
+{"ms":0,"op":"query","outcome":"ok","pkg":"cobra","req_sha":"fc580540fcc4becf","sym":"command","ts":"2026-07-16T20:35:26.030891Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"cobra/cmd/cobra","reason":"package not found","repairs":1,"req_sha":"86e6d14927e06f47","sym":"Root","ts":"2026-07-16T20:35:31.276115Z"}
+{"ms":0,"op":"refs","outcome":"rejected","reason":"package not found","repairs":0,"req_sha":"ef3b44d6002a79fd","sym":"Command.IsHelpCommand","ts":"2026-07-16T20:35:38.265182Z"}
+{"ms":0,"op":"refs","outcome":"rejected","reason":"package not found","repairs":0,"req_sha":"f56d81dee418f382","sym":"Command.IsAdditionalHelpTopicCommand","ts":"2026-07-16T20:35:38.268679Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T20:35:38.271898Z"}

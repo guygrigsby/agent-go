@@ -1,0 +1,174 @@
+{"ms":14,"op":"refs","outcome":"rejected","reason":"package not found","repairs":0,"req_sha":"ef3b44d6002a79fd","sym":"Command.IsHelpCommand","ts":"2026-07-16T20:26:32.113308Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T20:26:32.131655Z"}
+{"ms":19,"op":"query","outcome":"ok","req_sha":"e724b3c860add371","sym":"IsHelpCommand","ts":"2026-07-16T20:26:39.034906Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T20:26:40.450489Z"}
+{"ms":0,"op":"query","outcome":"ok","pkg":"cobra","req_sha":"0594d1508a844276","sym":"IsHelpCommand","ts":"2026-07-16T20:26:42.661194Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"github.com/spf13/cobra","reason":"package not found","repairs":1,"req_sha":"dec4b2afef43eb5a","sym":"IsHelpCommand","ts":"2026-07-16T20:26:44.563342Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T20:26:46.053653Z"}
+{"ms":0,"op":"help","outcome":"ok","req_sha":"0b56758d64d8a078","ts":"2026-07-16T20:26:47.950641Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T20:26:53.747471Z"}
+{"ms":0,"op":"patch","outcome":"rejected","reason":"package not found","repairs":0,"req_sha":"17084ea44456666e","ts":"2026-07-16T20:26:55.892283Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T20:26:57.799947Z"}
+{"ms":0,"op":"help","outcome":"ok","req_sha":"0b56758d64d8a078","ts":"2026-07-16T20:26:59.102251Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T20:27:04.515569Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T20:27:06.123603Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T20:27:07.354693Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T20:27:08.91478Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T20:27:10.314839Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T20:27:12.240721Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T20:27:13.603203Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T20:27:15.288564Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T20:27:16.622258Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T20:27:18.170489Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T20:27:19.50677Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T20:27:20.991254Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T20:27:22.319603Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T20:27:23.648218Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T20:27:24.913852Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T20:27:26.266733Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T20:27:27.827919Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T20:27:29.04995Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T20:27:30.216786Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T20:27:31.415988Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T20:27:32.822841Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T20:27:34.089399Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T20:27:35.427325Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T20:27:36.851354Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T20:27:37.814459Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T20:27:39.549141Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T20:27:40.961799Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T20:27:42.60991Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T20:27:43.93335Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T20:27:45.387348Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T20:27:46.704264Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T20:27:48.011252Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T20:27:49.220201Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T20:27:50.58441Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T20:27:52.762093Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T20:27:54.508021Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T20:27:56.07939Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T20:27:57.447653Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T20:27:59.413134Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T20:28:00.862835Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T20:28:02.291194Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T20:28:03.660104Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T20:28:05.184065Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T20:28:07.018576Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T20:28:08.500248Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T20:28:09.788824Z"}
+{"ms":0,"op":"refs","outcome":"rejected","reason":"package not found","repairs":0,"req_sha":"ef3b44d6002a79fd","sym":"Command.IsHelpCommand","ts":"2026-07-16T20:28:10.599759Z"}
+{"ms":0,"op":"refs","outcome":"rejected","reason":"package not found","repairs":0,"req_sha":"f56d81dee418f382","sym":"Command.IsAdditionalHelpTopicCommand","ts":"2026-07-16T20:28:10.603866Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T20:28:10.608086Z"}
+{"ms":47,"op":"refs","outcome":"rejected","reason":"package not found","repairs":0,"req_sha":"ef3b44d6002a79fd","sym":"Command.IsHelpCommand","ts":"2026-07-16T20:28:11.094222Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T20:28:11.145609Z"}
+{"ms":25,"op":"query","outcome":"ok","req_sha":"e724b3c860add371","sym":"IsHelpCommand","ts":"2026-07-16T20:28:19.883615Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T20:28:20.982769Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"github.com/cyphar/checkrelpath","reason":"package not found","repairs":1,"req_sha":"930913be5fad7126","sym":"go.mod","ts":"2026-07-16T20:28:22.83945Z"}
+{"ms":0,"op":"query","outcome":"rejected","reason":"empty query","repairs":0,"req_sha":"428322c895a77852","ts":"2026-07-16T20:28:24.297118Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"github.com/cyphar/checkrelpath/internal/packagemodulepath/agent","reason":"package not found","repairs":1,"req_sha":"e84741e485bed9ba","sym":"go.mod","ts":"2026-07-16T20:28:25.970213Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"./agent","reason":"package not found","repairs":1,"req_sha":"1ab36a9046e366d8","sym":"go.mod","ts":"2026-07-16T20:28:27.418981Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"github.com/cobra-cobra/agent","reason":"package not found","repairs":1,"req_sha":"e53dd593e51988ce","sym":"go.mod","ts":"2026-07-16T20:28:29.113594Z"}
+{"ms":0,"op":"query","outcome":"ok","req_sha":"96dee7e54ff88064","sym":"cobra","ts":"2026-07-16T20:28:30.319589Z"}
+{"ms":0,"op":"query","outcome":"ok","req_sha":"e724b3c860add371","sym":"IsHelpCommand","ts":"2026-07-16T20:28:31.599863Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T20:28:32.36884Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"./","reason":"package not found","repairs":1,"req_sha":"67ecbf3603b839d5","sym":"go.mod","ts":"2026-07-16T20:28:33.688343Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"./","reason":"package not found","repairs":1,"req_sha":"1325bafbbae8f130","sym":"*/go.mod","ts":"2026-07-16T20:28:35.187233Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"*/cobra","reason":"package not found","repairs":1,"req_sha":"0497f4a55f9150df","sym":"main.go","ts":"2026-07-16T20:28:36.809476Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"./github.com/cobra-cobra/","reason":"package not found","repairs":1,"req_sha":"bfb9e0cc9dfba420","sym":"main.go","ts":"2026-07-16T20:28:38.169715Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"github.com/cobra-cobra/agent/cmd/checkrelpath","reason":"package not found","repairs":1,"req_sha":"d4570461fe717e68","sym":"go.mod","ts":"2026-07-16T20:28:39.727468Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"./internal","reason":"package not found","repairs":1,"req_sha":"a0fd027bcca15b82","sym":"go.mod","ts":"2026-07-16T20:28:40.985023Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"./cobra","reason":"package not found","repairs":1,"req_sha":"174f0417f218299d","sym":"go.mod","ts":"2026-07-16T20:28:42.480098Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"github.com/cmd/cobra","reason":"package not found","repairs":1,"req_sha":"2e2a8aab51253c26","sym":"main.go","ts":"2026-07-16T20:28:44.035801Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"github.com/cobra/cmd","reason":"package not found","repairs":1,"req_sha":"0230d7cf2d2b06f0","sym":"*/go.mod","ts":"2026-07-16T20:28:45.329888Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"*.go","reason":"package not found","repairs":1,"req_sha":"0b117ee8ea838e14","sym":"*/go.mod","ts":"2026-07-16T20:28:46.733335Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"agent/","reason":"package not found","repairs":1,"req_sha":"384ef90f56cd8f11","sym":"*/go.mod","ts":"2026-07-16T20:28:48.078418Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"agent/","reason":"package not found","repairs":1,"req_sha":"96bb25d972e3d32d","sym":"*//go.mod","ts":"2026-07-16T20:28:49.608921Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"agent/","reason":"package not found","repairs":1,"req_sha":"96bb25d972e3d32d","sym":"*//go.mod","ts":"2026-07-16T20:28:50.913923Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"agent/","reason":"package not found","repairs":1,"req_sha":"aabef0da265b562f","sym":"go.mod","ts":"2026-07-16T20:28:52.570841Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"agent/","reason":"package not found","repairs":1,"req_sha":"aabef0da265b562f","sym":"go.mod","ts":"2026-07-16T20:28:54.061829Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"agent/","reason":"package not found","repairs":1,"req_sha":"aabef0da265b562f","sym":"go.mod","ts":"2026-07-16T20:28:55.459094Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"agent/","reason":"package not found","repairs":1,"req_sha":"aabef0da265b562f","sym":"go.mod","ts":"2026-07-16T20:28:56.922364Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":".github","reason":"package not found","repairs":1,"req_sha":"2f08ef1eb6e955b5","sym":"go.mod","ts":"2026-07-16T20:28:58.547892Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"agent/","reason":"package not found","repairs":1,"req_sha":"aabef0da265b562f","sym":"go.mod","ts":"2026-07-16T20:29:00.263813Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"agent/","reason":"package not found","repairs":1,"req_sha":"aabef0da265b562f","sym":"go.mod","ts":"2026-07-16T20:29:01.91007Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"agent/","reason":"package not found","repairs":1,"req_sha":"aabef0da265b562f","sym":"go.mod","ts":"2026-07-16T20:29:03.361165Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"agent/","reason":"package not found","repairs":1,"req_sha":"aabef0da265b562f","sym":"go.mod","ts":"2026-07-16T20:29:04.680433Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"agent/","reason":"package not found","repairs":1,"req_sha":"aabef0da265b562f","sym":"go.mod","ts":"2026-07-16T20:29:05.973233Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"agent/","reason":"package not found","repairs":1,"req_sha":"d3830a8c33642718","sym":"*.go","ts":"2026-07-16T20:29:07.481403Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"agent/","reason":"package not found","repairs":1,"req_sha":"d3830a8c33642718","sym":"*.go","ts":"2026-07-16T20:29:08.881926Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"agent/","reason":"package not found","repairs":1,"req_sha":"d3830a8c33642718","sym":"*.go","ts":"2026-07-16T20:29:10.36536Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"agent/","reason":"package not found","repairs":1,"req_sha":"d3830a8c33642718","sym":"*.go","ts":"2026-07-16T20:29:11.776036Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"github.com/guygrigsby/checkrelpath/internal/packagemodulepath/agent","reason":"package not found","repairs":1,"req_sha":"6bc993cacb290bf3","sym":"go.mod","ts":"2026-07-16T20:29:13.595029Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"github.com/guygrigsby/checkrelpath/internal/packagemodulepath/agent","reason":"package not found","repairs":1,"req_sha":"6bc993cacb290bf3","sym":"go.mod","ts":"2026-07-16T20:29:15.342491Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"github.com/cobra-cobra/internal/packagemodulepath/agent","reason":"package not found","repairs":1,"req_sha":"621f50c317043b65","sym":"go.mod","ts":"2026-07-16T20:29:16.901059Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"github.com/cobra-cobra/agent","reason":"package not found","repairs":1,"req_sha":"e53dd593e51988ce","sym":"go.mod","ts":"2026-07-16T20:29:18.562953Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"github.com/cobra-cobra/agent","reason":"package not found","repairs":1,"req_sha":"e53dd593e51988ce","sym":"go.mod","ts":"2026-07-16T20:29:20.075049Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"github.com/cobra-cobra/agent","reason":"package not found","repairs":1,"req_sha":"e53dd593e51988ce","sym":"go.mod","ts":"2026-07-16T20:29:21.594676Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"github.com/cobra-cobra/agent","reason":"package not found","repairs":1,"req_sha":"e53dd593e51988ce","sym":"go.mod","ts":"2026-07-16T20:29:23.104514Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"github.com/cobra-cobra/agent","reason":"package not found","repairs":1,"req_sha":"e53dd593e51988ce","sym":"go.mod","ts":"2026-07-16T20:29:24.558713Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"github.com/cobra-cobra/agent","reason":"package not found","repairs":1,"req_sha":"e53dd593e51988ce","sym":"go.mod","ts":"2026-07-16T20:29:25.988611Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"github.com/cobra-cobra/agent","reason":"package not found","repairs":1,"req_sha":"e53dd593e51988ce","sym":"go.mod","ts":"2026-07-16T20:29:27.54581Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"github.com/cobra-cobra/agent","reason":"package not found","repairs":1,"req_sha":"e53dd593e51988ce","sym":"go.mod","ts":"2026-07-16T20:29:29.015296Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"github.com/cobra-cobra/agent","reason":"package not found","repairs":1,"req_sha":"e53dd593e51988ce","sym":"go.mod","ts":"2026-07-16T20:29:30.479486Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"github.com/cobra-cobra/agent/cmd/checkrelpath","reason":"package not found","repairs":1,"req_sha":"d4570461fe717e68","sym":"go.mod","ts":"2026-07-16T20:29:31.896989Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"github.com/cobra-cobra/agent/cmd/checkrelpath","reason":"package not found","repairs":1,"req_sha":"d4570461fe717e68","sym":"go.mod","ts":"2026-07-16T20:29:33.44398Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"github.com/cobra-cobra/agent/cmd/checkrelpath","reason":"package not found","repairs":1,"req_sha":"d4570461fe717e68","sym":"go.mod","ts":"2026-07-16T20:29:35.096452Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"github.com/cobra-cobra/agent/cmd/checkrelpath","reason":"package not found","repairs":1,"req_sha":"d4570461fe717e68","sym":"go.mod","ts":"2026-07-16T20:29:36.701483Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"github.com/cobra-cobra/agent/cmd/checkrelpath","reason":"package not found","repairs":1,"req_sha":"d4570461fe717e68","sym":"go.mod","ts":"2026-07-16T20:29:38.182198Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"github.com/cobra-cobra/agent/cmd/checkrelpath","reason":"package not found","repairs":1,"req_sha":"d4570461fe717e68","sym":"go.mod","ts":"2026-07-16T20:29:39.806582Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"github.com/cobra-cobra/agent/cmd/checkrelpath","reason":"package not found","repairs":1,"req_sha":"d4570461fe717e68","sym":"go.mod","ts":"2026-07-16T20:29:41.520253Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"github.com/cobra-cobra/agent/cmd/checkrelpath","reason":"package not found","repairs":1,"req_sha":"d4570461fe717e68","sym":"go.mod","ts":"2026-07-16T20:29:43.170183Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"github.com/cobra-cobra/agent/cmd/checkrelpath","reason":"package not found","repairs":1,"req_sha":"d4570461fe717e68","sym":"go.mod","ts":"2026-07-16T20:29:44.810914Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"github.com/cobra-cobra/agent/cmd/checkrelpath","reason":"package not found","repairs":1,"req_sha":"d4570461fe717e68","sym":"go.mod","ts":"2026-07-16T20:29:46.304684Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"github.com/cobra-cobra/agent/cmd/checkrelpath","reason":"package not found","repairs":1,"req_sha":"d4570461fe717e68","sym":"go.mod","ts":"2026-07-16T20:29:48.091379Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"github.com/cobra-cobra/agent/cmd/checkrelpath","reason":"package not found","repairs":1,"req_sha":"d4570461fe717e68","sym":"go.mod","ts":"2026-07-16T20:29:49.686502Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"github.com/cobra-cobra/agent/cmd/checkrelpath","reason":"package not found","repairs":1,"req_sha":"d4570461fe717e68","sym":"go.mod","ts":"2026-07-16T20:29:51.251866Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"github.com/cobra-cobra/agent/cmd/checkrelpath","reason":"package not found","repairs":1,"req_sha":"d4570461fe717e68","sym":"go.mod","ts":"2026-07-16T20:29:52.962632Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"github.com/cobra-cobra/agent/cmd/checkrelpath","reason":"package not found","repairs":1,"req_sha":"d4570461fe717e68","sym":"go.mod","ts":"2026-07-16T20:29:54.579108Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"github.com/cobra-cobra/agent/cmd/checkrelpath","reason":"package not found","repairs":1,"req_sha":"d4570461fe717e68","sym":"go.mod","ts":"2026-07-16T20:29:56.307284Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"github.com/cobra-cobra/agent/cmd/checkrelpath","reason":"package not found","repairs":1,"req_sha":"d4570461fe717e68","sym":"go.mod","ts":"2026-07-16T20:29:57.935984Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"github.com/cobra-cobra/agent/cmd/checkrelpath","reason":"package not found","repairs":1,"req_sha":"d4570461fe717e68","sym":"go.mod","ts":"2026-07-16T20:29:59.574162Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"github.com/cobra-cobra/agent/cmd/checkrelpath","reason":"package not found","repairs":1,"req_sha":"d4570461fe717e68","sym":"go.mod","ts":"2026-07-16T20:30:01.103888Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"github.com/cobra-cobra/agent/cmd/checkrelpath","reason":"package not found","repairs":1,"req_sha":"d4570461fe717e68","sym":"go.mod","ts":"2026-07-16T20:30:02.635417Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"github.com/cobra-cobra/agent/cmd/checkrelpath","reason":"package not found","repairs":1,"req_sha":"d4570461fe717e68","sym":"go.mod","ts":"2026-07-16T20:30:04.311209Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"github.com/cobra-cobra/agent/cmd/checkrelpath","reason":"package not found","repairs":1,"req_sha":"d4570461fe717e68","sym":"go.mod","ts":"2026-07-16T20:30:06.047498Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"github.com/cobra-cobra/agent/cmd/checkrelpath","reason":"package not found","repairs":1,"req_sha":"d4570461fe717e68","sym":"go.mod","ts":"2026-07-16T20:30:07.71516Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"github.com/cobra-cobra/agent/cmd/checkrelpath","reason":"package not found","repairs":1,"req_sha":"d4570461fe717e68","sym":"go.mod","ts":"2026-07-16T20:30:09.514364Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"github.com/cobra-cobra/agent/cmd/checkrelpath","reason":"package not found","repairs":1,"req_sha":"d4570461fe717e68","sym":"go.mod","ts":"2026-07-16T20:30:11.16064Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"github.com/cobra-cobra/agent/cmd/checkrelpath","reason":"package not found","repairs":1,"req_sha":"d4570461fe717e68","sym":"go.mod","ts":"2026-07-16T20:30:12.910682Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"github.com/cobra-cobra/agent/cmd/checkrelpath","reason":"package not found","repairs":1,"req_sha":"d4570461fe717e68","sym":"go.mod","ts":"2026-07-16T20:30:14.618912Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"github.com/cobra-cobra/agent/cmd/checkrelpath","reason":"package not found","repairs":1,"req_sha":"d4570461fe717e68","sym":"go.mod","ts":"2026-07-16T20:30:16.340509Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"github.com/cobra-cobra/agent/cmd/checkrelpath","reason":"package not found","repairs":1,"req_sha":"d4570461fe717e68","sym":"go.mod","ts":"2026-07-16T20:30:18.011141Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"github.com/cobra-cobra/agent/cmd/checkrelpath","reason":"package not found","repairs":1,"req_sha":"d4570461fe717e68","sym":"go.mod","ts":"2026-07-16T20:30:19.678798Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"github.com/cobra-cobra/agent/cmd/checkrelpath","reason":"package not found","repairs":1,"req_sha":"d4570461fe717e68","sym":"go.mod","ts":"2026-07-16T20:30:21.367121Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"github.com/cobra-cobra/agent/cmd/checkrelpath","reason":"package not found","repairs":1,"req_sha":"d4570461fe717e68","sym":"go.mod","ts":"2026-07-16T20:30:23.073653Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"github.com/cobra-cobra/agent/cmd/checkrelpath","reason":"package not found","repairs":1,"req_sha":"d4570461fe717e68","sym":"go.mod","ts":"2026-07-16T20:30:24.733643Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"github.com/cobra-cobra/agent/cmd/checkrelpath","reason":"package not found","repairs":1,"req_sha":"d4570461fe717e68","sym":"go.mod","ts":"2026-07-16T20:30:26.484353Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"github.com/cobra-cobra/agent/cmd/checkrelpath","reason":"package not found","repairs":1,"req_sha":"d4570461fe717e68","sym":"go.mod","ts":"2026-07-16T20:30:28.342849Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"github.com/cobra-cobra/agent/cmd/checkrelpath","reason":"package not found","repairs":1,"req_sha":"d4570461fe717e68","sym":"go.mod","ts":"2026-07-16T20:30:30.004293Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"github.com/cobra-cobra/agent/cmd/checkrelpath","reason":"package not found","repairs":1,"req_sha":"d4570461fe717e68","sym":"go.mod","ts":"2026-07-16T20:30:31.729029Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"github.com/cobra-cobra/agent/cmd/checkrelpath","reason":"package not found","repairs":1,"req_sha":"d4570461fe717e68","sym":"go.mod","ts":"2026-07-16T20:30:33.374421Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"github.com/cobra-cobra/agent/cmd/checkrelpath","reason":"package not found","repairs":1,"req_sha":"d4570461fe717e68","sym":"go.mod","ts":"2026-07-16T20:30:35.004043Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"github.com/cobra-cobra/agent/cmd/checkrelpath","reason":"package not found","repairs":1,"req_sha":"d4570461fe717e68","sym":"go.mod","ts":"2026-07-16T20:30:36.838904Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"github.com/cobra-cobra/agent/cmd/checkrelpath","reason":"package not found","repairs":1,"req_sha":"d4570461fe717e68","sym":"go.mod","ts":"2026-07-16T20:30:38.618299Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"github.com/cobra-cobra/agent/cmd/checkrelpath","reason":"package not found","repairs":1,"req_sha":"d4570461fe717e68","sym":"go.mod","ts":"2026-07-16T20:30:40.300415Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"github.com/cobra-cobra/agent/cmd/checkrelpath","reason":"package not found","repairs":1,"req_sha":"d4570461fe717e68","sym":"go.mod","ts":"2026-07-16T20:30:42.046013Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"github.com/cobra-cobra/agent/cmd/checkrelpath","reason":"package not found","repairs":1,"req_sha":"d4570461fe717e68","sym":"go.mod","ts":"2026-07-16T20:30:43.60255Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"github.com/cobra-cobra/agent/cmd/checkrelpath","reason":"package not found","repairs":1,"req_sha":"d4570461fe717e68","sym":"go.mod","ts":"2026-07-16T20:30:45.24031Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"github.com/cobra-cobra/agent/cmd/checkrelpath","reason":"package not found","repairs":1,"req_sha":"d4570461fe717e68","sym":"go.mod","ts":"2026-07-16T20:30:46.938747Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"github.com/cobra-cobra/agent/cmd/checkrelpath","reason":"package not found","repairs":1,"req_sha":"d4570461fe717e68","sym":"go.mod","ts":"2026-07-16T20:30:48.623984Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"github.com/cobra-cobra/agent/cmd/checkrelpath","reason":"package not found","repairs":1,"req_sha":"d4570461fe717e68","sym":"go.mod","ts":"2026-07-16T20:30:50.26081Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"github.com/cobra-cobra/agent/cmd/checkrelpath","reason":"package not found","repairs":1,"req_sha":"d4570461fe717e68","sym":"go.mod","ts":"2026-07-16T20:30:51.985223Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"github.com/cobra-cobra/agent/cmd/checkrelpath","reason":"package not found","repairs":1,"req_sha":"d4570461fe717e68","sym":"go.mod","ts":"2026-07-16T20:30:53.793231Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"github.com/cobra-cobra/agent/cmd/checkrelpath","reason":"package not found","repairs":1,"req_sha":"d4570461fe717e68","sym":"go.mod","ts":"2026-07-16T20:30:55.537313Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"github.com/cobra-cobra/agent/cmd/checkrelpath","reason":"package not found","repairs":1,"req_sha":"d4570461fe717e68","sym":"go.mod","ts":"2026-07-16T20:30:57.226393Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"github.com/cobra-cobra/agent/cmd/checkrelpath","reason":"package not found","repairs":1,"req_sha":"d4570461fe717e68","sym":"go.mod","ts":"2026-07-16T20:30:58.988271Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T20:31:30.622482Z"}
+{"ms":0,"op":"help","outcome":"ok","req_sha":"0b56758d64d8a078","ts":"2026-07-16T20:31:31.772463Z"}
+{"ms":0,"op":"query","outcome":"ok","req_sha":"e724b3c860add371","sym":"IsHelpCommand","ts":"2026-07-16T20:31:37.402746Z"}
+{"ms":0,"op":"query","outcome":"ok","req_sha":"8cddbccd581f3bac","sym":"IsHelp","ts":"2026-07-16T20:31:38.662939Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T20:31:39.999397Z"}
+{"ms":0,"op":"query","outcome":"ok","pkg":"github.com/cobra-cobra/agent/cmd/checkrelpath","req_sha":"b86aeae61f0ecabd","sym":"cobra","ts":"2026-07-16T20:31:42.212825Z"}
+{"ms":0,"op":"refs","outcome":"rejected","reason":"package not found","repairs":0,"req_sha":"ef3b44d6002a79fd","sym":"Command.IsHelpCommand","ts":"2026-07-16T20:31:45.591773Z"}
+{"ms":0,"op":"refs","outcome":"rejected","reason":"package not found","repairs":0,"req_sha":"f56d81dee418f382","sym":"Command.IsAdditionalHelpTopicCommand","ts":"2026-07-16T20:31:45.595611Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T20:31:45.599282Z"}

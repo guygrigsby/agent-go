@@ -1,0 +1,11 @@
+diff --git a/sdk/helper/consts/agent.go b/sdk/helper/consts/agent.go
+deleted file mode 100644
+index b62962e37e..0000000000
+--- a/sdk/helper/consts/agent.go
++++ /dev/null
+@@ -1,5 +0,0 @@
+-package consts
+-
+-// AgentPathCacheClear is the path that the agent will use as its cache-clear
+-// endpoint.
+-const AgentPathCacheClear = "/agent/v1/cache-clear"

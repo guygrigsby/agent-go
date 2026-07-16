@@ -1,0 +1,2 @@
+ M testing/internal/e2e/boundary/credential.go
+?? opencode.json

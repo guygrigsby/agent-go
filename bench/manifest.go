@@ -13,7 +13,18 @@ type Manifest struct {
 	AddParams   []AddParamSpec `json:"add_params,omitempty"`
 	Moves       []MoveSpec     `json:"moves,omitempty"`
 	NeedsReview string         `json:"needs_review,omitempty"`
+
+	// Certified marks that the oracle has replayed this task's ground
+	// truth through the protocol and reached green. Model rounds run only
+	// certified tasks (tenet 2: prove the task is solvable first); the
+	// flag is flipped by `bench certify <run dir>` from committed oracle
+	// evidence, never by hand.
+	Certified bool `json:"certified,omitempty"`
 }
+
+// EligibleForModel reports whether a model round may spend time on this
+// task: it must carry specs and be oracle certified.
+func (t Manifest) EligibleForModel() bool { return t.HasSpecs() && t.Certified }
 
 // MoveSpec is one declaration the ground-truth commit relocated: the goal
 // predicate checks it resolves in ToPkg and no longer in Pkg.

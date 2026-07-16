@@ -1,0 +1,100 @@
+diff --git a/internal/cmd/commands/dev/dev.go b/internal/cmd/commands/dev/dev.go
+index 8df71fd6c..03d2c6c47 100644
+--- a/internal/cmd/commands/dev/dev.go
++++ b/internal/cmd/commands/dev/dev.go
+@@ -66,7 +66,7 @@ type Command struct {
+ 	flagWorkerAuthKey                string
+ 	flagWorkerProxyListenAddr        string
+ 	flagWorkerPublicAddr             string
+-	flagPassthroughDirectory         string
++	flagUiPassthroughDir          string
+ 	flagRecoveryKey                  string
+ 	flagDatabaseUrl                  string
+ 	flagContainerImage               string
+@@ -251,8 +251,8 @@ func (c *Command) Flags() *base.FlagSets {
+ 
+ 	f.StringVar(&base.StringVar{
+ 		Name:   "passthrough-directory",
+-		Target: &c.flagPassthroughDirectory,
+-		EnvVar: "BOUNDARY_DEV_PASSTHROUGH_DIRECTORY",
++		Target: &c.flagUiPassthroughDir,
++		EnvVar: "BOUNDARY_DEV_UI_PASSTHROUGH_DIR",
+ 		Usage:  "Enables a passthrough directory in the webserver at /",
+ 	})
+ 
+@@ -408,7 +408,7 @@ func (c *Command) Run(args []string) int {
+ 	c.DevTargetSessionConnectionLimit = c.flagTargetSessionConnectionLimit
+ 	c.DevHostAddress = host
+ 
+-	c.Config.PassthroughDirectory = c.flagPassthroughDirectory
++	c.Config.DevUiPassthroughDir = c.flagUiPassthroughDir
+ 
+ 	for _, l := range c.Config.Listeners {
+ 		if len(l.Purpose) != 1 {
+diff --git a/internal/cmd/config/config.go b/internal/cmd/config/config.go
+index 83e4f382c..03059c30e 100644
+--- a/internal/cmd/config/config.go
++++ b/internal/cmd/config/config.go
+@@ -98,7 +98,7 @@ type Config struct {
+ 
+ 	// Dev-related options
+ 	DevController        bool   `hcl:"-"`
+-	PassthroughDirectory string `hcl:"-"`
++	DevUiPassthroughDir string `hcl:"-"`
+ 	DevControllerKey     string `hcl:"-"`
+ 	DevWorkerAuthKey     string `hcl:"-"`
+ 	DevRecoveryKey       string `hcl:"-"`
+diff --git a/internal/servers/controller/handler_noui.go b/internal/servers/controller/handler_noui.go
+index 20bc64689..03348ce99 100644
+--- a/internal/servers/controller/handler_noui.go
++++ b/internal/servers/controller/handler_noui.go
+@@ -8,8 +8,8 @@ import (
+ 	"github.com/hashicorp/boundary/internal/observability/event"
+ )
+ 
+-func devPassthroughHandler(passthroughDir string) http.Handler {
+-	const op = "controller.devPassthroughHandler"
++func devUiPassthroughHandler(passthroughDir string) http.Handler {
++	const op = "controller.devUiPassthroughHandler"
+ 	ctx := context.TODO()
+ 	// Panic may not be ideal but this is never a production call and it'll
+ 	// panic on startup. We could also just change the function to return
+@@ -26,8 +26,8 @@ func devPassthroughHandler(passthroughDir string) http.Handler {
+ }
+ 
+ var handleUi = func(c *Controller) http.Handler {
+-	if c.conf.RawConfig.PassthroughDirectory != "" {
+-		return devPassthroughHandler(c.conf.RawConfig.PassthroughDirectory)
++	if c.conf.RawConfig.DevUiPassthroughDir != "" {
++		return devUiPassthroughHandler(c.conf.RawConfig.DevUiPassthroughDir)
+ 	}
+ 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+ 		w.WriteHeader(http.StatusNotFound)
+diff --git a/internal/servers/controller/handler_ui.go b/internal/servers/controller/handler_ui.go
+index 9d660c0c1..a174dfd99 100644
+--- a/internal/servers/controller/handler_ui.go
++++ b/internal/servers/controller/handler_ui.go
+@@ -16,8 +16,8 @@ func init() {
+ 
+ func handleUiWithAssets(c *Controller) http.Handler {
+ 	var nextHandler http.Handler
+-	if c.conf.RawConfig.PassthroughDirectory != "" {
+-		nextHandler = devPassthroughHandler(c.conf.RawConfig.PassthroughDirectory)
++	if c.conf.RawConfig.DevUiPassthroughDir != "" {
++		nextHandler = devUiPassthroughHandler(c.conf.RawConfig.DevUiPassthroughDir)
+ 	} else {
+ 		nextHandler = ui.Handler()
+ 	}
+diff --git a/internal/servers/controller/handler_ui_test.go b/internal/servers/controller/handler_ui_test.go
+index f87154b17..7dace8468 100644
+--- a/internal/servers/controller/handler_ui_test.go
++++ b/internal/servers/controller/handler_ui_test.go
+@@ -41,7 +41,7 @@ func TestUiRouting(t *testing.T) {
+ 
+ 	c := NewTestController(t, &TestControllerOpts{DisableAutoStart: true})
+ 
+-	c.c.conf.RawConfig.PassthroughDirectory = tempDir
++	c.c.conf.RawConfig.DevUiPassthroughDir = tempDir
+ 	require.NoError(t, c.c.Start())
+ 	defer c.Shutdown()
+ 

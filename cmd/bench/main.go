@@ -13,7 +13,7 @@ import (
 
 func main() {
 	if len(os.Args) < 2 {
-		fail("usage: bench <prep-rename|report> [flags]")
+		fail("usage: bench <prep-rename|prep-addparam|prep-move|mine|export|paper|report|certify> [flags]")
 	}
 	cmd, args := os.Args[1], os.Args[2:]
 	fs := flag.NewFlagSet(cmd, flag.ExitOnError)
@@ -76,6 +76,13 @@ func main() {
 		}
 		if err := paperTables(fs.Args(), "docs/paper/generated"); err != nil {
 			fail("paper: %v", err)
+		}
+	case "certify":
+		if fs.NArg() == 0 {
+			fail("certify requires at least one run dir")
+		}
+		if err := certify(fs.Args(), "bench/tasks-*.json"); err != nil {
+			fail("certify: %v", err)
 		}
 	case "report":
 		if fs.NArg() == 0 {
