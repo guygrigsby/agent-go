@@ -9,34 +9,37 @@ Every fact that lives in two places gets a test comparing them, code side
 as the source of truth. Review only has to catch prose semantics;
 existence, status, counts, shapes, and examples are machine-checked.
 Enforced by the guard lattice (op registry ↔ help catalog ↔ surface.md ↔
-language.md ↔ beads status ↔ README ↔ MCP wire ↔ init scaffold ↔ bench
+language.md ↔ issue status ↔ README ↔ MCP wire ↔ init scaffold ↔ bench
 counters), catalog-version hashing, and fixture-executed examples. Adding
 a fact without a guard is the bug.
 
-## 2. The oracle goes first
+## 2. Prove the task is solvable first
 
-Never spend model time on a task a perfect agent can't complete: replay
-ground truth through the protocol, certify or name the blocker. Every
-oracle rejection is a finding (a spec bug, an engine bug, or a protocol
-ceiling), all found at machine speed. Enforced by TestOracleSweep and
+Before any model attempts a benchmark task, replay the known-correct
+change (mined from the real commit) through the protocol. If a perfect
+agent can't complete the task that way, it doesn't enter the bench; the
+blocker gets named instead. Every one of those is a finding (a spec bug,
+an engine bug, or a protocol ceiling) caught at machine speed, and no
+model time is spent on impossible work. Enforced by TestOracleSweep and
 certified-task gating of rounds.
 
-## 3. Rejections are conversation, not failure
+## 3. Rejections are data
 
 Every rejection answers "what is the correct next call": diagnostics say
-what broke, `possible_repairs` carries the corrected call whole, exact
-resends escalate. A repair that would itself reject is worse than none,
-so every repair runs verbatim in tests before it is ever offered.
-Enforced by the repairs suite.
+what broke and `possible_repairs` carries the corrected call whole.
+Sending the same rejected call again escalates instead of looping. A
+repair that would itself reject is worse than none, so every repair runs
+verbatim in tests before it is ever offered. Enforced by the repairs
+suite.
 
 ## 4. Parallel by default, deterministic by test
 
-Concurrency is the default for independent work (episodes, packages,
-subagents); serial needs a named reason. Identical query, identical
-bytes: caches, benchmarks, and result comparability all hang on it, and
-map iteration order is not an ordering. Enforced by the race detector,
-the serial/parallel equivalence test, and the byte-equality determinism
-test.
+Concurrency is the default for independent work (bench episodes,
+packages, subagents); serial needs a named reason. Identical query,
+identical bytes: caches, benchmarks, and result comparability all hang
+on it, and map iteration order is not an ordering. Enforced by the race
+detector, the serial/parallel equivalence test, and the byte-equality
+determinism test.
 
 ## 5. Name the ceiling, ship the floor
 
@@ -69,10 +72,3 @@ and the MLflow export.
 No sidecar scripts. A committed script is a missing subcommand; mining,
 reporting, extraction, and validation are Go code with tests, living
 next to what they serve.
-
-## 9. The funnel is honest
-
-Candidates → extracted specs → oracle-certified → measured. Every stage
-records what it dropped and why (`needs_review`, oracle rejections,
-`views_omitted`, truncation markers). Silent shrinkage reads as
-coverage; the funnel says what it lost.
