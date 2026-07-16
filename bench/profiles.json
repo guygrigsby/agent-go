@@ -34,7 +34,7 @@
     },
     "thinking": "low",
     "quant": "MXFP4",
-    "notes": "reasoning_effort=low; OpenAI-recommended temp 1.0 top_p 1.0; no repetition penalties (op JSON repeats by design); harmony format - no grammar constraints. Model id: probe /v1/models after Guy loads it on the R9700."
+    "notes": "reasoning_effort=low is a SERVER-LAUNCH knob (llama-server --chat-template-kwargs '{\"reasoning_effort\":\"low\"}'); template default is medium when unset. Relaunch per effort cell and verify via /props before a round. temp 1.0 top_p 1.0 per OpenAI; no repetition penalties; harmony - no grammar constraints."
   },
   "gpt-oss-20b-medium": {
     "endpoint": "https://llama.lab.aeryx.ai/v1",
@@ -46,7 +46,7 @@
     },
     "thinking": "medium",
     "quant": "MXFP4",
-    "notes": "reasoning_effort=medium; OpenAI-recommended temp 1.0 top_p 1.0; no repetition penalties (op JSON repeats by design); harmony format - no grammar constraints. Model id: probe /v1/models after Guy loads it on the R9700."
+    "notes": "reasoning_effort=medium is a SERVER-LAUNCH knob (llama-server --chat-template-kwargs '{\"reasoning_effort\":\"medium\"}'); template default is medium when unset. Relaunch per effort cell and verify via /props before a round. temp 1.0 top_p 1.0 per OpenAI; no repetition penalties; harmony - no grammar constraints."
   },
   "gpt-oss-20b-high": {
     "endpoint": "https://llama.lab.aeryx.ai/v1",
@@ -58,6 +58,6 @@
     },
     "thinking": "high",
     "quant": "MXFP4",
-    "notes": "reasoning_effort=high; OpenAI-recommended temp 1.0 top_p 1.0; no repetition penalties (op JSON repeats by design); harmony format - no grammar constraints. Model id: probe /v1/models after Guy loads it on the R9700."
+    "notes": "reasoning_effort=high is a SERVER-LAUNCH knob (llama-server --chat-template-kwargs '{\"reasoning_effort\":\"high\"}'); template default is medium when unset. Relaunch per effort cell and verify via /props before a round. temp 1.0 top_p 1.0 per OpenAI; no repetition penalties; harmony - no grammar constraints."
   }
 }
