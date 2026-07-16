@@ -262,6 +262,31 @@ func TestHandleEscalatesIdenticalResend(t *testing.T) {
 	}
 }
 
+// The standalone refs/search/inspect ops must carry the same repair
+// channel as their query-kind forms (gpt-oss smoke: refs misses got zero
+// repairs while view misses got them).
+func TestStandaloneRefsCarriesRepairs(t *testing.T) {
+	dir, err := filepath.Abs("../snapshot/testdata/demo")
+	if err != nil {
+		t.Fatal(err)
+	}
+	snap := snapshot.New(dir)
+	client, server := net.Pipe()
+	done := make(chan bool, 1)
+	go func() { done <- handle(server, snap, nil) }()
+	json.NewEncoder(client).Encode(protocol.Request{Op: "refs", Sym: "Double"})
+	var res map[string]any
+	json.NewDecoder(client).Decode(&res)
+	<-done
+	if res["status"] != "rejected" {
+		t.Fatalf("want rejected (no pkg), got %v", res)
+	}
+	reps, _ := res["possible_repairs"].([]any)
+	if len(reps) == 0 {
+		t.Fatalf("standalone refs miss must carry repairs: %v", res)
+	}
+}
+
 // AGO_NO_REPAIRS strips the repair channel for the ablation arm: no
 // possible_repairs, no resend escalation. did_you_mean and diagnostics
 // stay — that is the conventional typed-error baseline being compared

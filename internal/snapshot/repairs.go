@@ -209,6 +209,8 @@ func (s *Snapshot) sugarRepairs(rej *Reject, tool string, args map[string]any,
 		out["pkg"], out["sym"] = p, y
 		return map[string]any{"tool": tool, "args": out}
 	}, accept)
+	s.receiverInspectRepair(rej, pkg, sym)
+	searchFallbackRepair(rej, pkg, sym)
 }
 
 // repairField maps op-reject reasons whose did_you_mean candidates are
