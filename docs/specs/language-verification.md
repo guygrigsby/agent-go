@@ -37,7 +37,7 @@ rate.NewLimiter(...)`), then applied:
 ```
 
 ```
-$ ago patch -body-file - < patch.json
+$ ago patch --body-file - < patch.json
 {"files": [".../internal/ratelimit/limiter.go"], "generation": 2,
  "ops_applied": 3, "packages_rechecked": 96, "status": "accepted",
  "symbol": "github.com/hashicorp/boundary/internal/ratelimit.NewLimiter"}
@@ -63,13 +63,13 @@ Replayed the identical patch (still says `generation: 1`; the accept
 above bumped the real generation to 2):
 
 ```
-$ ago patch -body-file - < patch.json
+$ ago patch --body-file - < patch.json
 exit 2
 {"detail": "github.com/hashicorp/boundary/internal/ratelimit is at generation 2, patch was built against 1",
  "reason": "stale generation: re-view", "status": "rejected"}
 ```
 
-## query -kind implementations
+## query -k implementations
 
 First tried `ratelimit.Limiter` (found via `query -kind search -q
 Limiter`, 24 hits): 0 implementations. Correct, not a bug: the concrete
@@ -80,7 +80,7 @@ Confirmed real signal by trying an interface implemented inside the
 boundary module itself:
 
 ```
-$ ago query -kind implementations -p github.com/hashicorp/boundary/internal/db -s ResourcePublicIder
+$ ago query -k implementations -p github.com/hashicorp/boundary/internal/db -s ResourcePublicIder
 {"count": 113, "direction": "interface_to_types", "status": "ok", ...}
 ```
 

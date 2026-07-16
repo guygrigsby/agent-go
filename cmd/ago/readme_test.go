@@ -17,6 +17,7 @@ import (
 	"testing"
 
 	"github.com/guygrigsby/agent-go/internal/snapshot"
+	"github.com/spf13/pflag"
 )
 
 func readme(t *testing.T) string {
@@ -88,20 +89,23 @@ func agoCommands(md string) []string {
 }
 
 // commandProblems validates one extracted invocation against main.go's
-// dispatch: the verb must be routed, every -flag must be declared in
-// newFlagSet. Every ago flag is a string flag, so the token after a flag
-// is its value and is skipped.
+// dispatch: the op must be routed, every flag must be registered for that
+// op (long or shorthand). Every ago flag except --offset is a string
+// flag, so the token after a flag is its value and is skipped.
 func commandProblems(cmd string) []string {
 	tokens := strings.Fields(cmd)
 	if len(tokens) == 0 {
 		return []string{"empty command"}
 	}
 	var problems []string
-	verb := tokens[0]
-	if !slices.Contains(daemonOps, verb) && !slices.Contains(localOps, verb) {
-		problems = append(problems, fmt.Sprintf("verb %q is not dispatched by main.go", verb))
+	op := tokens[0]
+	if !slices.Contains(daemonOps, op) && !slices.Contains(localOps, op) {
+		problems = append(problems, fmt.Sprintf("op %q is not dispatched by main.go", op))
 	}
-	fs, _ := newFlagSet(verb)
+	fs := pflag.NewFlagSet(op, pflag.ContinueOnError)
+	var f cliFlags
+	registerFlags(fs, opFlags[op], &f)
+	fs.StringVarP(&f.dir, "dir", "C", ".", "workspace directory")
 	for i := 1; i < len(tokens); i++ {
 		tok := tokens[i]
 		if !strings.HasPrefix(tok, "-") || tok == "-" {
@@ -111,10 +115,16 @@ func commandProblems(cmd string) []string {
 		if eq := strings.Index(name, "="); eq >= 0 {
 			name = name[:eq]
 		} else {
-			i++ // string flag: next token is its value
+			i++ // value-taking flag: next token is its value
 		}
-		if fs.Lookup(name) == nil {
-			problems = append(problems, fmt.Sprintf("flag -%s is not declared in newFlagSet", name))
+		long := strings.HasPrefix(tok, "--")
+		switch {
+		case long && fs.Lookup(name) == nil:
+			problems = append(problems, fmt.Sprintf("flag %s is not registered for op %s", tok, op))
+		case !long && len(name) > 1:
+			problems = append(problems, fmt.Sprintf("%s is a single-dash long flag; pflag needs --%s", tok, name))
+		case !long && fs.ShorthandLookup(name) == nil:
+			problems = append(problems, fmt.Sprintf("shorthand %s is not registered for op %s", tok, op))
 		}
 	}
 	return problems
@@ -139,10 +149,13 @@ func TestCommandProblemsCatchDrift(t *testing.T) {
 	if p := commandProblems("frobnicate -p x"); len(p) == 0 {
 		t.Error("unknown verb not caught")
 	}
-	if p := commandProblems("rename -p x -s Old -into New"); len(p) == 0 {
+	if p := commandProblems("rename -p x -s Old --into New"); len(p) == 0 {
 		t.Error("unknown flag not caught")
 	}
-	if p := commandProblems("rename -p x -s Old -to New"); len(p) != 0 {
+	if p := commandProblems("rename -p x -s Old -to New"); len(p) == 0 {
+		t.Error("single-dash long flag not caught (pflag needs --to)")
+	}
+	if p := commandProblems("rename -p x -s Old --to New"); len(p) != 0 {
 		t.Errorf("valid command flagged: %v", p)
 	}
 }

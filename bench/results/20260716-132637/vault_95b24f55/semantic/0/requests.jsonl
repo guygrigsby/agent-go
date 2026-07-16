@@ -1,0 +1,33 @@
+{"ms":2394,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/vault/command/healthcheck","req_sha":"a74113d85aa21d76","sym":"pkiFetchIssuers","ts":"2026-07-16T23:29:40.301307Z"}
+{"ms":22,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/vault/command/healthcheck","req_sha":"8163798b1b832cce","sym":"pkiFetchLeaves","ts":"2026-07-16T23:29:42.700463Z"}
+{"ms":21,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/vault/command/healthcheck","req_sha":"83e02b13574a4076","sym":"pkiFetchRoles","ts":"2026-07-16T23:29:42.728239Z"}
+{"ms":4,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T23:29:42.754416Z"}
+{"ms":0,"op":"help","outcome":"ok","req_sha":"0b56758d64d8a078","ts":"2026-07-16T23:29:52.794469Z"}
+{"ms":2409,"op":"query","outcome":"ok","req_sha":"b3ffde713a2e3c30","sym":"pkiFetchIssuers","ts":"2026-07-16T23:29:58.567051Z"}
+{"ms":21,"op":"query","outcome":"ok","req_sha":"04ba6d8b68169d0c","sym":"pkiFetchLeaves","ts":"2026-07-16T23:30:03.452253Z"}
+{"ms":25,"op":"query","outcome":"ok","req_sha":"cdabb91d63dad808","sym":"pkiFetchRoles","ts":"2026-07-16T23:30:05.02336Z"}
+{"ms":118,"op":"rename","outcome":"accepted","pkg":"github.com/hashicorp/vault/command/healthcheck","req_sha":"ab12bd2918616611","sym":"pkiFetchIssuers","ts":"2026-07-16T23:30:07.641898Z"}
+{"ms":122,"op":"rename","outcome":"accepted","pkg":"github.com/hashicorp/vault/command/healthcheck","req_sha":"61aee4dfad9951d1","sym":"pkiFetchLeaves","ts":"2026-07-16T23:30:09.94129Z"}
+{"ms":118,"op":"rename","outcome":"accepted","pkg":"github.com/hashicorp/vault/command/healthcheck","req_sha":"0301e19e57104c4b","sym":"pkiFetchRoles","ts":"2026-07-16T23:30:12.117287Z"}
+{"ms":7,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T23:30:13.69737Z"}
+{"ms":1898,"op":"refs","outcome":"rejected","pkg":"github.com/hashicorp/vault/command/healthcheck","reason":"symbol not found","repairs":0,"req_sha":"a74113d85aa21d76","sym":"pkiFetchIssuers","ts":"2026-07-16T23:30:16.129568Z"}
+{"ms":24,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/vault/command/healthcheck","req_sha":"1bf66ac3cb9e46b8","sym":"pkiFetchIssuersList","ts":"2026-07-16T23:30:18.032647Z"}
+{"ms":3,"op":"refs","outcome":"rejected","pkg":"github.com/hashicorp/vault/command/healthcheck","reason":"symbol not found","repairs":0,"req_sha":"8163798b1b832cce","sym":"pkiFetchLeaves","ts":"2026-07-16T23:30:18.061421Z"}
+{"ms":22,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/vault/command/healthcheck","req_sha":"03d7af165d5f7bdd","sym":"pkiFetchLeavesList","ts":"2026-07-16T23:30:18.069003Z"}
+{"ms":3,"op":"refs","outcome":"rejected","pkg":"github.com/hashicorp/vault/command/healthcheck","reason":"symbol not found","repairs":0,"req_sha":"83e02b13574a4076","sym":"pkiFetchRoles","ts":"2026-07-16T23:30:18.095474Z"}
+{"ms":22,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/vault/command/healthcheck","req_sha":"98d96816cde43702","sym":"pkiFetchRolesList","ts":"2026-07-16T23:30:18.102271Z"}
+{"ms":5,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T23:30:18.129312Z"}
+{"ms":2338,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/vault/command/healthcheck","req_sha":"a74113d85aa21d76","sym":"pkiFetchIssuers","ts":"2026-07-16T23:30:37.103457Z"}
+{"ms":21,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/vault/command/healthcheck","req_sha":"8163798b1b832cce","sym":"pkiFetchLeaves","ts":"2026-07-16T23:30:39.446409Z"}
+{"ms":21,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/vault/command/healthcheck","req_sha":"83e02b13574a4076","sym":"pkiFetchRoles","ts":"2026-07-16T23:30:39.472842Z"}
+{"ms":4,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T23:30:39.498119Z"}
+{"ms":0,"op":"help","outcome":"ok","req_sha":"0b56758d64d8a078","ts":"2026-07-16T23:30:49.777845Z"}
+{"ms":2306,"op":"query","outcome":"ok","req_sha":"b3ffde713a2e3c30","sym":"pkiFetchIssuers","ts":"2026-07-16T23:30:56.23939Z"}
+{"ms":35,"op":"query","outcome":"ok","pkg":"github.com/hashicorp/vault/command/healthcheck","req_sha":"97f336005f016676","sym":"pkiFetchIssuers","ts":"2026-07-16T23:31:00.68108Z"}
+{"ms":19,"op":"query","outcome":"ok","req_sha":"04ba6d8b68169d0c","sym":"pkiFetchLeaves","ts":"2026-07-16T23:31:02.906775Z"}
+{"ms":36,"op":"query","outcome":"ok","pkg":"github.com/hashicorp/vault/command/healthcheck","req_sha":"877fe2c2a1de495f","sym":"pkiFetchLeaves","ts":"2026-07-16T23:31:04.973429Z"}
+{"ms":22,"op":"query","outcome":"ok","req_sha":"cdabb91d63dad808","sym":"pkiFetchRoles","ts":"2026-07-16T23:31:06.644101Z"}
+{"ms":34,"op":"query","outcome":"ok","pkg":"github.com/hashicorp/vault/command/healthcheck","req_sha":"2d5f3ddb76fcc025","sym":"pkiFetchRoles","ts":"2026-07-16T23:31:08.666539Z"}
+{"ms":128,"op":"rename","outcome":"accepted","pkg":"github.com/hashicorp/vault/command/healthcheck","req_sha":"ab12bd2918616611","sym":"pkiFetchIssuers","ts":"2026-07-16T23:31:12.306099Z"}
+{"ms":114,"op":"rename","outcome":"accepted","pkg":"github.com/hashicorp/vault/command/healthcheck","req_sha":"61aee4dfad9951d1","sym":"pkiFetchLeaves","ts":"2026-07-16T23:31:15.113465Z"}
+{"ms":109,"op":"rename","outcome":"accepted","pkg":"github.com/hashicorp/vault/command/healthcheck","req_sha":"0301e19e57104c4b","sym":"pkiFetchRoles","ts":"2026-07-16T23:31:17.827711Z"}

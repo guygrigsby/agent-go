@@ -81,22 +81,22 @@ func TestFlagPlumbing(t *testing.T) {
 			protocol.Request{Op: "view", Pkg: "demo/lib", Sym: "Store.Put"}},
 		{"refs", "refs", []string{"-p", "demo/lib", "-s", "Double"},
 			protocol.Request{Op: "refs", Pkg: "demo/lib", Sym: "Double"}},
-		{"query search", "query", []string{"-kind", "search", "-q", "Doub"},
+		{"query search", "query", []string{"--kind", "search", "-q", "Doub"},
 			protocol.Request{Op: "query", Kind: "search", Sym: "Doub"}},
-		{"query callers", "query", []string{"-kind", "callers", "-p", "demo/lib", "-s", "Double"},
+		{"query callers", "query", []string{"-k", "callers", "-p", "demo/lib", "-s", "Double"},
 			protocol.Request{Op: "query", Kind: "callers", Pkg: "demo/lib", Sym: "Double"}},
-		{"set-body", "set-body", []string{"-p", "demo/lib", "-s", "Double", "-body-file", bodyFile},
+		{"set-body", "set-body", []string{"-p", "demo/lib", "-s", "Double", "--body-file", bodyFile},
 			protocol.Request{Op: "set-body", Pkg: "demo/lib", Sym: "Double", Body: "return v * 3"}},
-		{"upsert", "upsert", []string{"-p", "demo/lib", "-body-file", bodyFile},
+		{"upsert", "upsert", []string{"-p", "demo/lib", "--body-file", bodyFile},
 			protocol.Request{Op: "upsert", Pkg: "demo/lib", Body: "return v * 3"}},
-		{"rename", "rename", []string{"-p", "demo/lib", "-s", "Double", "-to", "Twice"},
+		{"rename", "rename", []string{"-p", "demo/lib", "-s", "Double", "--to", "Twice"},
 			protocol.Request{Op: "rename", Pkg: "demo/lib", Sym: "Double", To: "Twice"}},
-		{"add-param", "add-param", []string{"-p", "demo/lib", "-s", "Double", "-name", "scale", "-type", "int", "-default", "1"},
+		{"add-param", "add-param", []string{"-p", "demo/lib", "-s", "Double", "-n", "scale", "-T", "int", "-d", "1"},
 			protocol.Request{Op: "add-param", Pkg: "demo/lib", Sym: "Double", Name: "scale", Type: "int", Default: "1"}},
-		{"patch", "patch", []string{"-body-file", patchFile},
+		{"patch", "patch", []string{"-f", patchFile},
 			protocol.Request{Op: "patch", Pkg: "demo/lib", Sym: "Double", Generation: 7, DryRun: true,
 				Ops: json.RawMessage(`[{"op":"rename","to":"Twice"}]`)}},
-		{"test", "test", []string{"-p", "demo/lib", "-run", "TestDouble"},
+		{"test", "test", []string{"-p", "demo/lib", "--run", "TestDouble"},
 			protocol.Request{Op: "test", Pkg: "demo/lib", Sym: "TestDouble"}},
 		{"stop", "stop", nil, protocol.Request{Op: "stop"}},
 	}
@@ -104,20 +104,10 @@ func TestFlagPlumbing(t *testing.T) {
 	covered := map[string]bool{}
 	for _, tc := range cases {
 		covered[tc.cmd] = true
-		fs, f := newFlagSet(tc.cmd)
-		if err := fs.Parse(tc.args); err != nil {
-			t.Fatalf("%s: parse: %v", tc.name, err)
-		}
-		req, err := buildRequest(tc.cmd, f)
-		if err != nil {
-			t.Fatalf("%s: buildRequest: %v", tc.name, err)
-		}
-		out, err := roundTrip(abs, req, tc.cmd != "stop")
-		if err != nil {
-			t.Fatalf("%s: roundTrip: %v", tc.name, err)
-		}
-		if !strings.Contains(out, `"status": "ok"`) {
-			t.Fatalf("%s: unexpected response: %s", tc.name, out)
+		root := newRoot()
+		root.SetArgs(append([]string{tc.cmd, "-C", abs}, tc.args...))
+		if err := root.Execute(); err != nil {
+			t.Fatalf("%s: execute: %v", tc.name, err)
 		}
 		wire := <-got
 		gotJSON, _ := json.Marshal(wire)
@@ -129,6 +119,35 @@ func TestFlagPlumbing(t *testing.T) {
 	for _, v := range daemonOps {
 		if !covered[v] {
 			t.Errorf("daemon verb %q has no flag plumbing case", v)
+		}
+	}
+}
+
+// Root help lists every op, grouped, one line each with its description;
+// every op also carries long help and its own flag subset.
+func TestUsageCoversEveryOp(t *testing.T) {
+	root := newRoot()
+	var buf strings.Builder
+	root.SetOut(&buf)
+	root.SetArgs([]string{"--help"})
+	if err := root.Execute(); err != nil {
+		t.Fatal(err)
+	}
+	u := buf.String()
+	for _, op := range append(append([]string{}, daemonOps...), localOps...) {
+		if !strings.Contains(u, "  "+op) {
+			t.Errorf("root help missing op %q:\n%s", op, u)
+		}
+		if opHelp[op] == "" {
+			t.Errorf("op %q has no one-line help", op)
+		}
+		if opLong[op] == "" {
+			t.Errorf("op %q has no long help", op)
+		}
+	}
+	for _, title := range []string{"reads and setup:", "mutations", "lifecycle:"} {
+		if !strings.Contains(u, title) {
+			t.Errorf("root help missing group %q", title)
 		}
 	}
 }

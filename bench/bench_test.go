@@ -384,7 +384,7 @@ func runOracle(c config, wt string, t Manifest) (string, error) {
 					},
 					patch: func(env map[string]any) map[string]any {
 						body, _ := json.Marshal(env)
-						out := agoJSONStdin(c, wt, string(body), "patch", "-body-file", "-")
+						out := agoJSONStdin(c, wt, string(body), "patch", "--body-file", "-")
 						rec, _ := json.Marshal(map[string]any{"call": []any{"patch", env}, "res": out})
 						b.Write(rec)
 						b.WriteByte('\n')
@@ -412,7 +412,7 @@ func runOracle(c config, wt string, t Manifest) (string, error) {
 			ops := []map[string]any{
 				{"op": "move_decl", "sym": m.Sym, "to_pkg": m.ToPkg, "create_pkg": true}}
 			env, _ := json.Marshal(map[string]any{"pkg": m.Pkg, "ops": ops})
-			out := agoJSONStdin(c, wt, string(env), "patch", "-body-file", "-")
+			out := agoJSONStdin(c, wt, string(env), "patch", "--body-file", "-")
 			rec, _ := json.Marshal(map[string]any{"call": []string{"patch", string(env)}, "res": out})
 			b.Write(rec)
 			b.WriteByte('\n')
@@ -433,7 +433,7 @@ func runOracle(c config, wt string, t Manifest) (string, error) {
 				// patch with the move that creates its subject).
 				renv, _ := json.Marshal(map[string]any{"pkg": m.ToPkg, "ops": []map[string]any{
 					{"op": "rename", "sym": m.Sym, "to": m.ToName}}})
-				rout := agoJSONStdin(c, wt, string(renv), "patch", "-body-file", "-")
+				rout := agoJSONStdin(c, wt, string(renv), "patch", "--body-file", "-")
 				rec, _ := json.Marshal(map[string]any{"call": []string{"patch", string(renv)}, "res": rout})
 				b.Write(rec)
 				b.WriteByte('\n')

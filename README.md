@@ -41,13 +41,13 @@ ago status                  # load the snapshot: packages, files, errors
 ago help                    # versioned op catalog: args, one example, notes per op
 ago search -s MaxEntries    # name fragment -> exact symbol addresses
 ago refs -p <pkg> -s <sym>  # every reference, tests included
-ago query -kind implementations -p <pkg> -s <iface>  # interface -> implementing types
+ago query -k implementations -p <pkg> -s <iface>  # interface -> implementing types
 ago view -p <pkg> -s <sym>  # declaration as annotated text: node handles + generation
-ago rename -p <pkg> -s DefaultLimiterMaxEntries -to DefaultLimiterMaxQuotas
-echo 'return v << 1' | ago set-body -p <pkg> -s Double -body-file -
-ago add-param -p <pkg> -s NewLimiter -name ctx -type context.Context -default 'context.Background()'
-ago upsert -p <pkg> -body-file decl.go   # add/replace a whole declaration
-ago patch -body-file patch.json   # ordered, atomic, generation-checked multi-op edit
+ago rename -p <pkg> -s DefaultLimiterMaxEntries --to DefaultLimiterMaxQuotas
+echo 'return v << 1' | ago set-body -p <pkg> -s Double --body-file -
+ago add-param -p <pkg> -s NewLimiter --name ctx --type context.Context --default 'context.Background()'
+ago upsert -p <pkg> --body-file decl.go   # add/replace a whole declaration
+ago patch --body-file patch.json   # ordered, atomic, generation-checked multi-op edit
 ago test -p <pkg>                 # go test, scoped, structured pass/fail
 ```
 

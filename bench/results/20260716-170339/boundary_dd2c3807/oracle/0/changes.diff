@@ -1,0 +1,194 @@
+diff --git a/internal/auth/oidc/auth_method.go b/internal/auth/oidc/auth_method.go
+index 1f2417424..5187b0dd7 100644
+--- a/internal/auth/oidc/auth_method.go
++++ b/internal/auth/oidc/auth_method.go
+@@ -13,7 +13,7 @@ import (
+ 
+ 	"github.com/hashicorp/boundary/internal/auth/oidc/store"
+ 	"github.com/hashicorp/boundary/internal/errors"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/oplog"
+ 	wrapping "github.com/hashicorp/go-kms-wrapping"
+ 	"github.com/hashicorp/go-kms-wrapping/structwrapping"
+@@ -236,7 +236,7 @@ func (a *AuthMethod) hmacClientSecret(ctx context.Context, cipher wrapping.Wrapp
+ 	if cipher == nil {
+ 		return errors.New(ctx, errors.InvalidParameter, op, "missing cipher")
+ 	}
+-	reader, err := kms.NewDerivedReader(cipher, 32, []byte(a.PublicId), nil)
++	reader, err := crypto.NewDerivedReader(cipher, 32, []byte(a.PublicId), nil)
+ 	if err != nil {
+ 		return errors.Wrap(ctx, err, op)
+ 	}
+diff --git a/internal/auth/oidc/service.go b/internal/auth/oidc/service.go
+index 568668a62..98a3df0a2 100644
+--- a/internal/auth/oidc/service.go
++++ b/internal/auth/oidc/service.go
+@@ -14,6 +14,7 @@ import (
+ 	wrapping "github.com/hashicorp/go-kms-wrapping"
+ 	"github.com/hashicorp/go-kms-wrapping/wrappers/aead"
+ 
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/mr-tron/base58"
+ 	"google.golang.org/protobuf/proto"
+ )
+@@ -189,7 +190,7 @@ func requestWrappingWrapper(ctx context.Context, k *kms.Kms, scopeId, authMethod
+ 	}
+ 
+ 	// okay, I guess we need to derive a new key for this combo of oidcWrapper and authMethod
+-	reader, err := kms.NewDerivedReader(oidcWrapper, 32, []byte(authMethodId), []byte(scopeId))
++	reader, err := crypto.NewDerivedReader(oidcWrapper, 32, []byte(authMethodId), []byte(scopeId))
+ 	if err != nil {
+ 		return nil, errors.Wrap(ctx, err, op)
+ 	}
+diff --git a/internal/credential/vault/client_certificate.go b/internal/credential/vault/client_certificate.go
+index b368c7d72..1b191b449 100644
+--- a/internal/credential/vault/client_certificate.go
++++ b/internal/credential/vault/client_certificate.go
+@@ -10,7 +10,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/credential/vault/store"
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/errors"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/oplog"
+ 	wrapping "github.com/hashicorp/go-kms-wrapping"
+ 	"github.com/hashicorp/go-kms-wrapping/structwrapping"
+@@ -103,7 +103,7 @@ func (c *ClientCertificate) hmacCertificateKey(ctx context.Context, cipher wrapp
+ 	if cipher == nil {
+ 		return errors.New(ctx, errors.InvalidParameter, op, "missing cipher")
+ 	}
+-	reader, err := kms.NewDerivedReader(cipher, 32, []byte(c.StoreId), nil)
++	reader, err := crypto.NewDerivedReader(cipher, 32, []byte(c.StoreId), nil)
+ 	if err != nil {
+ 		return errors.Wrap(ctx, err, op)
+ 	}
+diff --git a/internal/kms/kms.go b/internal/kms/kms.go
+index 11b2ddcdd..9e0f64e36 100644
+--- a/internal/kms/kms.go
++++ b/internal/kms/kms.go
+@@ -2,9 +2,7 @@ package kms
+ 
+ import (
+ 	"context"
+-	"crypto/sha256"
+ 	"fmt"
+-	"io"
+ 	"sync"
+ 
+ 	"github.com/hashicorp/boundary/internal/db"
+@@ -13,7 +11,6 @@ import (
+ 	wrapping "github.com/hashicorp/go-kms-wrapping"
+ 	"github.com/hashicorp/go-kms-wrapping/wrappers/aead"
+ 	"github.com/hashicorp/go-kms-wrapping/wrappers/multiwrapper"
+-	"golang.org/x/crypto/hkdf"
+ )
+ 
+ // ExternalWrappers holds wrappers defined outside of Boundary, e.g. in its
+@@ -371,41 +368,3 @@ func (k *Kms) loadDek(ctx context.Context, scopeId string, purpose KeyPurpose, r
+ 
+ 	return multi, nil
+ }
+-
+-// DerivedReader returns a reader from which keys can be read, using the
+-// given wrapper, reader length limit, salt and context info. Salt and info can
+-// be nil.
+-//
+-// Example:
+-//	reader, _ := NewDerivedReader(wrapper, userId, jobId)
+-// 	key := ed25519.GenerateKey(reader)
+-func NewDerivedReader(wrapper wrapping.Wrapper, lenLimit int64, salt, info []byte) (*io.LimitedReader, error) {
+-	const op = "kms.NewDerivedReader"
+-	if wrapper == nil {
+-		return nil, errors.NewDeprecated(errors.InvalidParameter, op, "missing wrapper")
+-	}
+-	if lenLimit < 20 {
+-		return nil, errors.NewDeprecated(errors.InvalidParameter, op, "lenLimit must be >= 20")
+-	}
+-	var aeadWrapper *aead.Wrapper
+-	switch w := wrapper.(type) {
+-	case *multiwrapper.MultiWrapper:
+-		raw := w.WrapperForKeyID("__base__")
+-		var ok bool
+-		if aeadWrapper, ok = raw.(*aead.Wrapper); !ok {
+-			return nil, errors.NewDeprecated(errors.InvalidParameter, op, "unexpected wrapper type from multiwrapper base")
+-		}
+-	case *aead.Wrapper:
+-		if w.GetKeyBytes() == nil {
+-			return nil, errors.NewDeprecated(errors.InvalidParameter, op, "aead wrapper missing bytes")
+-		}
+-		aeadWrapper = w
+-	default:
+-		return nil, errors.NewDeprecated(errors.InvalidParameter, op, "unknown wrapper type")
+-	}
+-	reader := hkdf.New(sha256.New, aeadWrapper.GetKeyBytes(), salt, info)
+-	return &io.LimitedReader{
+-		R: reader,
+-		N: lenLimit,
+-	}, nil
+-}
+diff --git a/internal/kms/kms_test.go b/internal/kms/kms_test.go
+index dbd8e964e..ce9196b92 100644
+--- a/internal/kms/kms_test.go
++++ b/internal/kms/kms_test.go
+@@ -9,6 +9,7 @@ import (
+ 
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/errors"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/types/scope"
+ 	wrapping "github.com/hashicorp/go-kms-wrapping"
+ 	"github.com/hashicorp/go-kms-wrapping/wrappers/aead"
+@@ -157,7 +158,7 @@ func TestNewDerivedReader(t *testing.T) {
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			assert, require := assert.New(t), require.New(t)
+-			got, err := NewDerivedReader(tt.args.wrapper, tt.args.lenLimit, tt.args.salt, tt.args.info)
++			got, err := crypto.NewDerivedReader(tt.args.wrapper, tt.args.lenLimit, tt.args.salt, tt.args.info)
+ 			if tt.wantErr {
+ 				require.Error(err)
+ 				assert.Truef(errors.Match(errors.T(errors.InvalidParameter), err), "unexpected error: %s", err)
+diff --git a/internal/session/util.go b/internal/session/util.go
+index bbdbe6316..511d3163a 100644
+--- a/internal/session/util.go
++++ b/internal/session/util.go
+@@ -4,7 +4,7 @@ import (
+ 	"crypto/ed25519"
+ 
+ 	"github.com/hashicorp/boundary/internal/errors"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	wrapping "github.com/hashicorp/go-kms-wrapping"
+ )
+ 
+@@ -20,7 +20,7 @@ func DeriveED25519Key(wrapper wrapping.Wrapper, userId, jobId string) (ed25519.P
+ 		jId = []byte(jobId)
+ 	}
+ 
+-	reader, err := kms.NewDerivedReader(wrapper, 32, uId, jId)
++	reader, err := crypto.NewDerivedReader(wrapper, 32, uId, jId)
+ 	if err != nil {
+ 		return nil, nil, errors.WrapDeprecated(err, op)
+ 	}
+diff --git a/internal/session/util_test.go b/internal/session/util_test.go
+index 78203ec14..09e8eee1c 100644
+--- a/internal/session/util_test.go
++++ b/internal/session/util_test.go
+@@ -6,7 +6,7 @@ import (
+ 
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/errors"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	wrapping "github.com/hashicorp/go-kms-wrapping"
+ 	"github.com/stretchr/testify/assert"
+ 	"github.com/stretchr/testify/require"
+@@ -39,7 +39,7 @@ func TestDeriveED25519Key(t *testing.T) {
+ 				jobId:   "jobId",
+ 			},
+ 			want: func() keys {
+-				reader, err := kms.NewDerivedReader(wrapper, 32, []byte("userId"), []byte("jobId"))
++				reader, err := crypto.NewDerivedReader(wrapper, 32, []byte("userId"), []byte("jobId"))
+ 				require.NoError(t, err)
+ 				pub, priv, err := ed25519.GenerateKey(reader)
+ 				require.NoError(t, err)
