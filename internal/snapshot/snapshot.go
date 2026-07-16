@@ -855,7 +855,9 @@ func (s *Snapshot) importFallback(path string) (*types.Package, error) {
 			break
 		}
 		for _, imp := range p.Types.Imports() {
-			if imp.Path() == path {
+			// A nameless entry is a stub; returning it poisons every
+			// typecheck that imports it ("invalid package name").
+			if imp.Path() == path && imp.Name() != "" {
 				found = imp
 				break
 			}
@@ -863,6 +865,9 @@ func (s *Snapshot) importFallback(path string) (*types.Package, error) {
 		if found != nil {
 			break
 		}
+	}
+	if found != nil {
+		debugImports("scan %s -> name=%q complete=%v", path, found.Name(), found.Complete())
 	}
 	if found == nil {
 		// A path in no root's closure is genuinely new to the snapshot, so
@@ -876,12 +881,38 @@ func (s *Snapshot) importFallback(path string) (*types.Package, error) {
 			return nil, fmt.Errorf("package %q not in snapshot", path)
 		}
 		found = pkgs[0].Types
+		if found.Name() == "" {
+			// The load "succeeded" without a name (not a dependency of this
+			// module, or a broken cache entry): caching it would poison every
+			// later typecheck with "invalid package name". Reject honestly.
+			detail := ""
+			if len(pkgs[0].Errors) > 0 {
+				detail = ": " + pkgs[0].Errors[0].Msg
+			}
+			return nil, fmt.Errorf("package %q did not load%s", path, detail)
+		}
+		debugImports("load %s -> name=%q errs=%d", path, found.Name(), len(pkgs[0].Errors))
 	}
 	if s.importCache == nil {
 		s.importCache = map[string]*types.Package{}
 	}
 	s.importCache[path] = found
 	return found, nil
+}
+
+// debugImports appends importFallback traces to the file AGO_DEBUG_IMPORTS
+// names; the daemon runs detached, so stderr is not a channel.
+func debugImports(format string, args ...any) {
+	path := os.Getenv("AGO_DEBUG_IMPORTS")
+	if path == "" {
+		return
+	}
+	f, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o644)
+	if err != nil {
+		return
+	}
+	defer f.Close()
+	fmt.Fprintf(f, format+"\n", args...)
 }
 
 type importerFunc func(string) (*types.Package, error)

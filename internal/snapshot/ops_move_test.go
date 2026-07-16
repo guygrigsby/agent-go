@@ -171,6 +171,34 @@ func TestMoveDeclCarriesImports(t *testing.T) {
 	}
 }
 
+// A declaration moving INTO a package it already references drops those
+// qualifiers: lib.Double becomes Double once the decl lives in lib.
+// Leaving the stale qualifier makes goimports hunt the module cache for
+// any package named lib (boundary dd2c3807: crypto.NewDerivedReader
+// resolved to hashicorp's unrelated extras/crypto).
+func TestMoveDeclStripsTargetQualifiers(t *testing.T) {
+	s := demo(t)
+	res, err := s.Patch([]byte(`{"pkg":"demo/sig","ops":[
+		{"op":"move_decl","sym":"MovedHome","to_pkg":"demo/lib"}]}`))
+	if err != nil {
+		t.Fatalf("rejected: %v", err)
+	}
+	if res["status"] != "accepted" {
+		t.Fatalf("got %v", res)
+	}
+	out, err := s.View("demo/lib", "MovedHome")
+	if err != nil {
+		t.Fatal(err)
+	}
+	text := out["text"].(string)
+	if strings.Contains(text, "lib.Double") {
+		t.Fatalf("stale qualifier survived the move:\n%s", text)
+	}
+	if !strings.Contains(text, "Double(") {
+		t.Fatalf("reference lost:\n%s", text)
+	}
+}
+
 // A declaration that leans on package-local siblings is not self-contained;
 // v1 rejects it with the dependency named rather than emitting a broken move.
 func TestMoveDeclLocalDepsReject(t *testing.T) {

@@ -62,6 +62,7 @@ func moveDeclEdits(s *Snapshot, pkgPath, sym, toPkg string) ([]edit, *Reject) {
 	var deps []string
 	depSeen := map[string]bool{}
 	carried := map[string]string{} // import path -> alias ("" when default)
+	var qualCuts []int             // decl-relative offsets of toPkg qualifiers to strip
 	for _, f := range p.Syntax {
 		if f.Pos() == 0 || s.fset.Position(f.Pos()).Filename != declFile {
 			continue
@@ -87,6 +88,12 @@ func moveDeclEdits(s *Snapshot, pkgPath, sym, toPkg string) ([]edit, *Reject) {
 						alias = id.Name
 					}
 					carried[path] = alias
+				} else {
+					// The decl is moving INTO this package: the qualifier
+					// (and its dot) must go, or goimports resolves the
+					// dangling name to whatever same-named package the
+					// module cache offers.
+					qualCuts = append(qualCuts, off-start)
 				}
 				return true
 			}
@@ -104,6 +111,17 @@ func moveDeclEdits(s *Snapshot, pkgPath, sym, toPkg string) ([]edit, *Reject) {
 		sort.Strings(deps)
 		return nil, &Reject{Reason: "declaration depends on package-local symbols; move_decl v1 moves self-contained declarations",
 			Detail: sym + " uses " + strings.Join(deps, ", ")}
+	}
+
+	if len(qualCuts) > 0 {
+		sort.Sort(sort.Reverse(sort.IntSlice(qualCuts)))
+		qualLen := 0
+		for _, c := range qualCuts {
+			// The qualifier ident plus its trailing dot; gofmt guarantees
+			// no space between them.
+			qualLen = strings.Index(declText[c:], ".") + 1
+			declText = declText[:c] + declText[c+qualLen:]
+		}
 	}
 
 	edits := []edit{{declFile, start, end - start, ""}}
