@@ -15,15 +15,15 @@ language.md ↔ issue status ↔ README ↔ MCP wire ↔ init scaffold ↔ bench
 counters), catalog-version hashing, and fixture-executed examples. Adding
 a fact without a guard is the bug.
 
-## 2. Prove the task is solvable first
+## 2. Check the answer key first
 
-Before any model attempts a benchmark task, replay the known-correct
-change (mined from the real commit) through the protocol. If a perfect
-agent can't complete the task that way, it doesn't enter the bench; the
-blocker gets named instead. Every one of those is a finding (a spec bug,
-an engine bug, or a protocol ceiling) caught at machine speed, and no
-model time is spent on impossible work. Enforced by TestOracleSweep and
-certified-task gating of rounds.
+Every benchmark task comes from a real commit, so the correct answer is
+already known. Before any model is asked to attempt a task, we submit
+that known answer through the protocol ourselves. If the right answer
+can't get through, the model never had a chance: the problem is ours (a
+spec bug, an engine bug, or a protocol limit), and the task doesn't
+count until it's fixed. Enforced by TestOracleSweep and certified-task
+gating of rounds.
 
 ## 3. Rejections are data
 
