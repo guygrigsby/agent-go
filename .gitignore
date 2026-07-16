@@ -4,3 +4,5 @@
 .dolt/
 *.db
 .beads-credential-key
+
+.serena/
