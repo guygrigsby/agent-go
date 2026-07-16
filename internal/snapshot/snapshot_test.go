@@ -86,6 +86,55 @@ func TestRejectionsSuggestRepairs(t *testing.T) {
 	}
 }
 
+// Stale names after a rename are subsequences of the new name (or vice
+// versa), not substrings. suggestSymbols has a third tier for those.
+func TestSuggestSubsequence(t *testing.T) {
+	s := demo(t)
+	if _, err := s.ensureFresh(); err != nil {
+		t.Fatal(err)
+	}
+	// Typo: "UseHelpr" is not a substring of "UseHelper" either way, but
+	// its chars appear in order.
+	if got := s.suggestSymbols("demo/lib", "UseHelpr"); len(got) == 0 || got[0] != "UseHelper" {
+		t.Errorf("UseHelpr: want [UseHelper ...], got %v", got)
+	}
+	// Dropped middle: "UHelper" -> "UseHelper". "uhelper" contains "helper"
+	// as a substring, so that tier still wins the first slot; the
+	// subsequence tier appends UseHelper after it.
+	if got := s.suggestSymbols("demo/lib", "UHelper"); len(got) != 2 || got[0] != "helper" || got[1] != "UseHelper" {
+		t.Errorf("UHelper: want [helper UseHelper], got %v", got)
+	}
+	// Vice versa: query longer than candidate, candidate's chars appear in
+	// order in the query (rename shrank the symbol).
+	if got := s.suggestSymbols("demo/lib", "UseSwarmHelper"); len(got) != 2 || got[0] != "helper" || got[1] != "UseHelper" {
+		t.Errorf("UseSwarmHelper: want [helper UseHelper], got %v", got)
+	}
+}
+
+// Subsequence tier requires len(query) >= 4: "Pt" would subsequence-match
+// Store.Put but is too short to mean anything.
+func TestSuggestSubsequenceLengthGuard(t *testing.T) {
+	s := demo(t)
+	if _, err := s.ensureFresh(); err != nil {
+		t.Fatal(err)
+	}
+	if got := s.suggestSymbols("demo/lib", "Pt"); len(got) != 0 {
+		t.Errorf("Pt: want no candidates, got %v", got)
+	}
+}
+
+// Tiers stay ordered: exact before substring before subsequence.
+func TestSuggestOrdering(t *testing.T) {
+	s := demo(t)
+	if _, err := s.ensureFresh(); err != nil {
+		t.Fatal(err)
+	}
+	got := s.suggestSymbols("demo/lib", "UseHelper")
+	if len(got) < 2 || got[0] != "UseHelper" || got[1] != "helper" {
+		t.Errorf("want exact UseHelper then substring helper, got %v", got)
+	}
+}
+
 func TestRefs(t *testing.T) {
 	s := demo(t)
 	res, err := s.Refs("demo/lib", "Double")

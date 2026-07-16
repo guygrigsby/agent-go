@@ -251,12 +251,16 @@ func (s *Snapshot) suggestPackages(miss string) []string {
 	return out
 }
 
-// suggestSymbols finds near-miss symbols in a package: case-insensitive
-// equality first, then substring either way. Scans every loaded variant of
-// the package (primary plus test variants), not just the primary — a
-// TestXxx symbol declared only in a _test.go file lives in the test
-// variant's scope alone, and a rejection naming it (add_test_case et al.
-// addressing an unknown test) must be able to suggest it back.
+// suggestSymbols finds near-miss symbols in a package, in three tiers:
+// case-insensitive equality, then substring either way, then subsequence
+// either way (all chars in order — a stale name from before a rename like
+// extractLabels -> extractSwarmLabels is a subsequence of the new name, not
+// a substring). Subsequence needs len(query) >= 4 or two-letter fragments
+// match everything. Scans every loaded variant of the package (primary plus
+// test variants), not just the primary — a TestXxx symbol declared only in
+// a _test.go file lives in the test variant's scope alone, and a rejection
+// naming it (add_test_case et al. addressing an unknown test) must be able
+// to suggest it back.
 func (s *Snapshot) suggestSymbols(pkgPath, name string) []string {
 	p := s.primary(pkgPath)
 	if p == nil {
@@ -269,38 +273,60 @@ func (s *Snapshot) suggestSymbols(pkgPath, name string) []string {
 		}
 	}
 	lower := strings.ToLower(name)
-	var hits []string
+	tiers := make([][]string, 3)
 	seen := map[string]bool{}
-	add := func(n string) {
-		if !seen[n] {
-			seen[n] = true
-			hits = append(hits, n)
+	add := func(n, cand string) {
+		if seen[n] {
+			return
 		}
+		lc := strings.ToLower(cand)
+		tier := -1
+		switch {
+		case lc == lower:
+			tier = 0
+		case strings.Contains(lc, lower) || strings.Contains(lower, lc):
+			tier = 1
+		case len(lower) >= 4 && (isSubsequence(lower, lc) || isSubsequence(lc, lower)):
+			tier = 2
+		default:
+			return
+		}
+		seen[n] = true
+		tiers[tier] = append(tiers[tier], n)
 	}
 	for _, p := range variants {
 		scope := p.Types.Scope()
 		for _, n := range scope.Names() {
-			ln := strings.ToLower(n)
-			if ln == lower || strings.Contains(ln, lower) || strings.Contains(lower, ln) {
-				add(n)
-			}
+			add(n, n)
 			if tn, ok := scope.Lookup(n).(*types.TypeName); ok {
 				for sel := range types.NewMethodSet(types.NewPointer(tn.Type())).Methods() {
 					m := sel.Obj().Name()
-					if lm := strings.ToLower(m); lm == lower || strings.Contains(lm, lower) || strings.Contains(lower, lm) {
-						add(n + "." + m)
-					}
+					add(n+"."+m, m)
 				}
 			}
-			if len(hits) >= 6 {
-				break
-			}
 		}
+	}
+	var hits []string
+	for _, t := range tiers {
+		hits = append(hits, t...)
 	}
 	if len(hits) > 3 {
 		hits = hits[:3]
 	}
 	return hits
+}
+
+// isSubsequence reports whether every rune of needle appears in hay in
+// order (not necessarily contiguously). Both sides pre-lowered by caller.
+func isSubsequence(needle, hay string) bool {
+	rs := []rune(needle)
+	i := 0
+	for _, r := range hay {
+		if i < len(rs) && r == rs[i] {
+			i++
+		}
+	}
+	return i == len(rs)
 }
 
 func objKind(obj types.Object) string {
