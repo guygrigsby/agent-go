@@ -84,10 +84,17 @@ shadowing capture is rejected even when the compiler is satisfied.
 `bench/` holds the raw-vs-semantic comparison: same local model, same
 harness (opencode), same mined tasks (rename and add-param kinds, from
 traefik, vault, boundary, and cobra); one mode gets shell and file
-editing, the other gets only the protocol. An oracle arm replays each
-task's ground truth through ago itself — it certifies the task
-protocol-solvable before any model time is spent, records the
-time-to-green floor, and its transcripts seed the fine-tuning corpus.
+editing, the other gets only the protocol.
+
+The **oracle** is the bench's third arm: a scripted replay of each
+task's ground-truth commit through the protocol itself, no model in the
+loop. Every mined task carries the real change its source commit made;
+the oracle submits that change as protocol calls and must reach green. A
+task enters the roster only after the oracle certifies it, so "the model
+failed" is never confused with "the task was impossible". Oracle
+rejections are findings (an engine bug, a bad extraction, or a named
+protocol ceiling), its wall time is the task's time-to-green floor, and
+its accepted transcripts seed the fine-tuning corpus.
 
 Scoring is goal predicate + typecheck + scoped tests under a time cap;
 the tests gate counts only where a pristine worktree passes the same
