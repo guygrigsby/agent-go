@@ -1,0 +1,49 @@
+{
+ "agent_done": "2026-07-16T03:41:32.283315417Z",
+ "agent_started": "2026-07-16T03:41:32.036519Z",
+ "cache_read": 0,
+ "cache_write": 0,
+ "capped": false,
+ "failure_kind": "scored_fail",
+ "iter": 0,
+ "mode": "oracle",
+ "new_errors": null,
+ "pass": false,
+ "predicate": true,
+ "profile": "adhoc",
+ "prompt": "Rename the UI passthrough dir flag/env var\n\nSpecifically, rename: flagPassthroughDirectory -\u003e flagUiPassthroughDir; devPassthroughHandler -\u003e devUiPassthroughHandler; PassthroughDirectory -\u003e DevUiPassthroughDir",
+ "specs": [
+  {
+   "baseline_refs": 3,
+   "new_refs": 3,
+   "ok": true,
+   "old_refs_left": 0,
+   "sym": "github.com/hashicorp/boundary/internal/cmd/commands/dev.Command.flagPassthroughDirectory",
+   "to": "flagUiPassthroughDir"
+  },
+  {
+   "baseline_refs": 2,
+   "new_refs": 2,
+   "ok": true,
+   "old_refs_left": 0,
+   "sym": "github.com/hashicorp/boundary/internal/servers/controller.devPassthroughHandler",
+   "to": "devUiPassthroughHandler"
+  },
+  {
+   "baseline_refs": 4,
+   "new_refs": 4,
+   "ok": true,
+   "old_refs_left": 0,
+   "sym": "github.com/hashicorp/boundary/internal/cmd/config.Config.PassthroughDirectory",
+   "to": "DevUiPassthroughDir"
+  }
+ ],
+ "steps": 0,
+ "task": "boundary_c0532428",
+ "tests": false,
+ "tokens_in": 0,
+ "tokens_out": 0,
+ "tokens_reasoning": 0,
+ "typecheck": true,
+ "wall_s": 0.246796417
+}

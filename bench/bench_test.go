@@ -37,6 +37,17 @@ type config struct {
 	canary                                           canarySpec
 	restartCmd                                       string
 	modes                                            []string
+	reqLog                                           string // per-episode daemon request log path
+}
+
+// agoEnv is the environment for every command that may spawn the ago
+// daemon, carrying the per-episode request-log path.
+func agoEnv(c config) []string {
+	env := os.Environ()
+	if c.reqLog != "" {
+		env = append(env, "AGO_LOG_REQUESTS="+c.reqLog)
+	}
+	return env
 }
 
 // ensureCanary is a no-op until AGO_BENCH_CANARY configures a probe.
@@ -47,7 +58,7 @@ func ensureCanary(c config) error {
 	return canaryWithRestart(c.endpoint, c.model, c.canary, c.restartCmd)
 }
 
-func setup(b *testing.B) config {
+func setup(b testing.TB) config {
 	b.Helper()
 	c := config{
 		endpoint: os.Getenv("AGO_BENCH_ENDPOINT"),
@@ -130,9 +141,9 @@ func writeJSON(path string, v any) {
 	os.WriteFile(path, append(data, '\n'), 0o644)
 }
 
-func BenchmarkRename(b *testing.B) {
-	c := setup(b)
-	// Every mined manifest file participates; kind dispatch does the rest.
+// loadTasks reads every mined manifest file; kind dispatch does the rest.
+func loadTasks(b testing.TB) []Manifest {
+	b.Helper()
 	paths, err := filepath.Glob("tasks-*.json")
 	if err != nil || len(paths) == 0 {
 		b.Fatalf("no task manifests: %v", err)
@@ -149,6 +160,37 @@ func BenchmarkRename(b *testing.B) {
 		}
 		tasks = append(tasks, batch...)
 	}
+	return tasks
+}
+
+// TestOracleSweep replays ground truth through ago for every runnable
+// task, in parallel: oracle episodes have no shared endpoint, so the only
+// limits are cores and memory (each episode loads its repo's typechecked
+// snapshot). Bound with -parallel; vault and boundary snapshots are heavy.
+//
+//	AGO_BENCH_MODES=oracle AGO_BENCH_SCRATCH=<clones> \
+//	go test ./bench -run OracleSweep -parallel 4 -timeout 0 -v
+func TestOracleSweep(t *testing.T) {
+	if !slices.Contains(modesFor(os.Getenv("AGO_BENCH_MODES")), "oracle") {
+		t.Skip("set AGO_BENCH_MODES=oracle to run the oracle sweep")
+	}
+	c := setup(t)
+	for _, task := range loadTasks(t) {
+		if !task.HasSpecs() {
+			continue
+		}
+		t.Run(fmt.Sprintf("%s_%s", task.Repo, task.SHA[:8]), func(t *testing.T) {
+			t.Parallel()
+			if !episode(t, c, task, "oracle", 0) {
+				t.Errorf("oracle failed %s %s: see episode.json", task.Kind, task.SHA[:8])
+			}
+		})
+	}
+}
+
+func BenchmarkRename(b *testing.B) {
+	c := setup(b)
+	tasks := loadTasks(b)
 	for _, p := range c.profiles {
 		c := c
 		c.profile, c.endpoint, c.model = p, p.Endpoint, p.Model
@@ -173,9 +215,15 @@ func BenchmarkRename(b *testing.B) {
 
 // episode runs one agent attempt and scores it. Only the agent run is on
 // the clock; worktree setup, cache warming, and scoring are not.
-func episode(b *testing.B, c config, t Manifest, mode string, iter int) bool {
+func episode(b testing.TB, c config, t Manifest, mode string, iter int) bool {
 	b.Helper()
-	b.StopTimer()
+	// Benchmarks time only the agent run; parallel test sweeps (oracle)
+	// have no benchmark timer.
+	stopTimer, startTimer := func() {}, func() {}
+	if bb, ok := b.(*testing.B); ok {
+		stopTimer, startTimer = bb.StopTimer, bb.StartTimer
+	}
+	stopTimer()
 	wt := worktree(b, c, t)
 	defer teardown(c, t, wt)
 	epDir := filepath.Join(c.results, c.runID,
@@ -183,13 +231,12 @@ func episode(b *testing.B, c config, t Manifest, mode string, iter int) bool {
 	if err := os.MkdirAll(epDir, 0o755); err != nil {
 		b.Fatal(err)
 	}
-	// Every daemon this episode spawns (warm-up, agent, scoring) inherits
-	// the env and logs its requests here. Episodes run sequentially, so a
-	// process-level env var is safe. Scorer queries land in the same file;
-	// agent_started/agent_done in episode.json bound the agent's window.
+	// Every daemon this episode spawns (warm-up, agent, scoring) gets the
+	// log path on its own command environment, so episodes can run in
+	// parallel. Scorer queries land in the same file; agent_started and
+	// agent_done in episode.json bound the agent's window.
 	if absLog, err := filepath.Abs(filepath.Join(epDir, "requests.jsonl")); err == nil {
-		os.Setenv("AGO_LOG_REQUESTS", absLog)
-		defer os.Unsetenv("AGO_LOG_REQUESTS")
+		c.reqLog = absLog
 	}
 	writeOpencodeConfig(b, c, wt, mode)
 	// Warm what any agent would find warm on a dev machine: module cache,
@@ -213,7 +260,7 @@ func episode(b *testing.B, c config, t Manifest, mode string, iter int) bool {
 		}
 	}
 
-	b.StartTimer()
+	startTimer()
 	start := time.Now()
 	var agentOut string
 	var agentErr error
@@ -227,7 +274,7 @@ func episode(b *testing.B, c config, t Manifest, mode string, iter int) bool {
 		cancel()
 	}
 	wall := time.Since(start)
-	b.StopTimer()
+	stopTimer()
 
 	res := score(c, wt, t, baseline, baseErrs)
 	res["task"] = t.Repo + "_" + t.SHA[:8]
@@ -455,14 +502,14 @@ func runAgent(ctx context.Context, c config, wt, prompt string) (string, error) 
 	// OPENCODE_CONFIG alone still merges ~/.config/opencode.
 	xdg := filepath.Join(wt, ".xdg-config")
 	os.MkdirAll(xdg, 0o755)
-	cmd.Env = append(os.Environ(),
+	cmd.Env = append(agoEnv(c),
 		"OPENCODE_CONFIG="+filepath.Join(wt, "opencode.json"),
 		"XDG_CONFIG_HOME="+xdg)
 	out, err := cmd.CombinedOutput()
 	return string(out), err
 }
 
-func writeOpencodeConfig(b *testing.B, c config, wt, mode string) {
+func writeOpencodeConfig(b testing.TB, c config, wt, mode string) {
 	b.Helper()
 	// Single-agent purity in both modes: no subagent spawning, no user
 	// skills. Round 3 autopsy: leaked global skills ate 36/45 tool calls of
@@ -506,7 +553,7 @@ func writeOpencodeConfig(b *testing.B, c config, wt, mode string) {
 	}
 }
 
-func worktree(b *testing.B, c config, t Manifest) string {
+func worktree(b testing.TB, c config, t Manifest) string {
 	b.Helper()
 	repo := filepath.Join(c.scratch, t.Repo)
 	wt := filepath.Join(b.TempDir(), t.Repo)
@@ -524,11 +571,14 @@ func teardown(c config, t Manifest, wt string) {
 }
 
 func agoStop(c config, wt string) {
-	exec.Command(c.agoBin, "stop", "-C", wt).Run()
+	cmd := exec.Command(c.agoBin, "stop", "-C", wt)
+	cmd.Env = agoEnv(c)
+	cmd.Run()
 }
 
 func agoJSON(c config, wt string, args ...string) map[string]any {
 	cmd := exec.Command(c.agoBin, append(args, "-C", wt)...)
+	cmd.Env = agoEnv(c)
 	out, _ := cmd.Output()
 	var m map[string]any
 	if json.Unmarshal(out, &m) != nil {
