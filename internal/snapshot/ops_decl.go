@@ -122,7 +122,7 @@ func (upsertDeclOp) apply(ctx *patchCtx, raw json.RawMessage) *Reject {
 // the generated source, write the brand-new file, force a full workspace
 // reload, and reject on NEW workspace diagnostics. The baseline and the
 // check are both workspace-wide because the reload's blast radius is.
-// cleanupCreatedFiles owns removal on every failure and dry_run path once
+// cleanupFileOps owns removal on every failure and dry_run path once
 // the file registers in ctx.createdFiles; later ops in the same patch
 // compose against the reloaded snapshot, where the file simply exists.
 func createFileInPatch(ctx *patchCtx, pkg, file, src, sym string) *Reject {

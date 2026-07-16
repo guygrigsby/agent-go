@@ -300,7 +300,7 @@ func (addTestOp) apply(ctx *patchCtx, raw json.RawMessage) *Reject {
 	//
 	// Cleanup on any failure below — this op's own, or a later op's in the
 	// same patch, or a dry_run's unconditional restore — is entirely
-	// patchComposable's job (ctx.cleanupCreatedFiles) once the file is
+	// patchComposable's job (ctx.cleanupFileOps) once the file is
 	// registered in ctx.createdFiles just below: this op must not delete it
 	// itself, or a later executor-level cleanup double-deletes (harmless for
 	// os.Remove itself, but the accompanying forced reload would then run

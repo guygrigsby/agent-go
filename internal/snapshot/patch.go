@@ -30,13 +30,14 @@ type patchCtx struct {
 	fileLastOp map[string]int // file -> op index that last edited it, for
 	// attributing end-of-list typecheck diagnostics to the nearest op.
 
-	// createdFiles lists every file an op created outright this patch (only
-	// add_test's new-file path does, today) rather than editing through
-	// ctx.src. Those files bypass the ctx.src/originals rollback entirely —
-	// there is no "original" to restore a file that didn't exist before the
-	// patch to — so patchComposable's own cleanupCreatedFiles is the only
-	// thing that deletes them on any path that doesn't end in a commit.
+	// createdFiles lists every file an op created outright this patch
+	// (add_test's and upsert_decl's new-file paths) rather than editing
+	// through ctx.src, and deletedFiles maps every file an op deleted
+	// (delete_file) to its original bytes. Both bypass the ctx.src/originals
+	// rollback entirely, so patchComposable's own cleanupFileOps is the only
+	// thing that undoes them on any path that doesn't end in a commit.
 	createdFiles []string
+	deletedFiles map[string][]byte
 
 	// declOrig/declEdits back the decl ops' (rename, set_body, add_param,
 	// upsert_decl, delete_decl, set_doc, add_field, remove_field) shared
@@ -289,7 +290,7 @@ func (s *Snapshot) patchComposable(env patchEnvelope, names []string) (map[strin
 		ctx.opIndex = i + 1
 		resolved, rej := ctx.resolveArgRefs(raw)
 		if rej != nil {
-			ctx.cleanupCreatedFiles()
+			ctx.cleanupFileOps()
 			return nil, rej
 		}
 		op := opRegistry[names[i]]()
@@ -299,7 +300,7 @@ func (s *Snapshot) patchComposable(env patchEnvelope, names []string) (map[strin
 			// path). No disk write from ctx.src has happened yet at this
 			// point in the pipeline, so there is nothing else to roll back —
 			// only a created file needs cleaning up.
-			ctx.cleanupCreatedFiles()
+			ctx.cleanupFileOps()
 			s.patchOpRepairs(rej, env, i)
 			return nil, rej
 		}
@@ -316,7 +317,7 @@ func (s *Snapshot) patchComposable(env patchEnvelope, names []string) (map[strin
 	for file, b := range ctx.src {
 		out, ferr := imports.Process(file, b, nil)
 		if ferr != nil {
-			ctx.cleanupCreatedFiles()
+			ctx.cleanupFileOps()
 			return nil, &Reject{Reason: "patch result does not format", Detail: file + ": " + ferr.Error()}
 		}
 		formatted[file] = out
@@ -331,7 +332,7 @@ func (s *Snapshot) patchComposable(env patchEnvelope, names []string) (map[strin
 	for _, file := range touched {
 		b, err := os.ReadFile(file)
 		if err != nil {
-			ctx.cleanupCreatedFiles()
+			ctx.cleanupFileOps()
 			return nil, err
 		}
 		originals[file] = b
@@ -339,7 +340,7 @@ func (s *Snapshot) patchComposable(env patchEnvelope, names []string) (map[strin
 	for _, file := range touched {
 		if err := os.WriteFile(file, formatted[file], 0o644); err != nil {
 			s.rollback(originals)
-			ctx.cleanupCreatedFiles()
+			ctx.cleanupFileOps()
 			return nil, err
 		}
 	}
@@ -379,7 +380,7 @@ func (s *Snapshot) patchComposable(env patchEnvelope, names []string) (map[strin
 	diags, n, err := s.retypecheck(dirty, ctx.baseline)
 	if err != nil {
 		s.rollback(originals)
-		ctx.cleanupCreatedFiles()
+		ctx.cleanupFileOps()
 		return nil, err
 	}
 	// postChecks (rename's verifyResolution, add_param's post-edit sanity
@@ -397,13 +398,13 @@ func (s *Snapshot) patchComposable(env patchEnvelope, names []string) (map[strin
 	if env.DryRun {
 		s.rollback(originals)
 		s.retypecheck(dirty, ctx.baseline)
-		// cleanupCreatedFiles must run before the gens restore below: its
+		// cleanupFileOps must run before the gens restore below: its
 		// forced full reload (when add_test created a file this patch) bumps
 		// every workspace package's generation counter same as any reload,
 		// which would clobber a restore done first. dry_run never leaves
 		// artifacts, on the accept preview or the reject preview alike, so
 		// this runs unconditionally rather than only in the reject arms.
-		ctx.cleanupCreatedFiles()
+		ctx.cleanupFileOps()
 		for pkg, g := range savedGens {
 			s.gens[pkg] = g
 		}
@@ -417,7 +418,7 @@ func (s *Snapshot) patchComposable(env patchEnvelope, names []string) (map[strin
 	}
 	if len(diags) > 0 {
 		s.rollback(originals)
-		ctx.cleanupCreatedFiles()
+		ctx.cleanupFileOps()
 		return nil, diagnosticRepairs(&Reject{Reason: "patch does not typecheck", Diagnostics: annotateDiagnostics(diags, ctx.fileLastOp)})
 	}
 	if opRej != nil {
@@ -434,10 +435,10 @@ func (s *Snapshot) patchComposable(env patchEnvelope, names []string) (map[strin
 		// where restoring counters to un-bump them is not worth tracking.
 		s.retypecheck(dirty, ctx.baseline)
 		// Runs after the resync above for the same reason as the dry_run
-		// arm: cleanupCreatedFiles' own reload (when this patch's op list
+		// arm: cleanupFileOps' own reload (when this patch's op list
 		// created a file) would otherwise be redone by, or race with, the
 		// resync's incremental splice.
-		ctx.cleanupCreatedFiles()
+		ctx.cleanupFileOps()
 		return nil, opRej
 	}
 	for _, file := range touched {
@@ -564,22 +565,26 @@ func (ctx *patchCtx) addBaseline(set map[string]bool) {
 	}
 }
 
-// cleanupCreatedFiles deletes every file ctx.createdFiles registered and
-// forces a full reload, so the snapshot forgets a file that must not
-// survive: any rejection after the op that created it (whether that op's
+// cleanupFileOps undoes every file-set change this patch's ops made
+// outright — deletes ctx.createdFiles, restores ctx.deletedFiles — and
+// forces a full reload, so the snapshot forgets changes that must not
+// survive: any rejection after the op that made them (whether that op's
 // own failure or a later op's), and unconditionally on dry_run (which never
 // leaves artifacts on disk regardless of accept/reject). A plain
 // s.retypecheck resync is not enough here — that splices dirty *packages*
-// in place, it never re-globs a package's CompiledGoFiles, so a deleted
-// file would stay listed against a now-missing path. Only a full s.load()
-// drops it. No-op when nothing was created, so the common op list (no
-// add_test new-file path) pays nothing extra.
-func (ctx *patchCtx) cleanupCreatedFiles() {
-	if len(ctx.createdFiles) == 0 {
+// in place, it never re-globs a package's CompiledGoFiles, so a created or
+// deleted file would keep its pre-cleanup listing. Only a full s.load()
+// re-globs. No-op when the file set never changed, so the common op list
+// pays nothing extra.
+func (ctx *patchCtx) cleanupFileOps() {
+	if len(ctx.createdFiles) == 0 && len(ctx.deletedFiles) == 0 {
 		return
 	}
 	for _, f := range ctx.createdFiles {
 		os.Remove(f)
+	}
+	for f, b := range ctx.deletedFiles {
+		os.WriteFile(f, b, 0o644)
 	}
 	ctx.s.loaded = false
 	ctx.s.load()

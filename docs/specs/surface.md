@@ -59,7 +59,7 @@ live help catalog appears here, so shipped rows cannot drift. Statuses:
 | `add_dependency` | planned | [agent-go-9mg] project tier |
 | `remove_dependency` | planned | [agent-go-9mg] |
 | `move_file` | planned | [agent-go-9mg] |
-| `delete_file` | planned | [agent-go-9mg] |
+| `delete_file` | shipped | rejects while the file declares referenced symbols |
 | `mod_tidy` | planned | [agent-go-9mg] |
 | `wrap_stmts with:go` | candidate | [agent-go-96n]; needs mined concurrency tasks |
 | `guard_with_mutex` | candidate | [agent-go-96n] |

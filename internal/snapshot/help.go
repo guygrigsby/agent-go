@@ -6,7 +6,7 @@ import "encoding/json"
 // whenever an op is added, removed, or its argument shape changes, so a
 // caller can detect a stale cached copy instead of guessing from the op
 // list's length.
-const catalogVersion = "v2"
+const catalogVersion = "v3"
 
 // helpArg documents one op argument's wire shape.
 type helpArg struct {
@@ -47,7 +47,7 @@ var toolCatalog = []helpTool{
 	{"help", "Return this versioned op catalog: every patch op's argument schema, one worked example, and its v1 ceilings, plus short descriptions of the six tools. No arguments."},
 	{"query", "Semantic questions against the typechecked snapshot, dispatched by kind: search (case-insensitive name fragment -> exact addresses), inspect (kind, signature, decl position, doc), refs (every reference, tests included, defs marked), callers/callees (static call-graph edges; a call through an interface reports the interface method), implementations (interface -> implementing types, or type -> satisfied interfaces), doc (doc comment text). Args: kind (required), pkg, sym, q (name fragment, for kind=search, falls back to sym), offset (page offset for list results). Lists are position-sorted and paged 50 at a time: count is the total found; a truncated response carries truncated=true and next_offset to pass back as offset."},
 	{"view", "Render a declaration as annotated text. Functions and methods get a per-statement nK: handle prefix plus a generation counter for staleness checks; other declarations (const, var, type) render as plain source. Handles are meaningful only against the generation the same response reports. Args: pkg, sym."},
-	{"patch", "Apply an ordered list of ops as one atomic, generation-checked transaction: every op applies to an in-memory copy, the dirty set re-typechecks once, then everything writes and splices together — or nothing does. Ops compose: an op later in the list can address a handle an earlier op returned, referenced as $1, $2, ... by 1-based op index. dry_run runs the identical pipeline and reports accept/reject without writing. Op families (full schemas and examples via help): decl ops (rename, set_body, add_param, upsert_decl, delete_decl, set_doc, add_field, remove_field), statement ops (add_assign, add_call, add_return, add_if, add_for, add_switch, add_case, add_defer, add_go, set_cond, replace_expr, delete_node, wrap_stmts, wrap_error), test ops (add_test, add_test_case, set_test_case, remove_test_case). A decl or test op (rename, set_body, add_param, upsert_decl, delete_decl, set_doc, add_field, remove_field, add_test, add_test_case, set_test_case, remove_test_case) and a statement op cannot edit the same file in one patch; run them as separate patches. An accepted patch that touched exactly one declaration embeds that declaration's fresh view (same {text, nodes, generation} payload the view tool returns) under \"view\", so back-to-back edits need no view call in between; when several declarations were touched the response carries views_omitted instead. Args: pkg/sym (defaults for ops that omit them), generation, dry_run, ops (required, the array of op objects)."},
+	{"patch", "Apply an ordered list of ops as one atomic, generation-checked transaction: every op applies to an in-memory copy, the dirty set re-typechecks once, then everything writes and splices together — or nothing does. Ops compose: an op later in the list can address a handle an earlier op returned, referenced as $1, $2, ... by 1-based op index. dry_run runs the identical pipeline and reports accept/reject without writing. Op families (full schemas and examples via help): decl ops (rename, set_body, add_param, upsert_decl, delete_decl, set_doc, add_field, remove_field), statement ops (add_assign, add_call, add_return, add_if, add_for, add_switch, add_case, add_defer, add_go, set_cond, replace_expr, delete_node, wrap_stmts, wrap_error), test ops (add_test, add_test_case, set_test_case, remove_test_case), project ops (delete_file). A decl, test, or project op (rename, set_body, add_param, upsert_decl, delete_decl, set_doc, add_field, remove_field, add_test, add_test_case, set_test_case, remove_test_case) and a statement op cannot edit the same file in one patch; run them as separate patches. An accepted patch that touched exactly one declaration embeds that declaration's fresh view (same {text, nodes, generation} payload the view tool returns) under \"view\", so back-to-back edits need no view call in between; when several declarations were touched the response carries views_omitted instead. Args: pkg/sym (defaults for ops that omit them), generation, dry_run, ops (required, the array of op objects)."},
 	{"test", "Run `go test`, scoped to a package (default the whole workspace) and optionally filtered by name, and return structured per-test results: pass/fail, elapsed time, and captured output for failures. Validation of mutations stays compiler-only; this is how you close the behavior loop after a set of changes. Args: pkg, run (a -run filter)."},
 }
 
@@ -144,7 +144,7 @@ var opCatalog = []helpOp{
 		Args: []helpArg{
 			{"pkg", "string", false, "source package import path; defaults to the envelope's pkg"},
 			{"sym", "string", false, "top-level declaration name; defaults to the envelope's sym"},
-			{"to_pkg", "string", true, "target package import path (must exist)"},
+			{"to_pkg", "string", true, "target package import path (must exist by the time this op runs; an earlier upsert_decl in the same patch can create it)"},
 		},
 		Example: json.RawMessage(`[{"op":"move_decl","pkg":"demo/sig","sym":"Fetch","to_pkg":"demo/lib"}]`),
 		Notes:   "relocates the whole declaration (doc comment included) and requalifies every reference, adding imports where needed. v1 ceilings: the declaration must be self-contained (no uses of its old package's other top-level symbols) and a moved type may not have methods; both reject with the blocking names",
@@ -159,6 +159,16 @@ var opCatalog = []helpOp{
 		},
 		Example: json.RawMessage(`[{"op":"set_signature","pkg":"demo/sig","sym":"Fetch","signature":"(ctx context.Context, a int, b string, rest ...int) int","defaults":{"ctx":"context.Background()"}}]`),
 		Notes:   "full parameter/result rewrite: parameters are matched to the old signature by name — carried ones keep each call site's argument (reordering reorders them), dropped ones drop it, new ones take their default; a spread call site f(args...) survives insertions before the variadic. Value uses of the function and the body itself are not rewritten: repair them with sibling ops in the same patch or the end-of-list typecheck rejects with the site positions",
+	},
+
+	// Project ops (docs/specs/language.md "Project ops"): the file tier.
+	{
+		Op: "delete_file",
+		Args: []helpArg{
+			{"path", "string", true, "file path relative to the module root (or absolute)"},
+		},
+		Example: json.RawMessage(`[{"op":"upsert_decl","pkg":"demo/lib","text":"func Tmp() int {\n\treturn 0\n}"},{"op":"delete_file","path":"lib/agent.go"}]`),
+		Notes:   "removes one file; rejected while any package-level symbol it declares is referenced from outside it (the rejection lists the reference positions). Deleting a package's last file removes the package",
 	},
 
 	// Statement ops (docs/specs/language.md "Statement ops"). All address a

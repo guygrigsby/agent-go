@@ -125,6 +125,34 @@ func TestAddParamPromotesMatchingLocal(t *testing.T) {
 	}
 }
 
+// TestAddParamMultiAssignRedeclareAccepted covers the boundary b4b95e0f
+// shape: the body's top level has `ctx, cancelFunc := ...`. A multi-LHS :=
+// that introduces at least one other new variable is legal Go after the
+// parameter lands (the := redeclares the parameter, assigning it), so it is
+// not a collision and must not reject.
+func TestAddParamMultiAssignRedeclareAccepted(t *testing.T) {
+	s := demo(t)
+	pair := filepath.Join(s.dir, "lib", "pair.go")
+	src := "package lib\n\nfunc Pair(v int) int {\n\tfactor, twice := v, v*2\n\t_ = twice\n\treturn v * factor\n}\n"
+	if err := os.WriteFile(pair, []byte(src), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	res, err := s.AddParam("demo/lib", "Pair", "factor", "int", "2")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if res["status"] != "accepted" {
+		t.Fatalf("got %v", res)
+	}
+	out, _ := os.ReadFile(pair)
+	if !strings.Contains(string(out), "func Pair(v int, factor int) int") {
+		t.Errorf("declaration not updated:\n%s", out)
+	}
+	if !strings.Contains(string(out), "factor, twice := v, v*2") {
+		t.Errorf("multi-LHS := body statement must survive untouched:\n%s", out)
+	}
+}
+
 func TestAddParamLocalCollisionRejected(t *testing.T) {
 	s := demo(t)
 	scale := writeScaleFixture(t, s)

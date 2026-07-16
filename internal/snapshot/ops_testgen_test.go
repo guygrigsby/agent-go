@@ -288,7 +288,7 @@ func TestPatchCreatedFileRolledBack(t *testing.T) {
 // TestPatchCreatedFileRolledBack: add_test creates lib_test.go, then the
 // second op's resolveArgRefs fails on an unknown $ref (before add_test_case
 // is even applied), leaving the created file behind. The fix ensures
-// ctx.cleanupCreatedFiles() runs at the resolveArgRefs rejection path.
+// ctx.cleanupFileOps() runs at the resolveArgRefs rejection path.
 func TestPatchCreatedFileRolledBackOnBadRef(t *testing.T) {
 	s := demo(t)
 	_, err := s.Patch([]byte(`{"pkg":"demo/lib","ops":[

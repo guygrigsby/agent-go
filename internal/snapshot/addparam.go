@@ -292,6 +292,13 @@ func bodyDeclCollision(stmt ast.Stmt, name, defaultExpr string) (token.Pos, *ast
 		if st.Tok != token.DEFINE {
 			return token.NoPos, nil
 		}
+		// A multi-LHS := stays legal after the parameter lands as long as
+		// some other variable on the left is new: the := redeclares the
+		// parameter, assigning it. Not a collision; the rare all-existing
+		// case still rejects at the post-edit typecheck.
+		if len(st.Lhs) > 1 {
+			return token.NoPos, nil
+		}
 		for _, lhs := range st.Lhs {
 			id, ok := lhs.(*ast.Ident)
 			if !ok || id.Name != name {
