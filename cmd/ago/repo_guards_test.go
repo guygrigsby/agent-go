@@ -49,3 +49,24 @@ func TestClaudeMdPathsExist(t *testing.T) {
 		t.Fatalf("only %d paths matched; extraction broken?", len(seen))
 	}
 }
+
+// The distributed skill (skills/ago) teaches CLI invocations; every op it
+// names must be dispatched and every flag registered, same contract as
+// the README guard.
+func TestSkillCommandsResolve(t *testing.T) {
+	raw, err := os.ReadFile("../../skills/ago/SKILL.md")
+	if err != nil {
+		t.Fatal(err)
+	}
+	inline := regexp.MustCompile("`ago ([^`]+)`")
+	ms := inline.FindAllStringSubmatch(string(raw), -1)
+	if len(ms) < 5 {
+		t.Fatalf("suspiciously few ago invocations in the skill: %d", len(ms))
+	}
+	for _, m := range ms {
+		cmd := strings.TrimSpace(strings.ReplaceAll(strings.ReplaceAll(m[1], "<", ""), ">", ""))
+		for _, p := range commandProblems(cmd) {
+			t.Errorf("skill invocation %q: %s", "ago "+m[1], p)
+		}
+	}
+}

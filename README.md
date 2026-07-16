@@ -51,7 +51,10 @@ ago patch --body-file patch.json   # ordered, atomic, generation-checked multi-o
 ago test -p <pkg>                 # go test, scoped, structured pass/fail
 ```
 
-Agents connect over MCP (`ago mcp`); `ago init` writes the wiring. `patch`
+Agents connect over MCP (`ago mcp`); `ago init` writes the wiring. For
+agents with a shell (Claude Code and kin), `skills/ago` teaches the CLI
+workflow in any Go repo with no per-repo setup:
+`cp -r skills/ago ~/.claude/skills/`. `patch`
 is the full language: 14 statement ops, composable decl ops, table-driven
 test ops; `rename`/`set-body`/`add-param`/`upsert` are one-op sugar over
 it. Full catalog via `ago help`.
