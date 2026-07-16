@@ -142,6 +142,26 @@ func TestMoveDeclTestFileLandsInTestFile(t *testing.T) {
 	}
 }
 
+// The moved declaration's own imports travel with it, aliases included:
+// goimports cannot reconstruct an alias (or pick between same-named
+// packages — boundary's hkdf collided with a huaweicloud one), so the move
+// carries the source file's import spec verbatim.
+func TestMoveDeclCarriesImports(t *testing.T) {
+	s := demo(t)
+	res, err := s.Patch([]byte(`{"pkg":"demo/sig","ops":[
+		{"op":"move_decl","sym":"Shout","to_pkg":"demo/util","create_pkg":true}]}`))
+	if err != nil {
+		t.Fatalf("rejected: %v", err)
+	}
+	if res["status"] != "accepted" {
+		t.Fatalf("got %v", res)
+	}
+	b, rerr := os.ReadFile(filepath.Join(s.dir, "util", "agent.go"))
+	if rerr != nil || !strings.Contains(string(b), `str "strings"`) {
+		t.Fatalf("aliased import not carried: %v\n%s", rerr, b)
+	}
+}
+
 // A declaration that leans on package-local siblings is not self-contained;
 // v1 rejects it with the dependency named rather than emitting a broken move.
 func TestMoveDeclLocalDepsReject(t *testing.T) {

@@ -54,9 +54,14 @@ func moveDeclEdits(s *Snapshot, pkgPath, sym, toPkg string) ([]edit, *Reject) {
 	declText := string(declSrc[start:end])
 
 	// Self-containedness: any use of another package-level symbol from the
-	// same package can't survive the move without dragging it along.
+	// same package can't survive the move without dragging it along. The
+	// same scan collects the imports the declaration actually uses (alias
+	// included) so they travel with it: goimports cannot reconstruct an
+	// alias or pick between same-named packages, so the move never trusts
+	// it for the carried decl's own imports.
 	var deps []string
 	depSeen := map[string]bool{}
+	carried := map[string]string{} // import path -> alias ("" when default)
 	for _, f := range p.Syntax {
 		if f.Pos() == 0 || s.fset.Position(f.Pos()).Filename != declFile {
 			continue
@@ -71,7 +76,21 @@ func moveDeclEdits(s *Snapshot, pkgPath, sym, toPkg string) ([]edit, *Reject) {
 				return true
 			}
 			o := p.TypesInfo.Uses[id]
-			if o == nil || o == obj || o.Pkg() != p.Types {
+			if o == nil || o == obj {
+				return true
+			}
+			if pn, isPkg := o.(*types.PkgName); isPkg {
+				path := pn.Imported().Path()
+				if path != toPkg {
+					alias := ""
+					if id.Name != pn.Imported().Name() {
+						alias = id.Name
+					}
+					carried[path] = alias
+				}
+				return true
+			}
+			if o.Pkg() != p.Types {
 				return true
 			}
 			if o.Parent() == p.Types.Scope() && !depSeen[o.Name()] {
@@ -97,6 +116,7 @@ func moveDeclEdits(s *Snapshot, pkgPath, sym, toPkg string) ([]edit, *Reject) {
 	// fixes both files' import blocks.
 	fromTest := strings.HasSuffix(declFile, "_test.go")
 	tgtFile := ""
+	tgtOwner := tgt
 	for _, tp := range s.pkgs {
 		if tp.PkgPath != toPkg {
 			continue
@@ -104,6 +124,7 @@ func moveDeclEdits(s *Snapshot, pkgPath, sym, toPkg string) ([]edit, *Reject) {
 		for _, f := range tp.CompiledGoFiles {
 			if strings.HasSuffix(f, "_test.go") == fromTest {
 				tgtFile = f
+				tgtOwner = tp
 				break
 			}
 		}
@@ -122,6 +143,16 @@ func moveDeclEdits(s *Snapshot, pkgPath, sym, toPkg string) ([]edit, *Reject) {
 		return nil, &Reject{Reason: "file not found", Detail: tgtFile}
 	}
 	edits = append(edits, edit{tgtFile, len(tgtSrc), 0, "\n\n" + declText + "\n"})
+	carriedPaths := make([]string, 0, len(carried))
+	for path := range carried {
+		carriedPaths = append(carriedPaths, path)
+	}
+	sort.Strings(carriedPaths)
+	for _, path := range carriedPaths {
+		if e := importEdit(s, tgtOwner, tgtFile, path, carried[path]); e != nil {
+			edits = append(edits, *e)
+		}
+	}
 
 	// Requalify references. Qualified refs swap their package qualifier;
 	// bare same-package refs gain the target's package name. goimports
@@ -182,7 +213,7 @@ func moveDeclEdits(s *Snapshot, pkgPath, sym, toPkg string) ([]edit, *Reject) {
 			edits = append(edits, edit{pos.Filename, from, length, text})
 			if p2.PkgPath != toPkg && !importAdded[pos.Filename] {
 				importAdded[pos.Filename] = true
-				if e := importEdit(s, p2, pos.Filename, toPkg); e != nil {
+				if e := importEdit(s, p2, pos.Filename, toPkg, ""); e != nil {
 					edits = append(edits, *e)
 				}
 			}
@@ -194,7 +225,11 @@ func moveDeclEdits(s *Snapshot, pkgPath, sym, toPkg string) ([]edit, *Reject) {
 // importEdit inserts an import of path into file, or nil when it already
 // imports it. gofmt/goimports later canonicalizes block ordering; this
 // only guarantees presence, which the offline resolver cannot.
-func importEdit(s *Snapshot, p *packages.Package, file, path string) *edit {
+func importEdit(s *Snapshot, p *packages.Package, file, path, name string) *edit {
+	spec := "\"" + path + "\""
+	if name != "" {
+		spec = name + " " + spec
+	}
 	for _, f := range p.Syntax {
 		if s.fset.Position(f.Pos()).Filename != file {
 			continue
@@ -215,14 +250,14 @@ func importEdit(s *Snapshot, p *packages.Package, file, path string) *edit {
 		}
 		if lastImp != nil && lastImp.Rparen.IsValid() {
 			off := s.fset.Position(lastImp.Rparen).Offset
-			return &edit{file, off, 0, "\t\"" + path + "\"\n"}
+			return &edit{file, off, 0, "\t" + spec + "\n"}
 		}
 		if lastImp != nil {
 			off := s.fset.Position(lastImp.End()).Offset
-			return &edit{file, off, 0, "\nimport \"" + path + "\""}
+			return &edit{file, off, 0, "\nimport " + spec}
 		}
 		off := s.fset.Position(f.Name.End()).Offset
-		return &edit{file, off, 0, "\n\nimport \"" + path + "\""}
+		return &edit{file, off, 0, "\n\nimport " + spec}
 	}
 	return nil
 }
