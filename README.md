@@ -22,7 +22,7 @@ Or from a clone:
 go build -o ago ./cmd/ago
 ```
 
-Requires Go 1.24+. The daemon auto-spawns on first use, one per
+Requires Go 1.26+. The daemon auto-spawns on first use, one per
 workspace, and exits after five minutes idle; there is nothing to start
 or configure.
 
