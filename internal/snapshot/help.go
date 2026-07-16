@@ -84,7 +84,7 @@ var opCatalog = []helpOp{
 			{"default", "string", false, "argument expression for existing call sites; required whenever the function already has callers"},
 		},
 		Example: json.RawMessage(`[{"op":"add_param","sym":"NewLimiter","name":"ctx","type":"context.Context","default":"context.Background()"}]`),
-		Notes:   "callers updated with default; references to the function as a value (assigned, passed, satisfying an interface) cannot be repaired and are rejected with their positions",
+		Notes:   "callers updated with default; a top-level local `name := <default>` in the body is superseded and deleted (parameters share the body scope), any other same-named body declaration is rejected with its position; references to the function as a value (assigned, passed, satisfying an interface) cannot be repaired and are rejected with their positions",
 	},
 	{
 		Op: "upsert_decl",

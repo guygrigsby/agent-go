@@ -82,3 +82,59 @@ func TestAddParamBadDefaultRejected(t *testing.T) {
 		t.Errorf("rejected add-param left caller edit behind:\n%s", main)
 	}
 }
+
+// writeScaleFixture drops a function whose body declares a local at the top
+// level of the body — the shape behind agent-go-qus, where boundary's
+// CreateNewAccountCli declares `ctx := context.Background()`. Parameters
+// share the body block's scope, so naively adding a same-named parameter
+// turns that := into "no new variables on left side of :=".
+func writeScaleFixture(t *testing.T, s *Snapshot) string {
+	t.Helper()
+	scale := filepath.Join(s.dir, "lib", "scale.go")
+	src := "package lib\n\nfunc Scale(v int) int {\n\tfactor := 2\n\treturn v * factor\n}\n"
+	if err := os.WriteFile(scale, []byte(src), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	return scale
+}
+
+func TestAddParamPromotesMatchingLocal(t *testing.T) {
+	s := demo(t)
+	scale := writeScaleFixture(t, s)
+	use := filepath.Join(s.dir, "scale_use.go")
+	if err := os.WriteFile(use, []byte("package main\n\nimport \"demo/lib\"\n\nvar scaled = lib.Scale(3)\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	res, err := s.AddParam("demo/lib", "Scale", "factor", "int", "2")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if res["status"] != "accepted" || res["callers_updated"].(int) != 1 {
+		t.Fatalf("got %v", res)
+	}
+	src, _ := os.ReadFile(scale)
+	if !strings.Contains(string(src), "func Scale(v int, factor int) int") {
+		t.Errorf("declaration not updated:\n%s", src)
+	}
+	if strings.Contains(string(src), "factor :=") {
+		t.Errorf("superseded local declaration not removed:\n%s", src)
+	}
+	caller, _ := os.ReadFile(use)
+	if !strings.Contains(string(caller), "lib.Scale(3, 2)") {
+		t.Errorf("caller not updated:\n%s", caller)
+	}
+}
+
+func TestAddParamLocalCollisionRejected(t *testing.T) {
+	s := demo(t)
+	scale := writeScaleFixture(t, s)
+	_, err := s.AddParam("demo/lib", "Scale", "factor", "int", "3")
+	rej, ok := err.(*Reject)
+	if !ok || !strings.Contains(rej.Reason, "collides") || len(rej.Diagnostics) == 0 {
+		t.Fatalf("got %v", err)
+	}
+	src, _ := os.ReadFile(scale)
+	if !strings.Contains(string(src), "func Scale(v int) int") || !strings.Contains(string(src), "factor := 2") {
+		t.Errorf("rejected add_param mutated the file:\n%s", src)
+	}
+}

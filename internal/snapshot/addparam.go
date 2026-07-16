@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"go/ast"
+	"go/parser"
 	"go/token"
 	"go/types"
 	"os"
@@ -47,6 +48,33 @@ func addParamEdits(s *Snapshot, pkgPath, sym, name, typ, defaultExpr string) (ed
 	if len(calls) > 0 && defaultExpr == "" {
 		return nil, 0, &Reject{Reason: "default expression required",
 			Detail: fmt.Sprintf("%d call sites need an argument", len(calls))}
+	}
+
+	// Parameters are declared in the function body's scope, so a top-level
+	// `name := ...` or `var name ...` in the body collides with the new
+	// parameter ("no new variables on left side of :=" / redeclared). When
+	// the local is exactly `name := <defaultExpr>`, the parameter supersedes
+	// it: delete the declaration and every path — old callers passing the
+	// default, the body reading the parameter — behaves as before. Any other
+	// same-named body declaration is rejected with its position instead of
+	// the raw typecheck error.
+	if decl.Body != nil {
+		for _, st := range decl.Body.List {
+			pos, promote := bodyDeclCollision(st, name, defaultExpr)
+			if !pos.IsValid() {
+				continue
+			}
+			if promote == nil {
+				return nil, 0, &Reject{Reason: "parameter name collides with a declaration in the function body",
+					Detail: name + " is already declared there and parameters share the body scope; rename or delete the local, or make default match its initializer so add_param can promote it",
+					Diagnostics: []Diagnostic{{Pos: s.fset.Position(pos).String(),
+						Msg: name + " declared here"}}}
+			}
+			start := s.fset.Position(promote.Pos()).Offset
+			end := s.fset.Position(promote.End()).Offset
+			start, end = expandToLine(declFile, start, end)
+			edits = append(edits, edit{declFile, start, end - start, ""})
+		}
 	}
 
 	// Declaration edit: append before the closing paren, or before a final
@@ -244,6 +272,84 @@ func (addParamOp) apply(ctx *patchCtx, raw json.RawMessage) *Reject {
 		return nil
 	})
 	return nil
+}
+
+// bodyDeclCollision reports whether stmt declares name (a collision with a
+// new parameter of that name: parameters live in the body block's scope).
+// When the statement is exactly `name := <expr>` with expr equal to
+// defaultExpr, it is also returned as promotable: deleting it and letting
+// the parameter carry the value preserves behavior at every existing call
+// site, since they all receive defaultExpr.
+func bodyDeclCollision(stmt ast.Stmt, name, defaultExpr string) (token.Pos, *ast.AssignStmt) {
+	switch st := stmt.(type) {
+	case *ast.AssignStmt:
+		if st.Tok != token.DEFINE {
+			return token.NoPos, nil
+		}
+		for _, lhs := range st.Lhs {
+			id, ok := lhs.(*ast.Ident)
+			if !ok || id.Name != name {
+				continue
+			}
+			if len(st.Lhs) == 1 && len(st.Rhs) == 1 && exprMatches(st.Rhs[0], defaultExpr) {
+				return id.Pos(), st
+			}
+			return id.Pos(), nil
+		}
+	case *ast.DeclStmt:
+		gd, ok := st.Decl.(*ast.GenDecl)
+		if !ok || gd.Tok == token.IMPORT {
+			return token.NoPos, nil
+		}
+		for _, sp := range gd.Specs {
+			switch sp := sp.(type) {
+			case *ast.ValueSpec:
+				for _, id := range sp.Names {
+					if id.Name == name {
+						return id.Pos(), nil
+					}
+				}
+			case *ast.TypeSpec:
+				if sp.Name.Name == name {
+					return sp.Name.Pos(), nil
+				}
+			}
+		}
+	}
+	return token.NoPos, nil
+}
+
+// exprMatches reports whether e and the (parseable) expression source src
+// denote the same expression text, ignoring formatting.
+func exprMatches(e ast.Expr, src string) bool {
+	d, err := parser.ParseExpr(src)
+	if err != nil {
+		return false
+	}
+	return types.ExprString(e) == types.ExprString(d)
+}
+
+// expandToLine widens a deletion of src[start:end) in file to swallow the
+// whole line — leading indentation and the trailing newline — when the span
+// is alone on its line, so removing a statement does not leave a blank line
+// behind. Any read or bounds trouble leaves the span untouched.
+func expandToLine(file string, start, end int) (int, int) {
+	src, err := os.ReadFile(file)
+	if err != nil || start < 0 || end > len(src) {
+		return start, end
+	}
+	ls := start
+	for ls > 0 && (src[ls-1] == ' ' || src[ls-1] == '\t') {
+		ls--
+	}
+	le := end
+	for le < len(src) && (src[le] == ' ' || src[le] == '\t' || src[le] == '\r') {
+		le++
+	}
+	if (ls == 0 || src[ls-1] == '\n') && le < len(src) && src[le] == '\n' {
+		return ls, le + 1
+	}
+	return start, end
 }
 
 type callSite struct {
