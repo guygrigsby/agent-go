@@ -363,9 +363,32 @@ func runOracle(c config, wt string, t Manifest) (string, error) {
 		}
 	case "add-param":
 		for _, a := range t.AddParams {
-			if _, err := call("add-param", "-p", a.Pkg, "-s", a.Sym,
+			if out, err := call("add-param", "-p", a.Pkg, "-s", a.Sym,
 				"-name", a.Name, "-type", a.Type, "-default", zeroExpr(a.Type)); err != nil {
-				return b.String(), err
+				// Sequential replay hit a shape one add_param cannot express
+				// (an interface widened with its implementors, or a function
+				// registered as a value). Fall back to composing the whole
+				// change as one atomic patch.
+				env := composeEnv{wt: wt, mod: moduleOf(wt),
+					call: func(args ...string) map[string]any {
+						out := agoJSON(c, wt, args...)
+						rec, _ := json.Marshal(map[string]any{"call": args, "res": out})
+						b.Write(rec)
+						b.WriteByte('\n')
+						return out
+					},
+					patch: func(env map[string]any) map[string]any {
+						body, _ := json.Marshal(env)
+						out := agoJSONStdin(c, wt, string(body), "patch", "-body-file", "-")
+						rec, _ := json.Marshal(map[string]any{"call": []any{"patch", env}, "res": out})
+						b.Write(rec)
+						b.WriteByte('\n')
+						return out
+					}}
+				if cerr := composeAddParam(env, t, out); cerr != nil {
+					return b.String(), cerr
+				}
+				return b.String(), nil
 			}
 		}
 	case "move":

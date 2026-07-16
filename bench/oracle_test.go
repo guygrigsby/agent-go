@@ -20,6 +20,7 @@ func TestZeroExpr(t *testing.T) {
 		"uint32":          "0",
 		"float64":         "0",
 		"logical.Storage": "nil",
+		"time.Duration":   "0",
 	}
 	for typ, want := range cases {
 		if got := zeroExpr(typ); got != want {

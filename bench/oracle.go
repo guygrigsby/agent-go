@@ -17,7 +17,8 @@ func zeroExpr(typ string) string {
 	case t == "bool":
 		return "false"
 	case strings.HasPrefix(t, "int"), strings.HasPrefix(t, "uint"),
-		strings.HasPrefix(t, "float"), t == "byte", t == "rune":
+		strings.HasPrefix(t, "float"), t == "byte", t == "rune",
+		t == "time.Duration":
 		return "0"
 	default:
 		// Pointers, slices, maps, chans, funcs, and interfaces all take
