@@ -133,9 +133,9 @@ Rules of the road:
   test fixture, and README invocations must match the real CLI dispatch.
   Change behavior and the guard tells you which doc to touch.
 - The demo fixture (`internal/snapshot/testdata/demo`) is copied per
-  test; never mutate it in place. Be careful adding to `demo/lib`, the
-  view-handle tests depend on its exact layout. `demo/sig` is the place
-  for new fixture shapes.
+  test; never mutate it in place. `demo/lib` is frozen behind a recorded
+  hash (`TestDemoLibFixtureFrozen`) because the view-handle tests depend
+  on its exact layout. `demo/sig` is the place for new fixture shapes.
 - Race-sensitive changes (the parallel retypecheck) should run under
   `go test -race ./internal/snapshot`.
 
