@@ -41,6 +41,17 @@ func main() {
 		if err := prepAddParam(*scratch, *tasks, *out); err != nil {
 			fail("prep-addparam: %v", err)
 		}
+	case "mine":
+		if *scratch == "" || fs.NArg() == 0 {
+			fail("mine requires -scratch and a repo name: bench mine -scratch <dir> <repo>")
+		}
+		repo := fs.Arg(0)
+		if *out == "bench/tasks-rename.json" {
+			*out = "bench/candidates-" + repo + ".json"
+		}
+		if err := mine(*scratch+"/"+repo, repo, *out, 2, 40); err != nil {
+			fail("mine: %v", err)
+		}
 	case "report":
 		if fs.NArg() == 0 {
 			fail("report requires at least one run dir")

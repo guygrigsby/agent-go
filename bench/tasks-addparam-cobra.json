@@ -1,0 +1,10 @@
+[
+ {
+  "repo": "cobra",
+  "sha": "6d00909120c77b54b0c9974a4e20ffc540901b98",
+  "kind": "add-param",
+  "prompt": "Pass context to completion",
+  "go_files": 4,
+  "needs_review": "no function gained a named parameter in the diff"
+ }
+]

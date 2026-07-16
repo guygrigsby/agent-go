@@ -1,0 +1,32 @@
+[
+ {
+  "repo": "cobra",
+  "sha": "fe08012eddbdf42edd466b8defeee33ec0ec4446",
+  "kind": "rename",
+  "prompt": "Rename Powershell completion tests",
+  "go_files": 2,
+  "needs_review": "no rename pair extracted"
+ },
+ {
+  "repo": "cobra",
+  "sha": "b84ef40338051c81c2916fe90c7e73e6e5583182",
+  "kind": "rename",
+  "prompt": "Rename BashCompDirectives to ShellCompDirectives",
+  "go_files": 4,
+  "needs_review": "subject names BashCompDirectives-\u003eShellCompDirectives but no declaration found in diff"
+ },
+ {
+  "repo": "cobra",
+  "sha": "0960ff7fa929d3ac272ee8fc1051aed532521623",
+  "kind": "rename",
+  "prompt": "Rename IsHelpCommand to IsAdditionalHelpTopicCommand",
+  "go_files": 5,
+  "renames": [
+   {
+    "pkg": "",
+    "sym": "Command.IsHelpCommand",
+    "to": "IsAdditionalHelpTopicCommand"
+   }
+  ]
+ }
+]

@@ -1,0 +1,56 @@
+[
+ {
+  "repo": "cobra",
+  "sha": "fe08012eddbdf42edd466b8defeee33ec0ec4446",
+  "subject": "Rename Powershell completion tests (#1803)",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "cobra",
+  "sha": "6d00909120c77b54b0c9974a4e20ffc540901b98",
+  "subject": "Pass context to completion (#1265)",
+  "kinds": [
+   "add-param"
+  ],
+  "go_files": 4
+ },
+ {
+  "repo": "cobra",
+  "sha": "b84ef40338051c81c2916fe90c7e73e6e5583182",
+  "subject": "Rename BashCompDirectives to ShellCompDirectives (#1082)",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 4
+ },
+ {
+  "repo": "cobra",
+  "sha": "78a80322444b9e4e10546c28d47abbd86cefa0a7",
+  "subject": "cmd: Move some license functions from helpers.go to licenses.go",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "cobra",
+  "sha": "0960ff7fa929d3ac272ee8fc1051aed532521623",
+  "subject": "Rename IsHelpCommand to IsAdditionalHelpTopicCommand (#398)",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 5
+ },
+ {
+  "repo": "cobra",
+  "sha": "b3f29e98e63a3618988a231fd02b45c1e6369d4f",
+  "subject": "Issue #195: Move doc generation into separate pkg",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 13
+ }
+]
