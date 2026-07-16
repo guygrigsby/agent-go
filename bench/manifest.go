@@ -11,7 +11,16 @@ type Manifest struct {
 	GoFiles     int            `json:"go_files,omitempty"`
 	Renames     []RenameSpec   `json:"renames,omitempty"`
 	AddParams   []AddParamSpec `json:"add_params,omitempty"`
+	Moves       []MoveSpec     `json:"moves,omitempty"`
 	NeedsReview string         `json:"needs_review,omitempty"`
+}
+
+// MoveSpec is one declaration the ground-truth commit relocated: the goal
+// predicate checks it resolves in ToPkg and no longer in Pkg.
+type MoveSpec struct {
+	Pkg   string `json:"pkg"`
+	Sym   string `json:"sym"`
+	ToPkg string `json:"to_pkg"`
 }
 
 type RenameSpec struct {
@@ -37,6 +46,8 @@ func (m Manifest) HasSpecs() bool {
 		return len(m.Renames) > 0
 	case "add-param":
 		return len(m.AddParams) > 0
+	case "move":
+		return len(m.Moves) > 0
 	}
 	return false
 }

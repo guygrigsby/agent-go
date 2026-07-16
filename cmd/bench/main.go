@@ -41,6 +41,16 @@ func main() {
 		if err := prepAddParam(*scratch, *tasks, *out); err != nil {
 			fail("prep-addparam: %v", err)
 		}
+	case "prep-move":
+		if *scratch == "" {
+			fail("prep-move requires -scratch")
+		}
+		if *out == "bench/tasks-rename.json" {
+			*out = "bench/tasks-move.json"
+		}
+		if err := prepMove(*scratch, *tasks, *out); err != nil {
+			fail("prep-move: %v", err)
+		}
 	case "mine":
 		if *scratch == "" || fs.NArg() == 0 {
 			fail("mine requires -scratch and a repo name: bench mine -scratch <dir> <repo>")

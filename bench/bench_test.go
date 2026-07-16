@@ -349,6 +349,18 @@ func runOracle(c config, wt string, t Manifest) (string, error) {
 				return b.String(), err
 			}
 		}
+	case "move":
+		for _, m := range t.Moves {
+			env, _ := json.Marshal(map[string]any{"pkg": m.Pkg, "ops": []map[string]any{
+				{"op": "move_decl", "sym": m.Sym, "to_pkg": m.ToPkg}}})
+			out := agoJSONStdin(c, wt, string(env), "patch", "-body-file", "-")
+			rec, _ := json.Marshal(map[string]any{"call": []string{"patch", string(env)}, "res": out})
+			b.Write(rec)
+			b.WriteByte('\n')
+			if status, _ := out["status"].(string); status != "accepted" {
+				return b.String(), fmt.Errorf("oracle move %s.%s: %v", m.Pkg, m.Sym, out)
+			}
+		}
 	default:
 		return "", fmt.Errorf("oracle has no replay for kind %q", t.Kind)
 	}
@@ -394,6 +406,30 @@ type predicateFn func(c config, wt string, t Manifest, baseline map[string]int) 
 var predicates = map[string]predicateFn{
 	"": renamePredicate, "rename": renamePredicate,
 	"add-param": addParamPredicate,
+	"move":      movePredicate,
+}
+
+func movePredicate(c config, wt string, t Manifest, _ map[string]int) (bool, []map[string]any) {
+	predicate := len(t.Moves) > 0
+	var specs []map[string]any
+	for _, m := range t.Moves {
+		inTarget := inspectOK(c, wt, m.ToPkg, m.Sym)
+		inSource := inspectOK(c, wt, m.Pkg, m.Sym)
+		ok := inTarget && !inSource
+		specs = append(specs, map[string]any{
+			"sym": m.Pkg + "." + m.Sym, "to_pkg": m.ToPkg, "ok": ok,
+			"in_target": inTarget, "still_in_source": inSource,
+		})
+		if !ok {
+			predicate = false
+		}
+	}
+	return predicate, specs
+}
+
+func inspectOK(c config, wt, pkg, sym string) bool {
+	out := agoJSON(c, wt, "inspect", "-p", pkg, "-s", sym)
+	return out != nil && out["status"] == "ok"
 }
 
 func addParamPredicate(c config, wt string, t Manifest, _ map[string]int) (bool, []map[string]any) {
@@ -601,6 +637,18 @@ func agoStop(c config, wt string) {
 	cmd := exec.Command(c.agoBin, "stop", "-C", wt)
 	cmd.Env = agoEnv(c)
 	cmd.Run()
+}
+
+func agoJSONStdin(c config, wt, stdin string, args ...string) map[string]any {
+	cmd := exec.Command(c.agoBin, append(args, "-C", wt)...)
+	cmd.Env = agoEnv(c)
+	cmd.Stdin = strings.NewReader(stdin)
+	out, _ := cmd.Output()
+	var m map[string]any
+	if json.Unmarshal(out, &m) != nil {
+		return nil
+	}
+	return m
 }
 
 func agoJSON(c config, wt string, args ...string) map[string]any {
