@@ -184,6 +184,40 @@ func TestPatchBadWhereRepairIsCorrectedPatch(t *testing.T) {
 	}
 }
 
+// A decl op naming a missing symbol repairs with the whole patch resent,
+// the sym substituted with a resolving candidate; executed verbatim it is
+// accepted.
+func TestPatchOpSymMissRepairIsCorrectedPatch(t *testing.T) {
+	s := demo(t)
+	_, err := s.Patch([]byte(`{"pkg":"demo/lib",
+		"ops":[{"op":"rename","sym":"Doub","to":"Twice"}]}`))
+	rej, ok := err.(*Reject)
+	if !ok || rej.Reason != "symbol not found" {
+		t.Fatalf("want symbol-not-found Reject, got %v", err)
+	}
+	if len(rej.PossibleRepairs) == 0 {
+		t.Fatalf("reject carries no repairs: %+v", rej)
+	}
+	r := rej.PossibleRepairs[0]
+	if r.Call["tool"] != "patch" {
+		t.Fatalf("repair tool = %v, want patch", r.Call["tool"])
+	}
+	raw, err := json.Marshal(r.Call["args"])
+	if err != nil {
+		t.Fatal(err)
+	}
+	res, err := s.Patch(raw)
+	if err != nil {
+		t.Fatalf("repair rejected: %v", err)
+	}
+	if res["status"] != "accepted" {
+		t.Fatalf("repair not accepted: %v", res)
+	}
+	if _, err := s.Inspect("demo/lib", "Twice"); err != nil {
+		t.Fatal("corrected rename did not land:", err)
+	}
+}
+
 // A catalog dump is not a near-miss: when nothing matches the op name,
 // no repair is invented.
 func TestPatchUnknownOpNoRepairWithoutNearMiss(t *testing.T) {

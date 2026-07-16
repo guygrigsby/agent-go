@@ -62,17 +62,69 @@ func (s *Snapshot) patchOpRepairs(rej *Reject, env patchEnvelope, i int) {
 		}
 		return
 	}
-	field := repairField[rej.Reason]
-	if field == "" {
+	if field := repairField[rej.Reason]; field != "" {
+		for _, c := range rej.DidYouMean {
+			call, ok := patchCall(env, i, field, c)
+			if !ok {
+				return
+			}
+			rej.PossibleRepairs = append(rej.PossibleRepairs,
+				Repair{Why: field + " " + c + " is valid", Call: call})
+			if len(rej.PossibleRepairs) == maxRepairs {
+				return
+			}
+		}
 		return
 	}
+	s.patchAddressRepairs(rej, env, i)
+}
+
+// patchAddressRepairs handles addressing misses inside an op: the repair
+// is the whole patch with the op's pkg or sym substituted by a candidate
+// that resolves. Caller holds mu.
+func (s *Snapshot) patchAddressRepairs(rej *Reject, env patchEnvelope, i int) {
+	switch rej.Reason {
+	case "symbol not found", "method or field not found",
+		"receiver type not found", "package not found":
+	default:
+		return
+	}
+	// The op's effective addressing, with envelope defaults applied.
+	var addr struct {
+		Pkg string `json:"pkg"`
+		Sym string `json:"sym"`
+	}
+	if json.Unmarshal(env.Ops[i], &addr) != nil {
+		return
+	}
+	pkg, sym := addr.Pkg, addr.Sym
+	if pkg == "" {
+		pkg = env.Pkg
+	}
+	if sym == "" {
+		sym = env.Sym
+	}
 	for _, c := range rej.DidYouMean {
-		call, ok := patchCall(env, i, field, c)
+		pkgc, symc, field, val := pkg, sym, "sym", c
+		switch rej.Reason {
+		case "package not found":
+			pkgc, field, val = c, "pkg", c
+		case "receiver type not found":
+			_, name, _ := strings.Cut(sym, ".")
+			symc = c + "." + name
+			val = symc
+		default:
+			symc = c
+		}
+		if _, _, miss := s.findObject(pkgc, symc); miss != nil {
+			continue
+		}
+		call, ok := patchCall(env, i, field, val)
 		if !ok {
 			return
 		}
 		rej.PossibleRepairs = append(rej.PossibleRepairs,
-			Repair{Why: field + " " + c + " is valid", Call: call})
+			Repair{Why: pkgc + "." + symc + " resolves", Call: call})
 		if len(rej.PossibleRepairs) == maxRepairs {
 			return
 		}
