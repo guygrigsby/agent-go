@@ -1,0 +1,126 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1.1in]{geometry}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage[hidelinks]{hyperref}
+\usepackage{listings}
+\usepackage{xcolor}
+\lstset{basicstyle=\ttfamily\small, breaklines=true, columns=fullflexible}
+
+% Every number below comes from generated/ — built by `go run ./cmd/bench
+% paper <run dirs>` from the committed episode evidence. Do not hand-edit
+% figures or tables.
+\input{generated/summary_macros}
+
+\title{Compiler-Validated Semantic Editing for Weak Local Coding Models}
+\author{Guy J.\ Grigsby\\\small\texttt{guy@grigsby.dev}}
+\date{Draft — \today}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Coding agents overwhelmingly edit source code as text, and small locally
+runnable models fail at it: diff formats break, identifiers are guessed,
+and errors surface only after files change. We present \textbf{ago}, a
+semantic edit protocol for Go in which an agent queries a typechecked
+workspace and submits mutations from a fixed operation catalog; every
+mutation is validated by the compiler against an in-memory snapshot
+before any file is written, applied as an atomic generation-checked
+transaction, or rejected. Rejections are designed as conversation:
+each carries typed diagnostics and \emph{paste-ready repairs} --- the
+corrected call, verbatim --- and exact resends escalate. We introduce an
+\emph{oracle} methodology that replays ground-truth commits through the
+protocol to certify every benchmark task solvable before any model time
+is spent, and mine tasks from real commit histories of traefik, vault,
+boundary, and cobra. Across \EpisodeCount{} recorded episodes with a
+quantized 30B-class local model, the semantic mode passes
+\SemanticPassRate{} of episodes versus \RawPassRate{} for raw file
+editing under identical prompts and budgets, with lower median
+time-to-green on nearly every task; a 9B-class model completes
+repository-scale refactoring tasks through the protocol on first
+contact. All code, per-episode evidence (transcripts, request logs,
+serving configurations), and analysis tooling are released.
+\end{abstract}
+
+\section{Introduction}
+% Thesis: weak local models become effective repo-scale Go editors when
+% raw file editing is replaced by semantic queries and validated
+% mutations with typed rejections. Expand from idea.md; keep the
+% conversational-repair framing central: the contribution is not an op
+% catalog, it is an interaction design under which weak models recover.
+TODO(guy): expand from idea.md.
+
+\section{Related Work}
+% From the 2026-07-16 landscape survey; expand with proper citations.
+Symbol-level agent tooling over LSP (Serena; gopls's experimental MCP
+server) navigates semantically but edits textually or exposes a single
+mutation. CODESTRUCT frames agents over structured action spaces with
+syntax-validated edits and reports token and accuracy gains; our
+mutations are type-checked, transactional, and carry repairs.
+Editing-format benchmarks (EDIT-Bench, RES-Q, FEA-Bench) measure text
+formats and find strict formats \emph{hurt} current models --- the
+failure mode our repair channel converts. Compiler-guided patch
+generation (Repilot) and typed-hole context (Hazel) share the
+validation-during-generation stance at expression granularity.
+TODO: full citations.
+
+\section{The ago Protocol}
+\subsection{Surface}
+Ten tools; a versioned catalog of 28 operations across declaration,
+statement, and test families; seven query kinds with deterministic,
+paged responses. Handles address statements inside declarations;
+generations make staleness explicit.
+\subsection{Transactions}
+An ordered op list validates as one unit against an in-memory snapshot:
+ops apply to a copy, the dirty set re-typechecks once (in parallel,
+scheduled over post-edit import edges), resolution proofs run (rename
+rejects reference capture the compiler would accept), then all files
+write together --- or nothing does. Pre-existing diagnostics are
+baselined and tolerated; only new ones reject.
+\subsection{Rejection as conversation}
+Every rejection answers ``what is the correct next call'': typed
+diagnostics, candidate lists, and \texttt{possible\_repairs} --- complete
+calls the agent resends verbatim. Repairs are tested by execution: a
+repair that would itself reject is never offered. Exact resends of a
+rejected call escalate. Accepted mutations embed the fresh view of the
+touched declaration, closing the edit-view loop without a round trip.
+
+\section{Oracle Methodology}
+Ground-truth changes mined from real commits are replayed through the
+protocol itself. A task enters the benchmark only when the oracle
+completes it; oracle rejections are findings (engine bugs, extractor
+errors, or named protocol ceilings), and oracle transcripts are a
+training corpus. This separates ``the model failed'' from ``the task was
+impossible'' by construction.
+
+\section{Benchmark}
+Same model, same harness, same prompts (token-parity enforced by test),
+same time cap; one arm edits files with shell tools, the other sees only
+the protocol. Scoring is goal predicate + typecheck + scoped tests, the
+test gate voided where a pristine worktree also fails it. Serving
+configurations are pinned per run; every episode records transcript,
+diff, score, token usage, failure kind, and the daemon's request log.
+
+\section{Results}
+\begin{table}[h]
+\centering
+\resizebox{\textwidth}{!}{\input{generated/results_table}}
+\caption{Per-task, per-mode outcomes. Generated from committed episode
+evidence; pass@k over k episodes, median time-to-green over passing
+episodes.}
+\end{table}
+Semantic \SemanticPassCount{} vs raw \RawPassCount{} episodes passed.
+TODO: repair-uptake analysis, ablation arm, floor-model section, the
+cfff8d42 case study (discovery-primitive gap found and fixed).
+
+\section{Limitations}
+Single language; contamination held constant across arms but absolute
+rates inflated; one serving stack per model; k small; author-run
+infrastructure. TODO: expand honestly.
+
+\section{Availability}
+Code (MIT), all episode evidence, and analysis tooling:
+\url{https://github.com/guygrigsby/agent-go}.
+
+\end{document}

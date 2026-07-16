@@ -70,6 +70,13 @@ func main() {
 		if err := exportMLflow(*mlflow, fs.Args()); err != nil {
 			fail("export: %v", err)
 		}
+	case "paper":
+		if fs.NArg() == 0 {
+			fail("paper requires at least one run dir")
+		}
+		if err := paperTables(fs.Args(), "docs/paper/generated"); err != nil {
+			fail("paper: %v", err)
+		}
 	case "report":
 		if fs.NArg() == 0 {
 			fail("report requires at least one run dir")
