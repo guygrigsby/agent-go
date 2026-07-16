@@ -136,8 +136,10 @@ Both ops apply, retypecheck, and write as one unit, or neither does.
 4. Compose an ago_patch against those handles and that generation — or use
    a sugar tool (ago_rename / ago_set_body / ago_add_param /
    ago_upsert_decl) for a single well-known edit.
-5. A rejection is data: read the diagnostics and did_you_mean, adjust,
-   retry. A "stale generation" rejection means re-view before retrying.
+5. A rejection is data. When it carries possible_repairs, send the first
+   repair's call exactly as given — it is a complete, corrected call, not
+   a hint. Otherwise read the diagnostics and did_you_mean, adjust, retry.
+   A "stale generation" rejection means re-view before retrying.
 6. ago_test to confirm behavior once the edits typecheck — typechecking is
    not the same as correct.
 
