@@ -309,6 +309,58 @@ func TestAddParamVariadicSpreadSites(t *testing.T) {
 	}
 }
 
+// Grouped parameters "(a, b int)" count as two arguments; the call-site
+// insertion point must count names, not fields (oracle regression:
+// boundary_b4b95e0f "result does not parse").
+func TestAddParamGroupedParams(t *testing.T) {
+	s := demo(t)
+	if _, err := s.UpsertDecl("demo/sig",
+		"func Pair(a, b int) int { return a + b }"); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := s.UpsertDecl("demo/sig",
+		"func UsePair() int { return Pair(1, 2) }"); err != nil {
+		t.Fatal(err)
+	}
+	res, err := s.AddParam("demo/sig", "Pair", "c", "int", "0")
+	if err != nil {
+		t.Fatalf("rejected: %v", err)
+	}
+	if res["status"] != "accepted" {
+		t.Fatalf("got %v", res)
+	}
+	out, _ := s.View("demo/sig", "UsePair")
+	if text := out["text"].(string); !strings.Contains(text, "Pair(1, 2, 0)") {
+		t.Fatalf("call site wrong:\n%s", text)
+	}
+}
+
+// A multiline parameter list ends with a trailing comma before the
+// closing paren; appending ", name type" there produces ", ," (oracle:
+// boundary_b4b95e0f NewService, "result does not parse").
+func TestAddParamTrailingCommaParams(t *testing.T) {
+	s := demo(t)
+	if _, err := s.UpsertDecl("demo/sig",
+		"func Wide(\n\ta int,\n\tb string,\n) int {\n\treturn a\n}"); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := s.UpsertDecl("demo/sig",
+		"func UseWide() int { return Wide(1, \"x\") }"); err != nil {
+		t.Fatal(err)
+	}
+	res, err := s.AddParam("demo/sig", "Wide", "c", "int", "0")
+	if err != nil {
+		t.Fatalf("rejected: %v", err)
+	}
+	if res["status"] != "accepted" {
+		t.Fatalf("got %v", res)
+	}
+	out, _ := s.View("demo/sig", "UseWide")
+	if text := out["text"].(string); !strings.Contains(text, `Wide(1, "x", 0)`) {
+		t.Fatalf("call site wrong:\n%s", text)
+	}
+}
+
 // A catalog dump is not a near-miss: when nothing matches the op name,
 // no repair is invented.
 func TestPatchUnknownOpNoRepairWithoutNearMiss(t *testing.T) {

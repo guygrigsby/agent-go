@@ -67,7 +67,23 @@ func addParamEdits(s *Snapshot, pkgPath, sym, name, typ, defaultExpr string) (ed
 		// Inserting before the variadic parameter.
 		edits = append(edits, edit{declFile, declInsert, 0, name + " " + typ + ", "})
 	} else {
-		edits = append(edits, edit{declFile, declInsert, 0, sep + name + " " + typ})
+		// A multiline parameter list carries a trailing comma before the
+		// closing paren; appending ", x T" after it would read ", ,".
+		if declSrc, err := os.ReadFile(declFile); err == nil {
+			i := declInsert - 1
+			for i >= 0 && (declSrc[i] == ' ' || declSrc[i] == '\t' || declSrc[i] == '\n' || declSrc[i] == '\r') {
+				i--
+			}
+			if i >= 0 && declSrc[i] == ',' {
+				sep = ""
+				declInsert = i + 1
+				edits = append(edits, edit{declFile, declInsert, 0, " " + name + " " + typ + ","})
+			} else {
+				edits = append(edits, edit{declFile, declInsert, 0, sep + name + " " + typ})
+			}
+		} else {
+			edits = append(edits, edit{declFile, declInsert, 0, sep + name + " " + typ})
+		}
 	}
 	// fixedArgs is where the new argument lands at every call site: after
 	// the existing fixed parameters, before any variadic tail — which is
