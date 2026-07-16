@@ -139,7 +139,7 @@ func (s *Snapshot) UpsertDecl(pkgPath, text string) (map[string]any, error) {
 	if len(diags) > 0 {
 		undo()
 		s.loaded = false
-		return nil, &Reject{Reason: "declaration does not typecheck", Diagnostics: diags}
+		return nil, diagnosticRepairs(&Reject{Reason: "declaration does not typecheck", Diagnostics: diags})
 	}
 	if _, _, rej := s.findObject(pkgPath, sym); rej != nil {
 		undo()
@@ -190,7 +190,7 @@ func (s *Snapshot) upsertNewPackage(pkgPath, text, sym string, loadMS int64) (ma
 	if diags := s.errors(); len(diags) > 0 {
 		os.Remove(file)
 		s.loaded = false
-		return nil, &Reject{Reason: "declaration does not typecheck", Diagnostics: diags}
+		return nil, diagnosticRepairs(&Reject{Reason: "declaration does not typecheck", Diagnostics: diags})
 	}
 	if _, _, rej := s.findObject(pkgPath, sym); rej != nil {
 		os.Remove(file)

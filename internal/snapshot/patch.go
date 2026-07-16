@@ -338,7 +338,7 @@ func (s *Snapshot) patchComposable(env patchEnvelope, names []string) (map[strin
 			s.gens[pkg] = g
 		}
 		if len(diags) > 0 {
-			return nil, &Reject{Reason: "patch does not typecheck", Diagnostics: annotateDiagnostics(diags, ctx.fileLastOp)}
+			return nil, diagnosticRepairs(&Reject{Reason: "patch does not typecheck", Diagnostics: annotateDiagnostics(diags, ctx.fileLastOp)})
 		}
 		if opRej != nil {
 			return nil, opRej
@@ -348,7 +348,7 @@ func (s *Snapshot) patchComposable(env patchEnvelope, names []string) (map[strin
 	if len(diags) > 0 {
 		s.rollback(originals)
 		ctx.cleanupCreatedFiles()
-		return nil, &Reject{Reason: "patch does not typecheck", Diagnostics: annotateDiagnostics(diags, ctx.fileLastOp)}
+		return nil, diagnosticRepairs(&Reject{Reason: "patch does not typecheck", Diagnostics: annotateDiagnostics(diags, ctx.fileLastOp)})
 	}
 	if opRej != nil {
 		s.rollback(originals)

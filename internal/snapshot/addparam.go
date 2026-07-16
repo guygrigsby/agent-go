@@ -146,7 +146,7 @@ func (s *Snapshot) AddParam(pkgPath, sym, name, typ, defaultExpr string) (map[st
 	}
 	if len(diags) > 0 {
 		s.rollback(originals)
-		return nil, &Reject{Reason: "add_param does not typecheck", Diagnostics: diags}
+		return nil, diagnosticRepairs(&Reject{Reason: "add_param does not typecheck", Diagnostics: diags})
 	}
 	// Sanity: the new signature must actually carry the parameter.
 	if _, obj, rej := s.findObject(pkgPath, sym); rej != nil || !hasParam(obj, name) {

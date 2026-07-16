@@ -811,7 +811,7 @@ func (s *Snapshot) SetBody(pkgPath, sym, body string) (map[string]any, error) {
 	}
 	if len(diags) > 0 {
 		s.rollback(map[string][]byte{filename: src})
-		return nil, &Reject{Reason: "edit does not typecheck", Diagnostics: diags}
+		return nil, diagnosticRepairs(&Reject{Reason: "edit does not typecheck", Diagnostics: diags})
 	}
 	s.noteWrite(filename)
 	return map[string]any{

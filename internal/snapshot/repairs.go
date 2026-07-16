@@ -2,6 +2,7 @@ package snapshot
 
 import (
 	"encoding/json"
+	"go/token"
 	"go/types"
 	"maps"
 	"strings"
@@ -241,6 +242,29 @@ func patchCall(env patchEnvelope, i int, field, cand string) (map[string]any, bo
 		args["dry_run"] = true
 	}
 	return map[string]any{"tool": "patch", "args": args}, true
+}
+
+// diagnosticRepairs appends info-gathering calls for diagnostics with a
+// mechanical next step: an undefined identifier gets the search call that
+// locates it. The diagnostics themselves remain the primary guidance;
+// nothing here guesses at a fix. Returns rej for use in return statements.
+func diagnosticRepairs(rej *Reject) *Reject {
+	seen := map[string]bool{}
+	for _, d := range rej.Diagnostics {
+		_, name, ok := strings.Cut(d.Msg, "undefined: ")
+		if !ok || seen[name] || !token.IsIdentifier(name) {
+			continue
+		}
+		seen[name] = true
+		rej.PossibleRepairs = append(rej.PossibleRepairs,
+			Repair{Why: "search locates " + name,
+				Call: map[string]any{"tool": "query",
+					"args": map[string]any{"kind": "search", "q": name}}})
+		if len(rej.PossibleRepairs) == maxRepairs {
+			break
+		}
+	}
+	return rej
 }
 
 // viewable mirrors View's acceptance: the address resolves and is not a

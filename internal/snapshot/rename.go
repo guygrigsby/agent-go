@@ -177,7 +177,7 @@ func (s *Snapshot) Rename(pkgPath, sym, to string) (map[string]any, error) {
 	}
 	if len(diags) > 0 {
 		s.rollback(originals)
-		return nil, &Reject{Reason: "rename does not typecheck", Diagnostics: diags}
+		return nil, diagnosticRepairs(&Reject{Reason: "rename does not typecheck", Diagnostics: diags})
 	}
 	if rej := s.verifyResolution(pkgPath, newSym, declKey, expected); rej != nil {
 		s.rollback(originals)

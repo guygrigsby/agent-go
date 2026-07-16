@@ -241,6 +241,30 @@ func TestPatchShapeErrorRepairIsHelp(t *testing.T) {
 	}
 }
 
+// An undefined identifier in a typecheck reject has no mechanical fix,
+// but it has a mechanical next step: the search call that locates it.
+func TestPatchTypecheckUndefinedRepairIsSearch(t *testing.T) {
+	s := demo(t)
+	_, err := s.Patch([]byte(`{"pkg":"demo/lib",
+		"ops":[{"op":"set_body","sym":"Double","body":"return Helpr(v)"}]}`))
+	rej, ok := err.(*Reject)
+	if !ok || rej.Reason != "patch does not typecheck" {
+		t.Fatalf("want typecheck Reject, got %v", err)
+	}
+	if len(rej.PossibleRepairs) == 0 {
+		t.Fatalf("reject carries no repairs: %+v", rej)
+	}
+	r := rej.PossibleRepairs[0]
+	args, _ := r.Call["args"].(map[string]any)
+	if r.Call["tool"] != "query" || args["kind"] != "search" || args["q"] != "Helpr" {
+		t.Fatalf("want search repair for Helpr, got %v", r.Call)
+	}
+	res, err := s.Query("search", "", "", args["q"].(string))
+	if err != nil || res["status"] != "ok" {
+		t.Fatalf("search repair not executable: %v %v", res, err)
+	}
+}
+
 // A catalog dump is not a near-miss: when nothing matches the op name,
 // no repair is invented.
 func TestPatchUnknownOpNoRepairWithoutNearMiss(t *testing.T) {
