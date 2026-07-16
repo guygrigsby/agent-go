@@ -1,0 +1,1 @@
+{"call":["rename","-p","","-s","Command.IsHelpCommand","-to","IsAdditionalHelpTopicCommand"],"res":{"detail":"","diagnostics":null,"did_you_mean":null,"possible_repairs":[{"call":{"args":{"kind":"search","q":"Command.IsHelpCommand"},"tool":"query"},"why":"search turns Command.IsHelpCommand into exact pkg/sym addresses"}],"reason":"package not found","status":"rejected"}}

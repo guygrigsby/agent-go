@@ -1,0 +1,4 @@
+{"ms":1644,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T21:55:05.128972Z"}
+{"ms":6039,"op":"add-param","outcome":"accepted","pkg":"github.com/hashicorp/boundary/internal/session","req_sha":"9d2bb8f7c4b01d9e","sym":"NewRepository","ts":"2026-07-16T21:55:06.781466Z"}
+{"ms":5,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/session","req_sha":"cb414bc565d3aeed","sym":"NewRepository","ts":"2026-07-16T21:55:12.829379Z"}
+{"ms":6,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T21:55:12.841821Z"}
