@@ -30,54 +30,128 @@ func TestHelpCatalogMatchesOpRegistry(t *testing.T) {
 }
 
 // TestHelpCatalogExamplesAreValidPatchOps parses each op's example as the
-// JSON it claims to be: a one-element ops-array snippet whose sole
-// element's own "op" field names the entry it belongs to. This does not
-// prove the example actually applies cleanly (that would require binding
-// every example to the demo fixture's exact symbols, coupling generic
-// documentation to one test module) — it proves every example is
-// well-formed, addressed, wire-shaped patch JSON, catching typos and
-// drift from the real arg names the op structs unmarshal.
+// JSON it claims to be: an ops-array snippet of one to three ops whose LAST
+// element's own "op" field names the entry it belongs to (earlier elements
+// set up state the documented op needs — a switch for add_case to extend, a
+// scaffolded test for add_test_case to fill). Every element must itself be a
+// documented op carrying its required args and no undocumented keys, so the
+// setup ops are held to the same schema as the featured one. Whether an
+// example actually applies cleanly is TestHelpExamplesAcceptedByFixture's
+// job; this one catches structural rot without a loaded workspace.
 func TestHelpCatalogExamplesAreValidPatchOps(t *testing.T) {
+	byName := map[string]helpOp{}
+	for _, op := range opCatalog {
+		byName[op.Op] = op
+	}
 	for _, op := range opCatalog {
 		var ops []json.RawMessage
 		if err := json.Unmarshal(op.Example, &ops); err != nil {
 			t.Errorf("%s: example is not a JSON array: %v", op.Op, err)
 			continue
 		}
-		if len(ops) != 1 {
-			t.Errorf("%s: example should carry exactly one op, got %d", op.Op, len(ops))
+		if len(ops) < 1 || len(ops) > 3 {
+			t.Errorf("%s: example should carry one to three ops, got %d", op.Op, len(ops))
 			continue
 		}
-		var probe struct {
-			Op string `json:"op"`
-		}
-		if err := json.Unmarshal(ops[0], &probe); err != nil {
-			t.Errorf("%s: example op does not parse: %v", op.Op, err)
-			continue
-		}
-		if probe.Op != op.Op {
-			t.Errorf("%s: example's own op field is %q", op.Op, probe.Op)
-		}
-		// Every required arg must actually be present in the example, and
-		// every key in the example must be a documented arg (plus "op").
-		var raw map[string]json.RawMessage
-		if err := json.Unmarshal(ops[0], &raw); err != nil {
-			t.Errorf("%s: example op is not a JSON object: %v", op.Op, err)
-			continue
-		}
-		known := map[string]bool{"op": true}
-		for _, a := range op.Args {
-			known[a.Name] = true
-			if a.Required {
-				if _, ok := raw[a.Name]; !ok {
-					t.Errorf("%s: example omits required arg %q", op.Op, a.Name)
+		for i, rawOp := range ops {
+			var probe struct {
+				Op string `json:"op"`
+			}
+			if err := json.Unmarshal(rawOp, &probe); err != nil {
+				t.Errorf("%s: example op %d does not parse: %v", op.Op, i+1, err)
+				continue
+			}
+			if i == len(ops)-1 && probe.Op != op.Op {
+				t.Errorf("%s: example's last op field is %q", op.Op, probe.Op)
+			}
+			entry, ok := byName[probe.Op]
+			if !ok {
+				t.Errorf("%s: example op %d names undocumented op %q", op.Op, i+1, probe.Op)
+				continue
+			}
+			// Every required arg must actually be present, and every key must
+			// be a documented arg (plus "op") of the op the element names.
+			var raw map[string]json.RawMessage
+			if err := json.Unmarshal(rawOp, &raw); err != nil {
+				t.Errorf("%s: example op %d is not a JSON object: %v", op.Op, i+1, err)
+				continue
+			}
+			known := map[string]bool{"op": true}
+			for _, a := range entry.Args {
+				known[a.Name] = true
+				if a.Required {
+					if _, ok := raw[a.Name]; !ok {
+						t.Errorf("%s: example op %d (%s) omits required arg %q", op.Op, i+1, probe.Op, a.Name)
+					}
+				}
+			}
+			for k := range raw {
+				if !known[k] {
+					t.Errorf("%s: example op %d (%s) carries undocumented key %q", op.Op, i+1, probe.Op, k)
 				}
 			}
 		}
-		for k := range raw {
-			if !known[k] {
-				t.Errorf("%s: example carries undocumented key %q", op.Op, k)
+	}
+}
+
+// TestHelpExamplesAcceptedByFixture lifts every catalog example verbatim into
+// a dry_run patch envelope against the demo fixture and requires the full
+// pipeline to report it would be accepted. This is the teeth behind the
+// examples-as-few-shot contract (docs/specs/cross-model notes): an example
+// that parses but rejects against a real workspace teaches every model the
+// wrong call. dry_run leaves no writes behind, so one fixture serves all.
+func TestHelpExamplesAcceptedByFixture(t *testing.T) {
+	s := demo(t)
+
+	// Statement-op examples address handles n1..n3 inside demo/lib.UseHelper;
+	// prove the fixture still carries them before blaming an example.
+	view, err := s.View("demo/lib", "UseHelper")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if n := view["nodes"].(int); n < 3 {
+		t.Fatalf("UseHelper has %d handles, examples address n1..n3", n)
+	}
+
+	// Envelope targets. Statement ops run inside a fixed function context
+	// (UseHelper); decl and test ops need only a package. demo/sig carries
+	// the shapes demo/lib lacks: an unreferenced declaration and field, an
+	// error-discarding call chain, and a pre-existing table-driven test.
+	overrides := map[string]struct{ pkg, sym string }{
+		"delete_decl":      {"demo/sig", ""},
+		"remove_field":     {"demo/sig", ""},
+		"set_test_case":    {"demo/sig", ""},
+		"remove_test_case": {"demo/sig", ""},
+		"wrap_error":       {"demo/sig", "Run"},
+	}
+
+	for _, op := range opCatalog {
+		pkg, sym := "demo/lib", ""
+		if !declOps[op.Op] {
+			sym = "UseHelper"
+		}
+		if o, ok := overrides[op.Op]; ok {
+			pkg, sym = o.pkg, o.sym
+		}
+		env := map[string]any{"pkg": pkg, "dry_run": true, "ops": op.Example}
+		if sym != "" {
+			env["sym"] = sym
+		}
+		raw, err := json.Marshal(env)
+		if err != nil {
+			t.Fatal(err)
+		}
+		res, err := s.Patch(raw)
+		if err != nil {
+			if rej, ok := err.(*Reject); ok {
+				t.Errorf("%s: example rejected: %s (%s) %v", op.Op, rej.Reason, rej.Detail, rej.Diagnostics)
+			} else {
+				t.Errorf("%s: example failed: %v", op.Op, err)
 			}
+			continue
+		}
+		if res["would"] != "accepted" {
+			t.Errorf("%s: dry run did not accept: %v", op.Op, res)
 		}
 	}
 }

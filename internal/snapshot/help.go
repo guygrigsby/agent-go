@@ -19,7 +19,11 @@ type helpArg struct {
 // helpOp documents one patch op: its wire name, its arguments, one worked
 // example formatted exactly as a patch envelope's "ops" array would carry
 // it (so a caller can lift it verbatim), and any v1 ceiling worth flagging
-// up front rather than discovering via a rejection.
+// up front rather than discovering via a rejection. An example carries one
+// to three ops, the last being the documented op — earlier ops set up state
+// it needs (a switch for add_case, a scaffolded test for add_test_case).
+// Every example is validated end to end against the demo fixture by
+// TestHelpExamplesAcceptedByFixture (help_test.go).
 type helpOp struct {
 	Op      string          `json:"op"`
 	Args    []helpArg       `json:"args"`
@@ -83,7 +87,7 @@ var opCatalog = []helpOp{
 			{"type", "string", true, "new parameter type, e.g. context.Context"},
 			{"default", "string", false, "argument expression for existing call sites; required whenever the function already has callers"},
 		},
-		Example: json.RawMessage(`[{"op":"add_param","sym":"NewLimiter","name":"ctx","type":"context.Context","default":"context.Background()"}]`),
+		Example: json.RawMessage(`[{"op":"add_param","pkg":"demo/sig","sym":"Scale","name":"offset","type":"int","default":"0"}]`),
 		Notes:   "callers updated with default; a top-level local `name := <default>` in the body is superseded and deleted (parameters share the body scope), any other same-named body declaration is rejected with its position; references to the function as a value (assigned, passed, satisfying an interface) cannot be repaired and are rejected with their positions",
 	},
 	{
@@ -92,7 +96,7 @@ var opCatalog = []helpOp{
 			{"pkg", "string", false, "package import path; defaults to the envelope's pkg"},
 			{"text", "string", true, "complete declaration source, including doc comment if any; the symbol name is parsed from it"},
 		},
-		Example: json.RawMessage(`[{"op":"upsert_decl","pkg":"demo/lib","text":"func Triple(v int) int {\n\treturn v * 3\n}"}]`),
+		Example: json.RawMessage(`[{"op":"upsert_decl","pkg":"demo/lib","text":"// Double doubles v.\nfunc Double(v int) int {\n\treturn v + v\n}"}]`),
 		Notes:   "add or replace a whole top-level declaration; goimports runs in the loop. v1 ceiling: cannot create a brand-new file (or package) inside a composable multi-op patch — use the standalone upsert_decl tool for that one case",
 	},
 	{
@@ -132,7 +136,7 @@ var opCatalog = []helpOp{
 			{"pkg", "string", false, "package import path; defaults to the envelope's pkg"},
 			{"sym", "string", false, "field: Type.Field; defaults to the envelope's sym"},
 		},
-		Example: json.RawMessage(`[{"op":"remove_field","sym":"Store.Tag"}]`),
+		Example: json.RawMessage(`[{"op":"remove_field","sym":"Config.Legacy"}]`),
 		Notes:   "rejected while referenced. v1 ceiling: a field sharing a multi-name declaration (\"a, b int\") or an embedded field is not supported",
 	},
 	{
@@ -153,7 +157,7 @@ var opCatalog = []helpOp{
 			{"signature", "string", true, "the complete new signature as Go text: \"(params) results\""},
 			{"defaults", "object", false, "argument expression per NEW parameter name, spliced into every existing call site; required for any new parameter when call sites exist"},
 		},
-		Example: json.RawMessage(`[{"op":"set_signature","sym":"Fetch","signature":"(ctx context.Context, a int, rest ...int) int","defaults":{"ctx":"context.Background()"}}]`),
+		Example: json.RawMessage(`[{"op":"set_signature","pkg":"demo/sig","sym":"Fetch","signature":"(ctx context.Context, a int, b string, rest ...int) int","defaults":{"ctx":"context.Background()"}}]`),
 		Notes:   "full parameter/result rewrite: parameters are matched to the old signature by name — carried ones keep each call site's argument (reordering reorders them), dropped ones drop it, new ones take their default; a spread call site f(args...) survives insertions before the variadic. Value uses of the function and the body itself are not rewritten: repair them with sibling ops in the same patch or the end-of-list typecheck rejects with the site positions",
 	},
 
@@ -171,7 +175,7 @@ var opCatalog = []helpOp{
 			{"rhs", "string", true, "right-hand-side expression, parsed and typechecked in scope"},
 			{"define", "bool", false, "use := instead of ="},
 		},
-		Example: json.RawMessage(`[{"op":"add_assign","at":"n1","where":"after","lhs":"v","rhs":"v * 2","define":false}]`),
+		Example: json.RawMessage(`[{"op":"add_assign","at":"n2","where":"after","lhs":"_","rhs":"h(3)","define":false}]`),
 	},
 	{
 		Op: "add_call",
@@ -180,7 +184,7 @@ var opCatalog = []helpOp{
 			{"where", "string", true, "before | after | first | last"},
 			{"expr", "string", true, "a call expression or channel receive (<-ch); assignments belong to add_assign"},
 		},
-		Example: json.RawMessage(`[{"op":"add_call","at":"n1","where":"after","expr":"log.Println(v)"}]`),
+		Example: json.RawMessage(`[{"op":"add_call","at":"n2","where":"after","expr":"fmt.Println(h(1))"}]`),
 	},
 	{
 		Op: "add_return",
@@ -189,7 +193,7 @@ var opCatalog = []helpOp{
 			{"where", "string", true, "before | after | first | last"},
 			{"exprs", "[]string", false, "result expressions, in order; omit for a bare \"return\""},
 		},
-		Example: json.RawMessage(`[{"op":"add_return","at":"n1","where":"after","exprs":["v","nil"]}]`),
+		Example: json.RawMessage(`[{"op":"add_return","at":"n2","where":"after","exprs":["h(2)"]}]`),
 		Notes:   "arity and result types are checked against the enclosing signature at end-of-list typecheck, not here",
 	},
 	{
@@ -199,7 +203,7 @@ var opCatalog = []helpOp{
 			{"where", "string", true, "before | after | first | last"},
 			{"expr", "string", true, "a call expression"},
 		},
-		Example: json.RawMessage(`[{"op":"add_defer","at":"n1","where":"after","expr":"f.Close()"}]`),
+		Example: json.RawMessage(`[{"op":"add_defer","at":"n1","where":"after","expr":"fmt.Println(\"done\")"}]`),
 	},
 	{
 		Op: "add_go",
@@ -208,14 +212,14 @@ var opCatalog = []helpOp{
 			{"where", "string", true, "before | after | first | last"},
 			{"expr", "string", true, "a call expression"},
 		},
-		Example: json.RawMessage(`[{"op":"add_go","at":"n1","where":"after","expr":"worker(v)"}]`),
+		Example: json.RawMessage(`[{"op":"add_go","at":"n2","where":"after","expr":"h(1)"}]`),
 	},
 	{
 		Op: "delete_node",
 		Args: []helpArg{
 			{"at", "string", true, "handle of the statement or case clause to remove"},
 		},
-		Example: json.RawMessage(`[{"op":"delete_node","at":"n3"}]`),
+		Example: json.RawMessage(`[{"op":"add_return","at":"n3","where":"after","exprs":["h(9)"]},{"op":"delete_node","at":"n3"}]`),
 		Notes:   "a block-owning statement with children, or an if with an else, is rejected rather than silently discarding content — delete children first",
 	},
 	{
@@ -226,7 +230,7 @@ var opCatalog = []helpOp{
 			{"cond", "string", true, "condition expression"},
 			{"else", "bool", false, "also create an empty else block"},
 		},
-		Example: json.RawMessage(`[{"op":"add_if","at":"n1","where":"after","cond":"v < 0","else":false}]`),
+		Example: json.RawMessage(`[{"op":"add_if","at":"n2","where":"after","cond":"h != nil","else":false}]`),
 		Notes:   "returns the new then-block's own handle via $N; there is no v1 handle for a requested else block (view again to reach it)",
 	},
 	{
@@ -237,7 +241,7 @@ var opCatalog = []helpOp{
 			{"cond", "string", false, "condition expression; mutually exclusive with range"},
 			{"range", "string", false, "a full range clause, e.g. \"k, v := range coll\"; mutually exclusive with cond"},
 		},
-		Example: json.RawMessage(`[{"op":"add_for","at":"n1","where":"after","cond":"v > 0"}]`),
+		Example: json.RawMessage(`[{"op":"add_for","at":"n2","where":"after","cond":"h(0) > 0"}]`),
 		Notes:   "empty body, returns its handle via $N. v1 ceiling: no init/post clauses — use upsert_decl/set_body for a classic three-clause loop",
 	},
 	{
@@ -247,7 +251,7 @@ var opCatalog = []helpOp{
 			{"where", "string", true, "before | after | first | last"},
 			{"tag", "string", false, "switch tag expression; omit for a tagless switch"},
 		},
-		Example: json.RawMessage(`[{"op":"add_switch","at":"n1","where":"after","tag":"v"}]`),
+		Example: json.RawMessage(`[{"op":"add_switch","at":"n2","where":"after","tag":"h(1)"}]`),
 		Notes:   "empty body; extend with add_case",
 	},
 	{
@@ -257,7 +261,7 @@ var opCatalog = []helpOp{
 			{"exprs", "[]string", false, "case expressions; mutually exclusive with default"},
 			{"default", "bool", false, "make this the default clause; mutually exclusive with exprs"},
 		},
-		Example: json.RawMessage(`[{"op":"add_case","at":"$1","exprs":["1","2"]}]`),
+		Example: json.RawMessage(`[{"op":"add_switch","at":"n2","where":"after","tag":"h(1)"},{"op":"add_case","at":"$1","exprs":["1","2"]}]`),
 		Notes:   "always appends as the last clause (v1 has no argument for placing a case among existing ones); returns the new case's body handle via $N",
 	},
 	{
@@ -266,7 +270,7 @@ var opCatalog = []helpOp{
 			{"at", "string", true, "handle (or $N) of the if/for/case to retarget"},
 			{"expr", "string", true, "replacement condition"},
 		},
-		Example: json.RawMessage(`[{"op":"set_cond","at":"n1","expr":"v <= 0"}]`),
+		Example: json.RawMessage(`[{"op":"add_if","at":"n2","where":"after","cond":"h == nil"},{"op":"set_cond","at":"$1","expr":"h != nil"}]`),
 		Notes:   "a case clause's whole expression list is replaced as one; v1 has no per-element case-expr addressing",
 	},
 	{
@@ -275,7 +279,7 @@ var opCatalog = []helpOp{
 			{"at", "string", true, "handle (or $N) of the target node"},
 			{"expr", "string", true, "replacement expression"},
 		},
-		Example: json.RawMessage(`[{"op":"replace_expr","at":"n3","expr":"v * 3"}]`),
+		Example: json.RawMessage(`[{"op":"add_call","at":"n2","where":"after","expr":"h(1)"},{"op":"replace_expr","at":"$1","expr":"h(2)"}]`),
 		Notes:   "v1 ceiling: an if/for/case condition or a whole expression statement only; per-argument sub-expression handles are future work",
 	},
 	{
@@ -286,7 +290,7 @@ var opCatalog = []helpOp{
 			{"with", "string", true, "if | for | block"},
 			{"cond", "string", false, "condition; required for with=if/for, forbidden for with=block"},
 		},
-		Example: json.RawMessage(`[{"op":"wrap_stmts","from":"n2","to":"n4","with":"if","cond":"v != nil"}]`),
+		Example: json.RawMessage(`[{"op":"wrap_stmts","from":"n1","to":"n2","with":"if","cond":"helper(1) > 0"}]`),
 		Notes:   "from/to must be direct siblings, in order, of the same statement list; returns the new node's handle via $N",
 	},
 	{
@@ -295,7 +299,7 @@ var opCatalog = []helpOp{
 			{"at", "string", true, "handle (or $N) of the assignment or expression-statement call to wrap"},
 			{"message", "string", true, "context prefix for fmt.Errorf(\"...: %w\", err)"},
 		},
-		Example: json.RawMessage(`[{"op":"wrap_error","at":"n2","message":"put"}]`),
+		Example: json.RawMessage(`[{"op":"wrap_error","at":"n1","message":"fetch"}]`),
 		Notes:   "the Go idiom automated end to end: binds err, inserts \"if err != nil { return ..., fmt.Errorf(...) }\". v1 ceiling: a bare expression-statement call resolves its return arity only for a same-package function identifier",
 	},
 
@@ -321,7 +325,7 @@ var opCatalog = []helpOp{
 			{"args", "[]string", false, "argument expressions, in target parameter order"},
 			{"want", "[]string", false, "expected-result expressions, in result order (wantErr last, if the target returns error)"},
 		},
-		Example: json.RawMessage(`[{"op":"add_test_case","test":"TestDouble","name":"positive","args":["2"],"want":["4"]}]`),
+		Example: json.RawMessage(`[{"op":"add_test","target":"Double"},{"op":"add_test_case","test":"TestDouble","name":"positive","args":["2"],"want":["4"]}]`),
 		Notes:   "values are expression atoms, typechecked against the case struct at end-of-list typecheck",
 	},
 	{
@@ -334,7 +338,7 @@ var opCatalog = []helpOp{
 			{"args", "[]string", false, "replacement argument expressions"},
 			{"want", "[]string", false, "replacement expected-result expressions"},
 		},
-		Example: json.RawMessage(`[{"op":"set_test_case","test":"TestDouble","case":"positive","args":["3"],"want":["6"]}]`),
+		Example: json.RawMessage(`[{"op":"set_test_case","test":"TestScale","case":"one","args":["3","3"],"want":["9"]}]`),
 	},
 	{
 		Op: "remove_test_case",
@@ -343,7 +347,7 @@ var opCatalog = []helpOp{
 			{"test", "string", false, "test function name; defaults to the envelope's sym"},
 			{"case", "string", true, "row name to remove"},
 		},
-		Example: json.RawMessage(`[{"op":"remove_test_case","test":"TestDouble","case":"positive"}]`),
+		Example: json.RawMessage(`[{"op":"remove_test_case","test":"TestScale","case":"one"}]`),
 	},
 }
 
