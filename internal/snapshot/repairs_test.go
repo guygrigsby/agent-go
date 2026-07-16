@@ -384,6 +384,31 @@ func TestPatchForeignArgsRejectAtShape(t *testing.T) {
 	}
 }
 
+// Floor-model addressing shapes (qwen3.5-9b smoke, run 20260716): a
+// package miss with no sym, or no pkg with a sym, cannot repair by
+// substitution — the mechanical next call is search.
+func TestAddressMissWithoutSymRepairsToSearch(t *testing.T) {
+	s := demo(t)
+	for _, c := range []struct{ pkg, sym, q string }{
+		{"lib", "", "lib"},             // bare package name, no sym
+		{"", "UseHelper", "UseHelper"}, // sym with no pkg
+	} {
+		_, err := s.Query("refs", c.pkg, c.sym, "", 0)
+		rej, ok := err.(*Reject)
+		if !ok {
+			t.Fatalf("%q/%q: want Reject, got %v", c.pkg, c.sym, err)
+		}
+		if len(rej.PossibleRepairs) == 0 {
+			t.Fatalf("%q/%q: no repairs: %+v", c.pkg, c.sym, rej)
+		}
+		r := rej.PossibleRepairs[0]
+		args, _ := r.Call["args"].(map[string]any)
+		if r.Call["tool"] != "query" || args["kind"] != "search" || args["q"] != c.q {
+			t.Fatalf("%q/%q: want search repair for %q, got %v", c.pkg, c.sym, c.q, r.Call)
+		}
+	}
+}
+
 // A catalog dump is not a near-miss: when nothing matches the op name,
 // no repair is invented.
 func TestPatchUnknownOpNoRepairWithoutNearMiss(t *testing.T) {

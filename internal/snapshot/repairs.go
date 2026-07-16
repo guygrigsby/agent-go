@@ -64,6 +64,7 @@ func addressRepairs(rej *Reject, pkgPath, sym string,
 func (s *Snapshot) viewRepairs(rej *Reject, pkgPath, sym string) {
 	addressRepairs(rej, pkgPath, sym, viewCall, s.viewable)
 	fileAddressRepair(rej, sym)
+	searchFallbackRepair(rej, pkgPath, sym)
 }
 
 // fileAddressRepair catches a raw-mode habit: a file name or file:line
@@ -85,8 +86,33 @@ func fileAddressRepair(rej *Reject, sym string) {
 	}
 	rej.PossibleRepairs = append(rej.PossibleRepairs,
 		Repair{Why: "sym takes symbol addresses, not file names; search lists the symbols matching " + name,
-			Call: map[string]any{"tool": "query",
-				"args": map[string]any{"kind": "search", "q": name}}})
+			Call: searchCall(name)})
+}
+
+func searchCall(q string) map[string]any {
+	return map[string]any{"tool": "query",
+		"args": map[string]any{"kind": "search", "q": q}}
+}
+
+// searchFallbackRepair covers addressing misses substitution cannot fix —
+// a package named without a sym, or a sym without a package (floor-model
+// shapes: qwen3.5-9b sent both). The mechanical next call is the search
+// that turns whatever fragment the caller had into exact addresses. Only
+// fires when nothing better exists.
+func searchFallbackRepair(rej *Reject, pkgPath, sym string) {
+	if len(rej.PossibleRepairs) > 0 {
+		return
+	}
+	frag := sym
+	if frag == "" {
+		frag = pkgPath[strings.LastIndexAny(pkgPath, "./")+1:]
+	}
+	if frag == "" {
+		return
+	}
+	rej.PossibleRepairs = append(rej.PossibleRepairs,
+		Repair{Why: "search turns " + frag + " into exact pkg/sym addresses",
+			Call: searchCall(frag)})
 }
 
 // resolves reports whether the address names any object.
@@ -126,6 +152,7 @@ func (s *Snapshot) queryRepairs(rej *Reject, kind, pkgPath, sym string) {
 				"args": map[string]any{"kind": kind, "pkg": pkg, "sym": sym}}
 		}, accept)
 	fileAddressRepair(rej, sym)
+	searchFallbackRepair(rej, pkgPath, sym)
 }
 
 // sugarRepairs builds the corrected single-op call for an addressing miss
