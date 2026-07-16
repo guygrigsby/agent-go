@@ -40,6 +40,18 @@ func (s *Snapshot) viewRepairs(rej *Reject, pkgPath, sym string) {
 	}
 }
 
+// patchOpRepairs adds the recovery call for op-level rejects a fresh view
+// fixes: a missed handle means the caller's handle table is stale or
+// invented, and the literal next call is the view that rebuilds it.
+// Caller holds mu.
+func (s *Snapshot) patchOpRepairs(rej *Reject, env patchEnvelope) {
+	if rej.Reason == "unknown handle" && env.Sym != "" && s.viewable(env.Pkg, env.Sym) {
+		rej.PossibleRepairs = append(rej.PossibleRepairs,
+			Repair{Why: "rebuilds the handle table for " + env.Pkg + "." + env.Sym,
+				Call: viewCall(env.Pkg, env.Sym)})
+	}
+}
+
 // patchCall rebuilds the complete patch invocation from a parsed envelope
 // with op index i's name replaced by cand. Only envelope fields are echoed,
 // so transport extras in the original bytes are dropped.

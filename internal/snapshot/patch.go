@@ -207,6 +207,7 @@ func (s *Snapshot) patchComposable(env patchEnvelope, names []string) (map[strin
 	if needsFunc {
 		nt, rej := s.nodeTableFor(env.Pkg, env.Sym)
 		if rej != nil {
+			s.viewRepairs(rej, env.Pkg, env.Sym)
 			return nil, rej
 		}
 		src, err := os.ReadFile(nt.file)
@@ -236,6 +237,7 @@ func (s *Snapshot) patchComposable(env patchEnvelope, names []string) (map[strin
 			// point in the pipeline, so there is nothing else to roll back —
 			// only a created file needs cleaning up.
 			ctx.cleanupCreatedFiles()
+			s.patchOpRepairs(rej, env)
 			return nil, rej
 		}
 	}

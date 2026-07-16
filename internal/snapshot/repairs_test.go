@@ -124,6 +124,36 @@ func TestPatchUnknownOpRepairIsCorrectedPatch(t *testing.T) {
 	}
 }
 
+// A missed handle means the caller's handle table is stale or invented;
+// the repair is the view call that rebuilds it, executable verbatim.
+func TestPatchUnknownHandleRepairIsView(t *testing.T) {
+	s := demo(t)
+	_, err := s.Patch([]byte(`{"pkg":"demo/lib","sym":"UseHelper",
+		"ops":[{"op":"add_assign","at":"n99","where":"after","lhs":"x","rhs":"1","define":true}]}`))
+	rej, ok := err.(*Reject)
+	if !ok || rej.Reason != "unknown handle" {
+		t.Fatalf("want unknown-handle Reject, got %v", err)
+	}
+	execViewRepairs(t, s, rej)
+	args := rej.PossibleRepairs[0].Call["args"].(map[string]any)
+	if args["sym"] != "UseHelper" {
+		t.Fatalf("repair views %v, want UseHelper", args)
+	}
+}
+
+// An envelope sym miss on a statement-op patch repairs like any other
+// addressing miss: complete view calls for the near-miss candidates.
+func TestPatchEnvelopeSymMissRepairs(t *testing.T) {
+	s := demo(t)
+	_, err := s.Patch([]byte(`{"pkg":"demo/lib","sym":"UseHelp",
+		"ops":[{"op":"add_assign","at":"n1","where":"after","lhs":"x","rhs":"1","define":true}]}`))
+	rej, ok := err.(*Reject)
+	if !ok {
+		t.Fatalf("want Reject, got %v", err)
+	}
+	execViewRepairs(t, s, rej)
+}
+
 // A catalog dump is not a near-miss: when nothing matches the op name,
 // no repair is invented.
 func TestPatchUnknownOpNoRepairWithoutNearMiss(t *testing.T) {
