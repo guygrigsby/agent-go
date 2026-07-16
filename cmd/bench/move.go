@@ -26,7 +26,7 @@ func extractMoves(repo, sha string) ([]MoveSpec, string) {
 	var specs []MoveSpec
 	for name, b := range before {
 		a, ok := after[name]
-		if !ok {
+		if !ok || name == "_" { // blank decls are not addressable symbols
 			continue
 		}
 		// Same top-level sym, different directory: only plain (non-member)

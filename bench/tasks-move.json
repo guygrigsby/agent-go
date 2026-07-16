@@ -59,14 +59,9 @@
   "repo": "boundary",
   "sha": "687dd1bda62ae18f9d3c6d97f04bfed9af4aae16",
   "kind": "move",
-  "prompt": "Move the session cleanup job logic into the session package.\n\nSpecifically: move _ from github.com/hashicorp/boundary/internal/servers/controller to github.com/hashicorp/boundary/internal/session; move TestSessionConnectionCleanupJob from github.com/hashicorp/boundary/internal/servers/controller to github.com/hashicorp/boundary/internal/session; move TestSessionConnectionCleanupJobNewJobErr from github.com/hashicorp/boundary/internal/servers/controller to github.com/hashicorp/boundary/internal/session",
+  "prompt": "Move the session cleanup job logic into the session package.\n\nSpecifically: move TestSessionConnectionCleanupJob from github.com/hashicorp/boundary/internal/servers/controller to github.com/hashicorp/boundary/internal/session; move TestSessionConnectionCleanupJobNewJobErr from github.com/hashicorp/boundary/internal/servers/controller to github.com/hashicorp/boundary/internal/session",
   "go_files": 8,
   "moves": [
-   {
-    "pkg": "github.com/hashicorp/boundary/internal/servers/controller",
-    "sym": "_",
-    "to_pkg": "github.com/hashicorp/boundary/internal/session"
-   },
    {
     "pkg": "github.com/hashicorp/boundary/internal/servers/controller",
     "sym": "TestSessionConnectionCleanupJob",
@@ -134,7 +129,7 @@
   "repo": "boundary",
   "sha": "b26814a3cc02d131e76b31fb17232743e57ba1d5",
   "kind": "move",
-  "prompt": "move user variables into globals\n\nSpecifically: move RecoveryUserId from github.com/hashicorp/boundary/internal/perms to github.com/hashicorp/boundary/globals; move AnonymousUserId from github.com/hashicorp/boundary/internal/daemon/controller/auth to github.com/hashicorp/boundary/globals; move AnyAuthenticatedUserId from github.com/hashicorp/boundary/internal/perms to github.com/hashicorp/boundary/globals",
+  "prompt": "move user variables into globals\n\nSpecifically: move RecoveryUserId from github.com/hashicorp/boundary/internal/perms to github.com/hashicorp/boundary/globals; move AnyAuthenticatedUserId from github.com/hashicorp/boundary/internal/perms to github.com/hashicorp/boundary/globals; move AnonymousUserId from github.com/hashicorp/boundary/internal/daemon/controller/auth to github.com/hashicorp/boundary/globals",
   "go_files": 39,
   "moves": [
    {
@@ -143,13 +138,13 @@
     "to_pkg": "github.com/hashicorp/boundary/globals"
    },
    {
-    "pkg": "github.com/hashicorp/boundary/internal/daemon/controller/auth",
-    "sym": "AnonymousUserId",
+    "pkg": "github.com/hashicorp/boundary/internal/perms",
+    "sym": "AnyAuthenticatedUserId",
     "to_pkg": "github.com/hashicorp/boundary/globals"
    },
    {
-    "pkg": "github.com/hashicorp/boundary/internal/perms",
-    "sym": "AnyAuthenticatedUserId",
+    "pkg": "github.com/hashicorp/boundary/internal/daemon/controller/auth",
+    "sym": "AnonymousUserId",
     "to_pkg": "github.com/hashicorp/boundary/globals"
    }
   ]
@@ -198,9 +193,14 @@
   "repo": "vault",
   "sha": "7ec1fe75a98eae3655c32415d03cf4b5372f158b",
   "kind": "move",
-  "prompt": "Move cluster logic out of vault package\n\nSpecifically: move DRReplicationALPN from github.com/hashicorp/vault/vault to github.com/hashicorp/vault/sdk/helper/consts; move HeartbeatInterval from github.com/hashicorp/vault/vault to github.com/hashicorp/vault/vault/cluster; move PerformanceReplicationALPN from github.com/hashicorp/vault/vault to github.com/hashicorp/vault/sdk/helper/consts",
+  "prompt": "Move cluster logic out of vault package\n\nSpecifically: move PerformanceReplicationALPN from github.com/hashicorp/vault/vault to github.com/hashicorp/vault/sdk/helper/consts; move DRReplicationALPN from github.com/hashicorp/vault/vault to github.com/hashicorp/vault/sdk/helper/consts; move HeartbeatInterval from github.com/hashicorp/vault/vault to github.com/hashicorp/vault/vault/cluster",
   "go_files": 8,
   "moves": [
+   {
+    "pkg": "github.com/hashicorp/vault/vault",
+    "sym": "PerformanceReplicationALPN",
+    "to_pkg": "github.com/hashicorp/vault/sdk/helper/consts"
+   },
    {
     "pkg": "github.com/hashicorp/vault/vault",
     "sym": "DRReplicationALPN",
@@ -210,11 +210,6 @@
     "pkg": "github.com/hashicorp/vault/vault",
     "sym": "HeartbeatInterval",
     "to_pkg": "github.com/hashicorp/vault/vault/cluster"
-   },
-   {
-    "pkg": "github.com/hashicorp/vault/vault",
-    "sym": "PerformanceReplicationALPN",
-    "to_pkg": "github.com/hashicorp/vault/sdk/helper/consts"
    }
   ]
  },
