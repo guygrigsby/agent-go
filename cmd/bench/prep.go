@@ -366,7 +366,10 @@ func pkgPath(repo, sha, declFile string) string {
 }
 
 func changedGoFiles(repo, sha string) []string {
-	out, _ := exec.Command("git", "-C", repo, "diff", "--name-only", sha+"^", sha).Output()
+	// --no-renames: a mostly-intact moved file must appear as delete plus
+	// add so both paths get parsed; rename detection would collapse it to
+	// one entry and hide the source side from the extractors.
+	out, _ := exec.Command("git", "-C", repo, "diff", "--no-renames", "--name-only", sha+"^", sha).Output()
 	var files []string
 	for f := range strings.SplitSeq(string(out), "\n") {
 		if strings.HasSuffix(f, ".go") {

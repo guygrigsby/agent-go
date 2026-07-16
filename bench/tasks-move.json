@@ -59,7 +59,7 @@
   "repo": "boundary",
   "sha": "687dd1bda62ae18f9d3c6d97f04bfed9af4aae16",
   "kind": "move",
-  "prompt": "Move the session cleanup job logic into the session package.\n\nSpecifically: move TestSessionConnectionCleanupJob from github.com/hashicorp/boundary/internal/servers/controller to github.com/hashicorp/boundary/internal/session; move TestSessionConnectionCleanupJobNewJobErr from github.com/hashicorp/boundary/internal/servers/controller to github.com/hashicorp/boundary/internal/session",
+  "prompt": "Move the session cleanup job logic into the session package.\n\nSpecifically: move TestSessionConnectionCleanupJob from github.com/hashicorp/boundary/internal/servers/controller to github.com/hashicorp/boundary/internal/session; move TestSessionConnectionCleanupJobNewJobErr from github.com/hashicorp/boundary/internal/servers/controller to github.com/hashicorp/boundary/internal/session; move newSessionConnectionCleanupJob from github.com/hashicorp/boundary/internal/servers/controller to github.com/hashicorp/boundary/internal/session; move sessionConnectionCleanupJob from github.com/hashicorp/boundary/internal/servers/controller to github.com/hashicorp/boundary/internal/session",
   "go_files": 8,
   "moves": [
    {
@@ -70,6 +70,16 @@
    {
     "pkg": "github.com/hashicorp/boundary/internal/servers/controller",
     "sym": "TestSessionConnectionCleanupJobNewJobErr",
+    "to_pkg": "github.com/hashicorp/boundary/internal/session"
+   },
+   {
+    "pkg": "github.com/hashicorp/boundary/internal/servers/controller",
+    "sym": "newSessionConnectionCleanupJob",
+    "to_pkg": "github.com/hashicorp/boundary/internal/session"
+   },
+   {
+    "pkg": "github.com/hashicorp/boundary/internal/servers/controller",
+    "sym": "sessionConnectionCleanupJob",
     "to_pkg": "github.com/hashicorp/boundary/internal/session"
    }
   ]
@@ -102,17 +112,17 @@
   "repo": "boundary",
   "sha": "dd2c3807cde9f8fc541986191fbeffa64238bcee",
   "kind": "move",
-  "prompt": "refactor: Move functions from kms pkg to new libs/crypto pkg\n\nSpecifically: move TestNewDerivedReader from github.com/hashicorp/boundary/internal/kms to github.com/hashicorp/boundary/internal/libs/crypto; move NewDerivedReader from github.com/hashicorp/boundary/internal/kms to github.com/hashicorp/boundary/internal/libs/crypto",
+  "prompt": "refactor: Move functions from kms pkg to new libs/crypto pkg\n\nSpecifically: move NewDerivedReader from github.com/hashicorp/boundary/internal/kms to github.com/hashicorp/boundary/internal/libs/crypto; move TestNewDerivedReader from github.com/hashicorp/boundary/internal/kms to github.com/hashicorp/boundary/internal/libs/crypto",
   "go_files": 16,
   "moves": [
    {
     "pkg": "github.com/hashicorp/boundary/internal/kms",
-    "sym": "TestNewDerivedReader",
+    "sym": "NewDerivedReader",
     "to_pkg": "github.com/hashicorp/boundary/internal/libs/crypto"
    },
    {
     "pkg": "github.com/hashicorp/boundary/internal/kms",
-    "sym": "NewDerivedReader",
+    "sym": "TestNewDerivedReader",
     "to_pkg": "github.com/hashicorp/boundary/internal/libs/crypto"
    }
   ]
@@ -129,22 +139,17 @@
   "repo": "boundary",
   "sha": "b26814a3cc02d131e76b31fb17232743e57ba1d5",
   "kind": "move",
-  "prompt": "move user variables into globals\n\nSpecifically: move RecoveryUserId from github.com/hashicorp/boundary/internal/perms to github.com/hashicorp/boundary/globals; move AnyAuthenticatedUserId from github.com/hashicorp/boundary/internal/perms to github.com/hashicorp/boundary/globals; move AnonymousUserId from github.com/hashicorp/boundary/internal/daemon/controller/auth to github.com/hashicorp/boundary/globals",
+  "prompt": "move user variables into globals\n\nSpecifically: move AnyAuthenticatedUserId from github.com/hashicorp/boundary/internal/perms to github.com/hashicorp/boundary/globals; move RecoveryUserId from github.com/hashicorp/boundary/internal/perms to github.com/hashicorp/boundary/globals",
   "go_files": 39,
   "moves": [
-   {
-    "pkg": "github.com/hashicorp/boundary/internal/perms",
-    "sym": "RecoveryUserId",
-    "to_pkg": "github.com/hashicorp/boundary/globals"
-   },
    {
     "pkg": "github.com/hashicorp/boundary/internal/perms",
     "sym": "AnyAuthenticatedUserId",
     "to_pkg": "github.com/hashicorp/boundary/globals"
    },
    {
-    "pkg": "github.com/hashicorp/boundary/internal/daemon/controller/auth",
-    "sym": "AnonymousUserId",
+    "pkg": "github.com/hashicorp/boundary/internal/perms",
+    "sym": "RecoveryUserId",
     "to_pkg": "github.com/hashicorp/boundary/globals"
    }
   ]
@@ -155,7 +160,7 @@
   "kind": "move",
   "prompt": "refact(event): move observability/event to event",
   "go_files": 118,
-  "needs_review": "no declaration changed packages in the diff"
+  "needs_review": "whole package or directory move (270 declarations relocated); out of task scope"
  },
  {
   "repo": "boundary",
@@ -163,7 +168,7 @@
   "kind": "move",
   "prompt": "Move the server daemons into their own package",
   "go_files": 176,
-  "needs_review": "no declaration changed packages in the diff"
+  "needs_review": "whole package or directory move (549 declarations relocated); out of task scope"
  },
  {
   "repo": "vault",
@@ -177,9 +182,22 @@
   "repo": "vault",
   "sha": "45b0179aa56b667c849ca95360ec48adbe08637b",
   "kind": "move",
-  "prompt": "[VAULT-3157] Move `mergeStates` utils from Agent to api module",
+  "prompt": "[VAULT-3157] Move `mergeStates` utils from Agent to api module\n\nSpecifically: move TestMergeStates from github.com/hashicorp/vault/command/agent/cache to github.com/hashicorp/vault/api renaming it to TestMergeReplicationStates",
   "go_files": 5,
-  "needs_review": "no declaration changed packages in the diff"
+  "moves": [
+   {
+    "pkg": "github.com/hashicorp/vault/command/agent/cache",
+    "sym": "mergeStates",
+    "to_pkg": "github.com/hashicorp/vault/api",
+    "to_name": "MergeReplicationStates"
+   },
+   {
+    "pkg": "github.com/hashicorp/vault/command/agent/cache",
+    "sym": "TestMergeStates",
+    "to_pkg": "github.com/hashicorp/vault/api",
+    "to_name": "TestMergeReplicationStates"
+   }
+  ]
  },
  {
   "repo": "vault",
@@ -193,23 +211,31 @@
   "repo": "vault",
   "sha": "7ec1fe75a98eae3655c32415d03cf4b5372f158b",
   "kind": "move",
-  "prompt": "Move cluster logic out of vault package\n\nSpecifically: move PerformanceReplicationALPN from github.com/hashicorp/vault/vault to github.com/hashicorp/vault/sdk/helper/consts; move DRReplicationALPN from github.com/hashicorp/vault/vault to github.com/hashicorp/vault/sdk/helper/consts; move HeartbeatInterval from github.com/hashicorp/vault/vault to github.com/hashicorp/vault/vault/cluster",
+  "prompt": "Move cluster logic out of vault package\n\nSpecifically: move HeartbeatInterval from github.com/hashicorp/vault/vault to github.com/hashicorp/vault/vault/cluster; move clusterListenerAcceptDeadline from github.com/hashicorp/vault/vault to github.com/hashicorp/vault/vault/cluster renaming it to ListenerAcceptDeadline; move ClusterClient from github.com/hashicorp/vault/vault to github.com/hashicorp/vault/vault/cluster renaming it to Client; move ClusterHandler from github.com/hashicorp/vault/vault to github.com/hashicorp/vault/vault/cluster renaming it to Handler",
   "go_files": 8,
   "moves": [
    {
     "pkg": "github.com/hashicorp/vault/vault",
-    "sym": "PerformanceReplicationALPN",
-    "to_pkg": "github.com/hashicorp/vault/sdk/helper/consts"
-   },
-   {
-    "pkg": "github.com/hashicorp/vault/vault",
-    "sym": "DRReplicationALPN",
-    "to_pkg": "github.com/hashicorp/vault/sdk/helper/consts"
-   },
-   {
-    "pkg": "github.com/hashicorp/vault/vault",
     "sym": "HeartbeatInterval",
     "to_pkg": "github.com/hashicorp/vault/vault/cluster"
+   },
+   {
+    "pkg": "github.com/hashicorp/vault/vault",
+    "sym": "clusterListenerAcceptDeadline",
+    "to_pkg": "github.com/hashicorp/vault/vault/cluster",
+    "to_name": "ListenerAcceptDeadline"
+   },
+   {
+    "pkg": "github.com/hashicorp/vault/vault",
+    "sym": "ClusterClient",
+    "to_pkg": "github.com/hashicorp/vault/vault/cluster",
+    "to_name": "Client"
+   },
+   {
+    "pkg": "github.com/hashicorp/vault/vault",
+    "sym": "ClusterHandler",
+    "to_pkg": "github.com/hashicorp/vault/vault/cluster",
+    "to_name": "Handler"
    }
   ]
  },
@@ -235,7 +261,7 @@
   "kind": "move",
   "prompt": "Move pki docker tests to pkiext",
   "go_files": 14,
-  "needs_review": "no declaration changed packages in the diff"
+  "needs_review": "whole package or directory move (12 declarations relocated); out of task scope"
  },
  {
   "repo": "vault",

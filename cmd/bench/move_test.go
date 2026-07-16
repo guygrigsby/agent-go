@@ -78,6 +78,10 @@ func gitFixture(t *testing.T, before, after map[string]string, subject string) (
 	run("git", "add", "-A")
 	run("git", "commit", "-qm", "base")
 	for name, content := range after {
+		if content == "" {
+			os.Remove(filepath.Join(repo, name))
+			continue
+		}
 		write(name, content)
 	}
 	run("git", "add", "-A")
@@ -150,6 +154,26 @@ func TestExtractMovesFindsRenamedMove(t *testing.T) {
 	}
 	if c := byOld["compareStates"]; c.ToName != "compareReplicationStates" {
 		t.Fatalf("sibling compound spec wrong: %+v", c)
+	}
+}
+
+// A file moved mostly intact registers as a git rename (vault 047a9ff0:
+// zlint_test.go to pkiext, R093); the extractor must see both sides, so
+// the diff runs with rename detection off.
+func TestExtractMovesSeesGitRenamedFile(t *testing.T) {
+	body := "\nfunc RunZLint(t int) int {\n\treturn t\n}\n\nfunc CheckZLint(t int) int {\n\treturn t + 1\n}\n\nfunc PadA() int { return 10 }\n\nfunc PadB() int { return 20 }\n"
+	repo, sha := gitFixture(t, map[string]string{
+		"a/zlint.go": "package a\n" + body,
+	}, map[string]string{
+		"a/zlint.go": "", // deleted; gitFixture removes empty files
+		"b/zlint.go": "package b\n" + body,
+	}, "Move zlint helpers to b")
+	specs, note := extractMoves(repo, sha)
+	if note != "" {
+		t.Fatalf("unexpected note: %s", note)
+	}
+	if len(specs) != 4 {
+		t.Fatalf("want 4 specs from the renamed file, got %+v", specs)
 	}
 }
 
