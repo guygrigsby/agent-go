@@ -54,31 +54,45 @@ func addParamEdits(s *Snapshot, pkgPath, sym, name, typ, defaultExpr string) (ed
 	params := decl.Type.Params
 	declInsert := s.fset.Position(params.Closing).Offset
 	sep := ", "
+	variadic := false
 	if params.NumFields() == 0 {
 		sep = ""
 	} else if last := params.List[len(params.List)-1]; last != nil {
-		if _, variadic := last.Type.(*ast.Ellipsis); variadic {
+		if _, variadic = last.Type.(*ast.Ellipsis); variadic {
 			declInsert = s.fset.Position(last.Pos()).Offset
 			sep = ""
 		}
 	}
-	if sep == "" && params.NumFields() > 0 {
+	if variadic {
 		// Inserting before the variadic parameter.
 		edits = append(edits, edit{declFile, declInsert, 0, name + " " + typ + ", "})
 	} else {
 		edits = append(edits, edit{declFile, declInsert, 0, sep + name + " " + typ})
 	}
+	// fixedArgs is where the new argument lands at every call site: after
+	// the existing fixed parameters, before any variadic tail — which is
+	// what lets spread sites f(args...) take a default too.
+	fixedArgs := params.NumFields()
+	if variadic {
+		fixedArgs = 0
+		for _, f := range params.List[:len(params.List)-1] {
+			fixedArgs += max(len(f.Names), 1)
+		}
+	}
 	for _, c := range calls {
-		argSep := ", "
-		if len(c.call.Args) == 0 {
-			argSep = ""
+		switch {
+		case len(c.call.Args) > fixedArgs:
+			// Insert before the first variadic argument (a spread slice or
+			// the first of the values).
+			at := s.fset.Position(c.call.Args[fixedArgs].Pos()).Offset
+			edits = append(edits, edit{c.pos.Filename, at, 0, defaultExpr + ", "})
+		case len(c.call.Args) == 0:
+			edits = append(edits, edit{c.pos.Filename,
+				s.fset.Position(c.call.Rparen).Offset, 0, defaultExpr})
+		default:
+			edits = append(edits, edit{c.pos.Filename,
+				s.fset.Position(c.call.Rparen).Offset, 0, ", " + defaultExpr})
 		}
-		if c.call.Ellipsis.IsValid() {
-			return nil, 0, &Reject{Reason: "call site spreads arguments with ...; cannot append a default",
-				Diagnostics: []Diagnostic{{Pos: c.pos.String()}}}
-		}
-		edits = append(edits, edit{c.pos.Filename,
-			s.fset.Position(c.call.Rparen).Offset, 0, argSep + defaultExpr})
 	}
 
 	byFile := map[string][]edit{}

@@ -287,6 +287,28 @@ func TestAddParamManagesImports(t *testing.T) {
 	}
 }
 
+// add_param on a variadic function inserts the default before the
+// variadic tail at every call site — including spread sites, which used
+// to reject (oracle blockers boundary_bf1486f7, eb61ac63).
+func TestAddParamVariadicSpreadSites(t *testing.T) {
+	s := demo(t)
+	res, err := s.AddParam("demo/sig", "Fetch", "scale", "int", "1")
+	if err != nil {
+		t.Fatalf("rejected: %v", err)
+	}
+	if res["status"] != "accepted" {
+		t.Fatalf("got %v", res)
+	}
+	out, _ := s.View("demo/sig", "SpreadFetch")
+	if text := out["text"].(string); !strings.Contains(text, `Fetch(1, "x", 1, nums...)`) {
+		t.Fatalf("spread site wrong:\n%s", text)
+	}
+	out, _ = s.View("demo/sig", "UseFetch")
+	if text := out["text"].(string); !strings.Contains(text, `Fetch(1, "x", 1, 2, 3)`) {
+		t.Fatalf("value-variadic site wrong:\n%s", text)
+	}
+}
+
 // A catalog dump is not a near-miss: when nothing matches the op name,
 // no repair is invented.
 func TestPatchUnknownOpNoRepairWithoutNearMiss(t *testing.T) {
