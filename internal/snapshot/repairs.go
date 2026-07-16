@@ -5,6 +5,7 @@ import (
 	"go/token"
 	"go/types"
 	"maps"
+	"regexp"
 	"strings"
 )
 
@@ -63,6 +64,7 @@ func addressRepairs(rej *Reject, pkgPath, sym string,
 // Caller holds mu.
 func (s *Snapshot) viewRepairs(rej *Reject, pkgPath, sym string) {
 	addressRepairs(rej, pkgPath, sym, viewCall, s.viewable)
+	s.receiverInspectRepair(rej, pkgPath, sym)
 	fileAddressRepair(rej, sym)
 	searchFallbackRepair(rej, pkgPath, sym)
 }
@@ -115,6 +117,40 @@ func searchFallbackRepair(rej *Reject, pkgPath, sym string) {
 			Call: searchCall(frag)})
 }
 
+// closureName matches gopls's synthetic naming for anonymous functions
+// (func1, func_1) — a training prior models carry in from LSP tooling.
+var closureName = regexp.MustCompile(`^func_?\d+$`)
+
+// receiverInspectRepair: on a method-or-field miss whose receiver resolves
+// to a type, the discovery move is inspecting the type — its response
+// lists the method set. Synthetic closure names additionally get the
+// explanation, and the inspect repair leads.
+func (s *Snapshot) receiverInspectRepair(rej *Reject, pkgPath, sym string) {
+	if rej.Reason != "method or field not found" {
+		return
+	}
+	owner, member, ok := strings.Cut(sym, ".")
+	if !ok {
+		return
+	}
+	_, obj, miss := s.findObject(pkgPath, owner)
+	if miss != nil {
+		return
+	}
+	if _, isType := obj.(*types.TypeName); !isType {
+		return
+	}
+	rep := Repair{Why: "inspect " + owner + " lists its methods with signatures",
+		Call: map[string]any{"tool": "query",
+			"args": map[string]any{"kind": "inspect", "pkg": pkgPath, "sym": owner}}}
+	if closureName.MatchString(member) {
+		rej.Detail += "; " + member + " names an anonymous function — anonymous functions are not addressable, address the declaration containing them"
+		rej.PossibleRepairs = append([]Repair{rep}, rej.PossibleRepairs...)
+		return
+	}
+	rej.PossibleRepairs = append(rej.PossibleRepairs, rep)
+}
+
 // resolves reports whether the address names any object.
 func (s *Snapshot) resolves(pkg, sym string) bool {
 	_, _, miss := s.findObject(pkg, sym)
@@ -151,6 +187,7 @@ func (s *Snapshot) queryRepairs(rej *Reject, kind, pkgPath, sym string) {
 			return map[string]any{"tool": "query",
 				"args": map[string]any{"kind": kind, "pkg": pkg, "sym": sym}}
 		}, accept)
+	s.receiverInspectRepair(rej, pkgPath, sym)
 	fileAddressRepair(rej, sym)
 	searchFallbackRepair(rej, pkgPath, sym)
 }

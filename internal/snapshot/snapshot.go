@@ -1020,12 +1020,33 @@ func (s *Snapshot) Inspect(pkgPath, sym string) (map[string]any, error) {
 	if rej != nil {
 		return nil, rej
 	}
-	return map[string]any{
+	res := map[string]any{
 		"status": "ok", "name": obj.Name(), "kind": objKind(obj),
 		"type":     types.TypeString(obj.Type(), types.RelativeTo(p.Types)),
 		"exported": obj.Exported(), "pos": s.fset.Position(obj.Pos()).String(),
 		"pkg": pkgPath, "load_ms": ms,
-	}, nil
+	}
+	// A type's inspect is the discovery move for its methods: without this
+	// list an agent hunting a method name has nothing to navigate by
+	// (bench evidence: vault_cfff8d42, 40 method-not-found rejects).
+	if tn, ok := obj.(*types.TypeName); ok {
+		var methods []map[string]any
+		ms := types.NewMethodSet(types.NewPointer(tn.Type()))
+		for sel := range ms.Methods() {
+			f := sel.Obj()
+			methods = append(methods, map[string]any{
+				"name":      f.Name(),
+				"signature": types.TypeString(f.Type(), types.RelativeTo(p.Types)),
+			})
+		}
+		sort.Slice(methods, func(i, j int) bool {
+			return methods[i]["name"].(string) < methods[j]["name"].(string)
+		})
+		if len(methods) > 0 {
+			res["methods"] = methods
+		}
+	}
+	return res, nil
 }
 
 // Refs lists every reference to a symbol, position-sorted (references

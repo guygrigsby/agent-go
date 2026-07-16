@@ -409,6 +409,82 @@ func TestAddressMissWithoutSymRepairsToSearch(t *testing.T) {
 	}
 }
 
+// inspect on a type lists its method set — the discovery move GLM lacked
+// on vault_cfff8d42 (40 method-not-found rejects hunting an unexported
+// method of an unexported type).
+func TestInspectTypeListsMethods(t *testing.T) {
+	s := demo(t)
+	res, err := s.Inspect("demo/lib", "Store")
+	if err != nil {
+		t.Fatal(err)
+	}
+	raw, _ := json.Marshal(res["methods"])
+	var methods []struct {
+		Name      string `json:"name"`
+		Signature string `json:"signature"`
+	}
+	if err := json.Unmarshal(raw, &methods); err != nil || len(methods) == 0 {
+		t.Fatalf("inspect of a type must list methods, got %v (%v)", res["methods"], err)
+	}
+	found := false
+	for _, m := range methods {
+		if m.Name == "Put" && strings.Contains(m.Signature, "int") {
+			found = true
+		}
+	}
+	if !found {
+		t.Fatalf("Store.Put missing from methods: %+v", methods)
+	}
+	// Non-types don't grow the key.
+	res, err = s.Inspect("demo/lib", "Double")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, ok := res["methods"]; ok {
+		t.Fatal("functions must not carry a methods list")
+	}
+}
+
+// A method-or-field miss now repairs to the inspect call that lists the
+// receiver's methods.
+func TestMethodMissRepairsToInspect(t *testing.T) {
+	s := demo(t)
+	_, err := s.View("demo/lib", "Store.Nonexistent")
+	rej, ok := err.(*Reject)
+	if !ok {
+		t.Fatalf("want Reject, got %v", err)
+	}
+	if len(rej.PossibleRepairs) == 0 {
+		t.Fatalf("no repairs: %+v", rej)
+	}
+	last := rej.PossibleRepairs[len(rej.PossibleRepairs)-1]
+	args, _ := last.Call["args"].(map[string]any)
+	if last.Call["tool"] != "query" || args["kind"] != "inspect" || args["sym"] != "Store" {
+		t.Fatalf("want inspect-the-type repair, got %v", last.Call)
+	}
+}
+
+// A synthetic closure name (gopls's funcN convention, resent 30 times by
+// GLM) gets the redirect: anonymous functions are not addressable.
+func TestSyntheticClosureNameRedirect(t *testing.T) {
+	s := demo(t)
+	_, err := s.View("demo/lib", "Store.func_1")
+	rej, ok := err.(*Reject)
+	if !ok {
+		t.Fatalf("want Reject, got %v", err)
+	}
+	if !strings.Contains(rej.Detail, "anonymous") {
+		t.Fatalf("reject must explain anonymous functions are unaddressable: %v %v", rej.Reason, rej.Detail)
+	}
+	if len(rej.PossibleRepairs) == 0 {
+		t.Fatalf("no repairs: %+v", rej)
+	}
+	args, _ := rej.PossibleRepairs[0].Call["args"].(map[string]any)
+	if args["kind"] != "inspect" || args["sym"] != "Store" {
+		t.Fatalf("want inspect-the-receiver repair, got %v", rej.PossibleRepairs[0].Call)
+	}
+}
+
 // A catalog dump is not a near-miss: when nothing matches the op name,
 // no repair is invented.
 func TestPatchUnknownOpNoRepairWithoutNearMiss(t *testing.T) {
