@@ -30,33 +30,58 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"slices"
+	"strings"
 	"time"
 
 	"github.com/guygrigsby/agent-go/internal/daemon"
 	"github.com/guygrigsby/agent-go/internal/protocol"
 )
 
+// daemonVerbs round-trip a protocol.Request to the workspace daemon;
+// localVerbs run in-process. Together they are the dispatch table main
+// routes on, and readme_test.go checks README invocations against them.
+var (
+	daemonVerbs = []string{"status", "help", "search", "inspect", "view", "refs", "query", "set-body", "upsert", "rename", "add-param", "patch", "test", "stop"}
+	localVerbs  = []string{"init", "mcp", "daemon"}
+)
+
+// cliFlags is every flag ago accepts — one shared set across verbs.
+// newFlagSet is the single source of truth: main parses with it and
+// readme_test.go validates README invocations against it.
+type cliFlags struct {
+	dir, pkg, sym, bodyFile, to, name, typ, def, kind, q, run *string
+	offset                                                    *int
+}
+
+func newFlagSet(cmd string) (*flag.FlagSet, *cliFlags) {
+	fs := flag.NewFlagSet(cmd, flag.ExitOnError)
+	f := &cliFlags{
+		dir:      fs.String("C", ".", "workspace directory"),
+		pkg:      fs.String("p", "", "package import path"),
+		sym:      fs.String("s", "", "symbol: Name or Recv.Name"),
+		bodyFile: fs.String("body-file", "", "new function body (- for stdin)"),
+		to:       fs.String("to", "", "new name for rename"),
+		name:     fs.String("name", "", "parameter name for add-param"),
+		typ:      fs.String("type", "", "parameter type for add-param"),
+		def:      fs.String("default", "", "argument expression for existing callers"),
+		kind:     fs.String("kind", "", "query kind: search|inspect|refs|callers|callees|implementations|doc"),
+		q:        fs.String("q", "", "query fragment (kind=search)"),
+		run:      fs.String("run", "", "test name filter (test op)"),
+		offset:   fs.Int("offset", 0, "page offset for list results (refs, search, query); pass a response's next_offset"),
+	}
+	return fs, f
+}
+
 func main() {
 	if len(os.Args) < 2 {
-		fail("usage: ago <init|status|help|search|inspect|view|refs|query|set-body|upsert|rename|add-param|patch|test|stop|mcp|daemon> [flags]")
+		fail("usage: ago <init|%s|mcp|daemon> [flags]", strings.Join(daemonVerbs, "|"))
 	}
 	cmd, args := os.Args[1], os.Args[2:]
-	fs := flag.NewFlagSet(cmd, flag.ExitOnError)
-	dir := fs.String("C", ".", "workspace directory")
-	pkg := fs.String("p", "", "package import path")
-	sym := fs.String("s", "", "symbol: Name or Recv.Name")
-	bodyFile := fs.String("body-file", "", "new function body (- for stdin)")
-	to := fs.String("to", "", "new name for rename")
-	pname := fs.String("name", "", "parameter name for add-param")
-	ptype := fs.String("type", "", "parameter type for add-param")
-	pdefault := fs.String("default", "", "argument expression for existing callers")
-	qkind := fs.String("kind", "", "query kind: search|inspect|refs|callers|callees|implementations|doc")
-	qfrag := fs.String("q", "", "query fragment (kind=search)")
-	run := fs.String("run", "", "test name filter (test op)")
-	offset := fs.Int("offset", 0, "page offset for list results (refs, search, query); pass a response's next_offset")
+	fs, f := newFlagSet(cmd)
 	fs.Parse(args)
 
-	abs, err := filepath.Abs(*dir)
+	abs, err := filepath.Abs(*f.dir)
 	if err != nil {
 		fail("resolve dir: %v", err)
 	}
@@ -84,26 +109,26 @@ func main() {
 		return
 	}
 
-	req := protocol.Request{Op: cmd, Pkg: *pkg, Sym: *sym, To: *to, Name: *pname, Type: *ptype, Def: *pdefault, Offset: *offset}
+	req := protocol.Request{Op: cmd, Pkg: *f.pkg, Sym: *f.sym, To: *f.to, Name: *f.name, Type: *f.typ, Def: *f.def, Offset: *f.offset}
 	if cmd == "set-body" || cmd == "upsert" {
-		req.Body = readBody(*bodyFile)
+		req.Body = readBody(*f.bodyFile)
 	}
 	if cmd == "patch" {
-		if err := json.Unmarshal([]byte(readBody(*bodyFile)), &req); err != nil {
+		if err := json.Unmarshal([]byte(readBody(*f.bodyFile)), &req); err != nil {
 			fail("parse patch json: %v", err)
 		}
 		req.Op = "patch"
 	}
 	if cmd == "query" {
-		req.Kind = *qkind
-		if *qfrag != "" {
-			req.Sym = *qfrag // wire reuses Sym as q, same as the standalone search op
+		req.Kind = *f.kind
+		if *f.q != "" {
+			req.Sym = *f.q // wire reuses Sym as q, same as the standalone search op
 		}
 	}
 	if cmd == "test" {
-		req.Sym = *run // wire reuses Sym as the -run filter, same as query's q
+		req.Sym = *f.run // wire reuses Sym as the -run filter, same as query's q
 	}
-	if cmd == "status" || cmd == "help" || cmd == "search" || cmd == "inspect" || cmd == "view" || cmd == "refs" || cmd == "query" || cmd == "set-body" || cmd == "upsert" || cmd == "rename" || cmd == "add-param" || cmd == "patch" || cmd == "test" || cmd == "stop" {
+	if slices.Contains(daemonVerbs, cmd) {
 		out, err := roundTrip(abs, req, cmd != "stop")
 		if err != nil {
 			fail("%v", err)

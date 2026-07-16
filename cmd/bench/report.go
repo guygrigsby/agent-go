@@ -13,11 +13,12 @@ import (
 
 // row is one (task, mode, profile) cell of the comparison table.
 type row struct {
-	Task, Mode, Profile string
-	N, Passes, Capped   int
-	MedianGreen         float64 // median wall_s of passing episodes
-	Failures            map[string]int
-	greens              []float64
+	Task, Mode, Profile     string
+	N, Passes, Capped       int
+	Resends, RepairsOffered int     // summed daemon request-log counters
+	MedianGreen             float64 // median wall_s of passing episodes
+	Failures                map[string]int
+	greens                  []float64
 }
 
 // wilson is the 95% Wilson score interval for k passes out of n.
@@ -67,6 +68,12 @@ func aggregate(episodes []map[string]any) []row {
 		if capped, _ := e["capped"].(bool); capped {
 			r.Capped++
 		}
+		if n, ok := e["resends"].(float64); ok {
+			r.Resends += int(n)
+		}
+		if n, ok := e["repairs_offered"].(float64); ok {
+			r.RepairsOffered += int(n)
+		}
 	}
 	rows := make([]row, 0, len(byKey))
 	for _, r := range byKey {
@@ -95,8 +102,8 @@ func aggregate(episodes []map[string]any) []row {
 
 func renderMarkdown(rows []row) string {
 	var b strings.Builder
-	b.WriteString("| profile | task | mode | pass@k | 95% CI | median green (s) | capped | failures |\n")
-	b.WriteString("|---|---|---|---|---|---|---|---|\n")
+	b.WriteString("| profile | task | mode | pass@k | 95% CI | median green (s) | capped | resends | repairs offered | failures |\n")
+	b.WriteString("|---|---|---|---|---|---|---|---|---|---|\n")
 	for _, r := range rows {
 		lo, hi := wilson(r.Passes, r.N)
 		green := "-"
@@ -108,9 +115,9 @@ func renderMarkdown(rows []row) string {
 			kinds = append(kinds, fmt.Sprintf("%s:%d", k, n))
 		}
 		sort.Strings(kinds)
-		fmt.Fprintf(&b, "| %s | %s | %s | %d/%d | %.2f-%.2f | %s | %d | %s |\n",
+		fmt.Fprintf(&b, "| %s | %s | %s | %d/%d | %.2f-%.2f | %s | %d | %d | %d | %s |\n",
 			r.Profile, r.Task, r.Mode, r.Passes, r.N, lo, hi, green, r.Capped,
-			strings.Join(kinds, " "))
+			r.Resends, r.RepairsOffered, strings.Join(kinds, " "))
 	}
 	return b.String()
 }

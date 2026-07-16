@@ -301,6 +301,15 @@ func episode(b testing.TB, c config, t Manifest, mode string, iter int) bool {
 		res["failure_kind"] = "oracle_reject"
 		res["oracle_error"] = agentErr.Error()
 	}
+	// Fold the daemon request log into the episode evidence before record
+	// writes episode.json and episodes.jsonl, so counters land in both.
+	// The window [start, start+wall] keeps agent traffic and drops the
+	// warm-up and scorer queries sharing the same log file.
+	if lines := readRequestLog(filepath.Join(epDir, "requests.jsonl")); lines != nil {
+		for k, v := range requestCounters(lines, start, start.Add(wall)) {
+			res[k] = v
+		}
+	}
 	record(c, epDir, wt, agentOut, res)
 	pass, _ := res["pass"].(bool)
 	if !pass && testing.Verbose() {

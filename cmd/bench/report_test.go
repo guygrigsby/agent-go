@@ -22,8 +22,10 @@ func TestWilson(t *testing.T) {
 
 func TestAggregateAndRender(t *testing.T) {
 	episodes := []map[string]any{
-		{"task": "traefik_1", "mode": "semantic", "profile": "glm", "pass": true, "wall_s": 100.0},
-		{"task": "traefik_1", "mode": "semantic", "profile": "glm", "pass": true, "wall_s": 200.0},
+		{"task": "traefik_1", "mode": "semantic", "profile": "glm", "pass": true, "wall_s": 100.0,
+			"resends": 2.0, "repairs_offered": 3.0},
+		{"task": "traefik_1", "mode": "semantic", "profile": "glm", "pass": true, "wall_s": 200.0,
+			"resends": 1.0, "repairs_offered": 4.0},
 		{"task": "traefik_1", "mode": "semantic", "profile": "glm", "pass": false, "wall_s": 720.0,
 			"capped": true, "failure_kind": "capped"},
 		{"task": "traefik_1", "mode": "raw", "profile": "glm", "pass": false, "wall_s": 30.0,
@@ -46,8 +48,19 @@ func TestAggregateAndRender(t *testing.T) {
 	if sem.Failures["capped"] != 1 {
 		t.Fatalf("failure kinds: %+v", sem.Failures)
 	}
+	if sem.Resends != 3 || sem.RepairsOffered != 7 {
+		t.Fatalf("counter sums: resends=%d repairs=%d, want 3 and 7", sem.Resends, sem.RepairsOffered)
+	}
 	md := renderMarkdown(rows)
 	if !strings.Contains(md, "traefik_1") || !strings.Contains(md, "2/3") {
 		t.Fatalf("markdown missing cells:\n%s", md)
+	}
+	if !strings.Contains(md, "| resends | repairs offered |") {
+		t.Fatalf("markdown header missing counter columns:\n%s", md)
+	}
+	for _, line := range strings.Split(strings.TrimSpace(md), "\n") {
+		if strings.Contains(line, "semantic") && !strings.Contains(line, "| 3 | 7 |") {
+			t.Fatalf("semantic row missing counter cells:\n%s", md)
+		}
 	}
 }

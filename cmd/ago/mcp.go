@@ -7,6 +7,8 @@ import (
 	"io"
 	"maps"
 	"os"
+	"slices"
+	"strings"
 
 	"github.com/guygrigsby/agent-go/internal/protocol"
 )
@@ -146,7 +148,126 @@ func runMCPIO(dir string, r io.Reader, w io.Writer) error {
 	return in.Err()
 }
 
+// toolAliases maps obvious name variants models invent onto the real tool.
+// A leading "ago_" is stripped generically before this map applies, which
+// already covers ago_view, ago_query, ago_patch, and the rest.
+var toolAliases = map[string]string{
+	"get_view":        "view",
+	"view_symbol":     "view",
+	"get_refs":        "query",
+	"find_references": "query",
+	"search_symbols":  "query",
+	"apply_patch":     "patch",
+	"edit":            "patch",
+	"run_tests":       "test",
+}
+
+// shellTools are the shell and file-editor tool names weak models
+// hallucinate from other harnesses. They get a structured redirect, not a
+// protocol error: the redirect is data the model can act on.
+var shellTools = map[string]bool{
+	"bash": true, "shell": true, "execute_command": true, "run_command": true,
+	"str_replace": true, "str_replace_editor": true,
+	"read_file": true, "write_file": true, "edit_file": true, "create_file": true,
+	"grep": true, "glob": true, "ls": true,
+}
+
+// realToolNames is the canonical ten-tool surface, in tools/list order.
+var realToolNames = func() []string {
+	tools := mcpTools()
+	names := make([]string, len(tools))
+	for i := range tools {
+		names[i] = tools[i].Name
+	}
+	return names
+}()
+
+// resolveToolName maps a tools/call name onto the canonical tool: exact
+// names pass through, a leading "ago_" is stripped, then the variant map
+// applies. canonical is "" when nothing matches; aliased reports that the
+// call landed via an alias and the response should say so.
+func resolveToolName(name string) (canonical string, aliased bool) {
+	n := strings.TrimPrefix(name, "ago_")
+	if a, ok := toolAliases[n]; ok {
+		n = a
+	}
+	if slices.Contains(realToolNames, n) {
+		return n, n != name
+	}
+	return "", false
+}
+
+// mcpRedirect builds the rejected payload for a tool name that resolves to
+// nothing: hallucinated shell tools get the fixed redirect with the two
+// reorienting calls; anything else gets did_you_mean over the real names.
+// The shape mirrors internal/snapshot's Reject/Repair JSON.
+func mcpRedirect(name string) string {
+	rej := map[string]any{"status": "rejected"}
+	if shellTools[name] {
+		rej["reason"] = "no shell or file editor here; the workspace is queried and mutated through the ago tools"
+		rej["possible_repairs"] = []map[string]any{
+			{"why": "search turns a name fragment from the task into exact pkg/sym addresses",
+				"call": map[string]any{"tool": "query",
+					"args": map[string]any{"kind": "search", "q": "<name fragment from the task>"}}},
+			{"why": "the catalog lists every tool and patch op with schemas and examples",
+				"call": map[string]any{"tool": "help", "args": map[string]any{}}},
+		}
+	} else {
+		rej["reason"] = "unknown tool " + name
+		if dym := toolDidYouMean(name); len(dym) > 0 {
+			rej["did_you_mean"] = dym
+		}
+		rej["possible_repairs"] = []map[string]any{
+			{"why": "the catalog lists every tool and patch op with schemas and examples",
+				"call": map[string]any{"tool": "help", "args": map[string]any{}}},
+		}
+	}
+	b, _ := json.Marshal(rej)
+	return string(b) + "\n"
+}
+
+// toolDidYouMean lists real tool names related to the sent name by
+// substring in either direction, which covers both truncations ("quer")
+// and decorated variants ("query_symbols" misses the alias map).
+func toolDidYouMean(name string) []string {
+	n := strings.ToLower(name)
+	var out []string
+	for _, real := range realToolNames {
+		if n != "" && (strings.Contains(real, n) || strings.Contains(n, real)) {
+			out = append(out, real)
+		}
+	}
+	return out
+}
+
+// annotateAliased splices "aliased_from" into a successful response so the
+// model learns the canonical name. Non-object output passes through as is.
+func annotateAliased(text, from string) string {
+	var m map[string]any
+	if json.Unmarshal([]byte(text), &m) != nil {
+		return text
+	}
+	m["aliased_from"] = from
+	b, err := json.Marshal(m)
+	if err != nil {
+		return text
+	}
+	return string(b) + "\n"
+}
+
 func mcpCall(dir, name string, args map[string]any) (string, bool) {
+	canonical, aliased := resolveToolName(name)
+	if canonical == "" {
+		return mcpRedirect(name), false
+	}
+	text, isErr := mcpDispatch(dir, canonical, args)
+	if aliased && !isErr {
+		text = annotateAliased(text, name)
+	}
+	return text, isErr
+}
+
+func mcpDispatch(dir, name string, args map[string]any) (string, bool) {
 	get := func(k string) string { v, _ := args[k].(string); return v }
 	if name == "patch" {
 		raw, err := json.Marshal(args)

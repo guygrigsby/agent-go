@@ -35,23 +35,7 @@ import (
 // but with dry_run so nothing is written); this test's job is the wire
 // protocol and tool surface, not another patch-op test.
 func TestMCPInitializeAndToolsList(t *testing.T) {
-	dir := t.TempDir()
-	if err := runInit(dir, "mcptestmod"); err != nil {
-		t.Fatalf("runInit: %v", err)
-	}
-	abs, err := filepath.Abs(dir)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	sock := daemon.SocketPath(abs)
-	daemonDone := make(chan error, 1)
-	go func() { daemonDone <- daemon.Run(abs, time.Minute, "") }()
-	t.Cleanup(func() {
-		roundTrip(abs, protocol.Request{Op: "stop"}, false)
-		<-daemonDone
-	})
-	waitForSocket(t, sock, 10*time.Second)
+	abs := startMCPFixture(t, "mcptestmod")
 
 	reqR, reqW := io.Pipe()
 	respR, respW := io.Pipe()
@@ -170,23 +154,7 @@ func TestMCPInitializeAndToolsList(t *testing.T) {
 // `ago init` fixture's own main() function without writing anything, so
 // the test needs no cleanup beyond stopping the daemon.
 func TestMCPCallPatchWiring(t *testing.T) {
-	dir := t.TempDir()
-	if err := runInit(dir, "mcppatchmod"); err != nil {
-		t.Fatalf("runInit: %v", err)
-	}
-	abs, err := filepath.Abs(dir)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	sock := daemon.SocketPath(abs)
-	daemonDone := make(chan error, 1)
-	go func() { daemonDone <- daemon.Run(abs, time.Minute, "") }()
-	t.Cleanup(func() {
-		roundTrip(abs, protocol.Request{Op: "stop"}, false)
-		<-daemonDone
-	})
-	waitForSocket(t, sock, 10*time.Second)
+	abs := startMCPFixture(t, "mcppatchmod")
 
 	text, isErr := mcpCall(abs, "patch", map[string]any{
 		"pkg": "mcppatchmod", "sym": "main", "dry_run": true,
@@ -213,6 +181,132 @@ func TestMCPCallPatchWiring(t *testing.T) {
 	if !strings.Contains(string(after), "func main()") {
 		t.Fatalf("dry_run wrote to disk:\n%s", after)
 	}
+}
+
+// TestMCPAliasedToolName covers the alias layer: a model that invents an
+// "ago_" prefix still lands on the real tool, executes normally, and the
+// response carries aliased_from so the model learns the canonical name.
+func TestMCPAliasedToolName(t *testing.T) {
+	abs := startMCPFixture(t, "mcpaliasmod")
+
+	text, isErr := mcpCall(abs, "ago_view", map[string]any{
+		"pkg": "mcpaliasmod", "sym": "main"})
+	if isErr {
+		t.Fatalf("ago_view reported an error: %s", text)
+	}
+	var res struct {
+		Status      string `json:"status"`
+		AliasedFrom string `json:"aliased_from"`
+	}
+	if err := json.Unmarshal([]byte(text), &res); err != nil {
+		t.Fatalf("ago_view response is not JSON: %v\nraw: %s", err, text)
+	}
+	if res.Status != "ok" {
+		t.Fatalf("ago_view did not execute as view: %s", text)
+	}
+	if res.AliasedFrom != "ago_view" {
+		t.Errorf("aliased_from = %q, want %q\nraw: %s", res.AliasedFrom, "ago_view", text)
+	}
+}
+
+// mcpRejectPayload mirrors the redirect payload: the same status/reason/
+// did_you_mean/possible_repairs shape internal/snapshot rejects use.
+type mcpRejectPayload struct {
+	Status          string   `json:"status"`
+	Reason          string   `json:"reason"`
+	DidYouMean      []string `json:"did_you_mean"`
+	PossibleRepairs []struct {
+		Why  string `json:"why"`
+		Call struct {
+			Tool string         `json:"tool"`
+			Args map[string]any `json:"args"`
+		} `json:"call"`
+	} `json:"possible_repairs"`
+}
+
+// TestMCPShellToolRedirect covers the hallucinated-shell layer: bash gets a
+// structured rejected payload (not an MCP protocol error) whose repairs are
+// the two complete calls that reorient the model, query search and help.
+func TestMCPShellToolRedirect(t *testing.T) {
+	text, isErr := mcpCall(t.TempDir(), "bash", map[string]any{"command": "ls"})
+	if isErr {
+		t.Fatalf("bash redirect must be data, not an error: %s", text)
+	}
+	var rej mcpRejectPayload
+	if err := json.Unmarshal([]byte(text), &rej); err != nil {
+		t.Fatalf("bash redirect is not JSON: %v\nraw: %s", err, text)
+	}
+	if rej.Status != "rejected" {
+		t.Errorf("status = %q, want rejected", rej.Status)
+	}
+	want := "no shell or file editor here; the workspace is queried and mutated through the ago tools"
+	if rej.Reason != want {
+		t.Errorf("reason = %q\nwant %q", rej.Reason, want)
+	}
+	if len(rej.PossibleRepairs) != 2 {
+		t.Fatalf("got %d repairs, want 2: %s", len(rej.PossibleRepairs), text)
+	}
+	first, second := rej.PossibleRepairs[0], rej.PossibleRepairs[1]
+	if first.Call.Tool != "query" || first.Call.Args["kind"] != "search" {
+		t.Errorf("repair[0] is not the query search call: %s", text)
+	}
+	if second.Call.Tool != "help" {
+		t.Errorf("repair[1] is not the help call: %s", text)
+	}
+	for i, r := range rej.PossibleRepairs {
+		if r.Why == "" {
+			t.Errorf("repair[%d] has no why", i)
+		}
+	}
+}
+
+// TestMCPUnknownToolDidYouMean covers the last layer: a near-miss name gets
+// the same rejected shape with did_you_mean computed over the real tools.
+func TestMCPUnknownToolDidYouMean(t *testing.T) {
+	text, isErr := mcpCall(t.TempDir(), "quer", nil)
+	if isErr {
+		t.Fatalf("unknown-tool redirect must be data, not an error: %s", text)
+	}
+	var rej mcpRejectPayload
+	if err := json.Unmarshal([]byte(text), &rej); err != nil {
+		t.Fatalf("redirect is not JSON: %v\nraw: %s", err, text)
+	}
+	if rej.Status != "rejected" {
+		t.Errorf("status = %q, want rejected", rej.Status)
+	}
+	found := false
+	for _, c := range rej.DidYouMean {
+		if c == "query" {
+			found = true
+		}
+	}
+	if !found {
+		t.Errorf("did_you_mean %v does not offer query", rej.DidYouMean)
+	}
+}
+
+// startMCPFixture builds a temp `ago init` module, starts a real workspace
+// daemon against it in-process, and returns the workspace's absolute path.
+// The daemon is stopped on test cleanup.
+func startMCPFixture(t *testing.T, mod string) string {
+	t.Helper()
+	dir := t.TempDir()
+	if err := runInit(dir, mod); err != nil {
+		t.Fatalf("runInit: %v", err)
+	}
+	abs, err := filepath.Abs(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	daemonDone := make(chan error, 1)
+	go func() { daemonDone <- daemon.Run(abs, time.Minute, "") }()
+	t.Cleanup(func() {
+		roundTrip(abs, protocol.Request{Op: "stop"}, false)
+		<-daemonDone
+	})
+	waitForSocket(t, daemon.SocketPath(abs), 10*time.Second)
+	return abs
 }
 
 func waitForSocket(t *testing.T, sock string, timeout time.Duration) {
