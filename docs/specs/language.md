@@ -96,16 +96,16 @@ op instead of at the top level.
 |---|---|---|
 | `upsert_decl` | pkg, text | add or replace a whole declaration; goimports in the loop; creates packages under the module on demand |
 | `delete_decl` | pkg, sym | rejected while references remain (listed) |
-| `move_decl` | pkg, sym, to_pkg | rewrites references and imports |
+| `move_decl` | pkg, sym, to_pkg | rewrites references and imports, requalifying call sites. v1 ceilings: the declaration must be self-contained (no uses of its old package's other top-level symbols), moved types may not have methods, and the target package must exist; each rejects naming the blocker |
 | `rename` | pkg, sym, to | proves post-splice resolution; rejects capture and collision |
 | `set_body` | pkg, sym, body | body as checked text; the coarse escape hatch |
-| `set_signature` | pkg, sym, signature | full param/result rewrite; call sites must be repaired in the same patch or it rejects with the site list |
-| `add_param` | pkg, sym, name, type, default | callers updated with default; value uses rejected |
-| `remove_param` | pkg, sym, name | callers updated by dropping the argument; call-site arguments must be literals or plain identifiers, otherwise rejected with the site list |
+| `set_signature` | pkg, sym, signature, defaults? | full param/result rewrite as Go text. Parameters match the old signature by name: carried ones keep each call site's argument (reordering reorders them), dropped ones drop it, new ones splice their `defaults` entry — positionally, so spread sites `f(args...)` survive insertions before the variadic. Interface methods work; changing an interface and its implementors is one atomic multi-op patch. Value uses and the body are NOT rewritten: repair them with sibling ops in the same patch or the end-of-list typecheck rejects with the positions |
+| `add_param` | pkg, sym, name, type, default | callers updated with default, inserted before a variadic tail (spread sites included); a top-level body local `name := <default>` is promoted into the parameter, any other same-named local rejects with its position; value uses rejected with theirs |
+| `remove_param` | pkg, sym, name | UNSHIPPED (use set_signature, which drops params today); planned as sugar over it |
 | `add_field` | pkg, sym (Type), name, type, tag? | |
 | `remove_field` | pkg, sym (Type.Field) | rejected while references remain |
 | `set_doc` | pkg, sym, text | doc comment only |
-| `implement_interface` | pkg, type, iface | generates missing method stubs (`panic("unimplemented")` bodies) |
+| `implement_interface` | pkg, type, iface | UNSHIPPED; generates missing method stubs |
 
 ### Statement ops
 
@@ -227,17 +227,30 @@ argument falls back to the `help` call; an undefined identifier in a
 typecheck reject gets the `search` call that locates it. Nothing is
 guessed: where no mechanical repair exists, diagnostics stand alone.
 Patch rejections say which op index failed; earlier ops in the patch
-have no effect.
+have no effect. Op arguments decode strictly: a field from another op's
+vocabulary rejects at the shape layer naming the field, with the help
+call as its repair. An exact resend of a just-rejected call gets an
+escalated rejection (`resent`, `escalation`) instead of the same answer
+forever. List-returning queries page at 50 entries: `count` is always
+the total, truncated responses carry `truncated` and `next_offset`, and
+`offset` requests the next page.
 
 ## Guarantees
 
-1. No accepted operation leaves the workspace non-compiling.
+1. No accepted operation introduces a new diagnostic. Pre-existing rot
+   in the affected packages (real repos accumulate it) is tolerated:
+   baselined at preflight, filtered after the splice, and surfaced on the
+   accepted response as `pre_existing`.
 2. A rejected patch changes nothing — disk, snapshot, or generation.
 3. Rename (and move) prove resolution: every rewritten reference resolves
    to the intended object afterward; capture rejects even when the
    compiler is satisfied.
 4. Patches are atomic and generation-checked; generations are monotonic.
-5. Queries reflect accepted mutations immediately.
+5. Queries reflect accepted mutations immediately, and an accepted
+   mutation that reshaped exactly one declaration embeds that
+   declaration's fresh view (`{text, nodes, generation}`) in its own
+   response — the next edit needs no view call. Multi-declaration patches
+   say why the view was omitted (`views_omitted`).
 6. External edits are detected per request and trigger reload.
 
 ## Future, named

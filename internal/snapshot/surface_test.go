@@ -23,6 +23,11 @@ func TestSurfaceDocCurrent(t *testing.T) {
 			shipped[strings.Trim(strings.TrimSpace(fields[1]), "`")] = true
 		}
 	}
+	langRaw, err := os.ReadFile("../../docs/specs/language.md")
+	if err != nil {
+		t.Fatal(err)
+	}
+	lang := string(langRaw)
 	s := demo(t)
 	res, err := s.Help()
 	if err != nil {
@@ -43,6 +48,9 @@ func TestSurfaceDocCurrent(t *testing.T) {
 		catalog[entry.Op] = true
 		if !shipped[entry.Op] {
 			t.Errorf("op %q is in the help catalog but not marked shipped in docs/specs/surface.md", entry.Op)
+		}
+		if !strings.Contains(lang, "`"+entry.Op+"`") {
+			t.Errorf("op %q is shipped but has no row in docs/specs/language.md", entry.Op)
 		}
 	}
 	for name := range shipped {
