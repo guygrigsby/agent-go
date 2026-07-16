@@ -73,6 +73,30 @@ func newFlagSet(cmd string) (*flag.FlagSet, *cliFlags) {
 	return fs, f
 }
 
+// buildRequest maps parsed flags onto the wire request for a daemon verb;
+// flags_test.go drives every verb through it and asserts the wire fields.
+func buildRequest(cmd string, f *cliFlags) (protocol.Request, error) {
+	req := protocol.Request{Op: cmd, Pkg: *f.pkg, Sym: *f.sym, To: *f.to,
+		Name: *f.name, Type: *f.typ, Def: *f.def, Offset: *f.offset}
+	switch cmd {
+	case "set-body", "upsert":
+		req.Body = readBody(*f.bodyFile)
+	case "patch":
+		if err := json.Unmarshal([]byte(readBody(*f.bodyFile)), &req); err != nil {
+			return req, fmt.Errorf("parse patch json: %w", err)
+		}
+		req.Op = "patch"
+	case "query":
+		req.Kind = *f.kind
+		if *f.q != "" {
+			req.Sym = *f.q // wire reuses Sym as q, same as the standalone search op
+		}
+	case "test":
+		req.Sym = *f.run // wire reuses Sym as the -run filter, same as query's q
+	}
+	return req, nil
+}
+
 func main() {
 	if len(os.Args) < 2 {
 		fail("usage: ago <init|%s|mcp|daemon> [flags]", strings.Join(daemonVerbs, "|"))
@@ -109,24 +133,9 @@ func main() {
 		return
 	}
 
-	req := protocol.Request{Op: cmd, Pkg: *f.pkg, Sym: *f.sym, To: *f.to, Name: *f.name, Type: *f.typ, Def: *f.def, Offset: *f.offset}
-	if cmd == "set-body" || cmd == "upsert" {
-		req.Body = readBody(*f.bodyFile)
-	}
-	if cmd == "patch" {
-		if err := json.Unmarshal([]byte(readBody(*f.bodyFile)), &req); err != nil {
-			fail("parse patch json: %v", err)
-		}
-		req.Op = "patch"
-	}
-	if cmd == "query" {
-		req.Kind = *f.kind
-		if *f.q != "" {
-			req.Sym = *f.q // wire reuses Sym as q, same as the standalone search op
-		}
-	}
-	if cmd == "test" {
-		req.Sym = *f.run // wire reuses Sym as the -run filter, same as query's q
+	req, err := buildRequest(cmd, f)
+	if err != nil {
+		fail("%v", err)
 	}
 	if slices.Contains(daemonVerbs, cmd) {
 		out, err := roundTrip(abs, req, cmd != "stop")
