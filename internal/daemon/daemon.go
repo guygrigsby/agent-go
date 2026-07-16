@@ -125,12 +125,17 @@ func handleWithBreaker(conn net.Conn, snap *snapshot.Snapshot, rlog *requestLog,
 		res = map[string]any{"status": "rejected", "reason": rej.Reason,
 			"detail": rej.Detail, "diagnostics": rej.Diagnostics, "did_you_mean": rej.DidYouMean,
 			"possible_repairs": rej.PossibleRepairs}
+		if repairsDisabled() {
+			// Ablation arm (AGO_NO_REPAIRS): the conventional typed-error
+			// baseline — diagnostics and candidates, no paste-ready calls.
+			delete(res, "possible_repairs")
+		}
 	} else if err != nil {
 		res = map[string]any{"status": "error", "error": err.Error()}
 	}
 	sha := reqSHA(req)
 	if res["status"] == "rejected" {
-		if n := breaker.bump(sha); n > 0 {
+		if n := breaker.bump(sha); n > 0 && !repairsDisabled() {
 			res["resent"] = n
 			res["escalation"] = "this exact call was already rejected; do not resend it unchanged — send a possible_repairs call verbatim, or change the arguments"
 		}
@@ -141,6 +146,10 @@ func handleWithBreaker(conn net.Conn, snap *snapshot.Snapshot, rlog *requestLog,
 	writeJSON(conn, res)
 	return false
 }
+
+// repairsDisabled reports the ablation switch, read per request so tests
+// and long-lived daemons under changing env behave predictably.
+func repairsDisabled() bool { return os.Getenv("AGO_NO_REPAIRS") != "" }
 
 func writeJSON(conn net.Conn, v any) {
 	enc := json.NewEncoder(conn)

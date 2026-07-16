@@ -182,7 +182,7 @@ func (c *mlflowClient) exportEpisode(expID, path, agoRev string, e map[string]an
 	}
 	var params []map[string]any
 	for _, k := range []string{"task", "mode", "profile", "iter", "failure_kind",
-		"kind", "bench_run", "model", "endpoint", "quant", "cap"} {
+		"kind", "bench_run", "model", "endpoint", "quant", "cap", "no_repairs"} {
 		if v, ok := e[k]; ok && fmt.Sprint(v) != "" {
 			params = append(params, map[string]any{"key": k, "value": fmt.Sprint(v)})
 		}

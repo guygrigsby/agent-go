@@ -1,0 +1,9 @@
+{"ms":2539,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T20:05:05.480691Z"}
+{"ms":2445,"op":"query","outcome":"ok","req_sha":"89cf102ad915bf9c","sym":"backend","ts":"2026-07-16T20:05:21.808519Z"}
+{"ms":33,"op":"query","outcome":"ok","req_sha":"8e0cdb1c7f82b5d5","sym":"instanceIamRoleARN","ts":"2026-07-16T20:05:28.947074Z"}
+{"ms":48,"op":"query","outcome":"ok","pkg":"github.com/hashicorp/vault/builtin/credential/aws","req_sha":"c5cf0e582285d08b","sym":"backend.instanceIamRoleARN","ts":"2026-07-16T20:05:31.359136Z"}
+{"ms":375,"op":"add-param","outcome":"accepted","pkg":"github.com/hashicorp/vault/builtin/credential/aws","req_sha":"4b5c3469a7feaeb5","sym":"backend.instanceIamRoleARN","ts":"2026-07-16T20:05:34.333589Z"}
+{"ms":60297,"op":"test","outcome":"ok","req_sha":"4cc0895809b77cc4","sym":"TestMain","ts":"2026-07-16T20:05:39.620012Z"}
+{"ms":68,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T20:06:41.035682Z"}
+{"ms":2534,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/vault/builtin/credential/aws","req_sha":"60337aa18f3ae54e","sym":"backend.instanceIamRoleARN","ts":"2026-07-16T20:06:46.592943Z"}
+{"ms":4,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T20:06:49.131973Z"}

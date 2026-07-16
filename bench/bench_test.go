@@ -132,6 +132,9 @@ func setup(b testing.TB) config {
 		"semantic_prompt_tokens": estimateTokens(promptCommon + promptSemantic),
 		"profiles":               c.profiles,
 	}
+	if os.Getenv("AGO_NO_REPAIRS") != "" {
+		meta["no_repairs"] = true
+	}
 	writeJSON(filepath.Join(c.results, c.runID, "run.json"), meta)
 	return c
 }
@@ -291,6 +294,9 @@ func episode(b testing.TB, c config, t Manifest, mode string, iter int) bool {
 		kind = "rename"
 	}
 	res["kind"] = kind
+	if os.Getenv("AGO_NO_REPAIRS") != "" {
+		res["no_repairs"] = true
+	}
 	res["mode"] = mode
 	res["profile"] = c.profile.Name
 	res["iter"] = iter

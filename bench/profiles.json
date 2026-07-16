@@ -23,5 +23,41 @@
     },
     "quant": "Q4_K_M",
     "notes": "floor cell (roster: ~8-9B, any laptop). Raw mode expected near zero; scored separately per cross-model.md. repeat_penalty 1.0 deliberate."
+  },
+  "gpt-oss-20b-low": {
+    "endpoint": "https://llama.lab.aeryx.ai/v1",
+    "model": "PENDING-PROBE-AFTER-LOAD",
+    "sampler": {
+      "temperature": 1.0,
+      "top_p": 1.0,
+      "repeat_penalty": 1.0
+    },
+    "thinking": "low",
+    "quant": "MXFP4",
+    "notes": "reasoning_effort=low; OpenAI-recommended temp 1.0 top_p 1.0; no repetition penalties (op JSON repeats by design); harmony format - no grammar constraints. Model id: probe /v1/models after Guy loads it on the R9700."
+  },
+  "gpt-oss-20b-medium": {
+    "endpoint": "https://llama.lab.aeryx.ai/v1",
+    "model": "PENDING-PROBE-AFTER-LOAD",
+    "sampler": {
+      "temperature": 1.0,
+      "top_p": 1.0,
+      "repeat_penalty": 1.0
+    },
+    "thinking": "medium",
+    "quant": "MXFP4",
+    "notes": "reasoning_effort=medium; OpenAI-recommended temp 1.0 top_p 1.0; no repetition penalties (op JSON repeats by design); harmony format - no grammar constraints. Model id: probe /v1/models after Guy loads it on the R9700."
+  },
+  "gpt-oss-20b-high": {
+    "endpoint": "https://llama.lab.aeryx.ai/v1",
+    "model": "PENDING-PROBE-AFTER-LOAD",
+    "sampler": {
+      "temperature": 1.0,
+      "top_p": 1.0,
+      "repeat_penalty": 1.0
+    },
+    "thinking": "high",
+    "quant": "MXFP4",
+    "notes": "reasoning_effort=high; OpenAI-recommended temp 1.0 top_p 1.0; no repetition penalties (op JSON repeats by design); harmony format - no grammar constraints. Model id: probe /v1/models after Guy loads it on the R9700."
   }
 }

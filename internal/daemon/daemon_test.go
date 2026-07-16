@@ -262,6 +262,44 @@ func TestHandleEscalatesIdenticalResend(t *testing.T) {
 	}
 }
 
+// AGO_NO_REPAIRS strips the repair channel for the ablation arm: no
+// possible_repairs, no resend escalation. did_you_mean and diagnostics
+// stay — that is the conventional typed-error baseline being compared
+// against.
+func TestNoRepairsAblation(t *testing.T) {
+	t.Setenv("AGO_NO_REPAIRS", "1")
+	dir, err := filepath.Abs("../snapshot/testdata/demo")
+	if err != nil {
+		t.Fatal(err)
+	}
+	snap := snapshot.New(dir)
+	breaker := newResendBreaker()
+	send := func() map[string]any {
+		client, server := net.Pipe()
+		done := make(chan bool, 1)
+		go func() { done <- handleWithBreaker(server, snap, nil, breaker) }()
+		json.NewEncoder(client).Encode(protocol.Request{Op: "view", Pkg: "demo/lib", Sym: "Doub"})
+		var res map[string]any
+		json.NewDecoder(client).Decode(&res)
+		<-done
+		return res
+	}
+	res := send()
+	if res["status"] != "rejected" {
+		t.Fatalf("want rejected, got %v", res)
+	}
+	if _, ok := res["possible_repairs"]; ok && res["possible_repairs"] != nil {
+		t.Fatalf("ablation must strip possible_repairs: %v", res["possible_repairs"])
+	}
+	if dym, ok := res["did_you_mean"].([]any); !ok || len(dym) == 0 {
+		t.Fatalf("ablation must keep did_you_mean: %v", res["did_you_mean"])
+	}
+	res = send() // exact resend
+	if res["escalation"] != nil || res["resent"] != nil {
+		t.Fatalf("ablation must strip escalation: %v", res)
+	}
+}
+
 // With a request log open, every handled request appends one JSONL record
 // carrying op, outcome, rejection evidence, and latency — the raw material
 // for the per-episode counters.
