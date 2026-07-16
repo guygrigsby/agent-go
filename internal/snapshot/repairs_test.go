@@ -154,6 +154,36 @@ func TestPatchEnvelopeSymMissRepairs(t *testing.T) {
 	execViewRepairs(t, s, rej)
 }
 
+// A bad keyword argument (where/with) repairs with the whole patch resent,
+// the keyword substituted; the first repair is accepted when executed.
+func TestPatchBadWhereRepairIsCorrectedPatch(t *testing.T) {
+	s := demo(t)
+	_, err := s.Patch([]byte(`{"pkg":"demo/lib","sym":"UseHelper",
+		"ops":[{"op":"add_assign","at":"n1","where":"behind","lhs":"_","rhs":"1"}]}`))
+	rej, ok := err.(*Reject)
+	if !ok || rej.Reason != "unknown insertion point" {
+		t.Fatalf("want insertion-point Reject, got %v", err)
+	}
+	if len(rej.PossibleRepairs) == 0 {
+		t.Fatalf("reject carries no repairs: %+v", rej)
+	}
+	r := rej.PossibleRepairs[0]
+	if r.Call["tool"] != "patch" {
+		t.Fatalf("repair tool = %v, want patch", r.Call["tool"])
+	}
+	raw, err := json.Marshal(r.Call["args"])
+	if err != nil {
+		t.Fatal(err)
+	}
+	res, err := s.Patch(raw)
+	if err != nil {
+		t.Fatalf("repair rejected: %v", err)
+	}
+	if res["status"] != "accepted" {
+		t.Fatalf("repair not accepted: %v", res)
+	}
+}
+
 // A catalog dump is not a near-miss: when nothing matches the op name,
 // no repair is invented.
 func TestPatchUnknownOpNoRepairWithoutNearMiss(t *testing.T) {

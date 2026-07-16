@@ -139,7 +139,7 @@ func (s *Snapshot) Patch(raw []byte) (map[string]any, error) {
 			// arbitrary ops into the patch would invent repairs.
 			if len(cands) < len(opRegistry) {
 				for _, c := range cands {
-					call, ok := patchCall(env, i, c)
+					call, ok := patchCall(env, i, "op", c)
 					if !ok {
 						break
 					}
@@ -237,7 +237,7 @@ func (s *Snapshot) patchComposable(env patchEnvelope, names []string) (map[strin
 			// point in the pipeline, so there is nothing else to roll back —
 			// only a created file needs cleaning up.
 			ctx.cleanupCreatedFiles()
-			s.patchOpRepairs(rej, env)
+			s.patchOpRepairs(rej, env, i)
 			return nil, rej
 		}
 	}

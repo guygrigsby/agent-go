@@ -40,22 +40,49 @@ func (s *Snapshot) viewRepairs(rej *Reject, pkgPath, sym string) {
 	}
 }
 
-// patchOpRepairs adds the recovery call for op-level rejects a fresh view
-// fixes: a missed handle means the caller's handle table is stale or
-// invented, and the literal next call is the view that rebuilds it.
-// Caller holds mu.
-func (s *Snapshot) patchOpRepairs(rej *Reject, env patchEnvelope) {
-	if rej.Reason == "unknown handle" && env.Sym != "" && s.viewable(env.Pkg, env.Sym) {
+// repairField maps op-reject reasons whose did_you_mean candidates are
+// values for one specific op argument, so the repair is the same patch
+// with that argument substituted.
+var repairField = map[string]string{
+	"unknown insertion point":       "where",
+	"unknown wrap_stmts with value": "with",
+}
+
+// patchOpRepairs adds the recovery call for op-level rejects. A missed
+// handle means the caller's handle table is stale or invented, and the
+// literal next call is the view that rebuilds it; a bad keyword argument
+// resends the whole patch with the keyword substituted. i is the 0-based
+// index of the rejected op. Caller holds mu.
+func (s *Snapshot) patchOpRepairs(rej *Reject, env patchEnvelope, i int) {
+	if rej.Reason == "unknown handle" {
+		if env.Sym != "" && s.viewable(env.Pkg, env.Sym) {
+			rej.PossibleRepairs = append(rej.PossibleRepairs,
+				Repair{Why: "rebuilds the handle table for " + env.Pkg + "." + env.Sym,
+					Call: viewCall(env.Pkg, env.Sym)})
+		}
+		return
+	}
+	field := repairField[rej.Reason]
+	if field == "" {
+		return
+	}
+	for _, c := range rej.DidYouMean {
+		call, ok := patchCall(env, i, field, c)
+		if !ok {
+			return
+		}
 		rej.PossibleRepairs = append(rej.PossibleRepairs,
-			Repair{Why: "rebuilds the handle table for " + env.Pkg + "." + env.Sym,
-				Call: viewCall(env.Pkg, env.Sym)})
+			Repair{Why: field + " " + c + " is valid", Call: call})
+		if len(rej.PossibleRepairs) == maxRepairs {
+			return
+		}
 	}
 }
 
 // patchCall rebuilds the complete patch invocation from a parsed envelope
-// with op index i's name replaced by cand. Only envelope fields are echoed,
-// so transport extras in the original bytes are dropped.
-func patchCall(env patchEnvelope, i int, cand string) (map[string]any, bool) {
+// with op index i's field replaced by cand. Only envelope fields are
+// echoed, so transport extras in the original bytes are dropped.
+func patchCall(env patchEnvelope, i int, field, cand string) (map[string]any, bool) {
 	ops := make([]any, len(env.Ops))
 	for j, raw := range env.Ops {
 		var m map[string]any
@@ -64,7 +91,7 @@ func patchCall(env patchEnvelope, i int, cand string) (map[string]any, bool) {
 		}
 		ops[j] = m
 	}
-	ops[i].(map[string]any)["op"] = cand
+	ops[i].(map[string]any)[field] = cand
 	args := map[string]any{"pkg": env.Pkg, "ops": ops}
 	if env.Sym != "" {
 		args["sym"] = env.Sym
