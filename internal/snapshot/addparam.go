@@ -256,8 +256,8 @@ func (addParamOp) apply(ctx *patchCtx, raw json.RawMessage) *Reject {
 		Type    string `json:"type"`
 		Default string `json:"default"`
 	}
-	if err := json.Unmarshal(raw, &a); err != nil {
-		return &Reject{Reason: "malformed op args", Detail: err.Error()}
+	if rej := decodeOpArgs(raw, &a); rej != nil {
+		return rej
 	}
 	pkg := orDefault(a.Pkg, ctx.pkg)
 	sym := orDefault(a.Sym, ctx.sym)

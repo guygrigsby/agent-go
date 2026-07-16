@@ -361,6 +361,29 @@ func TestAddParamTrailingCommaParams(t *testing.T) {
 	}
 }
 
+// An op carrying another op's arguments (GLM episode 20260715-212439 sent
+// set_body with at/where/exprs and no body) must reject at the shape
+// layer with the help repair — not reach the splice layer and surface as
+// "stale offset".
+func TestPatchForeignArgsRejectAtShape(t *testing.T) {
+	s := demo(t)
+	_, err := s.Patch([]byte(`{"pkg":"demo/lib","sym":"Double",
+		"ops":[{"op":"set_body","at":"n1","where":"before","exprs":["x := 1"]}]}`))
+	rej, ok := err.(*Reject)
+	if !ok {
+		t.Fatalf("want Reject, got %v", err)
+	}
+	if rej.Reason == "stale offset" || rej.Reason == "patch does not typecheck" {
+		t.Fatalf("garbage op reached the splice layer: %v", rej.Reason)
+	}
+	if !strings.Contains(rej.Reason+rej.Detail, `"at"`) {
+		t.Fatalf("reject must name the foreign argument: %v %v", rej.Reason, rej.Detail)
+	}
+	if len(rej.PossibleRepairs) == 0 || rej.PossibleRepairs[0].Call["tool"] != "help" {
+		t.Fatalf("shape reject must carry the help repair: %+v", rej.PossibleRepairs)
+	}
+}
+
 // A catalog dump is not a near-miss: when nothing matches the op name,
 // no repair is invented.
 func TestPatchUnknownOpNoRepairWithoutNearMiss(t *testing.T) {

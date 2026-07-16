@@ -1,6 +1,7 @@
 package snapshot
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -131,6 +132,27 @@ type patchEnvelope struct {
 // fields are unmarshaled a second time from the same raw message.
 type opName struct {
 	Op string `json:"op"`
+}
+
+// decodeOpArgs unmarshals an op's raw arguments strictly: an argument the
+// op does not define — usually another op's vocabulary, like set_body sent
+// with at/where/exprs — rejects at the shape layer instead of being
+// silently dropped and surfacing later as a splice or typecheck failure.
+// The "op" discriminator itself is scrubbed first; it is not an argument.
+func decodeOpArgs(raw json.RawMessage, dst any) *Reject {
+	var m map[string]json.RawMessage
+	if err := json.Unmarshal(raw, &m); err != nil {
+		return &Reject{Reason: "malformed op args", Detail: err.Error()}
+	}
+	delete(m, "op")
+	clean, _ := json.Marshal(m)
+	dec := json.NewDecoder(bytes.NewReader(clean))
+	dec.DisallowUnknownFields()
+	if err := dec.Decode(dst); err != nil {
+		return &Reject{Reason: "op argument not in this op's schema",
+			Detail: err.Error() + "; the catalog shows each op's arguments"}
+	}
+	return nil
 }
 
 // Patch applies a transaction envelope of edit operations: parse, check the

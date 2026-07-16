@@ -285,8 +285,8 @@ func (addAssignOp) apply(ctx *patchCtx, raw json.RawMessage) *Reject {
 		Rhs    string `json:"rhs"`
 		Define bool   `json:"define"`
 	}
-	if err := json.Unmarshal(raw, &a); err != nil {
-		return &Reject{Reason: "malformed op args", Detail: err.Error()}
+	if rej := decodeOpArgs(raw, &a); rej != nil {
+		return rej
 	}
 	if !token.IsIdentifier(a.Lhs) {
 		return &Reject{Reason: "lhs is not a valid identifier", Detail: a.Lhs}
@@ -321,8 +321,8 @@ func (addCallOp) apply(ctx *patchCtx, raw json.RawMessage) *Reject {
 		Where string `json:"where"`
 		Expr  string `json:"expr"`
 	}
-	if err := json.Unmarshal(raw, &a); err != nil {
-		return &Reject{Reason: "malformed op args", Detail: err.Error()}
+	if rej := decodeOpArgs(raw, &a); rej != nil {
+		return rej
 	}
 	expr, err := parser.ParseExpr(a.Expr)
 	if err != nil {
@@ -358,8 +358,8 @@ func (addReturnOp) apply(ctx *patchCtx, raw json.RawMessage) *Reject {
 		Where string   `json:"where"`
 		Exprs []string `json:"exprs"`
 	}
-	if err := json.Unmarshal(raw, &a); err != nil {
-		return &Reject{Reason: "malformed op args", Detail: err.Error()}
+	if rej := decodeOpArgs(raw, &a); rej != nil {
+		return rej
 	}
 	parts := make([]string, len(a.Exprs))
 	for i, e := range a.Exprs {
@@ -398,8 +398,8 @@ func (addDeferOp) apply(ctx *patchCtx, raw json.RawMessage) *Reject {
 		Where string `json:"where"`
 		Expr  string `json:"expr"`
 	}
-	if err := json.Unmarshal(raw, &a); err != nil {
-		return &Reject{Reason: "malformed op args", Detail: err.Error()}
+	if rej := decodeOpArgs(raw, &a); rej != nil {
+		return rej
 	}
 	expr, rej := ctx.exprAtom(a.Expr)
 	if rej != nil {
@@ -425,8 +425,8 @@ func (addGoOp) apply(ctx *patchCtx, raw json.RawMessage) *Reject {
 		Where string `json:"where"`
 		Expr  string `json:"expr"`
 	}
-	if err := json.Unmarshal(raw, &a); err != nil {
-		return &Reject{Reason: "malformed op args", Detail: err.Error()}
+	if rej := decodeOpArgs(raw, &a); rej != nil {
+		return rej
 	}
 	expr, rej := ctx.exprAtom(a.Expr)
 	if rej != nil {
@@ -453,8 +453,8 @@ func (deleteNodeOp) apply(ctx *patchCtx, raw json.RawMessage) *Reject {
 	var a struct {
 		At string `json:"at"`
 	}
-	if err := json.Unmarshal(raw, &a); err != nil {
-		return &Reject{Reason: "malformed op args", Detail: err.Error()}
+	if rej := decodeOpArgs(raw, &a); rej != nil {
+		return rej
 	}
 	return ctx.deleteNode(a.At)
 }
@@ -549,8 +549,8 @@ func (addIfOp) apply(ctx *patchCtx, raw json.RawMessage) *Reject {
 		Cond  string `json:"cond"`
 		Else  bool   `json:"else"`
 	}
-	if err := json.Unmarshal(raw, &a); err != nil {
-		return &Reject{Reason: "malformed op args", Detail: err.Error()}
+	if rej := decodeOpArgs(raw, &a); rej != nil {
+		return rej
 	}
 	cond, rej := ctx.exprAtom(a.Cond)
 	if rej != nil {
@@ -585,8 +585,8 @@ func (addForOp) apply(ctx *patchCtx, raw json.RawMessage) *Reject {
 		Cond  string `json:"cond"`
 		Range string `json:"range"`
 	}
-	if err := json.Unmarshal(raw, &a); err != nil {
-		return &Reject{Reason: "malformed op args", Detail: err.Error()}
+	if rej := decodeOpArgs(raw, &a); rej != nil {
+		return rej
 	}
 	if a.Cond != "" && a.Range != "" {
 		return &Reject{Reason: "add_for: cond and range are mutually exclusive"}
@@ -622,8 +622,8 @@ func (addSwitchOp) apply(ctx *patchCtx, raw json.RawMessage) *Reject {
 		Where string `json:"where"`
 		Tag   string `json:"tag"`
 	}
-	if err := json.Unmarshal(raw, &a); err != nil {
-		return &Reject{Reason: "malformed op args", Detail: err.Error()}
+	if rej := decodeOpArgs(raw, &a); rej != nil {
+		return rej
 	}
 	header := "switch"
 	if a.Tag != "" {
@@ -657,8 +657,8 @@ func (addCaseOp) apply(ctx *patchCtx, raw json.RawMessage) *Reject {
 		Exprs   []string `json:"exprs"`
 		Default bool     `json:"default"`
 	}
-	if err := json.Unmarshal(raw, &a); err != nil {
-		return &Reject{Reason: "malformed op args", Detail: err.Error()}
+	if rej := decodeOpArgs(raw, &a); rej != nil {
+		return rej
 	}
 	if a.Default && len(a.Exprs) > 0 {
 		return &Reject{Reason: "add_case: default and exprs are mutually exclusive"}
@@ -781,8 +781,8 @@ func (setCondOp) apply(ctx *patchCtx, raw json.RawMessage) *Reject {
 		At   string `json:"at"`
 		Expr string `json:"expr"`
 	}
-	if err := json.Unmarshal(raw, &a); err != nil {
-		return &Reject{Reason: "malformed op args", Detail: err.Error()}
+	if rej := decodeOpArgs(raw, &a); rej != nil {
+		return rej
 	}
 	if rej := ctx.spliceExprSlot(a.At, a.Expr, false, "set_cond targets an if/for/case condition"); rej != nil {
 		return rej
@@ -803,8 +803,8 @@ func (replaceExprOp) apply(ctx *patchCtx, raw json.RawMessage) *Reject {
 		At   string `json:"at"`
 		Expr string `json:"expr"`
 	}
-	if err := json.Unmarshal(raw, &a); err != nil {
-		return &Reject{Reason: "malformed op args", Detail: err.Error()}
+	if rej := decodeOpArgs(raw, &a); rej != nil {
+		return rej
 	}
 	if rej := ctx.spliceExprSlot(a.At, a.Expr, true,
 		"replace_expr targets a condition or expression statement in v1"); rej != nil {
@@ -982,8 +982,8 @@ func (wrapStmtsOp) apply(ctx *patchCtx, raw json.RawMessage) *Reject {
 		With string `json:"with"`
 		Cond string `json:"cond"`
 	}
-	if err := json.Unmarshal(raw, &a); err != nil {
-		return &Reject{Reason: "malformed op args", Detail: err.Error()}
+	if rej := decodeOpArgs(raw, &a); rej != nil {
+		return rej
 	}
 	h, rej := ctx.wrapStmts(a.From, a.To, a.With, a.Cond)
 	if rej != nil {
@@ -1231,8 +1231,8 @@ func (wrapErrorOp) apply(ctx *patchCtx, raw json.RawMessage) *Reject {
 		At      string `json:"at"`
 		Message string `json:"message"`
 	}
-	if err := json.Unmarshal(raw, &a); err != nil {
-		return &Reject{Reason: "malformed op args", Detail: err.Error()}
+	if rej := decodeOpArgs(raw, &a); rej != nil {
+		return rej
 	}
 	h, rej := ctx.wrapError(a.At, a.Message)
 	if rej != nil {

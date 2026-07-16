@@ -25,8 +25,8 @@ func (setBodyOp) apply(ctx *patchCtx, raw json.RawMessage) *Reject {
 		Sym  string `json:"sym"`
 		Body string `json:"body"`
 	}
-	if err := json.Unmarshal(raw, &a); err != nil {
-		return &Reject{Reason: "malformed op args", Detail: err.Error()}
+	if rej := decodeOpArgs(raw, &a); rej != nil {
+		return rej
 	}
 	pkg := orDefault(a.Pkg, ctx.pkg)
 	sym := orDefault(a.Sym, ctx.sym)
@@ -54,8 +54,8 @@ func (upsertDeclOp) apply(ctx *patchCtx, raw json.RawMessage) *Reject {
 		Pkg  string `json:"pkg"`
 		Text string `json:"text"`
 	}
-	if err := json.Unmarshal(raw, &a); err != nil {
-		return &Reject{Reason: "malformed op args", Detail: err.Error()}
+	if rej := decodeOpArgs(raw, &a); rej != nil {
+		return rej
 	}
 	pkg := orDefault(a.Pkg, ctx.pkg)
 	name, sym, rej := parseDeclText(a.Text)
@@ -171,8 +171,8 @@ func (deleteDeclOp) apply(ctx *patchCtx, raw json.RawMessage) *Reject {
 		Pkg string `json:"pkg"`
 		Sym string `json:"sym"`
 	}
-	if err := json.Unmarshal(raw, &a); err != nil {
-		return &Reject{Reason: "malformed op args", Detail: err.Error()}
+	if rej := decodeOpArgs(raw, &a); rej != nil {
+		return rej
 	}
 	pkg := orDefault(a.Pkg, ctx.pkg)
 	sym := orDefault(a.Sym, ctx.sym)
@@ -227,8 +227,8 @@ func (setDocOp) apply(ctx *patchCtx, raw json.RawMessage) *Reject {
 		Sym  string `json:"sym"`
 		Text string `json:"text"`
 	}
-	if err := json.Unmarshal(raw, &a); err != nil {
-		return &Reject{Reason: "malformed op args", Detail: err.Error()}
+	if rej := decodeOpArgs(raw, &a); rej != nil {
+		return rej
 	}
 	pkg := orDefault(a.Pkg, ctx.pkg)
 	sym := orDefault(a.Sym, ctx.sym)
@@ -323,8 +323,8 @@ func (addFieldOp) apply(ctx *patchCtx, raw json.RawMessage) *Reject {
 		Type string `json:"type"`
 		Tag  string `json:"tag"`
 	}
-	if err := json.Unmarshal(raw, &a); err != nil {
-		return &Reject{Reason: "malformed op args", Detail: err.Error()}
+	if rej := decodeOpArgs(raw, &a); rej != nil {
+		return rej
 	}
 	pkg := orDefault(a.Pkg, ctx.pkg)
 	sym := orDefault(a.Sym, ctx.sym)
@@ -398,8 +398,8 @@ func (removeFieldOp) apply(ctx *patchCtx, raw json.RawMessage) *Reject {
 		Pkg string `json:"pkg"`
 		Sym string `json:"sym"`
 	}
-	if err := json.Unmarshal(raw, &a); err != nil {
-		return &Reject{Reason: "malformed op args", Detail: err.Error()}
+	if rej := decodeOpArgs(raw, &a); rej != nil {
+		return rej
 	}
 	pkg := orDefault(a.Pkg, ctx.pkg)
 	sym := orDefault(a.Sym, ctx.sym)

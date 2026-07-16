@@ -250,8 +250,8 @@ func (setSignatureOp) apply(ctx *patchCtx, raw json.RawMessage) *Reject {
 		Signature string            `json:"signature"`
 		Defaults  map[string]string `json:"defaults"`
 	}
-	if err := json.Unmarshal(raw, &a); err != nil {
-		return &Reject{Reason: "malformed op args", Detail: err.Error()}
+	if rej := decodeOpArgs(raw, &a); rej != nil {
+		return rej
 	}
 	if a.Signature == "" {
 		return &Reject{Reason: "signature is required"}

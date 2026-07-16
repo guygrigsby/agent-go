@@ -187,11 +187,12 @@ func (s *Snapshot) patchOpRepairs(rej *Reject, env patchEnvelope, i int) {
 		s.patchAddressRepairs(rej, env, i)
 		return
 	}
-	// A missing required argument can't be filled in; the correct next
-	// call is the catalog entry that shows the op's full schema.
-	// ponytail: "required" substring is the detection; every shape reject
-	// in the tree phrases itself that way, add a marker field if one stops.
-	if strings.Contains(rej.Reason, "required") {
+	// A missing required argument (or a foreign one from another op's
+	// vocabulary) can't be filled in; the correct next call is the catalog
+	// entry that shows the op's full schema.
+	// ponytail: substring detection; every shape reject in the tree
+	// phrases itself with "required" or "schema".
+	if strings.Contains(rej.Reason, "required") || strings.Contains(rej.Reason, "schema") {
 		var n opName
 		json.Unmarshal(env.Ops[i], &n)
 		rej.PossibleRepairs = append(rej.PossibleRepairs,

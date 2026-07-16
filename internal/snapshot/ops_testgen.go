@@ -249,8 +249,8 @@ func (addTestOp) apply(ctx *patchCtx, raw json.RawMessage) *Reject {
 		Target string `json:"target"`
 		Name   string `json:"name"`
 	}
-	if err := json.Unmarshal(raw, &a); err != nil {
-		return &Reject{Reason: "malformed op args", Detail: err.Error()}
+	if rej := decodeOpArgs(raw, &a); rej != nil {
+		return rej
 	}
 	pkg := orDefault(a.Pkg, ctx.pkg)
 	target := orDefault(a.Target, ctx.sym)
@@ -542,8 +542,8 @@ func (addTestCaseOp) apply(ctx *patchCtx, raw json.RawMessage) *Reject {
 		Args []string `json:"args"`
 		Want []string `json:"want"`
 	}
-	if err := json.Unmarshal(raw, &a); err != nil {
-		return &Reject{Reason: "malformed op args", Detail: err.Error()}
+	if rej := decodeOpArgs(raw, &a); rej != nil {
+		return rej
 	}
 	pkg := orDefault(a.Pkg, ctx.pkg)
 	test := orDefault(a.Test, ctx.sym)
@@ -590,8 +590,8 @@ func (setTestCaseOp) apply(ctx *patchCtx, raw json.RawMessage) *Reject {
 		Args []string `json:"args"`
 		Want []string `json:"want"`
 	}
-	if err := json.Unmarshal(raw, &a); err != nil {
-		return &Reject{Reason: "malformed op args", Detail: err.Error()}
+	if rej := decodeOpArgs(raw, &a); rej != nil {
+		return rej
 	}
 	pkg := orDefault(a.Pkg, ctx.pkg)
 	test := orDefault(a.Test, ctx.sym)
@@ -635,8 +635,8 @@ func (removeTestCaseOp) apply(ctx *patchCtx, raw json.RawMessage) *Reject {
 		Test string `json:"test"`
 		Case string `json:"case"`
 	}
-	if err := json.Unmarshal(raw, &a); err != nil {
-		return &Reject{Reason: "malformed op args", Detail: err.Error()}
+	if rej := decodeOpArgs(raw, &a); rej != nil {
+		return rej
 	}
 	pkg := orDefault(a.Pkg, ctx.pkg)
 	test := orDefault(a.Test, ctx.sym)

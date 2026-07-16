@@ -218,8 +218,8 @@ func (renameOp) apply(ctx *patchCtx, raw json.RawMessage) *Reject {
 		Sym string `json:"sym"`
 		To  string `json:"to"`
 	}
-	if err := json.Unmarshal(raw, &a); err != nil {
-		return &Reject{Reason: "malformed op args", Detail: err.Error()}
+	if rej := decodeOpArgs(raw, &a); rej != nil {
+		return rej
 	}
 	pkg := orDefault(a.Pkg, ctx.pkg)
 	sym := orDefault(a.Sym, ctx.sym)
