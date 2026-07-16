@@ -53,26 +53,49 @@ the compiler's own diagnostics:
 ```
 
 Rejections are data, not errors: the agent loop is query → mutate →
-(rejection → adjust → retry). Rename additionally proves that every
-rewritten reference still resolves to the renamed symbol, so shadowing
-capture is rejected even when the compiler is satisfied.
+(rejection → adjust → retry). Most rejections also carry
+`possible_repairs` — complete, paste-ready calls (the corrected mutation,
+the re-view that refreshes handles, the search that locates an undefined
+identifier) — and an exact resend of a rejected call gets an escalated
+rejection instead of the same one forever. Rename additionally proves
+that every rewritten reference still resolves to the renamed symbol, so
+shadowing capture is rejected even when the compiler is satisfied.
 
 ## Bench
 
 `bench/` holds the raw-vs-semantic comparison: same local model, same
-harness (opencode), same mined tasks; one mode gets shell and file editing,
-the other gets only the protocol. Scoring is goal predicate + typecheck +
-scoped tests under a time cap; every episode's transcript, config, diff,
-and score is recorded under `bench/results/`.
+harness (opencode), same mined tasks (rename and add-param kinds, from
+traefik, vault, boundary, and cobra); one mode gets shell and file
+editing, the other gets only the protocol. An oracle arm replays each
+task's ground truth through ago itself — it certifies the task
+protocol-solvable before any model time is spent, records the
+time-to-green floor, and its transcripts seed the fine-tuning corpus.
+
+Scoring is goal predicate + typecheck + scoped tests under a time cap;
+the tests gate counts only where a pristine worktree passes the same
+tests. Every episode records its transcript, config, diff, score, token
+usage, failure kind, and the daemon's per-request log under
+`bench/results/`. Serving setups are pinned as named profiles in
+`bench/profiles.json` and embedded in each run's `run.json`.
 
 ```
-AGO_BENCH_ENDPOINT=http://host:port/v1 AGO_BENCH_MODEL=<model> \
-AGO_BENCH_SCRATCH=<clones dir> go test ./bench -bench Rename -benchtime 3x -timeout 0
+# model round, k=3
+AGO_BENCH_PROFILE=glm-flash AGO_BENCH_SCRATCH=<clones dir> \
+go test ./bench -bench Rename -benchtime 3x -timeout 0
+
+# oracle sweep: no model, episodes run in parallel
+AGO_BENCH_MODES=oracle AGO_BENCH_SCRATCH=<clones dir> \
+go test ./bench -run OracleSweep -parallel 6 -timeout 0
+
+# mine candidate tasks from any clone; report across runs
+go run ./cmd/bench mine -scratch <clones dir> <repo>
+go run ./cmd/bench report bench/results/<run> ...
 ```
 
 ## Docs
 
 - `docs/specs/language.md` — the full op catalog: decl, statement, test ops
+- `docs/specs/surface.md` — running list of shipped and foreseen calls, drift-guarded by test
 - `docs/specs/protocol.md` — protocol semantics, guarantees
 - `docs/specs/bench.md` — bench design
 - `docs/specs/plan.md` — status and build order
