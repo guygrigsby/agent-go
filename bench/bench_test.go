@@ -23,6 +23,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 	"time"
@@ -35,6 +36,7 @@ type config struct {
 	profiles                                         []Profile
 	canary                                           canarySpec
 	restartCmd                                       string
+	modes                                            []string
 }
 
 // ensureCanary is a no-op until AGO_BENCH_CANARY configures a probe.
@@ -73,8 +75,10 @@ func setup(b *testing.B) config {
 	}
 	c.profile = c.profiles[0]
 	c.endpoint, c.model = c.profile.Endpoint, c.profile.Model
-	if c.endpoint == "" || c.model == "" || c.scratch == "" {
-		b.Skip("set AGO_BENCH_PROFILE (or AGO_BENCH_ENDPOINT + AGO_BENCH_MODEL) and AGO_BENCH_SCRATCH to run bench")
+	c.modes = modesFor(os.Getenv("AGO_BENCH_MODES"))
+	modelNeeded := slices.Contains(c.modes, "raw") || slices.Contains(c.modes, "semantic")
+	if c.scratch == "" || (modelNeeded && (c.endpoint == "" || c.model == "")) {
+		b.Skip("set AGO_BENCH_PROFILE (or AGO_BENCH_ENDPOINT + AGO_BENCH_MODEL) and AGO_BENCH_SCRATCH to run bench; oracle-only runs need only AGO_BENCH_SCRATCH")
 	}
 	if path := os.Getenv("AGO_BENCH_CANARY"); path != "" {
 		raw, err := os.ReadFile(path)
@@ -152,7 +156,7 @@ func BenchmarkRename(b *testing.B) {
 			if !t.HasSpecs() {
 				continue
 			}
-			for _, mode := range []string{"raw", "semantic"} {
+			for _, mode := range c.modes {
 				b.Run(fmt.Sprintf("%s/%s_%s/%s", p.Name, t.Repo, t.SHA[:8], mode), func(b *testing.B) {
 					passes := 0
 					for i := range b.N {
@@ -203,16 +207,25 @@ func episode(b *testing.B, c config, t Manifest, mode string, iter int) bool {
 		agoStop(c, wt) // raw mode gets no daemon; scoring respawns it later
 	}
 
-	if err := ensureCanary(c); err != nil {
-		b.Fatalf("server failed canary before episode: %v", err)
+	if mode != "oracle" {
+		if err := ensureCanary(c); err != nil {
+			b.Fatalf("server failed canary before episode: %v", err)
+		}
 	}
 
 	b.StartTimer()
 	start := time.Now()
-	ctx, cancel := context.WithTimeout(context.Background(), c.cap)
-	agentOut, agentErr := runAgent(ctx, c, wt, t.Prompt)
-	timedOut := ctx.Err() == context.DeadlineExceeded
-	cancel()
+	var agentOut string
+	var agentErr error
+	var timedOut bool
+	if mode == "oracle" {
+		agentOut, agentErr = runOracle(c, wt, t)
+	} else {
+		ctx, cancel := context.WithTimeout(context.Background(), c.cap)
+		agentOut, agentErr = runAgent(ctx, c, wt, t.Prompt)
+		timedOut = ctx.Err() == context.DeadlineExceeded
+		cancel()
+	}
 	wall := time.Since(start)
 	b.StopTimer()
 
@@ -235,12 +248,55 @@ func episode(b *testing.B, c config, t Manifest, mode string, iter int) bool {
 	res["capped"] = timedOut
 	pass0, _ := res["pass"].(bool)
 	res["failure_kind"] = classifyFailure(agentErr, timedOut, agentOut, pass0)
+	if mode == "oracle" && agentErr != nil {
+		// An oracle rejection is a finding about the task or the protocol,
+		// not a harness failure.
+		res["failure_kind"] = "oracle_reject"
+		res["oracle_error"] = agentErr.Error()
+	}
 	record(c, epDir, wt, agentOut, res)
 	pass, _ := res["pass"].(bool)
 	if !pass && testing.Verbose() {
 		b.Logf("FAIL %s/%s: %v\nagent tail: %s", res["task"], mode, res, tail(agentOut, 800))
 	}
 	return pass
+}
+
+// runOracle replays the ground-truth change through ago itself: proves the
+// task is protocol-solvable, records the time-to-green floor, and leaves a
+// transcript of accepted calls (the SFT corpus seed). Any rejection is an
+// oracle finding: either the spec is wrong or the protocol has a gap.
+func runOracle(c config, wt string, t Manifest) (string, error) {
+	var b strings.Builder
+	call := func(args ...string) (map[string]any, error) {
+		out := agoJSON(c, wt, args...)
+		rec, _ := json.Marshal(map[string]any{"call": args, "res": out})
+		b.Write(rec)
+		b.WriteByte('\n')
+		status, _ := out["status"].(string)
+		if status != "accepted" {
+			return out, fmt.Errorf("oracle call %v: %v", args, out)
+		}
+		return out, nil
+	}
+	switch t.Kind {
+	case "", "rename":
+		for _, r := range t.Renames {
+			if _, err := call("rename", "-p", r.Pkg, "-s", r.Sym, "-to", r.To); err != nil {
+				return b.String(), err
+			}
+		}
+	case "add-param":
+		for _, a := range t.AddParams {
+			if _, err := call("add-param", "-p", a.Pkg, "-s", a.Sym,
+				"-name", a.Name, "-type", a.Type, "-default", zeroExpr(a.Type)); err != nil {
+				return b.String(), err
+			}
+		}
+	default:
+		return "", fmt.Errorf("oracle has no replay for kind %q", t.Kind)
+	}
+	return b.String(), nil
 }
 
 // record persists the full evidence for one episode: the agent transcript,
