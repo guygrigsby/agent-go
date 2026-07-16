@@ -22,10 +22,10 @@ func TestMoveDeclFunc(t *testing.T) {
 		t.Fatalf("got %v", res)
 	}
 	// The symbol now lives in demo/lib.
-	if _, err := s.Inspect("demo/lib", "Fetch"); err != nil {
+	if _, err := s.inspect("demo/lib", "Fetch"); err != nil {
 		t.Fatalf("Fetch not in target: %v", err)
 	}
-	if _, err := s.Inspect("demo/sig", "Fetch"); err == nil {
+	if _, err := s.inspect("demo/sig", "Fetch"); err == nil {
 		t.Fatal("Fetch still in source")
 	}
 	// Source-package callers now qualify.
@@ -51,7 +51,7 @@ func TestMoveDeclCreatePkg(t *testing.T) {
 	if res["status"] != "accepted" {
 		t.Fatalf("got %v", res)
 	}
-	if _, err := s.Inspect("demo/util", "Fetch"); err != nil {
+	if _, err := s.inspect("demo/util", "Fetch"); err != nil {
 		t.Fatalf("Fetch not in created package: %v", err)
 	}
 	out, err := s.View("demo/sig", "UseFetch")

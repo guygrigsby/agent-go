@@ -35,14 +35,14 @@ func demo(t *testing.T) *Snapshot {
 
 func TestInspect(t *testing.T) {
 	s := demo(t)
-	res, err := s.Inspect("demo/lib", "Double")
+	res, err := s.inspect("demo/lib", "Double")
 	if err != nil {
 		t.Fatal(err)
 	}
 	if res["kind"] != "func" || res["type"] != "func(v int) int" {
 		t.Errorf("got %v", res)
 	}
-	res, err = s.Inspect("demo/lib", "Store.Put")
+	res, err = s.inspect("demo/lib", "Store.Put")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -53,7 +53,7 @@ func TestInspect(t *testing.T) {
 
 func TestInspectMissing(t *testing.T) {
 	s := demo(t)
-	_, err := s.Inspect("demo/lib", "Nope")
+	_, err := s.inspect("demo/lib", "Nope")
 	rej, ok := err.(*Reject)
 	if !ok || rej.Reason != "symbol not found" {
 		t.Fatalf("want symbol-not-found Reject, got %v", err)
@@ -64,17 +64,17 @@ func TestInspectMissing(t *testing.T) {
 // and Recv.Name passed as a rename target all get did_you_mean candidates.
 func TestRejectionsSuggestRepairs(t *testing.T) {
 	s := demo(t)
-	_, err := s.Inspect("demo.lib", "Double")
+	_, err := s.inspect("demo.lib", "Double")
 	rej := err.(*Reject)
 	if len(rej.DidYouMean) == 0 || rej.DidYouMean[0] != "demo/lib" {
 		t.Errorf("dotted pkg path: got %v", rej.DidYouMean)
 	}
-	_, err = s.Inspect("demo/lib", "double")
+	_, err = s.inspect("demo/lib", "double")
 	rej = err.(*Reject)
 	if len(rej.DidYouMean) == 0 || rej.DidYouMean[0] != "Double" {
 		t.Errorf("case miss: got %v", rej.DidYouMean)
 	}
-	_, err = s.Inspect("demo/lib", "Store.put")
+	_, err = s.inspect("demo/lib", "Store.put")
 	rej = err.(*Reject)
 	if len(rej.DidYouMean) == 0 || rej.DidYouMean[0] != "Store.Put" {
 		t.Errorf("method case miss: got %v", rej.DidYouMean)
@@ -137,7 +137,7 @@ func TestSuggestOrdering(t *testing.T) {
 
 func TestRefs(t *testing.T) {
 	s := demo(t)
-	res, err := s.Refs("demo/lib", "Double", 0)
+	res, err := s.refs("demo/lib", "Double", 0)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -148,14 +148,14 @@ func TestRefs(t *testing.T) {
 
 func TestSearch(t *testing.T) {
 	s := demo(t)
-	res, err := s.Search("dou", 0)
+	res, err := s.search("dou", 0)
 	if err != nil {
 		t.Fatal(err)
 	}
 	if res["count"].(int) != 1 {
 		t.Fatalf("got %v", res)
 	}
-	res, err = s.Search("put", 0)
+	res, err = s.search("put", 0)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -182,7 +182,7 @@ func TestSetBodyAccept(t *testing.T) {
 	}
 	// The accept spliced the package in place; queries must see the result
 	// with no full reload.
-	res, err = s.Refs("demo/lib", "Double", 0)
+	res, err = s.refs("demo/lib", "Double", 0)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -199,14 +199,14 @@ func TestSetBodyAccept(t *testing.T) {
 // not re-typechecked, so identity must survive the drift.
 func TestSpliceKeepsIdentityAcrossPositionDrift(t *testing.T) {
 	s := demo(t)
-	before, err := s.Refs("demo/lib", "Tail", 0)
+	before, err := s.refs("demo/lib", "Tail", 0)
 	if err != nil {
 		t.Fatal(err)
 	}
 	if _, err := s.SetBody("demo/lib", "Double", "w := v\nw += v\nreturn w"); err != nil {
 		t.Fatal(err)
 	}
-	after, err := s.Refs("demo/lib", "Tail", 0)
+	after, err := s.refs("demo/lib", "Tail", 0)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -230,7 +230,7 @@ func TestSetBodyReject(t *testing.T) {
 		t.Fatalf("want typecheck Reject with diagnostics, got %#v", err)
 	}
 	// Nothing written: original body intact.
-	inspect, err := s.Inspect("demo/lib", "Double")
+	inspect, err := s.inspect("demo/lib", "Double")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -291,7 +291,7 @@ func TestExternalEditInvalidates(t *testing.T) {
 	if err := os.WriteFile(libGo, []byte(strings.Replace(string(b), "Double", "Twice", 1)), 0o644); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := s.Inspect("demo/lib", "Twice"); err != nil {
+	if _, err := s.inspect("demo/lib", "Twice"); err != nil {
 		t.Fatalf("snapshot did not pick up external edit: %v", err)
 	}
 }

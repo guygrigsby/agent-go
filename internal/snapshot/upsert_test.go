@@ -16,7 +16,7 @@ func TestUpsertAddFunc(t *testing.T) {
 	if res["status"] != "accepted" || res["action"] != "added" {
 		t.Fatalf("got %v", res)
 	}
-	if _, err := s.Inspect("demo/lib", "Triple"); err != nil {
+	if _, err := s.inspect("demo/lib", "Triple"); err != nil {
 		t.Errorf("new decl not queryable: %v", err)
 	}
 	b, _ := os.ReadFile(filepath.Join(s.dir, "lib", "agent.go"))
@@ -53,7 +53,7 @@ func TestUpsertReplace(t *testing.T) {
 	if !strings.Contains(string(b), "v << 1") || strings.Contains(string(b), "v * 2") {
 		t.Errorf("declaration not replaced in place:\n%s", b)
 	}
-	refs, err := s.Refs("demo/lib", "Double", 0)
+	refs, err := s.refs("demo/lib", "Double", 0)
 	if err != nil || refs["count"].(int) != 2 {
 		t.Errorf("refs after replace: %v %v", refs, err)
 	}
@@ -80,7 +80,7 @@ func TestUpsertNewPackage(t *testing.T) {
 	if res["action"] != "created-package" {
 		t.Fatalf("got %v", res)
 	}
-	if _, err := s.Inspect("demo/util", "Clamp"); err != nil {
+	if _, err := s.inspect("demo/util", "Clamp"); err != nil {
 		t.Errorf("new package symbol not queryable: %v", err)
 	}
 }

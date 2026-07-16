@@ -166,7 +166,7 @@ func TestHandleEveryOp(t *testing.T) {
 		{"set-body", protocol.Request{Op: "set-body", Pkg: "demo/lib", Sym: "Double", Body: "return v * 3"}, "accepted", "file", false},
 		{"rename", protocol.Request{Op: "rename", Pkg: "demo/lib", Sym: "Tail", To: "Tail2"}, "accepted", "new_name", false},
 		{"upsert", protocol.Request{Op: "upsert", Pkg: "demo/lib", Body: "func Quadruple(v int) int { return v * 4 }"}, "accepted", "action", false},
-		{"add-param", protocol.Request{Op: "add-param", Pkg: "demo/lib", Sym: "Double", Name: "scale", Type: "int", Def: "1"}, "accepted", "param", false},
+		{"add-param", protocol.Request{Op: "add-param", Pkg: "demo/lib", Sym: "Double", Name: "scale", Type: "int", Default: "1"}, "accepted", "param", false},
 		{"patch dry_run", protocol.Request{Op: "patch", Pkg: "demo/lib", Sym: "Double", DryRun: true,
 			Ops: json.RawMessage(`[{"op": "rename", "to": "Twice"}]`)}, "ok", "would", false},
 		{"unknown", protocol.Request{Op: "frobnicate"}, "error", "error", false},

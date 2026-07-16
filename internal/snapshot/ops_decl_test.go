@@ -51,10 +51,10 @@ func TestPatchInterfaceImplRenameAtomic(t *testing.T) {
 	if res["status"] != "accepted" || res["ops_applied"].(int) != 2 {
 		t.Fatalf("got %v", res)
 	}
-	if _, err := s.Inspect("demo/lib", "Iface.N"); err != nil {
+	if _, err := s.inspect("demo/lib", "Iface.N"); err != nil {
 		t.Errorf("renamed interface method not queryable: %v", err)
 	}
-	if _, err := s.Inspect("demo/lib", "Impl.N"); err != nil {
+	if _, err := s.inspect("demo/lib", "Impl.N"); err != nil {
 		t.Errorf("renamed impl method not queryable: %v", err)
 	}
 }
@@ -89,10 +89,10 @@ func TestPatchSameFileMultiRenameDifferentLengths(t *testing.T) {
 	if res["status"] != "accepted" || res["ops_applied"].(int) != 2 {
 		t.Fatalf("got %v", res)
 	}
-	if _, err := s.Inspect("demo/lib", "AlphaLonger"); err != nil {
+	if _, err := s.inspect("demo/lib", "AlphaLonger"); err != nil {
 		t.Errorf("renamed symbol not queryable: %v", err)
 	}
-	if _, err := s.Inspect("demo/lib", "B"); err != nil {
+	if _, err := s.inspect("demo/lib", "B"); err != nil {
 		t.Errorf("renamed symbol not queryable: %v", err)
 	}
 }
@@ -111,7 +111,7 @@ func TestPatchComposesDeclAndStmtOps(t *testing.T) {
 	if res["status"] != "accepted" || res["ops_applied"].(int) != 2 {
 		t.Fatalf("got %v", res)
 	}
-	if _, err := s.Inspect("demo/lib", "Twice"); err != nil {
+	if _, err := s.inspect("demo/lib", "Twice"); err != nil {
 		t.Errorf("renamed symbol not queryable: %v", err)
 	}
 }
@@ -226,7 +226,7 @@ func TestPatchUpsertDeclAppendsToExistingFile(t *testing.T) {
 	if res["status"] != "accepted" {
 		t.Fatalf("got %v", res)
 	}
-	if _, err := s.Inspect("demo/lib", "Triple"); err != nil {
+	if _, err := s.inspect("demo/lib", "Triple"); err != nil {
 		t.Errorf("new decl not queryable: %v", err)
 	}
 }
@@ -251,7 +251,7 @@ func TestPatchUpsertDeclCreatesNewFile(t *testing.T) {
 	if err != nil || !strings.Contains(string(b), "Triple") || !strings.Contains(string(b), "Nonuple") {
 		t.Fatalf("agent.go missing decls: %v\n%s", err, b)
 	}
-	if _, err := s.Inspect("demo/lib", "Nonuple"); err != nil {
+	if _, err := s.inspect("demo/lib", "Nonuple"); err != nil {
 		t.Errorf("new decl not queryable: %v", err)
 	}
 }
@@ -268,7 +268,7 @@ func TestPatchUpsertDeclNewFileRejectionCleansUp(t *testing.T) {
 	if _, serr := os.Stat(filepath.Join(s.dir, "lib", "agent.go")); serr == nil {
 		t.Fatal("agent.go survived a rejected patch")
 	}
-	if _, err := s.Inspect("demo/lib", "Double"); err != nil {
+	if _, err := s.inspect("demo/lib", "Double"); err != nil {
 		t.Errorf("snapshot broken after cleanup: %v", err)
 	}
 }
@@ -286,10 +286,10 @@ func TestPatchUpsertDeclCreatesNewPackage(t *testing.T) {
 	if res["status"] != "accepted" {
 		t.Fatalf("got %v", res)
 	}
-	if _, err := s.Inspect("demo/util", "Double"); err != nil {
+	if _, err := s.inspect("demo/util", "Double"); err != nil {
 		t.Errorf("moved decl not queryable in new package: %v", err)
 	}
-	if _, err := s.Inspect("demo/lib", "Double"); err == nil {
+	if _, err := s.inspect("demo/lib", "Double"); err == nil {
 		t.Error("Double still in demo/lib")
 	}
 }
@@ -307,7 +307,7 @@ func TestPatchUpsertDeclNewPackageRejectionCleansUp(t *testing.T) {
 	if _, serr := os.Stat(filepath.Join(s.dir, "util", "agent.go")); serr == nil {
 		t.Fatal("util/agent.go survived a rejected patch")
 	}
-	if _, err := s.Inspect("demo/lib", "Double"); err != nil {
+	if _, err := s.inspect("demo/lib", "Double"); err != nil {
 		t.Errorf("snapshot broken after cleanup: %v", err)
 	}
 }
@@ -336,7 +336,7 @@ func TestPatchDryRunRename(t *testing.T) {
 	if string(orig) != string(after) {
 		t.Fatal("dry_run wrote")
 	}
-	if _, err := s.Inspect("demo/lib", "Double"); err != nil {
+	if _, err := s.inspect("demo/lib", "Double"); err != nil {
 		t.Errorf("dry_run renamed the symbol: %v", err)
 	}
 }
@@ -366,7 +366,7 @@ func TestDeleteDeclAccepts(t *testing.T) {
 	if res["status"] != "accepted" {
 		t.Fatalf("got %v", res)
 	}
-	if _, err := s.Inspect("demo/lib", "Unused"); err == nil {
+	if _, err := s.inspect("demo/lib", "Unused"); err == nil {
 		t.Error("deleted decl still queryable")
 	}
 }
@@ -388,7 +388,7 @@ func TestDeleteDeclRecursive(t *testing.T) {
 	if res["status"] != "accepted" {
 		t.Fatalf("got %v", res)
 	}
-	if _, err := s.Inspect("demo/lib", "Fib"); err == nil {
+	if _, err := s.inspect("demo/lib", "Fib"); err == nil {
 		t.Error("deleted decl still queryable")
 	}
 	b, _ := os.ReadFile(filepath.Join(s.dir, "lib", "agent.go"))
@@ -452,7 +452,7 @@ func TestAddRemoveField(t *testing.T) {
 	if !strings.Contains(string(b), "Tag string") {
 		t.Fatalf("field not added:\n%s", b)
 	}
-	if _, err := s.Inspect("demo/lib", "Store.Tag"); err != nil {
+	if _, err := s.inspect("demo/lib", "Store.Tag"); err != nil {
 		t.Errorf("new field not queryable: %v", err)
 	}
 
@@ -468,7 +468,7 @@ func TestAddRemoveField(t *testing.T) {
 	if strings.Contains(string(b), "Tag string") {
 		t.Fatalf("field not removed:\n%s", b)
 	}
-	if _, err := s.Inspect("demo/lib", "Store.Tag"); err == nil {
+	if _, err := s.inspect("demo/lib", "Store.Tag"); err == nil {
 		t.Error("removed field still queryable")
 	}
 }

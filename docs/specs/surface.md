@@ -53,9 +53,9 @@ live help catalog appears here, so shipped rows cannot drift. Statuses:
 | `remove_test_case` | shipped | |
 | `set_signature` | shipped | patch-only op; name-matched param carry, defaults for new params, spread-site insertion; interface methods pending |
 | `move_decl` | shipped | self-contained decls, reference requalification; ceilings: package-local deps, types with methods |
-| `remove_param` | planned | [agent-go-596] |
-| `implement_interface` | planned | [agent-go-596] |
-| `add_bench` | planned | [agent-go-596] |
+| `remove_param` | planned | [agent-go-qhg] |
+| `implement_interface` | planned | [agent-go-qhg] |
+| `add_bench` | planned | [agent-go-qhg] |
 | `add_dependency` | shipped | go get with byte-for-byte go.mod/go.sum restore |
 | `remove_dependency` | shipped | go get @none, rejects while imported |
 | `move_file` | shipped | same dir renames; cross package rewrites the clause, rejects while externally referenced |

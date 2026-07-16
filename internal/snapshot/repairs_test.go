@@ -130,7 +130,7 @@ func TestPatchUnknownOpRepairIsCorrectedPatch(t *testing.T) {
 	if res["status"] != "accepted" {
 		t.Fatalf("repair not accepted: %v", res)
 	}
-	if _, err := s.Inspect("demo/lib", "Twice"); err != nil {
+	if _, err := s.inspect("demo/lib", "Twice"); err != nil {
 		t.Fatal("corrected rename did not land:", err)
 	}
 }
@@ -224,7 +224,7 @@ func TestPatchOpSymMissRepairIsCorrectedPatch(t *testing.T) {
 	if res["status"] != "accepted" {
 		t.Fatalf("repair not accepted: %v", res)
 	}
-	if _, err := s.Inspect("demo/lib", "Twice"); err != nil {
+	if _, err := s.inspect("demo/lib", "Twice"); err != nil {
 		t.Fatal("corrected rename did not land:", err)
 	}
 }
@@ -424,7 +424,7 @@ func TestAddressMissWithoutSymRepairsToSearch(t *testing.T) {
 // method of an unexported type).
 func TestInspectTypeListsMethods(t *testing.T) {
 	s := demo(t)
-	res, err := s.Inspect("demo/lib", "Store")
+	res, err := s.inspect("demo/lib", "Store")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -446,7 +446,7 @@ func TestInspectTypeListsMethods(t *testing.T) {
 		t.Fatalf("Store.Put missing from methods: %+v", methods)
 	}
 	// Non-types don't grow the key.
-	res, err = s.Inspect("demo/lib", "Double")
+	res, err = s.inspect("demo/lib", "Double")
 	if err != nil {
 		t.Fatal(err)
 	}

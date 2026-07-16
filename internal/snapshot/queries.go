@@ -55,19 +55,19 @@ func (s *Snapshot) query(kind, pkgPath, sym, q string, offset int) (map[string]a
 		if query == "" {
 			query = sym
 		}
-		return s.Search(query, offset)
+		return s.search(query, offset)
 	case "inspect":
-		return s.Inspect(pkgPath, sym)
+		return s.inspect(pkgPath, sym)
 	case "refs":
-		return s.Refs(pkgPath, sym, offset)
+		return s.refs(pkgPath, sym, offset)
 	case "callers":
-		return s.Callers(pkgPath, sym, offset)
+		return s.callers(pkgPath, sym, offset)
 	case "callees":
-		return s.Callees(pkgPath, sym, offset)
+		return s.callees(pkgPath, sym, offset)
 	case "implementations":
-		return s.Implementations(pkgPath, sym, offset)
+		return s.implementations(pkgPath, sym, offset)
 	case "doc":
-		return s.Doc(pkgPath, sym)
+		return s.doc(pkgPath, sym)
 	default:
 		return nil, &Reject{Reason: "unknown query kind", Detail: kind,
 			DidYouMean: []string{"search", "inspect", "refs", "callers", "callees", "implementations", "doc"}}
@@ -87,7 +87,7 @@ type callerHit struct {
 // excluded — refs is the query for those. Hits arrive in funcUses's
 // deterministic visit order (position-sorted per package), so offset pages
 // are stable.
-func (s *Snapshot) Callers(pkgPath, sym string, offset int) (map[string]any, error) {
+func (s *Snapshot) callers(pkgPath, sym string, offset int) (map[string]any, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	ms, err := s.ensureFresh()
@@ -163,7 +163,7 @@ type calleeHit struct {
 // to the interface's method — that IS the static callee; dynamic dispatch
 // is a runtime fact this tier does not track. ast.Inspect visits in source
 // order, so hits are position-sorted and offset pages are stable.
-func (s *Snapshot) Callees(pkgPath, sym string, offset int) (map[string]any, error) {
+func (s *Snapshot) callees(pkgPath, sym string, offset int) (map[string]any, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	ms, err := s.ensureFresh()
@@ -261,7 +261,7 @@ type implHit struct {
 // scanned so a symbol declared once doesn't get reported once per test
 // variant. Hits arrive in workspace package order, scope names sorted
 // within each package — deterministic, so offset pages are stable.
-func (s *Snapshot) Implementations(pkgPath, sym string, offset int) (map[string]any, error) {
+func (s *Snapshot) implementations(pkgPath, sym string, offset int) (map[string]any, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	ms, err := s.ensureFresh()
@@ -317,7 +317,7 @@ func (s *Snapshot) Implementations(pkgPath, sym string, offset int) (map[string]
 
 // Doc returns a declaration's doc comment as plain text (comment markers
 // stripped), or an empty string when it has none.
-func (s *Snapshot) Doc(pkgPath, sym string) (map[string]any, error) {
+func (s *Snapshot) doc(pkgPath, sym string) (map[string]any, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	ms, err := s.ensureFresh()

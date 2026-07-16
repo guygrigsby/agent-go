@@ -46,7 +46,7 @@ func TestAddTestScaffold(t *testing.T) {
 	}
 	// Compiles: the op's own post-write typecheck already enforces this, but
 	// confirm the symbol is live in the reloaded snapshot too.
-	if _, err := s.Inspect("demo/lib", "TestDouble"); err != nil {
+	if _, err := s.inspect("demo/lib", "TestDouble"); err != nil {
 		t.Errorf("scaffolded test not queryable: %v", err)
 	}
 }

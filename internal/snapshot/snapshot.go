@@ -949,7 +949,7 @@ func (s *Snapshot) Status() (map[string]any, error) {
 // bridge from a natural-language name fragment to an exact symbol address.
 // Hits arrive in package load order, scope names sorted within each
 // package — deterministic, so offset pages are stable.
-func (s *Snapshot) Search(query string, offset int) (map[string]any, error) {
+func (s *Snapshot) search(query string, offset int) (map[string]any, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	ms, err := s.ensureFresh()
@@ -1009,7 +1009,7 @@ func (s *Snapshot) Search(query string, offset int) (map[string]any, error) {
 	}, "symbols", hits, offset), nil
 }
 
-func (s *Snapshot) Inspect(pkgPath, sym string) (map[string]any, error) {
+func (s *Snapshot) inspect(pkgPath, sym string) (map[string]any, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	ms, err := s.ensureFresh()
@@ -1051,7 +1051,7 @@ func (s *Snapshot) Inspect(pkgPath, sym string) (map[string]any, error) {
 
 // Refs lists every reference to a symbol, position-sorted (references
 // sorts at source), paged by offset.
-func (s *Snapshot) Refs(pkgPath, sym string, offset int) (map[string]any, error) {
+func (s *Snapshot) refs(pkgPath, sym string, offset int) (map[string]any, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	ms, err := s.ensureFresh()

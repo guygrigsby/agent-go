@@ -13,7 +13,7 @@ type Request struct {
 	To         string          `json:"to,omitempty"`
 	Name       string          `json:"name,omitempty"`
 	Type       string          `json:"type,omitempty"`
-	Def        string          `json:"default,omitempty"`
+	Default    string          `json:"default,omitempty"`
 	Ops        json.RawMessage `json:"ops,omitempty"`
 	Generation int64           `json:"generation,omitempty"`
 	DryRun     bool            `json:"dry_run,omitempty"`

@@ -326,7 +326,7 @@ func mcpDispatch(dir, name string, args map[string]any) (string, bool) {
 		body = get("text")
 	}
 	req := protocol.Request{Op: op, Pkg: get("pkg"), Sym: get("sym"),
-		To: get("to"), Body: body, Name: get("name"), Type: get("type"), Def: get("default")}
+		To: get("to"), Body: body, Name: get("name"), Type: get("type"), Default: get("default")}
 	out, err := roundTrip(dir, req, true)
 	if err != nil {
 		return fmt.Sprintf("ago error: %v", err), true

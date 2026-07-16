@@ -15,7 +15,7 @@ func TestPatchSingleRename(t *testing.T) {
 	if res["status"] != "accepted" {
 		t.Fatalf("got %v", res)
 	}
-	if _, err := s.Inspect("demo/lib", "Twice"); err != nil {
+	if _, err := s.inspect("demo/lib", "Twice"); err != nil {
 		t.Fatal(err)
 	}
 }

@@ -20,7 +20,7 @@ import (
 // listener standing in for the daemon. The assertion is on the request the
 // stub actually received, so a typo anywhere in the plumbing (a flag bound
 // to the wrong Request field, a special case dropped) fails here. The
-// closing sweep over daemonVerbs keeps the table complete when a verb is
+// closing sweep over daemonOps keeps the table complete when a verb is
 // added.
 func TestFlagPlumbing(t *testing.T) {
 	dir := t.TempDir()
@@ -92,7 +92,7 @@ func TestFlagPlumbing(t *testing.T) {
 		{"rename", "rename", []string{"-p", "demo/lib", "-s", "Double", "-to", "Twice"},
 			protocol.Request{Op: "rename", Pkg: "demo/lib", Sym: "Double", To: "Twice"}},
 		{"add-param", "add-param", []string{"-p", "demo/lib", "-s", "Double", "-name", "scale", "-type", "int", "-default", "1"},
-			protocol.Request{Op: "add-param", Pkg: "demo/lib", Sym: "Double", Name: "scale", Type: "int", Def: "1"}},
+			protocol.Request{Op: "add-param", Pkg: "demo/lib", Sym: "Double", Name: "scale", Type: "int", Default: "1"}},
 		{"patch", "patch", []string{"-body-file", patchFile},
 			protocol.Request{Op: "patch", Pkg: "demo/lib", Sym: "Double", Generation: 7, DryRun: true,
 				Ops: json.RawMessage(`[{"op":"rename","to":"Twice"}]`)}},
@@ -126,7 +126,7 @@ func TestFlagPlumbing(t *testing.T) {
 			t.Errorf("%s: wire request\n got: %s\nwant: %s", tc.name, gotJSON, wantJSON)
 		}
 	}
-	for _, v := range daemonVerbs {
+	for _, v := range daemonOps {
 		if !covered[v] {
 			t.Errorf("daemon verb %q has no flag plumbing case", v)
 		}

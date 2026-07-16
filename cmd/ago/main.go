@@ -38,15 +38,15 @@ import (
 	"github.com/guygrigsby/agent-go/internal/protocol"
 )
 
-// daemonVerbs round-trip a protocol.Request to the workspace daemon;
-// localVerbs run in-process. Together they are the dispatch table main
+// daemonOps round-trip a protocol.Request to the workspace daemon;
+// localOps run in-process. Together they are the dispatch table main
 // routes on, and readme_test.go checks README invocations against them.
 var (
-	daemonVerbs = []string{"status", "help", "search", "inspect", "view", "refs", "query", "set-body", "upsert", "rename", "add-param", "patch", "test", "stop"}
-	localVerbs  = []string{"init", "mcp", "daemon"}
+	daemonOps = []string{"status", "help", "search", "inspect", "view", "refs", "query", "set-body", "upsert", "rename", "add-param", "patch", "test", "stop"}
+	localOps  = []string{"init", "mcp", "daemon"}
 )
 
-// cliFlags is every flag ago accepts — one shared set across verbs.
+// cliFlags is every flag ago accepts — one shared set across ops.
 // newFlagSet is the single source of truth: main parses with it and
 // readme_test.go validates README invocations against it.
 type cliFlags struct {
@@ -73,11 +73,11 @@ func newFlagSet(cmd string) (*flag.FlagSet, *cliFlags) {
 	return fs, f
 }
 
-// buildRequest maps parsed flags onto the wire request for a daemon verb;
-// flags_test.go drives every verb through it and asserts the wire fields.
+// buildRequest maps parsed flags onto the wire request for a daemon op;
+// flags_test.go drives every op through it and asserts the wire fields.
 func buildRequest(cmd string, f *cliFlags) (protocol.Request, error) {
 	req := protocol.Request{Op: cmd, Pkg: *f.pkg, Sym: *f.sym, To: *f.to,
-		Name: *f.name, Type: *f.typ, Def: *f.def, Offset: *f.offset}
+		Name: *f.name, Type: *f.typ, Default: *f.def, Offset: *f.offset}
 	switch cmd {
 	case "set-body", "upsert":
 		req.Body = readBody(*f.bodyFile)
@@ -99,7 +99,7 @@ func buildRequest(cmd string, f *cliFlags) (protocol.Request, error) {
 
 func main() {
 	if len(os.Args) < 2 {
-		fail("usage: ago <init|%s|mcp|daemon> [flags]", strings.Join(daemonVerbs, "|"))
+		fail("usage: ago <init|%s|mcp|daemon> [flags]", strings.Join(daemonOps, "|"))
 	}
 	cmd, args := os.Args[1], os.Args[2:]
 	fs, f := newFlagSet(cmd)
@@ -137,7 +137,7 @@ func main() {
 	if err != nil {
 		fail("%v", err)
 	}
-	if slices.Contains(daemonVerbs, cmd) {
+	if slices.Contains(daemonOps, cmd) {
 		out, err := roundTrip(abs, req, cmd != "stop")
 		if err != nil {
 			fail("%v", err)

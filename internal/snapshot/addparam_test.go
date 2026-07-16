@@ -24,7 +24,7 @@ func TestAddParam(t *testing.T) {
 	if !strings.Contains(string(main), "lib.Double(lib.Limit, 1)") {
 		t.Errorf("caller not updated:\n%s", main)
 	}
-	if _, err := s.Inspect("demo/lib", "Double"); err != nil {
+	if _, err := s.inspect("demo/lib", "Double"); err != nil {
 		t.Errorf("post-accept inspect: %v", err)
 	}
 }

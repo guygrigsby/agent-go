@@ -124,12 +124,12 @@ func assertOrderedDisjoint(t *testing.T, posField string, pages ...[]map[string]
 func TestRefsPaging(t *testing.T) {
 	s := pagedDemo(t)
 	// def in lib.go + 60 generated uses + 1 use in main.go
-	res, err := s.Refs("demo/lib", "Double", 0)
+	res, err := s.refs("demo/lib", "Double", 0)
 	if err != nil {
 		t.Fatal(err)
 	}
 	page0 := wantPage(t, res, "refs", 62, 50, 50)
-	res2, err := s.Refs("demo/lib", "Double", 50)
+	res2, err := s.refs("demo/lib", "Double", 50)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -137,7 +137,7 @@ func TestRefsPaging(t *testing.T) {
 	assertOrderedDisjoint(t, "pos", page0, page1)
 
 	// Paging must be stable: the same request returns the same window.
-	again, err := s.Refs("demo/lib", "Double", 0)
+	again, err := s.refs("demo/lib", "Double", 0)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -149,12 +149,12 @@ func TestRefsPaging(t *testing.T) {
 func TestCallersPaging(t *testing.T) {
 	s := pagedDemo(t)
 	// 1 call in main.go + 60 generated calls
-	res, err := s.Callers("demo/lib", "Double", 0)
+	res, err := s.callers("demo/lib", "Double", 0)
 	if err != nil {
 		t.Fatal(err)
 	}
 	page0 := wantPage(t, res, "callers", 61, 50, 50)
-	res2, err := s.Callers("demo/lib", "Double", 50)
+	res2, err := s.callers("demo/lib", "Double", 50)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -164,12 +164,12 @@ func TestCallersPaging(t *testing.T) {
 
 func TestCalleesPaging(t *testing.T) {
 	s := pagedDemo(t)
-	res, err := s.Callees("demo/lib", "UseDoubleLots", 0)
+	res, err := s.callees("demo/lib", "UseDoubleLots", 0)
 	if err != nil {
 		t.Fatal(err)
 	}
 	page0 := wantPage(t, res, "callees", 60, 50, 50)
-	res2, err := s.Callees("demo/lib", "UseDoubleLots", 50)
+	res2, err := s.callees("demo/lib", "UseDoubleLots", 50)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -179,12 +179,12 @@ func TestCalleesPaging(t *testing.T) {
 
 func TestSearchPaging(t *testing.T) {
 	s := pagedDemo(t)
-	res, err := s.Search("pagedsym", 0)
+	res, err := s.search("pagedsym", 0)
 	if err != nil {
 		t.Fatal(err)
 	}
 	wantPage(t, res, "symbols", 60, 50, 50)
-	res2, err := s.Search("pagedsym", 50)
+	res2, err := s.search("pagedsym", 50)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -194,18 +194,18 @@ func TestSearchPaging(t *testing.T) {
 func TestImplementationsPaging(t *testing.T) {
 	s := pagedDemo(t)
 	// 60 generated PagedPutterNN + Store
-	res, err := s.Implementations("demo/lib", "ManyPutter", 0)
+	res, err := s.implementations("demo/lib", "ManyPutter", 0)
 	if err != nil {
 		t.Fatal(err)
 	}
 	page0 := wantPage(t, res, "types", 61, 50, 50)
-	res2, err := s.Implementations("demo/lib", "ManyPutter", 50)
+	res2, err := s.implementations("demo/lib", "ManyPutter", 50)
 	if err != nil {
 		t.Fatal(err)
 	}
 	page1 := wantPage(t, res2, "types", 61, 11, 0)
 	// Stable across calls: same first window again.
-	again, err := s.Implementations("demo/lib", "ManyPutter", 0)
+	again, err := s.implementations("demo/lib", "ManyPutter", 0)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -219,13 +219,13 @@ func TestImplementationsPaging(t *testing.T) {
 
 func TestPagingOffsetPastEnd(t *testing.T) {
 	s := pagedDemo(t)
-	res, err := s.Refs("demo/lib", "Double", 1000)
+	res, err := s.refs("demo/lib", "Double", 1000)
 	if err != nil {
 		t.Fatal(err)
 	}
 	wantPage(t, res, "refs", 62, 0, 0)
 	// Negative offsets clamp to the start rather than reject.
-	res2, err := s.Refs("demo/lib", "Double", -5)
+	res2, err := s.refs("demo/lib", "Double", -5)
 	if err != nil {
 		t.Fatal(err)
 	}

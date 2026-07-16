@@ -1,7 +1,7 @@
 // Drift guard for README.md: every ago invocation, the JSON rejection
 // example, and the bench env vars shown in the README are checked against
 // the code they describe. The verb and flag tables come straight from
-// main.go (daemonVerbs, localVerbs, newFlagSet), the rejection shape from
+// main.go (daemonOps, localOps, newFlagSet), the rejection shape from
 // internal/snapshot and internal/daemon, the env vars from bench/ source.
 package main
 
@@ -98,7 +98,7 @@ func commandProblems(cmd string) []string {
 	}
 	var problems []string
 	verb := tokens[0]
-	if !slices.Contains(daemonVerbs, verb) && !slices.Contains(localVerbs, verb) {
+	if !slices.Contains(daemonOps, verb) && !slices.Contains(localOps, verb) {
 		problems = append(problems, fmt.Sprintf("verb %q is not dispatched by main.go", verb))
 	}
 	fs, _ := newFlagSet(verb)

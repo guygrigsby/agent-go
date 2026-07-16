@@ -34,7 +34,7 @@ func TestPatchAddDependency(t *testing.T) {
 	if !strings.Contains(string(b), "golang.org/x/tools") {
 		t.Fatalf("require not added:\n%s", b)
 	}
-	if _, err := s.Inspect("demo/lib", "Double"); err != nil {
+	if _, err := s.inspect("demo/lib", "Double"); err != nil {
 		t.Errorf("snapshot broken after add: %v", err)
 	}
 }

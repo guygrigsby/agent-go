@@ -40,10 +40,10 @@ func TestPatchDeleteFileRemovesUnreferenced(t *testing.T) {
 	if _, serr := os.Stat(filepath.Join(s.dir, "lib", "agent.go")); serr == nil {
 		t.Fatal("file still on disk")
 	}
-	if _, err := s.Inspect("demo/lib", "Seed"); err == nil {
+	if _, err := s.inspect("demo/lib", "Seed"); err == nil {
 		t.Error("deleted symbol still queryable")
 	}
-	if _, err := s.Inspect("demo/lib", "Double"); err != nil {
+	if _, err := s.inspect("demo/lib", "Double"); err != nil {
 		t.Errorf("snapshot broken after delete: %v", err)
 	}
 }
@@ -64,7 +64,7 @@ func TestPatchDeleteFileRestoresOnLaterReject(t *testing.T) {
 	if rerr != nil || string(after) != string(orig) {
 		t.Fatalf("file not restored: %v\n%s", rerr, after)
 	}
-	if _, err := s.Inspect("demo/lib", "Seed"); err != nil {
+	if _, err := s.inspect("demo/lib", "Seed"); err != nil {
 		t.Errorf("snapshot broken after restore: %v", err)
 	}
 }
@@ -101,7 +101,7 @@ func TestPatchMoveFileRenamesWithinPackage(t *testing.T) {
 	if _, serr := os.Stat(filepath.Join(s.dir, "lib", "core.go")); serr != nil {
 		t.Fatal("new path missing")
 	}
-	if _, err := s.Inspect("demo/lib", "Double"); err != nil {
+	if _, err := s.inspect("demo/lib", "Double"); err != nil {
 		t.Errorf("symbol lost in rename: %v", err)
 	}
 }
@@ -125,7 +125,7 @@ func TestPatchMoveFileCrossPackage(t *testing.T) {
 	if rerr != nil || !strings.Contains(string(b), "package sig") {
 		t.Fatalf("package clause not rewritten: %v\n%s", rerr, b)
 	}
-	if _, err := s.Inspect("demo/sig", "Seed"); err != nil {
+	if _, err := s.inspect("demo/sig", "Seed"); err != nil {
 		t.Errorf("moved symbol not in target package: %v", err)
 	}
 }
