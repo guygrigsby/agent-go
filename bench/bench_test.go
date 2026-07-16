@@ -85,6 +85,8 @@ func setup(b *testing.B) config {
 	meta := map[string]any{
 		"endpoint": c.endpoint, "model": c.model, "cap": c.cap.String(),
 		"ago_rev": strings.TrimSpace(string(rev)), "started": time.Now().Format(time.RFC3339),
+		"raw_prompt_tokens":      estimateTokens(promptCommon + promptRaw),
+		"semantic_prompt_tokens": estimateTokens(promptCommon + promptSemantic),
 	}
 	writeJSON(filepath.Join(c.results, c.runID, "run.json"), meta)
 	return c
@@ -305,7 +307,7 @@ func writeOpencodeConfig(b *testing.B, c config, wt, mode string) {
 	// one episode; task-spawned subagents dodge mode tool restrictions.
 	tools := map[string]any{"task": false, "skill": false}
 	mcp := map[string]any{}
-	prompt := "You are completing a repository-wide Go refactoring task."
+	prompt := promptCommon
 	if mode == "semantic" {
 		// Pure protocol: no shell, no file reads, no text edits. The ago
 		// tools are the only way to see or change code.
@@ -314,9 +316,9 @@ func writeOpencodeConfig(b *testing.B, c config, wt, mode string) {
 		}
 		mcp["ago"] = map[string]any{"type": "local", "enabled": true,
 			"command": []string{c.agoBin, "mcp"}}
-		prompt += " Work only through the ago tools. Workflow: ago_search with a name fragment to find exact symbol addresses, ago_refs to see every usage, ago_rename to rename a symbol everywhere, ago_set_body to change a function body. Renames of a naming family need one ago_rename per symbol. Mutations are validated by the compiler; a rejection tells you exactly what to fix, adjust and retry."
+		prompt += promptSemantic
 	} else {
-		prompt += " Use the shell and file editing tools; run go build to check your work."
+		prompt += promptRaw
 	}
 	cfg := map[string]any{
 		"$schema": "https://opencode.ai/config.json",

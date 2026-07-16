@@ -78,3 +78,13 @@ the commit-side declarations.
   the discriminating.
 - Model serving: GLM 4.7 Flash on the R9700 via an OpenAI-compatible
   endpoint; opencode is the agent harness in both modes.
+
+## Caveat: training-data contamination
+
+The mined repos (traefik, vault, boundary) predate every model's cutoff,
+so models may have seen the ground-truth commits. The comparison is
+mode-vs-mode on the same model, so contamination is constant across arms
+and does not bias the raw-vs-semantic margin; it does inflate absolute
+pass rates, which should not be read as real-world capability. Mining
+tasks from commits newer than a model's cutoff is the escape hatch if
+absolute rates ever matter.
