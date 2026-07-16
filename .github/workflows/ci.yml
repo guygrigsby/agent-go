@@ -1,0 +1,26 @@
+# The guard lattice only enforces anything if it runs (tenet 1). Every
+# push runs the full suite, gofmt, and the race detector over the
+# parallel retypecheck. Bench model rounds skip themselves without
+# AGO_BENCH_* env, so this stays hermetic.
+name: ci
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: gofmt
+        run: test -z "$(gofmt -l . | grep -v '^\.claude/')"
+      - name: vet
+        run: go vet ./...
+      - name: test
+        run: go test ./... -timeout 20m
+      - name: race (tenet 4)
+        run: go test -race ./internal/snapshot -timeout 20m
