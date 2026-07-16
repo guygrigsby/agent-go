@@ -1,0 +1,705 @@
+diff --git a/internal/census/census_job.go b/internal/census/census_job.go
+index dcca07118..1c116cdc5 100644
+--- a/internal/census/census_job.go
++++ b/internal/census/census_job.go
+@@ -54,7 +54,7 @@ func (c *censusJob) Status() scheduler.JobStatus {
+ 
+ // Run performs the required work depending on the implementation.
+ // The context is used to notify the job that it should exit early.
+-func (c *censusJob) Run(ctx context.Context) error {
++func (c *censusJob) Run(ctx context.Context, _ time.Duration) error {
+ 	err := RunFn(ctx, c)
+ 	return err
+ }
+diff --git a/internal/credential/vault/jobs.go b/internal/credential/vault/jobs.go
+index d7e23d9c8..0013d09d8 100644
+--- a/internal/credential/vault/jobs.go
++++ b/internal/credential/vault/jobs.go
+@@ -130,7 +130,7 @@ func (r *TokenRenewalJob) Status() scheduler.JobStatus {
+ // Run queries the vault credential repo for tokens that need to be renewed, it then creates
+ // a vault client and renews each token.  Can not be run in parallel, if Run is invoked while
+ // already running an error with code JobAlreadyRunning will be returned.
+-func (r *TokenRenewalJob) Run(ctx context.Context) error {
++func (r *TokenRenewalJob) Run(ctx context.Context, _ time.Duration) error {
+ 	const op = "vault.(TokenRenewalJob).Run"
+ 	if !r.running.CompareAndSwap(r.running.Load(), true) {
+ 		return errors.New(ctx, errors.JobAlreadyRunning, op, "job already running")
+@@ -356,7 +356,7 @@ func (r *TokenRevocationJob) Status() scheduler.JobStatus {
+ // Run queries the vault credential repo for tokens that need to be revoked, it then creates
+ // a vault client and revokes each token.  Can not be run in parallel, if Run is invoked while
+ // already running an error with code JobAlreadyRunning will be returned.
+-func (r *TokenRevocationJob) Run(ctx context.Context) error {
++func (r *TokenRevocationJob) Run(ctx context.Context, _ time.Duration) error {
+ 	const op = "vault.(TokenRevocationJob).Run"
+ 	if !r.running.CompareAndSwap(r.running.Load(), true) {
+ 		return errors.New(ctx, errors.JobAlreadyRunning, op, "job already running")
+@@ -521,7 +521,7 @@ func (r *CredentialRenewalJob) Status() scheduler.JobStatus {
+ // Run queries the vault credential repo for credentials that need to be renewed, it then creates
+ // a vault client and renews each credential.  Can not be run in parallel, if Run is invoked while
+ // already running an error with code JobAlreadyRunning will be returned.
+-func (r *CredentialRenewalJob) Run(ctx context.Context) error {
++func (r *CredentialRenewalJob) Run(ctx context.Context, _ time.Duration) error {
+ 	const op = "vault.(CredentialRenewalJob).Run"
+ 	if !r.running.CompareAndSwap(r.running.Load(), true) {
+ 		return errors.New(ctx, errors.JobAlreadyRunning, op, "job already running")
+@@ -696,7 +696,7 @@ func (r *CredentialRevocationJob) Status() scheduler.JobStatus {
+ // Run queries the vault credential repo for credentials that need to be revoked, it then creates
+ // a vault client and revokes each credential.  Can not be run in parallel, if Run is invoked while
+ // already running an error with code JobAlreadyRunning will be returned.
+-func (r *CredentialRevocationJob) Run(ctx context.Context) error {
++func (r *CredentialRevocationJob) Run(ctx context.Context, _ time.Duration) error {
+ 	const op = "vault.(CredentialRevocationJob).Run"
+ 	if !r.running.CompareAndSwap(r.running.Load(), true) {
+ 		return errors.New(ctx, errors.JobAlreadyRunning, op, "job already running")
+@@ -847,7 +847,7 @@ func (r *CredentialStoreCleanupJob) Status() scheduler.JobStatus {
+ // Run deletes all vault credential stores in the repo that have been soft deleted.
+ // Can not be run in parallel, if Run is invoked while already running an error with code
+ // JobAlreadyRunning will be returned.
+-func (r *CredentialStoreCleanupJob) Run(ctx context.Context) error {
++func (r *CredentialStoreCleanupJob) Run(ctx context.Context, _ time.Duration) error {
+ 	const op = "vault.(CredentialStoreCleanupJob).Run"
+ 	if !r.running.CompareAndSwap(r.running.Load(), true) {
+ 		return errors.New(ctx, errors.JobAlreadyRunning, op, "job already running")
+@@ -947,7 +947,7 @@ func (r *CredentialCleanupJob) Status() scheduler.JobStatus {
+ // Run deletes all Vault credential in the repo that have a null session_id and are not active.
+ // Can not be run in parallel, if Run is invoked while already running an error with code
+ // JobAlreadyRunning will be returned.
+-func (r *CredentialCleanupJob) Run(ctx context.Context) error {
++func (r *CredentialCleanupJob) Run(ctx context.Context, _ time.Duration) error {
+ 	const op = "vault.(CredentialCleanupJob).Run"
+ 	if !r.running.CompareAndSwap(r.running.Load(), true) {
+ 		return errors.New(ctx, errors.JobAlreadyRunning, op, "job already running")
+diff --git a/internal/credential/vault/jobs_test.go b/internal/credential/vault/jobs_test.go
+index 39177b267..12b029a25 100644
+--- a/internal/credential/vault/jobs_test.go
++++ b/internal/credential/vault/jobs_test.go
+@@ -312,7 +312,7 @@ func TestTokenRenewalJob_RunLimits(t *testing.T) {
+ 			r, err := newTokenRenewalJob(ctx, rw, rw, kmsCache, tt.opts...)
+ 			require.NoError(err)
+ 
+-			err = r.Run(ctx)
++			err = r.Run(ctx, 0)
+ 			require.NoError(err)
+ 			assert.Equal(tt.wantLen, r.numTokens)
+ 
+@@ -352,7 +352,7 @@ func TestTokenRenewalJob_Run(t *testing.T) {
+ 	cs, err := repo.CreateCredentialStore(ctx, in)
+ 	require.NoError(err)
+ 
+-	err = r.Run(ctx)
++	err = r.Run(ctx, 0)
+ 	require.NoError(err)
+ 	// No tokens should have been renewed since token expiration is 24 hours by default
+ 	assert.Equal(0, r.numProcessed)
+@@ -391,7 +391,7 @@ func TestTokenRenewalJob_Run(t *testing.T) {
+ 	require.NoError(err)
+ 
+ 	// Run token renewal again
+-	err = r.Run(ctx)
++	err = r.Run(ctx, 0)
+ 	require.NoError(err)
+ 	// Current and maintaining token should have been processed
+ 	assert.Equal(2, r.numProcessed)
+@@ -468,7 +468,7 @@ func TestTokenRenewalJob_RunExpired(t *testing.T) {
+ 	time.Sleep(time.Second * 2)
+ 
+ 	// Token should have expired in vault, run should now expire in repo
+-	err = r.Run(ctx)
++	err = r.Run(ctx, 0)
+ 	require.NoError(err)
+ 	assert.Equal(1, r.numTokens)
+ 
+@@ -790,7 +790,7 @@ func TestTokenRevocationJob_RunLimits(t *testing.T) {
+ 			r, err := newTokenRevocationJob(ctx, rw, rw, kmsCache, tt.opts...)
+ 			require.NoError(err)
+ 
+-			err = r.Run(ctx)
++			err = r.Run(ctx, 0)
+ 			require.NoError(err)
+ 			assert.Equal(tt.wantLen, r.numTokens)
+ 
+@@ -836,7 +836,7 @@ func TestTokenRevocationJob_Run(t *testing.T) {
+ 	require.NoError(err)
+ 
+ 	// No tokens should have been revoked since only the current token exists
+-	err = r.Run(ctx)
++	err = r.Run(ctx, 0)
+ 	require.NoError(err)
+ 	assert.Equal(0, r.numProcessed)
+ 
+@@ -885,7 +885,7 @@ func TestTokenRevocationJob_Run(t *testing.T) {
+ 
+ 	// Running should revoke noCredsToken and the revokeToken even though it has active
+ 	// credentials it has been marked for revocation
+-	err = r.Run(ctx)
++	err = r.Run(ctx, 0)
+ 	require.NoError(err)
+ 	assert.Equal(2, r.numProcessed)
+ 
+@@ -922,7 +922,7 @@ func TestTokenRevocationJob_Run(t *testing.T) {
+ 	assert.NoError(err)
+ 
+ 	// Running again should now revoke the credsToken
+-	err = r.Run(ctx)
++	err = r.Run(ctx, 0)
+ 	require.NoError(err)
+ 	assert.Equal(1, r.numProcessed)
+ 
+@@ -934,7 +934,7 @@ func TestTokenRevocationJob_Run(t *testing.T) {
+ 	require.NoError(rw.LookupWhere(ctx, &repoToken, "token_hmac = ?", []any{credsToken.TokenHmac}))
+ 	assert.Equal(string(RevokedToken), repoToken.Status)
+ 
+-	err = r.Run(ctx)
++	err = r.Run(ctx, 0)
+ 	require.NoError(err)
+ 	// With only the current token remaining no tokens should be revoked
+ 	assert.Equal(0, r.numProcessed)
+@@ -1129,7 +1129,7 @@ func TestCredentialRenewalJob_RunLimits(t *testing.T) {
+ 			r, err := newCredentialRenewalJob(ctx, rw, rw, kmsCache, tt.opts...)
+ 			require.NoError(err)
+ 
+-			err = r.Run(ctx)
++			err = r.Run(ctx, 0)
+ 			require.NoError(err)
+ 			assert.Equal(tt.wantLen, r.numCreds)
+ 
+@@ -1196,7 +1196,7 @@ func TestCredentialRenewalJob_Run(t *testing.T) {
+ 	credRenewal, err := newCredentialRenewalJob(ctx, rw, rw, kmsCache)
+ 	require.NoError(err)
+ 
+-	err = credRenewal.Run(ctx)
++	err = credRenewal.Run(ctx, 0)
+ 	require.NoError(err)
+ 	// No credentials should have been renewed
+ 	assert.Equal(0, credRenewal.numCreds)
+@@ -1213,7 +1213,7 @@ func TestCredentialRenewalJob_Run(t *testing.T) {
+ 	// Sleep to move clock
+ 	time.Sleep(2 * time.Second)
+ 
+-	err = credRenewal.Run(ctx)
++	err = credRenewal.Run(ctx, 0)
+ 	require.NoError(err)
+ 	// The active credential should have been renewed
+ 	assert.Equal(1, credRenewal.numCreds)
+@@ -1319,7 +1319,7 @@ func TestCredentialRenewalJob_RunExpired(t *testing.T) {
+ 	require.NoError(rw.LookupById(ctx, lookupCred))
+ 	assert.Equal(string(ActiveCredential), lookupCred.Status)
+ 
+-	err = credRenewal.Run(ctx)
++	err = credRenewal.Run(ctx, 0)
+ 	require.NoError(err)
+ 	// The active credential should have been processed
+ 	assert.Equal(1, credRenewal.numCreds)
+@@ -1678,7 +1678,7 @@ func TestCredentialRevocationJob_RunLimits(t *testing.T) {
+ 			r, err := newCredentialRevocationJob(ctx, rw, rw, kmsCache, tt.opts...)
+ 			require.NoError(err)
+ 
+-			err = r.Run(ctx)
++			err = r.Run(ctx, 0)
+ 			require.NoError(err)
+ 			assert.Equal(tt.wantLen, r.numCreds)
+ 
+@@ -1745,7 +1745,7 @@ func TestCredentialRevocationJob_Run(t *testing.T) {
+ 	r, err := newCredentialRevocationJob(ctx, rw, rw, kmsCache)
+ 	require.NoError(err)
+ 
+-	err = r.Run(ctx)
++	err = r.Run(ctx, 0)
+ 	require.NoError(err)
+ 	// No credentials should have been revoked
+ 	assert.Equal(0, r.numCreds)
+@@ -1764,7 +1764,7 @@ func TestCredentialRevocationJob_Run(t *testing.T) {
+ 	// Verify revokeCred is valid in testDb
+ 	assert.NoError(testDb.ValidateCredential(t, revokeSecret))
+ 
+-	err = r.Run(ctx)
++	err = r.Run(ctx, 0)
+ 	require.NoError(err)
+ 	// The revoke credential should have been revoked
+ 	assert.Equal(1, r.numCreds)
+@@ -1842,7 +1842,7 @@ func TestCredentialRevocationJob_RunDeleted(t *testing.T) {
+ 
+ 	secret, cred := testVaultCred(t, conn, v, cl, sess, repoToken, ActiveCredential, 5*time.Hour)
+ 
+-	err = r.Run(ctx)
++	err = r.Run(ctx, 0)
+ 	require.NoError(err)
+ 	// No credentials should have been revoked as expiration is 5 hours from now
+ 	assert.Equal(0, r.numCreds)
+@@ -1852,7 +1852,7 @@ func TestCredentialRevocationJob_RunDeleted(t *testing.T) {
+ 	require.NoError(err)
+ 	assert.Equal(1, count)
+ 
+-	err = r.Run(ctx)
++	err = r.Run(ctx, 0)
+ 	require.NoError(err)
+ 	// No credentials should have been revoked
+ 	assert.Equal(0, r.numCreds)
+@@ -1879,7 +1879,7 @@ func TestCredentialRevocationJob_RunDeleted(t *testing.T) {
+ 	assert.Empty(lookupCred.SessionId)
+ 	assert.Equal(string(RevokeCredential), lookupCred.Status)
+ 
+-	err = r.Run(ctx)
++	err = r.Run(ctx, 0)
+ 	require.NoError(err)
+ 	// The revoke credential should have been revoked
+ 	assert.Equal(1, r.numCreds)
+@@ -2028,7 +2028,7 @@ func TestCredentialStoreCleanupJob_Run(t *testing.T) {
+ 	require.NoError(err)
+ 
+ 	// No credential stores should have been cleaned up
+-	err = r.Run(ctx)
++	err = r.Run(ctx, 0)
+ 	require.NoError(err)
+ 	assert.Equal(0, r.numStores)
+ 
+@@ -2057,7 +2057,7 @@ func TestCredentialStoreCleanupJob_Run(t *testing.T) {
+ 	assert.Equal(string(RevokeToken), repoToken.Status)
+ 
+ 	// Both soft deleted credential stores should not be cleaned up yet
+-	err = r.Run(ctx)
++	err = r.Run(ctx, 0)
+ 	require.NoError(err)
+ 	assert.Equal(0, r.numStores)
+ 
+@@ -2067,7 +2067,7 @@ func TestCredentialStoreCleanupJob_Run(t *testing.T) {
+ 	assert.Equal(1, count)
+ 
+ 	// cs1 should be deleted
+-	err = r.Run(ctx)
++	err = r.Run(ctx, 0)
+ 	require.NoError(err)
+ 	assert.Equal(1, r.numStores)
+ 
+@@ -2095,7 +2095,7 @@ func TestCredentialStoreCleanupJob_Run(t *testing.T) {
+ 	assert.Equal(1, count)
+ 
+ 	// cs2 still has a second token not yet revoked/expired
+-	err = r.Run(ctx)
++	err = r.Run(ctx, 0)
+ 	require.NoError(err)
+ 	assert.Equal(0, r.numStores)
+ 
+@@ -2112,7 +2112,7 @@ func TestCredentialStoreCleanupJob_Run(t *testing.T) {
+ 	assert.Equal(1, count)
+ 
+ 	// With no un-expired or un-revoked tokens cs2 should now be deleted
+-	err = r.Run(ctx)
++	err = r.Run(ctx, 0)
+ 	require.NoError(err)
+ 	assert.Equal(1, r.numStores)
+ 
+@@ -2289,7 +2289,7 @@ func TestCredentialCleanupJob_Run(t *testing.T) {
+ 	_, sess2Cred := testVaultCred(t, conn, v, cl, sess2, repoToken, ActiveCredential, 5*time.Hour)
+ 
+ 	// No credentials should be cleaned up
+-	err = r.Run(ctx)
++	err = r.Run(ctx, 0)
+ 	require.NoError(err)
+ 	assert.Equal(0, r.numCreds)
+ 
+@@ -2299,7 +2299,7 @@ func TestCredentialCleanupJob_Run(t *testing.T) {
+ 	assert.Equal(1, count)
+ 
+ 	// Credentials are still in the revoke state so none should be deleted yet
+-	err = r.Run(ctx)
++	err = r.Run(ctx, 0)
+ 	require.NoError(err)
+ 	assert.Equal(0, r.numCreds)
+ 
+@@ -2324,7 +2324,7 @@ func TestCredentialCleanupJob_Run(t *testing.T) {
+ 	assert.Equal(1, count)
+ 
+ 	// Only the three credentials associated with the deleted session should be deleted
+-	err = r.Run(ctx)
++	err = r.Run(ctx, 0)
+ 	require.NoError(err)
+ 	assert.Equal(3, r.numCreds)
+ 
+diff --git a/internal/host/plugin/job_orphaned_host_cleanup.go b/internal/host/plugin/job_orphaned_host_cleanup.go
+index 1206d286e..d5cf543ff 100644
+--- a/internal/host/plugin/job_orphaned_host_cleanup.go
++++ b/internal/host/plugin/job_orphaned_host_cleanup.go
+@@ -66,7 +66,7 @@ func (r *OrphanedHostCleanupJob) Status() scheduler.JobStatus {
+ // deletes those hosts.  Can not be run in parallel, if
+ // Run is invoked while already running an error with code JobAlreadyRunning
+ // will be returned.
+-func (r *OrphanedHostCleanupJob) Run(ctx context.Context) error {
++func (r *OrphanedHostCleanupJob) Run(ctx context.Context, _ time.Duration) error {
+ 	const op = "plugin.(OrphanedHostCleanupJob).Run"
+ 	if !r.running.CompareAndSwap(r.running.Load(), true) {
+ 		return errors.New(ctx, errors.JobAlreadyRunning, op, "job already running")
+diff --git a/internal/host/plugin/job_orphaned_host_cleanup_test.go b/internal/host/plugin/job_orphaned_host_cleanup_test.go
+index cc22c4afe..da17ae1f5 100644
+--- a/internal/host/plugin/job_orphaned_host_cleanup_test.go
++++ b/internal/host/plugin/job_orphaned_host_cleanup_test.go
+@@ -118,7 +118,7 @@ func TestOrphanedHostCleanupJob_Run(t *testing.T) {
+ 	err = sche.RegisterJob(context.Background(), r)
+ 	require.NoError(err)
+ 
+-	err = r.Run(context.Background())
++	err = r.Run(context.Background(), 0)
+ 	require.NoError(err)
+ 	// No sets should have been synced.
+ 	assert.Equal(0, r.numProcessed)
+@@ -134,7 +134,7 @@ func TestOrphanedHostCleanupJob_Run(t *testing.T) {
+ 	TestHost(t, conn, cat.GetPublicId(), "host2")
+ 
+ 	// Run sync again with the newly created set
+-	err = r.Run(context.Background())
++	err = r.Run(context.Background(), 0)
+ 	require.NoError(err)
+ 	// The single existing set should have been processed
+ 	assert.Equal(1, r.numHosts)
+@@ -148,14 +148,14 @@ func TestOrphanedHostCleanupJob_Run(t *testing.T) {
+ 	TestHost(t, conn, cat.GetPublicId(), "5")
+ 
+ 	// Run sync again with the freshly synced set
+-	err = r.Run(context.Background())
++	err = r.Run(context.Background(), 0)
+ 	require.NoError(err)
+ 	// The single existing set should have been processed
+ 	assert.Equal(5, r.numHosts)
+ 	assert.Equal(5, r.numProcessed)
+ 
+ 	// Run sync again with the freshly synced set
+-	err = r.Run(context.Background())
++	err = r.Run(context.Background(), 0)
+ 	require.NoError(err)
+ 	// The single existing set should have been processed
+ 	assert.Equal(0, r.numHosts)
+diff --git a/internal/host/plugin/job_set_sync.go b/internal/host/plugin/job_set_sync.go
+index b3f537a9b..29a066236 100644
+--- a/internal/host/plugin/job_set_sync.go
++++ b/internal/host/plugin/job_set_sync.go
+@@ -85,7 +85,7 @@ func (r *SetSyncJob) Status() scheduler.JobStatus {
+ // creates a plugin client and syncs each set.  Can not be run in parallel, if
+ // Run is invoked while already running an error with code JobAlreadyRunning
+ // will be returned.
+-func (r *SetSyncJob) Run(ctx context.Context) error {
++func (r *SetSyncJob) Run(ctx context.Context, _ time.Duration) error {
+ 	const op = "plugin.(SetSyncJob).Run"
+ 	if !r.running.CompareAndSwap(r.running.Load(), true) {
+ 		return errors.New(ctx, errors.JobAlreadyRunning, op, "job already running")
+diff --git a/internal/host/plugin/job_set_sync_test.go b/internal/host/plugin/job_set_sync_test.go
+index e838d8b21..870cd3790 100644
+--- a/internal/host/plugin/job_set_sync_test.go
++++ b/internal/host/plugin/job_set_sync_test.go
+@@ -156,7 +156,7 @@ func TestSetSyncJob_Run(t *testing.T) {
+ 	err = sche.RegisterJob(context.Background(), r)
+ 	require.NoError(err)
+ 
+-	err = r.Run(context.Background())
++	err = r.Run(context.Background(), 0)
+ 	require.NoError(err)
+ 	// No sets should have been synced.
+ 	assert.Equal(0, r.numProcessed)
+@@ -175,7 +175,7 @@ func TestSetSyncJob_Run(t *testing.T) {
+ 	TestSetMembers(t, conn, setToRemoveHosts.GetPublicId(), []*Host{hostToRemove})
+ 
+ 	// Run sync again with the newly created set
+-	err = r.Run(context.Background())
++	err = r.Run(context.Background(), 0)
+ 	require.NoError(err)
+ 
+ 	hsa := &hostSetAgg{PublicId: setToRemoveHosts.GetPublicId()}
+@@ -217,7 +217,7 @@ func TestSetSyncJob_Run(t *testing.T) {
+ 	assert.Less(hsa.LastSyncTime.AsTime().UnixNano(), hsa.CreateTime.AsTime().UnixNano())
+ 
+ 	// Run sync again with the newly created set
+-	err = r.Run(context.Background())
++	err = r.Run(context.Background(), 0)
+ 	require.NoError(err)
+ 	// The single existing set should have been processed
+ 	assert.Equal(1, r.numSets)
+@@ -243,7 +243,7 @@ func TestSetSyncJob_Run(t *testing.T) {
+ 	firstSyncTime := hsa.LastSyncTime
+ 
+ 	// Run sync again with the freshly synced set
+-	err = r.Run(context.Background())
++	err = r.Run(context.Background(), 0)
+ 	require.NoError(err)
+ 	assert.Equal(0, r.numSets)
+ 	assert.Equal(0, r.numProcessed)
+@@ -258,7 +258,7 @@ func TestSetSyncJob_Run(t *testing.T) {
+ 	assert.True(hs.NeedSync)
+ 
+ 	// Run sync again with the set needing update
+-	err = r.Run(context.Background())
++	err = r.Run(context.Background(), 0)
+ 	require.NoError(err)
+ 	// The single existing set should have been processed
+ 	assert.Equal(1, r.numSets)
+@@ -273,7 +273,7 @@ func TestSetSyncJob_Run(t *testing.T) {
+ 
+ 	// Run sync with a new second set
+ 	_ = TestSet(t, conn, kmsCache, sched, cat, plgm)
+-	require.NoError(r.Run(context.Background()))
++	require.NoError(r.Run(context.Background(), 0))
+ 	assert.Equal(1, r.numSets)
+ 	assert.Equal(1, r.numProcessed)
+ 
+@@ -398,7 +398,7 @@ func TestSetSyncJob_Run(t *testing.T) {
+ 			assert.Equal(1, count)
+ 
+ 			// Run job
+-			err = r.Run(context.Background())
++			err = r.Run(context.Background(), 0)
+ 			require.NoError(err)
+ 
+ 			// Validate results
+diff --git a/internal/host/plugin/repository_host_catalog_test.go b/internal/host/plugin/repository_host_catalog_test.go
+index 77e50e4c2..0a29f9adc 100644
+--- a/internal/host/plugin/repository_host_catalog_test.go
++++ b/internal/host/plugin/repository_host_catalog_test.go
+@@ -1547,7 +1547,7 @@ func (j *testSyncJob) Status() scheduler.JobStatus {
+ 	}
+ }
+ 
+-func (j *testSyncJob) Run(_ context.Context) error { return nil }
++func (j *testSyncJob) Run(_ context.Context, _ time.Duration) error { return nil }
+ func (j *testSyncJob) NextRunIn(_ context.Context) (time.Duration, error) {
+ 	return setSyncJobRunInterval, nil
+ }
+diff --git a/internal/host/plugin/testing.go b/internal/host/plugin/testing.go
+index d4f1b41b8..8a62f1e2f 100644
+--- a/internal/host/plugin/testing.go
++++ b/internal/host/plugin/testing.go
+@@ -209,7 +209,7 @@ func TestRunSetSync(t testing.TB, conn *db.DB, kmsCache *kms.Kms, plgm map[strin
+ 
+ 	j, err := newSetSyncJob(ctx, rw, rw, kmsCache, plgm)
+ 	require.NoError(t, err)
+-	require.NoError(t, j.Run(ctx))
++	require.NoError(t, j.Run(ctx, 0))
+ }
+ 
+ func testGetDnsName(t testing.TB) string {
+diff --git a/internal/kms/job/data_key_version_destruction_monitor_job.go b/internal/kms/job/data_key_version_destruction_monitor_job.go
+index 91be9ade8..b09d6cae5 100644
+--- a/internal/kms/job/data_key_version_destruction_monitor_job.go
++++ b/internal/kms/job/data_key_version_destruction_monitor_job.go
+@@ -35,7 +35,7 @@ func (r dataKeyVersionDestructionMonitorJob) Status() scheduler.JobStatus {
+ 
+ // Run performs the required work depending on the implementation.
+ // The context is used to notify the job that it should exit early.
+-func (r *dataKeyVersionDestructionMonitorJob) Run(ctx context.Context) error {
++func (r *dataKeyVersionDestructionMonitorJob) Run(ctx context.Context, _ time.Duration) error {
+ 	const op = "kmsjob.(dataKeyVersionDestructionMonitorJob).Run"
+ 
+ 	if err := r.kmsRepo.MonitorDataKeyVersionDestruction(ctx); err != nil {
+diff --git a/internal/kms/job/table_rewrapping_job.go b/internal/kms/job/table_rewrapping_job.go
+index 116bd167c..96962d499 100644
+--- a/internal/kms/job/table_rewrapping_job.go
++++ b/internal/kms/job/table_rewrapping_job.go
+@@ -41,7 +41,7 @@ func (r tableRewrappingJob) Status() scheduler.JobStatus {
+ 
+ // Run performs the required work depending on the implementation.
+ // The context is used to notify the job that it should exit early.
+-func (r *tableRewrappingJob) Run(ctx context.Context) error {
++func (r *tableRewrappingJob) Run(ctx context.Context, _ time.Duration) error {
+ 	const op = "kmsjob.(tableRewrappingJob).Run"
+ 
+ 	if err := r.kmsRepo.MonitorTableRewrappingRuns(ctx, r.tableName); err != nil {
+diff --git a/internal/pagination/purge/purge_job.go b/internal/pagination/purge/purge_job.go
+index 89e3e7e32..3f91f41cc 100644
+--- a/internal/pagination/purge/purge_job.go
++++ b/internal/pagination/purge/purge_job.go
+@@ -43,7 +43,7 @@ func (c *purgeJob) Status() scheduler.JobStatus {
+ 
+ // Run performs the required work depending on the implementation.
+ // The context is used to notify the job that it should exit early.
+-func (c *purgeJob) Run(ctx context.Context) error {
++func (c *purgeJob) Run(ctx context.Context, _ time.Duration) error {
+ 	const op = "purge.(purgeJob).Run"
+ 	_, err := c.w.Exec(ctx, c.query, nil)
+ 	if err != nil {
+diff --git a/internal/pagination/purge/purge_test.go b/internal/pagination/purge/purge_test.go
+index 6ef25ba4f..4ba7ade8c 100644
+--- a/internal/pagination/purge/purge_test.go
++++ b/internal/pagination/purge/purge_test.go
+@@ -54,7 +54,7 @@ func TestPurgeTables(t *testing.T) {
+ 			query: query,
+ 		}
+ 
+-		err = sJob.Run(ctx)
++		err = sJob.Run(ctx, 0)
+ 		require.NoError(t, err)
+ 
+ 		var count int
+diff --git a/internal/recording/delete_session_recording_job.go b/internal/recording/delete_session_recording_job.go
+index f77670d02..d5b3271dc 100644
+--- a/internal/recording/delete_session_recording_job.go
++++ b/internal/recording/delete_session_recording_job.go
+@@ -33,7 +33,7 @@ func (dsr *deleteSessionRecordingJob) Status() scheduler.JobStatus { return sche
+ 
+ // Run performs the required work depending on the implementation.
+ // The context is used to notify the job that it should exit early.
+-func (dsr *deleteSessionRecordingJob) Run(_ context.Context) error { return nil }
++func (dsr *deleteSessionRecordingJob) Run(_ context.Context, _ time.Duration) error { return nil }
+ 
+ // NextRunIn returns the duration until the next job run should be scheduled.
+ // Delete Session Recording will run every hour unless we know there are more to delete,
+diff --git a/internal/scheduler/cleaner/cleaner_job.go b/internal/scheduler/cleaner/cleaner_job.go
+index 402054abe..a7fa39abd 100644
+--- a/internal/scheduler/cleaner/cleaner_job.go
++++ b/internal/scheduler/cleaner/cleaner_job.go
+@@ -29,7 +29,7 @@ func (c *cleanerJob) Status() scheduler.JobStatus {
+ 
+ // Run performs the required work depending on the implementation.
+ // The context is used to notify the job that it should exit early.
+-func (c *cleanerJob) Run(ctx context.Context) error {
++func (c *cleanerJob) Run(ctx context.Context, _ time.Duration) error {
+ 	const op = "cleaner.(cleanerJob).Run"
+ 
+ 	if _, err := c.w.Exec(ctx, "delete from job_run where status='completed'", nil); err != nil {
+diff --git a/internal/scheduler/job.go b/internal/scheduler/job.go
+index c67860703..a447bccac 100644
+--- a/internal/scheduler/job.go
++++ b/internal/scheduler/job.go
+@@ -30,7 +30,7 @@ type Job interface {
+ 	//
+ 	// If the returned error is not nil, the job will be scheduled to run again
+ 	// immediately and the returned error will be logged.
+-	Run(ctx context.Context) error
++	Run(ctx context.Context, statusThreshold time.Duration) error
+ 
+ 	// NextRunIn returns the duration the job scheduler should wait before
+ 	// running the job again. It is only called after the Run method has
+diff --git a/internal/scheduler/scheduler.go b/internal/scheduler/scheduler.go
+index 50ad3e82b..968f9e2a0 100644
+--- a/internal/scheduler/scheduler.go
++++ b/internal/scheduler/scheduler.go
+@@ -260,7 +260,7 @@ func (s *Scheduler) runJob(ctx context.Context, wg *sync.WaitGroup, r *job.Run)
+ 	go func() {
+ 		defer rj.cancelCtx()
+ 		defer wg.Done()
+-		runErr := j.Run(jobContext)
++		runErr := j.Run(jobContext, 0)
+ 
+ 		// Get final status report to update run progress with
+ 		status := j.Status()
+diff --git a/internal/scheduler/testing.go b/internal/scheduler/testing.go
+index 71fafbcce..81f1bf82f 100644
+--- a/internal/scheduler/testing.go
++++ b/internal/scheduler/testing.go
+@@ -84,7 +84,7 @@ func (j testJob) Status() JobStatus {
+ 	return j.statusFn()
+ }
+ 
+-func (j testJob) Run(ctx context.Context) error {
++func (j testJob) Run(ctx context.Context, statusThreshold time.Duration) error {
+ 	return j.fn(ctx)
+ }
+ 
+diff --git a/internal/server/job/rotate_roots_job.go b/internal/server/job/rotate_roots_job.go
+index d0d4d2377..26a602dcd 100644
+--- a/internal/server/job/rotate_roots_job.go
++++ b/internal/server/job/rotate_roots_job.go
+@@ -78,7 +78,7 @@ func (r *rotateRootsJob) Status() scheduler.JobStatus {
+ }
+ 
+ // Run executes the job by calling the rotateRoots domain function
+-func (r *rotateRootsJob) Run(ctx context.Context) error {
++func (r *rotateRootsJob) Run(ctx context.Context, _ time.Duration) error {
+ 	const op = "server.(rotateRootsJob).Run"
+ 
+ 	_, err := server.RotateRoots(ctx, r.workerAuthRepo, nodeenrollment.WithCertificateLifetime(r.certificateLifetime))
+diff --git a/internal/server/job/rotate_roots_job_test.go b/internal/server/job/rotate_roots_job_test.go
+index cbf215407..eb9df01ca 100644
+--- a/internal/server/job/rotate_roots_job_test.go
++++ b/internal/server/job/rotate_roots_job_test.go
+@@ -105,7 +105,7 @@ func TestRotateRootsJob(t *testing.T) {
+ 			assert.Equal(time.Hour, nextRun)
+ 
+ 			// Run job and ensure rotation was performed
+-			err = got.Run(ctx)
++			err = got.Run(ctx, 0)
+ 			require.NoError(err)
+ 			require.Equal(1, got.totalRotates)
+ 			rootIds, err = workerAuthRepo.List(ctx, (*types.RootCertificate)(nil))
+@@ -127,6 +127,6 @@ func TestRotateRootsJobFailure(t *testing.T) {
+ 	got, err := newRotateRootsJob(ctx, &db.Db{}, &db.Db{}, kmsCache)
+ 	require.NoError(err)
+ 
+-	err = got.Run(ctx)
++	err = got.Run(ctx, 0)
+ 	require.Error(err)
+ }
+diff --git a/internal/server/job/upsert_worker_storage_bucket_job.go b/internal/server/job/upsert_worker_storage_bucket_job.go
+index efc8a293f..11ec752b5 100644
+--- a/internal/server/job/upsert_worker_storage_bucket_job.go
++++ b/internal/server/job/upsert_worker_storage_bucket_job.go
+@@ -35,7 +35,7 @@ func (usb *upsertWorkerStorageBucketJob) Status() scheduler.JobStatus { return s
+ 
+ // Run performs the required work depending on the implementation.
+ // The context is used to notify the job that it should exit early.
+-func (usb *upsertWorkerStorageBucketJob) Run(_ context.Context) error { return nil }
++func (usb *upsertWorkerStorageBucketJob) Run(ctx context.Context, _ time.Duration) error { return nil }
+ 
+ // NextRunIn returns the duration until the next job run should be scheduled.
+ // Upsert Worker Storage Bucket will run every 24 hours unless we know there are
+diff --git a/internal/session/job_delete_terminated_sessions.go b/internal/session/job_delete_terminated_sessions.go
+index e43e9f801..a5d2e9584 100644
+--- a/internal/session/job_delete_terminated_sessions.go
++++ b/internal/session/job_delete_terminated_sessions.go
+@@ -46,7 +46,7 @@ func (d *deleteTerminatedJob) Status() scheduler.JobStatus {
+ 
+ // Run performs the required work depending on the implementation.
+ // The context is used to notify the job that it should exit early.
+-func (d *deleteTerminatedJob) Run(ctx context.Context) error {
++func (d *deleteTerminatedJob) Run(ctx context.Context, _ time.Duration) error {
+ 	const op = "session.(deleteTerminatedJob).Run"
+ 	d.deletedInRun = 0
+ 	var err error
+diff --git a/internal/session/job_delete_terminated_sessions_test.go b/internal/session/job_delete_terminated_sessions_test.go
+index b8df545ae..8c5d49bc4 100644
+--- a/internal/session/job_delete_terminated_sessions_test.go
++++ b/internal/session/job_delete_terminated_sessions_test.go
+@@ -101,7 +101,7 @@ func TestDeleteTermiantedSessionsJob(t *testing.T) {
+ 
+ 			job, err := newDeleteTerminatedJob(ctx, repo, tc.threshold)
+ 			require.NoError(t, err)
+-			err = job.Run(ctx)
++			err = job.Run(ctx, 0)
+ 			require.NoError(t, err)
+ 			assert.Equal(t, tc.expected, job.deletedInRun)
+ 		})
+diff --git a/internal/session/job_session_cleanup.go b/internal/session/job_session_cleanup.go
+index d98933c46..0ec00fd89 100644
+--- a/internal/session/job_session_cleanup.go
++++ b/internal/session/job_session_cleanup.go
+@@ -93,7 +93,7 @@ func (j *sessionConnectionCleanupJob) Status() scheduler.JobStatus {
+ }
+ 
+ // Run executes the job.
+-func (j *sessionConnectionCleanupJob) Run(ctx context.Context) error {
++func (j *sessionConnectionCleanupJob) Run(ctx context.Context, _ time.Duration) error {
+ 	const op = "session.(sessionConnectionCleanupJob).Run"
+ 	j.totalClosed = 0
+ 
+diff --git a/internal/session/job_session_cleanup_test.go b/internal/session/job_session_cleanup_test.go
+index 3e7e8a528..aa4169a08 100644
+--- a/internal/session/job_session_cleanup_test.go
++++ b/internal/session/job_session_cleanup_test.go
+@@ -110,7 +110,7 @@ func TestSessionConnectionCleanupJob(t *testing.T) {
+ 	require.NoError(err)
+ 
+ 	// Run the job.
+-	require.NoError(job.Run(ctx))
++	require.NoError(job.Run(ctx, 0))
+ 
+ 	// Assert connection state on both workers.
+ 	assertConnections := func(workerId string, closed bool) {
+diff --git a/internal/snapshot/snapshot_job.go b/internal/snapshot/snapshot_job.go
+index 6bda0cd25..6ec92cf10 100644
+--- a/internal/snapshot/snapshot_job.go
++++ b/internal/snapshot/snapshot_job.go
+@@ -41,7 +41,7 @@ func (c *snapshotJob) Status() scheduler.JobStatus {
+ 
+ // Run performs the required work depending on the implementation.
+ // The context is used to notify the job that it should exit early.
+-func (c *snapshotJob) Run(ctx context.Context) error {
++func (c *snapshotJob) Run(ctx context.Context, _ time.Duration) error {
+ 	const op = "snapshot.(snapshotJob).Run"
+ 	err := runFn(ctx, c)
+ 	return err
