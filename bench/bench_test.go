@@ -191,6 +191,11 @@ func TestOracleSweep(t *testing.T) {
 func BenchmarkRename(b *testing.B) {
 	c := setup(b)
 	tasks := loadTasks(b)
+	// The harness runs each sub-benchmark twice (a sizing pass with N=1,
+	// then the requested N), so a loop index would reuse iter 0 and alias
+	// two different episodes' identity and evidence dirs. A persistent
+	// per-cell counter keeps every episode unique.
+	seq := map[string]int{}
 	for _, p := range c.profiles {
 		c := c
 		c.profile, c.endpoint, c.model = p, p.Endpoint, p.Model
@@ -199,10 +204,13 @@ func BenchmarkRename(b *testing.B) {
 				continue
 			}
 			for _, mode := range c.modes {
-				b.Run(fmt.Sprintf("%s/%s_%s/%s", p.Name, t.Repo, t.SHA[:8], mode), func(b *testing.B) {
+				cell := fmt.Sprintf("%s/%s_%s/%s", p.Name, t.Repo, t.SHA[:8], mode)
+				b.Run(cell, func(b *testing.B) {
 					passes := 0
-					for i := range b.N {
-						if episode(b, c, t, mode, i) {
+					for range b.N {
+						iter := seq[cell]
+						seq[cell]++
+						if episode(b, c, t, mode, iter) {
 							passes++
 						}
 					}

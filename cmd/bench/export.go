@@ -49,8 +49,16 @@ func exportMLflow(uri string, runDirs []string) error {
 			profiles[p.Name] = map[string]string{"model": p.Model, "endpoint": p.Endpoint, "quant": p.Quant}
 		}
 		runID := filepath.Base(dir)
+		// Episodes recorded before the runner de-aliased the benchmark
+		// sizing pass can repeat (task, mode, iter); suffix in-batch
+		// collisions so every episode keeps its own MLflow run.
+		seen := map[string]int{}
 		for _, e := range episodes {
 			path := fmt.Sprintf("%s/%v/%v/%v", runID, e["task"], e["mode"], e["iter"])
+			if n := seen[path]; n > 0 {
+				path = fmt.Sprintf("%s#%d", path, n+1)
+			}
+			seen[fmt.Sprintf("%s/%v/%v/%v", runID, e["task"], e["mode"], e["iter"])]++
 			exists, err := c.runExists(expID, path)
 			if err != nil {
 				return err
