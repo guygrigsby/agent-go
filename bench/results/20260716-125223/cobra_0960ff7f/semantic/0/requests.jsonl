@@ -1,0 +1,81 @@
+{"ms":19,"op":"refs","outcome":"rejected","reason":"package not found","repairs":0,"req_sha":"ef3b44d6002a79fd","sym":"Command.IsHelpCommand","ts":"2026-07-16T18:52:24.393524Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T18:52:24.418775Z"}
+{"ms":31,"op":"query","outcome":"ok","req_sha":"e724b3c860add371","sym":"IsHelpCommand","ts":"2026-07-16T18:53:04.030289Z"}
+{"ms":0,"op":"query","outcome":"ok","req_sha":"1a4f3753285194d5","sym":"helpcommand","ts":"2026-07-16T18:53:07.46086Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T18:53:08.570697Z"}
+{"ms":0,"op":"query","outcome":"ok","pkg":"github.com/cyberark/popular-commands-cli/v0/cobra","req_sha":"5cafb310d39b1cb1","sym":"help","ts":"2026-07-16T18:53:10.365104Z"}
+{"ms":0,"op":"query","outcome":"ok","pkg":"cobra","req_sha":"9232665a14865d3f","sym":"help","ts":"2026-07-16T18:53:11.938486Z"}
+{"ms":0,"op":"query","outcome":"rejected","pkg":"cobra","reason":"package not found","repairs":0,"req_sha":"9b1f75277f1d8049","ts":"2026-07-16T18:53:13.347957Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T18:53:14.202493Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"github.com/spf13/cobra","reason":"package not found","repairs":0,"req_sha":"885a411dc8ea3c76","sym":"Command.IsHelpCommand","ts":"2026-07-16T18:53:15.907481Z"}
+{"ms":0,"op":"query","outcome":"ok","req_sha":"e724b3c860add371","sym":"IsHelpCommand","ts":"2026-07-16T18:53:17.56747Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T18:53:18.563754Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T18:53:19.765391Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T18:53:20.672618Z"}
+{"ms":0,"op":"query","outcome":"ok","req_sha":"ec35b1bd4942f873","sym":"Is","ts":"2026-07-16T18:53:22.131391Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T18:53:23.579862Z"}
+{"ms":0,"op":"help","outcome":"ok","req_sha":"0b56758d64d8a078","ts":"2026-07-16T18:53:25.298147Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T18:53:30.951843Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T18:53:32.583638Z"}
+{"ms":0,"op":"query","outcome":"rejected","pkg":"github.com/cyberark/test-rename/benchmark/cobra","reason":"package not found","repairs":0,"req_sha":"c43406261b07ddac","ts":"2026-07-16T18:53:34.779096Z"}
+{"ms":0,"op":"query","outcome":"ok","req_sha":"e724b3c860add371","sym":"IsHelpCommand","ts":"2026-07-16T18:53:36.606724Z"}
+{"ms":0,"op":"query","outcome":"ok","req_sha":"e724b3c860add371","sym":"IsHelpCommand","ts":"2026-07-16T18:53:38.426893Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T18:53:39.940765Z"}
+{"ms":0,"op":"query","outcome":"ok","req_sha":"96dee7e54ff88064","sym":"cobra","ts":"2026-07-16T18:53:41.618673Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"cobra","reason":"package not found","repairs":0,"req_sha":"ddd67e14ed066166","sym":"Command","ts":"2026-07-16T18:53:43.569598Z"}
+{"ms":0,"op":"query","outcome":"ok","req_sha":"9aff806522c5a051","sym":"Command","ts":"2026-07-16T18:53:45.193544Z"}
+{"ms":0,"op":"query","outcome":"rejected","pkg":"cobra","reason":"package not found","repairs":0,"req_sha":"9b1f75277f1d8049","ts":"2026-07-16T18:53:46.990575Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T18:53:48.231294Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T18:53:49.393255Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T18:53:50.707953Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T18:53:51.932858Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T18:53:53.216853Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T18:53:54.455537Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"cobra","reason":"package not found","repairs":0,"req_sha":"ddd67e14ed066166","sym":"Command","ts":"2026-07-16T18:53:56.695658Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T18:53:58.094051Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"github.com/cobra/cobra","reason":"package not found","repairs":0,"req_sha":"649f3e9f39cd426b","sym":"Command","ts":"2026-07-16T18:54:00.685582Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T18:54:01.833917Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T18:54:03.219381Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T18:54:04.472996Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T18:54:05.791683Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T18:54:10.533594Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T18:54:11.63227Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T18:54:13.160469Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T18:54:14.615406Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T18:54:15.951334Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T18:54:17.175638Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T18:54:18.44777Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T18:54:19.619401Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T18:54:20.919114Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T18:54:22.139531Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T18:54:23.25663Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T18:54:24.475169Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T18:54:25.813874Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T18:54:27.144489Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T18:54:28.499431Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T18:54:30.037252Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T18:54:31.404312Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T18:54:32.625459Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T18:54:33.955785Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T18:54:35.333352Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T18:54:36.793284Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T18:54:38.18805Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T18:54:39.454455Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T18:54:40.757525Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T18:54:42.250414Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T18:54:43.658899Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T18:54:45.079424Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T18:54:46.633017Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T18:54:48.105189Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T18:54:49.702808Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T18:54:50.85245Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T18:54:52.105699Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T18:54:53.266184Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T18:54:54.6807Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T18:54:56.026891Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T18:54:57.552764Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T18:54:59.086833Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T18:55:00.584111Z"}
+{"ms":0,"op":"refs","outcome":"rejected","reason":"package not found","repairs":0,"req_sha":"ef3b44d6002a79fd","sym":"Command.IsHelpCommand","ts":"2026-07-16T18:55:01.592803Z"}
+{"ms":0,"op":"refs","outcome":"rejected","reason":"package not found","repairs":0,"req_sha":"f56d81dee418f382","sym":"Command.IsAdditionalHelpTopicCommand","ts":"2026-07-16T18:55:01.596352Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T18:55:01.599761Z"}

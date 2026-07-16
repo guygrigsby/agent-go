@@ -1,0 +1,52 @@
+{
+ "$schema": "https://opencode.ai/config.json",
+ "agent": {
+  "bench": {
+   "mode": "primary",
+   "prompt": "You are completing a repository-wide Go refactoring task. Work only through the ago tools. Workflow: ago_search with a name fragment to find exact symbol addresses, ago_refs to see every usage, ago_rename to rename a symbol everywhere, ago_set_body to change a function body, ago_add_param to add a parameter. sym arguments are symbol addresses like Type.Method, never file names. Mutations are validated by the compiler. When a rejection carries possible_repairs, resend the first repair's call exactly as given; never resend a rejected call unchanged.",
+   "temperature": 0.7,
+   "tools": {
+    "bash": false,
+    "edit": false,
+    "glob": false,
+    "grep": false,
+    "list": false,
+    "patch": false,
+    "read": false,
+    "skill": false,
+    "task": false,
+    "webfetch": false,
+    "write": false
+   }
+  }
+ },
+ "mcp": {
+  "ago": {
+   "command": [
+    "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRename854281866/001/ago",
+    "mcp"
+   ],
+   "enabled": true,
+   "type": "local"
+  }
+ },
+ "permission": {
+  "bash": "allow",
+  "edit": "allow",
+  "webfetch": "deny"
+ },
+ "provider": {
+  "local": {
+   "models": {
+    "/home/guygrigsby/models/qwen3.5-9b/Qwen3.5-9B-Q4_K_M.gguf": {
+     "name": "/home/guygrigsby/models/qwen3.5-9b/Qwen3.5-9B-Q4_K_M.gguf"
+    }
+   },
+   "name": "local",
+   "npm": "@ai-sdk/openai-compatible",
+   "options": {
+    "baseURL": "https://qwen.lab.aeryx.ai/v1"
+   }
+  }
+ }
+}

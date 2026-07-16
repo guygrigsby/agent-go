@@ -278,6 +278,11 @@ func episode(b testing.TB, c config, t Manifest, mode string, iter int) bool {
 
 	res := score(b, c, wt, t, baseline, baseErrs)
 	res["task"] = t.Repo + "_" + t.SHA[:8]
+	kind := t.Kind
+	if kind == "" {
+		kind = "rename"
+	}
+	res["kind"] = kind
 	res["mode"] = mode
 	res["profile"] = c.profile.Name
 	res["iter"] = iter

@@ -1,0 +1,24 @@
+{
+ "ago_rev": "0dff2092620ed64522f1c0249cf26583c565ff54",
+ "cap": "12m0s",
+ "endpoint": "https://qwen.lab.aeryx.ai/v1",
+ "model": "/home/guygrigsby/models/qwen3.5-9b/Qwen3.5-9B-Q4_K_M.gguf",
+ "profiles": [
+  {
+   "name": "qwen3.5-9b",
+   "endpoint": "https://qwen.lab.aeryx.ai/v1",
+   "model": "/home/guygrigsby/models/qwen3.5-9b/Qwen3.5-9B-Q4_K_M.gguf",
+   "sampler": {
+    "repeat_penalty": 1,
+    "temperature": 0.7,
+    "top_k": 20,
+    "top_p": 0.8
+   },
+   "quant": "Q4_K_M",
+   "notes": "floor cell (roster: ~8-9B, any laptop). Raw mode expected near zero; scored separately per cross-model.md. repeat_penalty 1.0 deliberate."
+  }
+ ],
+ "raw_prompt_tokens": 129,
+ "semantic_prompt_tokens": 138,
+ "started": "2026-07-16T12:52:24-06:00"
+}

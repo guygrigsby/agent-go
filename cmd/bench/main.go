@@ -21,6 +21,7 @@ func main() {
 	tasks := fs.String("tasks", "bench/tasks.json", "validated task list")
 	out := fs.String("out", "bench/tasks-rename.json", "output manifest")
 	curve := fs.String("curve", "", "write the completion-time curve CSV here")
+	mlflow := fs.String("mlflow", "", "MLflow tracking server URI for export")
 	fs.Parse(args)
 
 	switch cmd {
@@ -61,6 +62,13 @@ func main() {
 		}
 		if err := mine(*scratch+"/"+repo, repo, *out, 2, 40); err != nil {
 			fail("mine: %v", err)
+		}
+	case "export":
+		if *mlflow == "" || fs.NArg() == 0 {
+			fail("export requires -mlflow <uri> and at least one run dir")
+		}
+		if err := exportMLflow(*mlflow, fs.Args()); err != nil {
+			fail("export: %v", err)
 		}
 	case "report":
 		if fs.NArg() == 0 {
