@@ -52,7 +52,7 @@ live help catalog appears here, so shipped rows cannot drift. Statuses:
 | `set_test_case` | shipped | |
 | `remove_test_case` | shipped | |
 | `set_signature` | shipped | patch-only op; name-matched param carry, defaults for new params, spread-site insertion; interface methods pending |
-| `move_decl` | planned | [agent-go-596]; 24 mined move tasks blocked |
+| `move_decl` | shipped | self-contained decls, reference requalification; ceilings: package-local deps, types with methods |
 | `remove_param` | planned | [agent-go-596] |
 | `implement_interface` | planned | [agent-go-596] |
 | `add_bench` | planned | [agent-go-596] |

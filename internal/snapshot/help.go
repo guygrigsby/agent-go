@@ -136,6 +136,16 @@ var opCatalog = []helpOp{
 		Notes:   "rejected while referenced. v1 ceiling: a field sharing a multi-name declaration (\"a, b int\") or an embedded field is not supported",
 	},
 	{
+		Op: "move_decl",
+		Args: []helpArg{
+			{"pkg", "string", false, "source package import path; defaults to the envelope's pkg"},
+			{"sym", "string", false, "top-level declaration name; defaults to the envelope's sym"},
+			{"to_pkg", "string", true, "target package import path (must exist)"},
+		},
+		Example: json.RawMessage(`[{"op":"move_decl","pkg":"demo/sig","sym":"Fetch","to_pkg":"demo/lib"}]`),
+		Notes:   "relocates the whole declaration (doc comment included) and requalifies every reference, adding imports where needed. v1 ceilings: the declaration must be self-contained (no uses of its old package's other top-level symbols) and a moved type may not have methods; both reject with the blocking names",
+	},
+	{
 		Op: "set_signature",
 		Args: []helpArg{
 			{"pkg", "string", false, "package import path; defaults to the envelope's pkg"},
