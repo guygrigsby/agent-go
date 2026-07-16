@@ -218,6 +218,29 @@ func TestPatchOpSymMissRepairIsCorrectedPatch(t *testing.T) {
 	}
 }
 
+// A missing required argument cannot be invented; the repair is the help
+// call whose catalog entry shows the op's full schema, executable verbatim.
+func TestPatchShapeErrorRepairIsHelp(t *testing.T) {
+	s := demo(t)
+	_, err := s.Patch([]byte(`{"pkg":"demo/lib",
+		"ops":[{"op":"add_param","sym":"Double","name":"n"}]}`))
+	rej, ok := err.(*Reject)
+	if !ok {
+		t.Fatalf("want Reject, got %v", err)
+	}
+	if len(rej.PossibleRepairs) == 0 {
+		t.Fatalf("reject carries no repairs: %+v", rej)
+	}
+	r := rej.PossibleRepairs[0]
+	if r.Call["tool"] != "help" {
+		t.Fatalf("repair tool = %v, want help", r.Call["tool"])
+	}
+	res, err := s.Help()
+	if err != nil || res["status"] != "ok" {
+		t.Fatalf("help repair not executable: %v %v", res, err)
+	}
+}
+
 // A catalog dump is not a near-miss: when nothing matches the op name,
 // no repair is invented.
 func TestPatchUnknownOpNoRepairWithoutNearMiss(t *testing.T) {
