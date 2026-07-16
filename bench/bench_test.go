@@ -128,13 +128,22 @@ func writeJSON(path string, v any) {
 
 func BenchmarkRename(b *testing.B) {
 	c := setup(b)
-	raw, err := os.ReadFile("tasks-rename.json")
-	if err != nil {
-		b.Fatal(err)
+	// Every mined manifest file participates; kind dispatch does the rest.
+	paths, err := filepath.Glob("tasks-*.json")
+	if err != nil || len(paths) == 0 {
+		b.Fatalf("no task manifests: %v", err)
 	}
 	var tasks []Manifest
-	if err := json.Unmarshal(raw, &tasks); err != nil {
-		b.Fatal(err)
+	for _, p := range paths {
+		raw, err := os.ReadFile(p)
+		if err != nil {
+			b.Fatal(err)
+		}
+		var batch []Manifest
+		if err := json.Unmarshal(raw, &batch); err != nil {
+			b.Fatalf("%s: %v", p, err)
+		}
+		tasks = append(tasks, batch...)
 	}
 	for _, p := range c.profiles {
 		c := c
