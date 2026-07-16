@@ -16,5 +16,5 @@ func Shout(s string) string {
 // MovedHome exercises qualifier stripping on move: relocated into demo/lib,
 // its lib. qualifiers must become local references, never a self-import.
 func MovedHome(s string) int {
-	return lib.Double(len(str.TrimSpace(s)))
+	return lib.Limit + len(str.TrimSpace(s))
 }

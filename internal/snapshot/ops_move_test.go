@@ -191,11 +191,61 @@ func TestMoveDeclStripsTargetQualifiers(t *testing.T) {
 		t.Fatal(err)
 	}
 	text := out["text"].(string)
-	if strings.Contains(text, "lib.Double") {
+	if strings.Contains(text, "lib.Limit") {
 		t.Fatalf("stale qualifier survived the move:\n%s", text)
 	}
-	if !strings.Contains(text, "Double(") {
+	if !strings.Contains(text, "Limit +") {
 		t.Fatalf("reference lost:\n%s", text)
+	}
+}
+
+// One spec of a grouped const block moves: extracted as a standalone
+// declaration in the target, deleted from the group, siblings untouched
+// (boundary b26814a3: RecoveryUserId lives in a perms const group).
+func TestMoveDeclGroupedSpec(t *testing.T) {
+	s := demo(t)
+	res, err := s.Patch([]byte(`{"pkg":"demo/sig","ops":[
+		{"op":"move_decl","sym":"ModeFast","to_pkg":"demo/lib"}]}`))
+	if err != nil {
+		t.Fatalf("rejected: %v", err)
+	}
+	if res["status"] != "accepted" {
+		t.Fatalf("got %v", res)
+	}
+	if _, err := s.inspect("demo/lib", "ModeFast"); err != nil {
+		t.Fatalf("moved spec not in target: %v", err)
+	}
+	if _, err := s.inspect("demo/sig", "ModeSlow"); err != nil {
+		t.Fatalf("sibling spec lost: %v", err)
+	}
+	if _, err := s.inspect("demo/sig", "ModeFast"); err == nil {
+		t.Fatal("moved spec still in source group")
+	}
+	b, _ := os.ReadFile(filepath.Join(s.dir, "lib", "lib.go"))
+	if !strings.Contains(string(b), `const ModeFast = "fast"`) {
+		t.Fatalf("standalone const not materialized:\n%s", b)
+	}
+}
+
+// A spec that leans on iota cannot stand alone; the reject names it.
+func TestMoveDeclGroupedIotaRejects(t *testing.T) {
+	s := demo(t)
+	_, err := s.Patch([]byte(`{"pkg":"demo/sig","ops":[
+		{"op":"move_decl","sym":"LevelA","to_pkg":"demo/lib"}]}`))
+	rej, ok := err.(*Reject)
+	if !ok || !strings.Contains(rej.Reason+rej.Detail, "iota") {
+		t.Fatalf("want iota reject, got %v", err)
+	}
+}
+
+// A spec that inherits its value from the previous line (LevelB) cannot
+// stand alone either.
+func TestMoveDeclGroupedInheritedRejects(t *testing.T) {
+	s := demo(t)
+	_, err := s.Patch([]byte(`{"pkg":"demo/sig","ops":[
+		{"op":"move_decl","sym":"LevelB","to_pkg":"demo/lib"}]}`))
+	if _, ok := err.(*Reject); !ok {
+		t.Fatalf("want reject, got %v", err)
 	}
 }
 

@@ -2,6 +2,7 @@ package snapshot
 
 import (
 	"encoding/json"
+	"fmt"
 	"go/ast"
 	"go/token"
 	"go/types"
@@ -44,14 +45,37 @@ func moveDeclEdits(s *Snapshot, pkgPath, sym, toPkg string) ([]edit, *Reject) {
 		}
 	}
 	declFile, start, end := s.findDeclRange(p, obj.Name(), sym)
+	grouped := ""
 	if declFile == "" {
-		return nil, &Reject{Reason: "declaration not found", Detail: sym}
+		// Not a standalone declaration: it may be one spec inside a grouped
+		// const/var/type block (boundary b26814a3's RecoveryUserId). The
+		// spec is extracted standalone into the target and deleted from the
+		// group; the group and its siblings stay put.
+		var gd *ast.GenDecl
+		var sp ast.Spec
+		declFile, gd, sp = s.findGroupedSpec(p, obj.Name())
+		if declFile == "" {
+			return nil, &Reject{Reason: "declaration not found", Detail: sym}
+		}
+		if rej := groupedSpecMovable(sp); rej != nil {
+			return nil, rej
+		}
+		start, end = s.specRange(sp)
+		grouped = gd.Tok.String()
 	}
 	declSrc, err := os.ReadFile(declFile)
 	if err != nil {
 		return nil, &Reject{Reason: "file not found", Detail: declFile}
 	}
 	declText := string(declSrc[start:end])
+	if grouped != "" {
+		declText = grouped + " " + declText
+		// Consume the spec's own line ending so the group doesn't keep a
+		// blank line where the spec was.
+		if end < len(declSrc) && declSrc[end] == '\n' {
+			end++
+		}
+	}
 
 	// Self-containedness: any use of another package-level symbol from the
 	// same package can't survive the move without dragging it along. The
@@ -238,6 +262,89 @@ func moveDeclEdits(s *Snapshot, pkgPath, sym, toPkg string) ([]edit, *Reject) {
 		}
 	}
 	return edits, nil
+}
+
+// findGroupedSpec locates name as one spec inside a grouped const/var/type
+// block (two or more specs; single-spec GenDecls are findDeclNode's turf).
+func (s *Snapshot) findGroupedSpec(p *packages.Package, name string) (string, *ast.GenDecl, ast.Spec) {
+	for _, f := range p.Syntax {
+		for _, d := range f.Decls {
+			gd, ok := d.(*ast.GenDecl)
+			if !ok || len(gd.Specs) < 2 {
+				continue
+			}
+			for _, sp := range gd.Specs {
+				switch sp := sp.(type) {
+				case *ast.ValueSpec:
+					for _, n := range sp.Names {
+						if n.Name == name {
+							return s.fset.Position(f.Pos()).Filename, gd, sp
+						}
+					}
+				case *ast.TypeSpec:
+					if sp.Name.Name == name {
+						return s.fset.Position(f.Pos()).Filename, gd, sp
+					}
+				}
+			}
+		}
+	}
+	return "", nil, nil
+}
+
+// groupedSpecMovable rejects specs that cannot stand alone outside their
+// group: multi-name lines, values inherited from the previous spec, and
+// anything leaning on iota (position-dependent by definition).
+func groupedSpecMovable(sp ast.Spec) *Reject {
+	vs, ok := sp.(*ast.ValueSpec)
+	if !ok {
+		return nil // TypeSpecs are always self-complete
+	}
+	if len(vs.Names) != 1 {
+		return &Reject{Reason: "spec declares several names; move_decl v1 moves single-name specs",
+			Detail: fmt.Sprint(vs.Names)}
+	}
+	if len(vs.Values) == 0 && vs.Type == nil {
+		return &Reject{Reason: "spec inherits its value from the previous line; it cannot stand alone outside its group",
+			Detail: vs.Names[0].Name}
+	}
+	usesIota := false
+	for _, v := range vs.Values {
+		ast.Inspect(v, func(n ast.Node) bool {
+			if id, ok := n.(*ast.Ident); ok && id.Name == "iota" {
+				usesIota = true
+			}
+			return true
+		})
+	}
+	if usesIota {
+		return &Reject{Reason: "spec uses iota; its value is defined by its position in the group",
+			Detail: vs.Names[0].Name}
+	}
+	return nil
+}
+
+// specRange is a spec's byte range including its doc comment and trailing
+// line comment.
+func (s *Snapshot) specRange(sp ast.Spec) (int, int) {
+	start, end := sp.Pos(), sp.End()
+	switch sp := sp.(type) {
+	case *ast.ValueSpec:
+		if sp.Doc != nil {
+			start = sp.Doc.Pos()
+		}
+		if sp.Comment != nil {
+			end = sp.Comment.End()
+		}
+	case *ast.TypeSpec:
+		if sp.Doc != nil {
+			start = sp.Doc.Pos()
+		}
+		if sp.Comment != nil {
+			end = sp.Comment.End()
+		}
+	}
+	return s.fset.Position(start).Offset, s.fset.Position(end).Offset
 }
 
 // importEdit inserts an import of path into file, or nil when it already
