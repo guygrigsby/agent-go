@@ -34,7 +34,11 @@ func (setBodyOp) apply(ctx *patchCtx, raw json.RawMessage) *Reject {
 	if rej != nil {
 		return rej
 	}
-	return ctx.applyDeclEdits([]edit{{file, lbrace, rbrace - lbrace + 1, "{\n" + a.Body + "\n}"}})
+	if rej := ctx.applyDeclEdits([]edit{{file, lbrace, rbrace - lbrace + 1, "{\n" + a.Body + "\n}"}}); rej != nil {
+		return rej
+	}
+	ctx.noteTouched(pkg, sym, false)
+	return nil
 }
 
 // upsertDeclOp is upsert_decl's composable form: same upsertDeclEdit core
@@ -78,6 +82,7 @@ func (upsertDeclOp) apply(ctx *patchCtx, raw json.RawMessage) *Reject {
 		return rej
 	}
 	ctx.addAffected(pkg)
+	ctx.noteTouched(pkg, sym, false)
 	ctx.postChecks = append(ctx.postChecks, func() *Reject {
 		if _, _, rej := ctx.s.findObject(pkg, sym); rej != nil {
 			return &Reject{Reason: "declaration missing after edit", Detail: sym}
@@ -179,6 +184,7 @@ func (deleteDeclOp) apply(ctx *patchCtx, raw json.RawMessage) *Reject {
 		return rej
 	}
 	ctx.addAffected(pkg)
+	ctx.noteTouched(pkg, sym, true)
 	return nil
 }
 
@@ -230,7 +236,11 @@ func (setDocOp) apply(ctx *patchCtx, raw json.RawMessage) *Reject {
 	if rej != nil {
 		return rej
 	}
-	return ctx.applyDeclEdits([]edit{e})
+	if rej := ctx.applyDeclEdits([]edit{e}); rej != nil {
+		return rej
+	}
+	ctx.noteTouched(pkg, sym, false)
+	return nil
 }
 
 // structTypeDecl locates name's declaration and asserts it's a standalone
@@ -326,6 +336,7 @@ func (addFieldOp) apply(ctx *patchCtx, raw json.RawMessage) *Reject {
 		return rej
 	}
 	ctx.addAffected(pkg)
+	ctx.noteTouched(pkg, sym, false)
 	return nil
 }
 
@@ -400,6 +411,10 @@ func (removeFieldOp) apply(ctx *patchCtx, raw json.RawMessage) *Reject {
 		return rej
 	}
 	ctx.addAffected(pkg)
+	// The declaration reshaped is the containing struct type, not the
+	// field: sym is "Type.Field", and fields aren't independently viewable.
+	recv, _, _ := strings.Cut(sym, ".")
+	ctx.noteTouched(pkg, recv, false)
 	return nil
 }
 

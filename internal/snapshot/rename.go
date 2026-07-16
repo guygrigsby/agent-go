@@ -194,12 +194,15 @@ func (s *Snapshot) Rename(pkgPath, sym, to string) (map[string]any, error) {
 		files = append(files, file)
 	}
 	sort.Strings(files)
-	return map[string]any{
+	res := map[string]any{
 		"status": "accepted", "symbol": pkgPath + "." + sym, "new_name": to,
 		"references": len(edits), "files": files,
 		"load_ms": ms, "packages_rechecked": n,
 		"generation": s.generation(pkgPath, newSym),
-	}, nil
+	}
+	// The viewed symbol is the NEW name; the old address no longer resolves.
+	s.attachView(res, pkgPath, newSym)
+	return res, nil
 }
 
 // renameOp is rename's composable form: same renameEdits core, applied to
@@ -228,6 +231,9 @@ func (renameOp) apply(ctx *patchCtx, raw json.RawMessage) *Reject {
 		return rej
 	}
 	ctx.addAffected(pkg)
+	// The viewed symbol is the NEW name; the old address no longer resolves
+	// once the patch commits.
+	ctx.noteTouched(pkg, newSym, false)
 	ctx.postChecks = append(ctx.postChecks, func() *Reject {
 		// ctx.declEdits now holds the FULL per-file ledger — every decl op
 		// in the patch has applied by the time postChecks run — so a

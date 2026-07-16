@@ -29,6 +29,10 @@ func TestSetSignatureInsertBeforeVariadic(t *testing.T) {
 	if text := out["text"].(string); !strings.Contains(text, "Fetch(context.Background(), 1, \"x\", 2, 3)") {
 		t.Fatalf("plain site not rewritten:\n%s", text)
 	}
+	// A single-decl set_signature patch embeds the fresh view.
+	if _, ok := res["view"].(map[string]any); !ok {
+		t.Fatalf("accept response missing view: %v", res["views_omitted"])
+	}
 }
 
 // Dropping a parameter drops its argument everywhere.

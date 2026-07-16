@@ -147,11 +147,13 @@ func (s *Snapshot) UpsertDecl(pkgPath, text string) (map[string]any, error) {
 		return nil, &Reject{Reason: "declaration missing after edit", Detail: sym}
 	}
 	s.noteWrite(file)
-	return map[string]any{
+	res := map[string]any{
 		"status": "accepted", "symbol": pkgPath + "." + sym, "action": action,
 		"file": file, "load_ms": ms, "packages_rechecked": n,
 		"generation": s.generation(pkgPath, sym),
-	}, nil
+	}
+	s.attachView(res, pkgPath, sym)
+	return res, nil
 }
 
 // upsertNewPackage creates pkgPath under the module with the declaration as
@@ -197,10 +199,12 @@ func (s *Snapshot) upsertNewPackage(pkgPath, text, sym string, loadMS int64) (ma
 		s.loaded = false
 		return nil, &Reject{Reason: "declaration missing after edit", Detail: pkgPath + "." + sym}
 	}
-	return map[string]any{
+	res := map[string]any{
 		"status": "accepted", "symbol": pkgPath + "." + sym, "action": "created-package",
 		"file": file, "load_ms": loadMS,
-	}, nil
+	}
+	s.attachView(res, pkgPath, sym)
+	return res, nil
 }
 
 // parseDeclText validates that text is exactly one top-level declaration

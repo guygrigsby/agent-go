@@ -56,6 +56,15 @@ type patchCtx struct {
 	// can break a reverse importer that no edited file itself touches.
 	affectedPkgs map[string]bool
 
+	// touched records, in op order and deduped by post-op address, each
+	// declaration this patch's ops reshaped: statement ops all address the
+	// envelope's own function (noted once in patchComposable), decl ops note
+	// their own effective pkg/sym (rename under its NEW name — the old
+	// address no longer resolves), delete_decl with gone set. The accept
+	// response embeds a fresh view only when this holds exactly one entry;
+	// see the ceiling comment on patchComposable's accept path.
+	touched []touchedDecl
+
 	// postChecks run once, after the shared end-of-list retypecheck
 	// succeeds, against the now-spliced live snapshot: rename's
 	// verifyResolution (reference-capture detection) and add_param's
@@ -63,6 +72,30 @@ type patchCtx struct {
 	// state, and a multi-rename patch must prove itself as one unit against
 	// the FINAL state rather than after each individual rename.
 	postChecks []func() *Reject
+}
+
+// touchedDecl is one declaration a patch op reshaped, addressed post-op
+// (rename records the new name). gone marks a declaration that no longer
+// exists after the patch (delete_decl), so no view can render for it.
+type touchedDecl struct {
+	pkg, sym string
+	gone     bool
+}
+
+// noteTouched records a declaration an op reshaped, deduped by address so
+// several ops on the same declaration (set_body then set_doc) count as one
+// touched declaration. Two ops addressing one declaration under different
+// names (set_body on the old name, then rename) still count as two — a
+// conservative miss that only costs the caller the view round-trip the
+// embedded view would have saved.
+func (ctx *patchCtx) noteTouched(pkg, sym string, gone bool) {
+	for i, t := range ctx.touched {
+		if t.pkg == pkg && t.sym == sym {
+			ctx.touched[i].gone = ctx.touched[i].gone || gone
+			return
+		}
+	}
+	ctx.touched = append(ctx.touched, touchedDecl{pkg, sym, gone})
 }
 
 // declOps are ops whose args name their own pkg/sym (or, for upsert_decl,
@@ -220,6 +253,9 @@ func (s *Snapshot) patchComposable(env patchEnvelope, names []string) (map[strin
 		}
 		ctx.file = nt.file
 		ctx.src[nt.file] = append([]byte(nil), src...)
+		// Every statement op addresses handles inside this one function, so
+		// the whole group is a single touched declaration.
+		ctx.noteTouched(env.Pkg, env.Sym, false)
 	}
 
 	for i, raw := range env.Ops {
@@ -373,12 +409,28 @@ func (s *Snapshot) patchComposable(env patchEnvelope, names []string) (map[strin
 	for _, file := range touched {
 		s.noteWrite(file)
 	}
-	return map[string]any{
+	res := map[string]any{
 		"status": "accepted", "symbol": env.Pkg + "." + env.Sym,
 		"ops_applied": len(env.Ops), "files": touched,
 		"load_ms": ms, "packages_rechecked": n,
 		"generation": s.generation(env.Pkg, env.Sym),
-	}, nil
+	}
+	// Ceiling: the accept response embeds a fresh view only when exactly ONE
+	// declaration was touched (however many ops touched it). A multi-decl
+	// patch — several decl ops on different symbols, an atomic multi-rename —
+	// has no single "the touched declaration", and embedding every view would
+	// bloat each multi-op accept, so the key is omitted and views_omitted
+	// says why; the caller views the declarations it still needs explicitly.
+	switch {
+	case len(ctx.touched) == 1 && ctx.touched[0].gone:
+		res["views_omitted"] = "declaration was deleted"
+	case len(ctx.touched) == 1:
+		s.attachView(res, ctx.touched[0].pkg, ctx.touched[0].sym)
+	default:
+		res["views_omitted"] = fmt.Sprintf(
+			"%d declarations touched; view each explicitly", len(ctx.touched))
+	}
+	return res, nil
 }
 
 // applyDeclEdits folds edits into the per-file decl-op ledger and replays

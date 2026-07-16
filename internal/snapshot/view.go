@@ -108,9 +108,25 @@ func (s *Snapshot) View(pkgPath, sym string) (map[string]any, error) {
 	if _, err := s.ensureFresh(); err != nil {
 		return nil, err
 	}
+	res, err := s.viewLocked(pkgPath, sym)
+	if err != nil {
+		if rej, ok := err.(*Reject); ok {
+			s.viewRepairs(rej, pkgPath, sym)
+		}
+		return nil, err
+	}
+	res["status"] = "ok"
+	return res, nil
+}
+
+// viewLocked is View's rendering core, split out so accepted mutations can
+// embed the same {text, nodes, generation} payload in their responses. The
+// caller must hold s.mu over a fresh snapshot: View takes it itself, the
+// mutation methods already hold it while building their accept response (so
+// they must NOT call View recursively — that deadlocks).
+func (s *Snapshot) viewLocked(pkgPath, sym string) (map[string]any, error) {
 	p, obj, rej := s.findObject(pkgPath, sym)
 	if rej != nil {
-		s.viewRepairs(rej, pkgPath, sym)
 		return nil, rej
 	}
 	gen := s.generation(pkgPath, sym)
@@ -119,16 +135,14 @@ func (s *Snapshot) View(pkgPath, sym string) (map[string]any, error) {
 		// Fields (e.g. "Store.n") are not independently viewable.
 		if strings.Contains(sym, ".") {
 			owner, _, _ := strings.Cut(sym, ".")
-			rej := &Reject{Reason: "fields are not independently viewable; view the containing type",
+			return nil, &Reject{Reason: "fields are not independently viewable; view the containing type",
 				Detail: pkgPath + "." + sym, DidYouMean: []string{owner}}
-			s.viewRepairs(rej, pkgPath, sym)
-			return nil, rej
 		}
 		text, err := s.declText(p, obj, sym)
 		if err != nil {
 			return nil, err
 		}
-		return map[string]any{"status": "ok", "generation": gen, "text": text, "nodes": 0}, nil
+		return map[string]any{"generation": gen, "text": text, "nodes": 0}, nil
 	}
 	nt, rej := s.nodeTableFor(pkgPath, sym)
 	if rej != nil {
@@ -157,6 +171,26 @@ func (s *Snapshot) View(pkgPath, sym string) (map[string]any, error) {
 		b.WriteString(line)
 		b.WriteString("\n")
 	}
-	return map[string]any{"status": "ok", "generation": gen,
+	return map[string]any{"generation": gen,
 		"text": b.String(), "nodes": len(nt.order)}, nil
+}
+
+// attachView embeds the fresh post-mutation view of the single touched
+// declaration under res["view"] — the same {text, nodes, generation} payload
+// View returns — so the edit-then-edit-again loop needs no view call between
+// patches. Caller holds s.mu over the just-retypechecked snapshot. When the
+// view cannot render (e.g. the symbol lives only in a test variant the
+// incremental recheck didn't re-glob), the key is omitted and
+// "views_omitted" carries the reason; the mutation itself stays accepted.
+func (s *Snapshot) attachView(res map[string]any, pkgPath, sym string) {
+	v, err := s.viewLocked(pkgPath, sym)
+	if err != nil {
+		if rej, ok := err.(*Reject); ok {
+			res["views_omitted"] = rej.Reason
+		} else {
+			res["views_omitted"] = err.Error()
+		}
+		return
+	}
+	res["view"] = v
 }

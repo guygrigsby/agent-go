@@ -228,12 +228,16 @@ func (s *Snapshot) AddParam(pkgPath, sym, name, typ, defaultExpr string) (map[st
 		files = append(files, file)
 	}
 	sort.Strings(files)
-	return map[string]any{
+	res := map[string]any{
 		"status": "accepted", "symbol": pkgPath + "." + sym,
 		"param": name + " " + typ, "callers_updated": callersUpdated,
 		"files": files, "load_ms": ms, "packages_rechecked": n,
 		"generation": s.generation(pkgPath, sym),
-	}, nil
+	}
+	// Call-site files were edited too, but the one declaration reshaped is
+	// the target function; its fresh view is what the next edit needs.
+	s.attachView(res, pkgPath, sym)
+	return res, nil
 }
 
 // addParamOp is add_param's composable form: same addParamEdits core,
@@ -265,6 +269,7 @@ func (addParamOp) apply(ctx *patchCtx, raw json.RawMessage) *Reject {
 		return rej
 	}
 	ctx.addAffected(pkg)
+	ctx.noteTouched(pkg, sym, false)
 	ctx.postChecks = append(ctx.postChecks, func() *Reject {
 		if _, obj, rej := ctx.s.findObject(pkg, sym); rej != nil || !hasParam(obj, a.Name) {
 			return &Reject{Reason: "parameter missing after edit", Detail: sym}

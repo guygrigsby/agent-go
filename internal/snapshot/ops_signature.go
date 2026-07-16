@@ -266,6 +266,7 @@ func (setSignatureOp) apply(ctx *patchCtx, raw json.RawMessage) *Reject {
 		return rej
 	}
 	ctx.addAffected(pkg)
+	ctx.noteTouched(pkg, sym, false)
 	return nil
 }
 

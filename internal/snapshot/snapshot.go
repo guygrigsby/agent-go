@@ -887,11 +887,13 @@ func (s *Snapshot) SetBody(pkgPath, sym, body string) (map[string]any, error) {
 		return nil, diagnosticRepairs(&Reject{Reason: "edit does not typecheck", Diagnostics: diags})
 	}
 	s.noteWrite(filename)
-	return map[string]any{
+	res := map[string]any{
 		"status": "accepted", "symbol": pkgPath + "." + sym, "file": filename,
 		"load_ms": ms, "check_ms": checkMS, "packages_rechecked": n,
 		"generation": s.generation(pkgPath, sym),
-	}, nil
+	}
+	s.attachView(res, pkgPath, sym)
+	return res, nil
 }
 
 func findFuncDecl(p *packages.Package, fn *types.Func) (*ast.FuncDecl, string) {

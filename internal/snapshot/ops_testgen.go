@@ -285,6 +285,7 @@ func (addTestOp) apply(ctx *patchCtx, raw json.RawMessage) *Reject {
 		if rej := ctx.applyDeclEdits([]edit{e}); rej != nil {
 			return rej
 		}
+		ctx.noteTouched(pkg, testName, false)
 		ctx.postChecks = append(ctx.postChecks, func() *Reject {
 			if _, _, rej := ctx.s.findObject(pkg, testName); rej != nil {
 				return &Reject{Reason: "declaration missing after edit", Detail: testName}
@@ -346,6 +347,7 @@ func (addTestOp) apply(ctx *patchCtx, raw json.RawMessage) *Reject {
 		return &Reject{Reason: "declaration missing after edit", Detail: testName}
 	}
 	ctx.s.noteWrite(testFile)
+	ctx.noteTouched(pkg, testName, false)
 	return nil
 }
 
@@ -567,7 +569,11 @@ func (addTestCaseOp) apply(ctx *patchCtx, raw json.RawMessage) *Reject {
 	// gofmt pass, and a second appended row parses as "missing ',' before
 	// newline in composite literal".
 	offset := ctx.s.fset.Position(lit.Rbrace).Offset
-	return ctx.applyDeclEdits([]edit{{file, offset, 0, "\n" + row + ",\n"}})
+	if rej := ctx.applyDeclEdits([]edit{{file, offset, 0, "\n" + row + ",\n"}}); rej != nil {
+		return rej
+	}
+	ctx.noteTouched(pkg, test, false)
+	return nil
 }
 
 // setTestCaseOp replaces an existing case row, addressed by its current name.
@@ -610,7 +616,11 @@ func (setTestCaseOp) apply(ctx *patchCtx, raw json.RawMessage) *Reject {
 	}
 	start := ctx.s.fset.Position(row.Pos()).Offset
 	end := ctx.s.fset.Position(row.End()).Offset
-	return ctx.applyDeclEdits([]edit{{file, start, end - start, newRow}})
+	if rej := ctx.applyDeclEdits([]edit{{file, start, end - start, newRow}}); rej != nil {
+		return rej
+	}
+	ctx.noteTouched(pkg, test, false)
+	return nil
 }
 
 // removeTestCaseOp deletes an existing case row (its whole line, including
@@ -647,7 +657,11 @@ func (removeTestCaseOp) apply(ctx *patchCtx, raw json.RawMessage) *Reject {
 	}
 	start := lineStart(src, ctx.s.fset.Position(row.Pos()).Offset)
 	end := lineEndNL(src, ctx.s.fset.Position(row.End()).Offset)
-	return ctx.applyDeclEdits([]edit{{file, start, end - start, ""}})
+	if rej := ctx.applyDeclEdits([]edit{{file, start, end - start, ""}}); rej != nil {
+		return rej
+	}
+	ctx.noteTouched(pkg, test, false)
+	return nil
 }
 
 func init() {
