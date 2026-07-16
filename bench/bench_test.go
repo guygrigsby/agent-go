@@ -28,19 +28,6 @@ import (
 	"time"
 )
 
-type RenameSpec struct {
-	Pkg string `json:"pkg"`
-	Sym string `json:"sym"`
-	To  string `json:"to"`
-}
-
-type Manifest struct {
-	Repo    string       `json:"repo"`
-	SHA     string       `json:"sha"`
-	Prompt  string       `json:"prompt"`
-	Renames []RenameSpec `json:"renames"`
-}
-
 type config struct {
 	endpoint, model, scratch, agoBin, results, runID string
 	cap                                              time.Duration
@@ -247,7 +234,18 @@ func errorSet(status map[string]any) map[string]bool {
 	return set
 }
 
-func score(c config, wt string, t Manifest, baseline map[string]int, baseErrs map[string]bool) map[string]any {
+// predicateFn decides whether the workspace satisfies a task's goal and
+// reports the per-spec evidence. One per task kind; new kinds add an entry
+// here and an extractor in cmd/bench, never a scorer fork.
+type predicateFn func(c config, wt string, t Manifest, baseline map[string]int) (bool, []map[string]any)
+
+var predicates = map[string]predicateFn{
+	"": renamePredicate, "rename": renamePredicate,
+}
+
+func predicateFor(kind string) predicateFn { return predicates[kind] }
+
+func renamePredicate(c config, wt string, t Manifest, baseline map[string]int) (bool, []map[string]any) {
 	predicate := true
 	var specs []map[string]any
 	for _, r := range t.Renames {
@@ -263,6 +261,16 @@ func score(c config, wt string, t Manifest, baseline map[string]int, baseErrs ma
 			predicate = false
 		}
 	}
+	return predicate, specs
+}
+
+func score(c config, wt string, t Manifest, baseline map[string]int, baseErrs map[string]bool) map[string]any {
+	fn := predicateFor(t.Kind)
+	if fn == nil {
+		return map[string]any{"predicate": false, "typecheck": false, "tests": false,
+			"pass": false, "unknown_kind": t.Kind}
+	}
+	predicate, specs := fn(c, wt, t, baseline)
 	typecheck := false
 	var newErrs []string
 	if out := agoJSON(c, wt, "status"); out != nil && out["status"] == "ok" {

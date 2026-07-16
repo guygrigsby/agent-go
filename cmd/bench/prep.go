@@ -14,6 +14,8 @@ import (
 	"slices"
 	"sort"
 	"strings"
+
+	"github.com/guygrigsby/agent-go/bench"
 )
 
 // Task mirrors bench/tasks.json entries.
@@ -25,21 +27,12 @@ type Task struct {
 	GoFiles int      `json:"go_files"`
 }
 
-type RenameSpec struct {
-	Pkg string `json:"pkg"`
-	Sym string `json:"sym"`
-	To  string `json:"to"`
-}
-
-type Manifest struct {
-	Repo        string       `json:"repo"`
-	SHA         string       `json:"sha"`
-	Kind        string       `json:"kind"`
-	Prompt      string       `json:"prompt"`
-	GoFiles     int          `json:"go_files"`
-	Renames     []RenameSpec `json:"renames,omitempty"`
-	NeedsReview string       `json:"needs_review,omitempty"`
-}
+// Manifest and RenameSpec are shared with the runner; the prep tool
+// writes what the runner scores.
+type (
+	Manifest   = bench.Manifest
+	RenameSpec = bench.RenameSpec
+)
 
 var (
 	subjectRename = regexp.MustCompile(`(?i)renam\w*\s+` + "`?" + `(\w+)` + "`?" + `\s*(?:to|->|→)\s*` + "`?" + `(\w+)` + "`?")
