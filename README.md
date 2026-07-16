@@ -10,6 +10,22 @@ editors when raw file editing is replaced by semantic queries and validated
 mutations with typed rejections. The bench in this repo measures exactly
 that, on tasks mined from real commits in traefik, vault, and boundary.
 
+## Install
+
+```
+go install github.com/guygrigsby/agent-go/cmd/ago@latest
+```
+
+Or from a clone:
+
+```
+go build -o ago ./cmd/ago
+```
+
+Requires Go 1.24+. The daemon auto-spawns on first use, one per
+workspace, and exits after five minutes idle; there is nothing to start
+or configure.
+
 ## How it works
 
 One binary, three fronts over a per-workspace daemon (auto-spawned on first
@@ -91,6 +107,28 @@ go test ./bench -run OracleSweep -parallel 6 -timeout 0
 go run ./cmd/bench mine -scratch <clones dir> <repo>
 go run ./cmd/bench report bench/results/<run> ...
 ```
+
+## Development
+
+```
+go test ./...        # full suite; snapshot tests take ~40s
+gofmt -l .           # must be empty
+```
+
+Rules of the road:
+
+- TDD: write the failing test first, watch it fail, then implement.
+  Every op and repair in the tree landed that way.
+- Docs are drift-guarded by tests: the op catalog must match
+  `docs/specs/surface.md`, help examples must be accepted against the
+  test fixture, and README invocations must match the real CLI dispatch.
+  Change behavior and the guard tells you which doc to touch.
+- The demo fixture (`internal/snapshot/testdata/demo`) is copied per
+  test; never mutate it in place, and be careful adding to `demo/lib` —
+  view-handle tests depend on its exact layout (`demo/sig` is the place
+  for new fixture shapes).
+- Race-sensitive changes (the parallel retypecheck) should run under
+  `go test -race ./internal/snapshot`.
 
 ## Docs
 
