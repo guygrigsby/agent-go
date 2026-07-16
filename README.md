@@ -139,6 +139,7 @@ Rules of the road:
 - `docs/specs/plan.md` — status and build order
 - `docs/optimizations/` — per-model serving research and the cross-model build list
 - `docs/tenets.md` — the engineering principles this repo lives by
+- `docs/model-strategies.md` — brainstorm: strategies for coding with local models
 - `docs/adr/` — architecture decisions
 - `idea.md` — the original thesis
 
