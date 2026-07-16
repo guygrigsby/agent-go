@@ -101,12 +101,20 @@ type argSlot struct {
 }
 
 // planArgs matches new params to old by name and produces the call-site
-// rewrite plan. New params need a default only when call sites exist.
+// rewrite plan. Underscore params carry no name to match on, so they pair
+// positionally instead: the i-th "_" of the new signature carries the
+// argument of the i-th "_" of the old one, provided the type text agrees —
+// a type-changed "_" falls through to the default path rather than carrying
+// an argument into the wrong slot. New params need a default only when call
+// sites exist.
 func planArgs(old, new_ *sigText, defaults map[string]string, callSites int) (*argPlan, *Reject) {
 	oldIndex := map[string]int{}
+	var oldBlanks []int
 	for i, p := range old.params {
 		if p.name != "_" {
 			oldIndex[p.name] = i
+		} else {
+			oldBlanks = append(oldBlanks, i)
 		}
 	}
 	plan := &argPlan{}
@@ -116,6 +124,11 @@ func planArgs(old, new_ *sigText, defaults map[string]string, callSites int) (*a
 		}
 		if j, carried := oldIndex[p.name]; carried {
 			plan.slots = append(plan.slots, argSlot{oldIndex: j, variadic: p.variadic})
+			continue
+		}
+		if p.name == "_" && len(oldBlanks) > 0 && old.params[oldBlanks[0]].typ == p.typ {
+			plan.slots = append(plan.slots, argSlot{oldIndex: oldBlanks[0], variadic: p.variadic})
+			oldBlanks = oldBlanks[1:]
 			continue
 		}
 		def, ok := defaults[p.name]

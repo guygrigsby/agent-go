@@ -46,6 +46,37 @@ func TestPlanArgs(t *testing.T) {
 	}
 }
 
+// TestPlanArgsCarriesUnderscoreParams: underscore params cannot carry by
+// name (planArgs indexes old params by name and skips "_"), so appending a
+// parameter to func(ctx context.Context, _ DecryptFn) used to reject with
+// "new parameter needs a default" for the untouched _ param. Same-type
+// underscore params pair positionally and carry their call-site argument.
+func TestPlanArgsCarriesUnderscoreParams(t *testing.T) {
+	oldSig, _ := parseSignatureText("(a int, _ string, _ bool)")
+	newSig, _ := parseSignatureText("(a int, _ string, _ bool, extra int)")
+	plan, rej := planArgs(oldSig, newSig, map[string]string{"extra": "0"}, 2)
+	if rej != nil {
+		t.Fatal(rej)
+	}
+	got := plan.rewrite([]string{"1", `"x"`, "true"}, false)
+	want := []string{"1", `"x"`, "true", "0"}
+	if strings.Join(got, ",") != strings.Join(want, ",") {
+		t.Fatalf("got %v, want %v", got, want)
+	}
+	// A type change breaks the pairing: the new _ takes its default and the
+	// old argument is dropped rather than carried into the wrong slot.
+	newSig, _ = parseSignatureText("(a int, _ string, _ int64)")
+	plan, rej = planArgs(oldSig, newSig, map[string]string{"_": "9"}, 2)
+	if rej != nil {
+		t.Fatal(rej)
+	}
+	got = plan.rewrite([]string{"1", `"x"`, "true"}, false)
+	want = []string{"1", `"x"`, "9"}
+	if strings.Join(got, ",") != strings.Join(want, ",") {
+		t.Fatalf("type-changed _: got %v, want %v", got, want)
+	}
+}
+
 func TestPlanArgsRejects(t *testing.T) {
 	oldSig, _ := parseSignatureText("(a int)")
 	newSig, _ := parseSignatureText("(a int, ctx context.Context)")
