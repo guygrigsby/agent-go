@@ -65,6 +65,12 @@ type MoveSpec struct {
 	Pkg   string `json:"pkg"`
 	Sym   string `json:"sym"`
 	ToPkg string `json:"to_pkg"`
+
+	// ToName, when set, records a move+rename compound: the ground-truth
+	// commit renamed the declaration on its way to ToPkg (vault 45b0179a
+	// exported mergeStates as MergeReplicationStates). Empty means the
+	// name is unchanged.
+	ToName string `json:"to_name,omitempty"`
 }
 
 type RenameSpec struct {

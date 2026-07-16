@@ -409,8 +409,9 @@ func runOracle(c config, wt string, t Manifest) (string, error) {
 			// create_pkg unconditionally: the oracle replays ground truth, and
 			// the commit either created the target package or it already
 			// existed (the flag is a no-op then).
-			env, _ := json.Marshal(map[string]any{"pkg": m.Pkg, "ops": []map[string]any{
-				{"op": "move_decl", "sym": m.Sym, "to_pkg": m.ToPkg, "create_pkg": true}}})
+			ops := []map[string]any{
+				{"op": "move_decl", "sym": m.Sym, "to_pkg": m.ToPkg, "create_pkg": true}}
+			env, _ := json.Marshal(map[string]any{"pkg": m.Pkg, "ops": ops})
 			out := agoJSONStdin(c, wt, string(env), "patch", "-body-file", "-")
 			rec, _ := json.Marshal(map[string]any{"call": []string{"patch", string(env)}, "res": out})
 			b.Write(rec)
@@ -425,6 +426,21 @@ func runOracle(c config, wt string, t Manifest) (string, error) {
 				return b.String(), fmt.Errorf("oracle move %s.%s: %v", m.Pkg, m.Sym, out)
 			}
 			deferred = 0
+			if m.ToName != "" {
+				// Compound spec: the ground truth renamed on the way; a
+				// second patch renames in the target (rename computes its
+				// edits against the live snapshot, so it cannot share a
+				// patch with the move that creates its subject).
+				renv, _ := json.Marshal(map[string]any{"pkg": m.ToPkg, "ops": []map[string]any{
+					{"op": "rename", "sym": m.Sym, "to": m.ToName}}})
+				rout := agoJSONStdin(c, wt, string(renv), "patch", "-body-file", "-")
+				rec, _ := json.Marshal(map[string]any{"call": []string{"patch", string(renv)}, "res": rout})
+				b.Write(rec)
+				b.WriteByte('\n')
+				if status, _ := rout["status"].(string); status != "accepted" {
+					return b.String(), fmt.Errorf("oracle move rename %s -> %s: %v", m.Sym, m.ToName, rout)
+				}
+			}
 		}
 	default:
 		return "", fmt.Errorf("oracle has no replay for kind %q", t.Kind)
@@ -478,11 +494,16 @@ func movePredicate(c config, wt string, t Manifest, _ map[string]int) (bool, []m
 	predicate := len(t.Moves) > 0
 	var specs []map[string]any
 	for _, m := range t.Moves {
-		inTarget := inspectOK(c, wt, m.ToPkg, m.Sym)
+		// A compound spec lands under its new name in the target.
+		want := m.Sym
+		if m.ToName != "" {
+			want = m.ToName
+		}
+		inTarget := inspectOK(c, wt, m.ToPkg, want)
 		inSource := inspectOK(c, wt, m.Pkg, m.Sym)
 		ok := inTarget && !inSource
 		specs = append(specs, map[string]any{
-			"sym": m.Pkg + "." + m.Sym, "to_pkg": m.ToPkg, "ok": ok,
+			"sym": m.Pkg + "." + m.Sym, "to_pkg": m.ToPkg, "to_name": m.ToName, "ok": ok,
 			"in_target": inTarget, "still_in_source": inSource,
 		})
 		if !ok {
