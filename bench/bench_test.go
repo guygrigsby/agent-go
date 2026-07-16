@@ -44,6 +44,7 @@ type Manifest struct {
 type config struct {
 	endpoint, model, scratch, agoBin, results, runID string
 	cap                                              time.Duration
+	profile                                          Profile
 }
 
 func setup(b *testing.B) config {
@@ -55,8 +56,20 @@ func setup(b *testing.B) config {
 		results:  os.Getenv("AGO_BENCH_RESULTS"),
 		cap:      15 * time.Minute,
 	}
+	if name := os.Getenv("AGO_BENCH_PROFILE"); name != "" {
+		p, err := loadProfile("profiles.json", name)
+		if err != nil {
+			b.Fatal(err)
+		}
+		c.profile = p
+		c.endpoint, c.model = p.Endpoint, p.Model
+	} else {
+		// Bare env vars form an ad-hoc profile so every episode still
+		// carries a profile name and run.json a full record.
+		c.profile = Profile{Name: "adhoc", Endpoint: c.endpoint, Model: c.model}
+	}
 	if c.endpoint == "" || c.model == "" || c.scratch == "" {
-		b.Skip("set AGO_BENCH_ENDPOINT, AGO_BENCH_MODEL, AGO_BENCH_SCRATCH to run bench")
+		b.Skip("set AGO_BENCH_PROFILE (or AGO_BENCH_ENDPOINT + AGO_BENCH_MODEL) and AGO_BENCH_SCRATCH to run bench")
 	}
 	if v := os.Getenv("AGO_BENCH_CAP"); v != "" {
 		d, err := time.ParseDuration(v)
@@ -87,6 +100,7 @@ func setup(b *testing.B) config {
 		"ago_rev": strings.TrimSpace(string(rev)), "started": time.Now().Format(time.RFC3339),
 		"raw_prompt_tokens":      estimateTokens(promptCommon + promptRaw),
 		"semantic_prompt_tokens": estimateTokens(promptCommon + promptSemantic),
+		"profile":                c.profile,
 	}
 	writeJSON(filepath.Join(c.results, c.runID, "run.json"), meta)
 	return c
@@ -165,6 +179,7 @@ func episode(b *testing.B, c config, t Manifest, mode string, iter int) bool {
 	res := score(c, wt, t, baseline, baseErrs)
 	res["task"] = t.Repo + "_" + t.SHA[:8]
 	res["mode"] = mode
+	res["profile"] = c.profile.Name
 	res["iter"] = iter
 	res["prompt"] = t.Prompt
 	res["wall_s"] = wall.Seconds()
@@ -320,6 +335,13 @@ func writeOpencodeConfig(b *testing.B, c config, wt, mode string) {
 	} else {
 		prompt += promptRaw
 	}
+	agent := map[string]any{"mode": "primary", "prompt": prompt, "tools": tools}
+	// Temperature is the one sampler knob the OpenAI-compatible request can
+	// carry; the rest of the profile's sampler block documents the server's
+	// launch config and is recorded in run.json, not injected here.
+	if temp, ok := c.profile.Sampler["temperature"]; ok {
+		agent["temperature"] = temp
+	}
 	cfg := map[string]any{
 		"$schema": "https://opencode.ai/config.json",
 		"provider": map[string]any{"local": map[string]any{
@@ -327,10 +349,8 @@ func writeOpencodeConfig(b *testing.B, c config, wt, mode string) {
 			"options": map[string]any{"baseURL": c.endpoint},
 			"models":  map[string]any{c.model: map[string]any{"name": c.model}},
 		}},
-		"mcp": mcp,
-		"agent": map[string]any{"bench": map[string]any{
-			"mode": "primary", "prompt": prompt, "tools": tools,
-		}},
+		"mcp":        mcp,
+		"agent":      map[string]any{"bench": agent},
 		"permission": map[string]any{"edit": "allow", "bash": "allow", "webfetch": "deny"},
 	}
 	data, _ := json.MarshalIndent(cfg, "", " ")
