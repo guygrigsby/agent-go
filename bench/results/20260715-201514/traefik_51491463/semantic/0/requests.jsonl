@@ -6,3 +6,22 @@
 {"ms":5,"op":"view","outcome":"ok","pkg":"github.com/traefik/traefik/v3/pkg/provider/docker","req_sha":"f5083ae122954f56","sym":"SwarmProvider.extractLabels","ts":"2026-07-16T02:16:28.659542Z"}
 {"ms":4,"op":"view","outcome":"ok","pkg":"github.com/traefik/traefik/v3/pkg/provider/docker","req_sha":"e7c275041de4d6fa","sym":"Provider.extractLabels","ts":"2026-07-16T02:16:33.982595Z"}
 {"ms":3,"op":"view","outcome":"ok","pkg":"github.com/traefik/traefik/v3/pkg/provider/docker","req_sha":"4441411bd15ea65d","sym":"DynConfBuilder.extractLabels","ts":"2026-07-16T02:16:36.265508Z"}
+{"ms":1,"op":"query","outcome":"rejected","pkg":"github.com/traefik/traefik/v3/pkg/provider/docker","reason":"symbol not found","repairs":3,"req_sha":"a4ce10a7da79a516","sym":"extractLabels","ts":"2026-07-16T02:16:40.372194Z"}
+{"ms":20,"op":"query","outcome":"ok","pkg":"github.com/traefik/traefik/v3","req_sha":"5af6a14b0d0b593a","sym":"extractLabels","ts":"2026-07-16T02:16:44.286684Z"}
+{"ms":22,"op":"query","outcome":"ok","pkg":"github.com/traefik/traefik/v3/pkg/provider/docker","req_sha":"8f0b1605fdd5f1ea","sym":"SwarmProvider.extractLabels","ts":"2026-07-16T02:16:48.76212Z"}
+{"ms":58,"op":"query","outcome":"ok","pkg":"github.com/traefik/traefik/v3/pkg/provider/docker","req_sha":"128dc3df2d059724","sym":"Provider.extractLabels","ts":"2026-07-16T02:16:56.320149Z"}
+{"ms":20,"op":"query","outcome":"ok","pkg":"github.com/traefik/traefik/v3/pkg/provider/docker","req_sha":"adbd89359a7a6aa8","sym":"Shared.extractLabels","ts":"2026-07-16T02:17:03.998214Z"}
+{"ms":8,"op":"query","outcome":"ok","pkg":"github.com/traefik/traefik/v3/pkg/provider/docker","req_sha":"3cc4064267dacef2","sym":"DynConfBuilder.extractLabels","ts":"2026-07-16T02:17:11.772676Z"}
+{"ms":40,"op":"view","outcome":"rejected","pkg":"github.com/traefik/traefik/v3/pkg/provider/docker","reason":"receiver type not found","repairs":0,"req_sha":"1d97349fb39c7a3d","sym":"pswarm.go","ts":"2026-07-16T02:17:20.46601Z"}
+{"ms":4,"op":"view","outcome":"rejected","pkg":"github.com/traefik/traefik/v3/pkg/provider/docker","reason":"receiver type not found","repairs":0,"req_sha":"d4955daf5537ef9e","sym":"pswarm.go:232","ts":"2026-07-16T02:17:23.012805Z"}
+{"ms":5,"op":"view","outcome":"ok","pkg":"github.com/traefik/traefik/v3/pkg/provider/docker","req_sha":"5e1772553ac5218e","sym":"SwarmProvider.parseService","ts":"2026-07-16T02:17:25.228272Z"}
+{"ms":143,"op":"rename","outcome":"accepted","pkg":"github.com/traefik/traefik/v3/pkg/provider/docker","req_sha":"faf7d1a81ec64dea","sym":"Shared.extractLabels","ts":"2026-07-16T02:17:34.279902Z"}
+{"ms":3,"op":"rename","outcome":"rejected","pkg":"github.com/traefik/traefik/v3/pkg/provider/docker","reason":"method or field not found","repairs":0,"req_sha":"658a7306d7ef7ce9","sym":"Provider.extractLabels","ts":"2026-07-16T02:17:39.235939Z"}
+{"ms":14,"op":"query","outcome":"ok","pkg":"github.com/traefik/traefik/v3/pkg/provider/docker","req_sha":"116eb039de1d1aaa","sym":"extractLabels","ts":"2026-07-16T02:17:41.621965Z"}
+{"ms":1263,"op":"test","outcome":"ok","pkg":"github.com/traefik/traefik/v3/pkg/provider/docker","req_sha":"3a536154137b4297","ts":"2026-07-16T02:17:43.79927Z"}
+{"ms":63,"op":"query","outcome":"ok","pkg":"github.com/traefik/traefik/v3","req_sha":"5af6a14b0d0b593a","sym":"extractLabels","ts":"2026-07-16T02:18:31.707355Z"}
+{"ms":18,"op":"query","outcome":"ok","pkg":"github.com/traefik/traefik/v3","req_sha":"e0b4e2a36b117c0e","sym":"extractSwarmLabels","ts":"2026-07-16T02:18:34.869787Z"}
+{"ms":10,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T02:18:41.091198Z"}
+{"ms":2183,"op":"refs","outcome":"rejected","pkg":"github.com/traefik/traefik/v3/pkg/provider/docker","reason":"method or field not found","repairs":0,"req_sha":"6882b4641729f188","sym":"Shared.extractLabels","ts":"2026-07-16T02:18:53.359085Z"}
+{"ms":8,"op":"refs","outcome":"ok","pkg":"github.com/traefik/traefik/v3/pkg/provider/docker","req_sha":"32f9c5b3be964d9a","sym":"Shared.extractSwarmLabels","ts":"2026-07-16T02:18:55.547191Z"}
+{"ms":3,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T02:18:55.559865Z"}

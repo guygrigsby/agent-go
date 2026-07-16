@@ -214,6 +214,13 @@ func episode(b *testing.B, c config, t Manifest, mode string, iter int) bool {
 	res["iter"] = iter
 	res["prompt"] = t.Prompt
 	res["wall_s"] = wall.Seconds()
+	tok := sumTokens(agentOut)
+	res["tokens_in"] = tok.In
+	res["tokens_out"] = tok.Out
+	res["tokens_reasoning"] = tok.Reasoning
+	res["cache_read"] = tok.CacheRead
+	res["cache_write"] = tok.CacheWrite
+	res["steps"] = tok.Steps
 	res["agent_started"] = start.UTC().Format(time.RFC3339Nano)
 	res["agent_done"] = start.Add(wall).UTC().Format(time.RFC3339Nano)
 	res["capped"] = timedOut
