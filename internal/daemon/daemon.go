@@ -89,13 +89,13 @@ func handleWithBreaker(conn net.Conn, snap *snapshot.Snapshot, rlog *requestLog,
 	case "view":
 		res, err = snap.View(req.Pkg, req.Sym)
 	case "refs":
-		res, err = snap.Refs(req.Pkg, req.Sym)
+		res, err = snap.Refs(req.Pkg, req.Sym, req.Offset)
 	case "search":
-		res, err = snap.Search(req.Sym)
+		res, err = snap.Search(req.Sym, req.Offset)
 	case "query":
 		// Sym doubles as q for kind=="search", the same reuse the standalone
 		// search op already does — no separate wire field for it.
-		res, err = snap.Query(req.Kind, req.Pkg, req.Sym, req.Sym)
+		res, err = snap.Query(req.Kind, req.Pkg, req.Sym, req.Sym, req.Offset)
 	case "set-body":
 		res, err = snap.SetBody(req.Pkg, req.Sym, req.Body)
 	case "rename":

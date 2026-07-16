@@ -260,7 +260,7 @@ func TestPatchTypecheckUndefinedRepairIsSearch(t *testing.T) {
 	if r.Call["tool"] != "query" || args["kind"] != "search" || args["q"] != "Helpr" {
 		t.Fatalf("want search repair for Helpr, got %v", r.Call)
 	}
-	res, err := s.Query("search", "", "", args["q"].(string))
+	res, err := s.Query("search", "", "", args["q"].(string), 0)
 	if err != nil || res["status"] != "ok" {
 		t.Fatalf("search repair not executable: %v %v", res, err)
 	}
@@ -381,7 +381,7 @@ func TestPatchUnknownOpNoRepairWithoutNearMiss(t *testing.T) {
 func TestQuerySymMissRepairs(t *testing.T) {
 	s := demo(t)
 	for _, kind := range []string{"inspect", "refs", "callers"} {
-		_, err := s.Query(kind, "demo/lib", "Doub", "")
+		_, err := s.Query(kind, "demo/lib", "Doub", "", 0)
 		rej, ok := err.(*Reject)
 		if !ok {
 			t.Fatalf("%s: want Reject, got %v", kind, err)
@@ -397,7 +397,7 @@ func TestQuerySymMissRepairs(t *testing.T) {
 			if args["kind"] != kind {
 				t.Fatalf("%s: repair kind = %v", kind, args["kind"])
 			}
-			res, err := s.Query(kind, args["pkg"].(string), args["sym"].(string), "")
+			res, err := s.Query(kind, args["pkg"].(string), args["sym"].(string), "", 0)
 			if err != nil {
 				t.Fatalf("%s: repair %v rejected: %v", kind, r.Call, err)
 			}

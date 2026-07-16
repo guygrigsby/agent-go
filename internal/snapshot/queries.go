@@ -8,39 +8,64 @@ import (
 	"golang.org/x/tools/go/packages"
 )
 
+// pageSize caps every list-returning query's response window. A popular
+// symbol can have hundreds of references; dumping them all into a small
+// model's context is worse than paging.
+const pageSize = 50
+
+// page bounds hits to pageSize entries starting at offset and writes the
+// shared paging fields into res: count is always the TOTAL number of hits
+// found (never the window length), and when the window stops short of the
+// end the response also carries truncated=true and next_offset, the offset
+// to pass for the next page. Hit lists are position-sorted by their
+// producers, so consecutive pages tile the full list with no overlap.
+func page[T any](res map[string]any, key string, hits []T, offset int) map[string]any {
+	total := len(hits)
+	offset = min(max(offset, 0), total)
+	end := min(offset+pageSize, total)
+	res["count"] = total
+	res[key] = hits[offset:end]
+	if end < total {
+		res["truncated"] = true
+		res["next_offset"] = end
+	}
+	return res
+}
+
 // Query dispatches to one of the seven semantic query kinds behind a single
 // entry point: the three pre-existing standalone ops (search, inspect,
 // refs) keep their own routes elsewhere, and become kinds here too, plus
 // the four new call-graph and doc queries. sym and q overlap deliberately:
 // kind=="search" reads its fragment from q, falling back to sym, so the
 // wire protocol can keep reusing one field the way the standalone search
-// op already does (see protocol.Request.Sym).
-func (s *Snapshot) Query(kind, pkgPath, sym, q string) (map[string]any, error) {
-	res, err := s.query(kind, pkgPath, sym, q)
+// op already does (see protocol.Request.Sym). offset pages the kinds that
+// return lists; inspect and doc ignore it.
+func (s *Snapshot) Query(kind, pkgPath, sym, q string, offset int) (map[string]any, error) {
+	res, err := s.query(kind, pkgPath, sym, q, offset)
 	if rej, ok := err.(*Reject); ok {
 		s.queryRepairs(rej, kind, pkgPath, sym)
 	}
 	return res, err
 }
 
-func (s *Snapshot) query(kind, pkgPath, sym, q string) (map[string]any, error) {
+func (s *Snapshot) query(kind, pkgPath, sym, q string, offset int) (map[string]any, error) {
 	switch kind {
 	case "search":
 		query := q
 		if query == "" {
 			query = sym
 		}
-		return s.Search(query)
+		return s.Search(query, offset)
 	case "inspect":
 		return s.Inspect(pkgPath, sym)
 	case "refs":
-		return s.Refs(pkgPath, sym)
+		return s.Refs(pkgPath, sym, offset)
 	case "callers":
-		return s.Callers(pkgPath, sym)
+		return s.Callers(pkgPath, sym, offset)
 	case "callees":
-		return s.Callees(pkgPath, sym)
+		return s.Callees(pkgPath, sym, offset)
 	case "implementations":
-		return s.Implementations(pkgPath, sym)
+		return s.Implementations(pkgPath, sym, offset)
 	case "doc":
 		return s.Doc(pkgPath, sym)
 	default:
@@ -59,8 +84,10 @@ type callerHit struct {
 // Callers finds every call-shaped reference to a function or method and
 // reports the enclosing function of each call site. Non-call references
 // (assignments, arguments passed as values, interface satisfaction) are
-// excluded — refs is the query for those.
-func (s *Snapshot) Callers(pkgPath, sym string) (map[string]any, error) {
+// excluded — refs is the query for those. Hits arrive in funcUses's
+// deterministic visit order (position-sorted per package), so offset pages
+// are stable.
+func (s *Snapshot) Callers(pkgPath, sym string, offset int) (map[string]any, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	ms, err := s.ensureFresh()
@@ -100,8 +127,8 @@ func (s *Snapshot) Callers(pkgPath, sym string) (map[string]any, error) {
 			CallPos: callPos.String(),
 		})
 	})
-	return map[string]any{"status": "ok", "symbol": pkgPath + "." + sym,
-		"count": len(hits), "callers": hits, "load_ms": ms}, nil
+	return page(map[string]any{"status": "ok", "symbol": pkgPath + "." + sym,
+		"load_ms": ms}, "callers", hits, offset), nil
 }
 
 // enclosingFuncOf finds the top-level FuncDecl in p's syntax whose range
@@ -134,8 +161,9 @@ type calleeHit struct {
 // calls through a function value all resolve to something other than a
 // *types.Func and are skipped. A call through an interface method resolves
 // to the interface's method — that IS the static callee; dynamic dispatch
-// is a runtime fact this tier does not track.
-func (s *Snapshot) Callees(pkgPath, sym string) (map[string]any, error) {
+// is a runtime fact this tier does not track. ast.Inspect visits in source
+// order, so hits are position-sorted and offset pages are stable.
+func (s *Snapshot) Callees(pkgPath, sym string, offset int) (map[string]any, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	ms, err := s.ensureFresh()
@@ -186,8 +214,8 @@ func (s *Snapshot) Callees(pkgPath, sym string) (map[string]any, error) {
 			CallPos: p.Fset.Position(call.Pos()).String()})
 		return true
 	})
-	return map[string]any{"status": "ok", "symbol": pkgPath + "." + sym,
-		"count": len(hits), "callees": hits, "load_ms": ms}, nil
+	return page(map[string]any{"status": "ok", "symbol": pkgPath + "." + sym,
+		"load_ms": ms}, "callees", hits, offset), nil
 }
 
 // calleeIdent unwraps a call expression's Fun down to the identifier that
@@ -231,8 +259,9 @@ type implHit struct {
 // it. For a concrete type, it scans the workspace for interfaces the type
 // (by value or by pointer) satisfies. Only primary package variants are
 // scanned so a symbol declared once doesn't get reported once per test
-// variant.
-func (s *Snapshot) Implementations(pkgPath, sym string) (map[string]any, error) {
+// variant. Hits arrive in workspace package order, scope names sorted
+// within each package — deterministic, so offset pages are stable.
+func (s *Snapshot) Implementations(pkgPath, sym string, offset int) (map[string]any, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	ms, err := s.ensureFresh()
@@ -279,11 +308,11 @@ func (s *Snapshot) Implementations(pkgPath, sym string) (map[string]any, error) 
 		}
 	}
 	if isIface {
-		return map[string]any{"status": "ok", "symbol": self, "direction": "interface_to_types",
-			"count": len(hits), "types": hits, "load_ms": ms}, nil
+		return page(map[string]any{"status": "ok", "symbol": self,
+			"direction": "interface_to_types", "load_ms": ms}, "types", hits, offset), nil
 	}
-	return map[string]any{"status": "ok", "symbol": self, "direction": "type_to_interfaces",
-		"count": len(hits), "interfaces": hits, "load_ms": ms}, nil
+	return page(map[string]any{"status": "ok", "symbol": self,
+		"direction": "type_to_interfaces", "load_ms": ms}, "interfaces", hits, offset), nil
 }
 
 // Doc returns a declaration's doc comment as plain text (comment markers

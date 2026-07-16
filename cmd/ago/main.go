@@ -4,11 +4,11 @@
 //
 //	ago status   [-C dir]
 //	ago help     [-C dir]   (versioned op catalog: args, one example, notes per op)
-//	ago search   [-C dir] -s <name fragment>
+//	ago search   [-C dir] -s <name fragment> [-offset n]
 //	ago inspect  [-C dir] -p <pkgpath> -s <Name | Recv.Name>
 //	ago view     [-C dir] -p <pkgpath> -s <Name | Recv.Name>
-//	ago refs     [-C dir] -p <pkgpath> -s <Name | Recv.Name>
-//	ago query    [-C dir] -kind <search|inspect|refs|callers|callees|implementations|doc> [-p pkgpath] [-s Name|Recv.Name] [-q fragment]
+//	ago refs     [-C dir] -p <pkgpath> -s <Name | Recv.Name> [-offset n]
+//	ago query    [-C dir] -kind <search|inspect|refs|callers|callees|implementations|doc> [-p pkgpath] [-s Name|Recv.Name] [-q fragment] [-offset n]
 //	ago set-body [-C dir] -p <pkgpath> -s <Name | Recv.Name> -body-file <f|->
 //	ago upsert   [-C dir] -p <pkgpath> -body-file <f|->   (whole declaration)
 //	ago rename   [-C dir] -p <pkgpath> -s <Name | Recv.Name> -to <NewName>
@@ -53,6 +53,7 @@ func main() {
 	qkind := fs.String("kind", "", "query kind: search|inspect|refs|callers|callees|implementations|doc")
 	qfrag := fs.String("q", "", "query fragment (kind=search)")
 	run := fs.String("run", "", "test name filter (test op)")
+	offset := fs.Int("offset", 0, "page offset for list results (refs, search, query); pass a response's next_offset")
 	fs.Parse(args)
 
 	abs, err := filepath.Abs(*dir)
@@ -83,7 +84,7 @@ func main() {
 		return
 	}
 
-	req := protocol.Request{Op: cmd, Pkg: *pkg, Sym: *sym, To: *to, Name: *pname, Type: *ptype, Def: *pdefault}
+	req := protocol.Request{Op: cmd, Pkg: *pkg, Sym: *sym, To: *to, Name: *pname, Type: *ptype, Def: *pdefault, Offset: *offset}
 	if cmd == "set-body" || cmd == "upsert" {
 		req.Body = readBody(*bodyFile)
 	}

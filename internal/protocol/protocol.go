@@ -17,4 +17,5 @@ type Request struct {
 	Ops        json.RawMessage `json:"ops,omitempty"`
 	Generation int64           `json:"generation,omitempty"`
 	DryRun     bool            `json:"dry_run,omitempty"`
+	Offset     int             `json:"offset,omitempty"`
 }

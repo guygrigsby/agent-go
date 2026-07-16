@@ -8,20 +8,20 @@ import (
 
 func TestQueryExistingKinds(t *testing.T) {
 	s := demo(t)
-	if res, err := s.Query("search", "", "", "dou"); err != nil || res["count"].(int) != 1 {
+	if res, err := s.Query("search", "", "", "dou", 0); err != nil || res["count"].(int) != 1 {
 		t.Fatalf("search via query: %v %v", res, err)
 	}
-	if res, err := s.Query("inspect", "demo/lib", "Double", ""); err != nil || res["kind"] != "func" {
+	if res, err := s.Query("inspect", "demo/lib", "Double", "", 0); err != nil || res["kind"] != "func" {
 		t.Fatalf("inspect via query: %v %v", res, err)
 	}
-	if res, err := s.Query("refs", "demo/lib", "Double", ""); err != nil || res["count"].(int) != 2 {
+	if res, err := s.Query("refs", "demo/lib", "Double", "", 0); err != nil || res["count"].(int) != 2 {
 		t.Fatalf("refs via query: %v %v", res, err)
 	}
 }
 
 func TestCallers(t *testing.T) {
 	s := demo(t)
-	res, err := s.Query("callers", "demo/lib", "Double", "")
+	res, err := s.Query("callers", "demo/lib", "Double", "", 0)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -33,7 +33,7 @@ func TestCallers(t *testing.T) {
 
 func TestCallees(t *testing.T) {
 	s := demo(t)
-	res, err := s.Query("callees", "demo/lib", "UseHelper", "")
+	res, err := s.Query("callees", "demo/lib", "UseHelper", "", 0)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -48,7 +48,7 @@ func TestImplementations(t *testing.T) {
 	if _, err := s.UpsertDecl("demo/lib", "type Putter interface {\n\tPut(int)\n}"); err != nil {
 		t.Fatal(err)
 	}
-	res, err := s.Query("implementations", "demo/lib", "Putter", "")
+	res, err := s.Query("implementations", "demo/lib", "Putter", "", 0)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -57,7 +57,7 @@ func TestImplementations(t *testing.T) {
 	}
 
 	// Reverse direction: concrete type -> interfaces satisfied.
-	res2, err := s.Query("implementations", "demo/lib", "Store", "")
+	res2, err := s.Query("implementations", "demo/lib", "Store", "", 0)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -71,7 +71,7 @@ func TestDoc(t *testing.T) {
 	if _, err := s.UpsertDecl("demo/lib", "// Double returns twice v.\nfunc Double(v int) int { return v * 2 }"); err != nil {
 		t.Fatal(err)
 	}
-	res, err := s.Query("doc", "demo/lib", "Double", "")
+	res, err := s.Query("doc", "demo/lib", "Double", "", 0)
 	if err != nil {
 		t.Fatal(err)
 	}

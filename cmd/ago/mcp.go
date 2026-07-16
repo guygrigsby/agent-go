@@ -44,10 +44,12 @@ func mcpTools() []mcpTool {
 			mcpObjSchema(nil, map[string]any{})},
 		{"help", "Return the versioned op catalog: every patch op's argument schema, one worked example, and its v1 ceilings, plus short descriptions of the six tools. Call this before composing a patch with an unfamiliar op.",
 			mcpObjSchema(nil, map[string]any{})},
-		{"query", "Semantic questions against the typechecked snapshot: search, inspect, refs, callers, callees, implementations, doc, dispatched by kind. search turns a name fragment from the task into exact pkg/sym addresses; inspect gives kind/signature/declaration position; refs finds every reference including tests. callers/callees are call-graph edges (static calls; a call through an interface resolves to the interface method). implementations works both directions: interface -> implementing types, or concrete type -> interfaces it satisfies. doc returns the plain-text doc comment.",
+		{"query", "Semantic questions against the typechecked snapshot: search, inspect, refs, callers, callees, implementations, doc, dispatched by kind. search turns a name fragment from the task into exact pkg/sym addresses; inspect gives kind/signature/declaration position; refs finds every reference including tests. callers/callees are call-graph edges (static calls; a call through an interface resolves to the interface method). implementations works both directions: interface -> implementing types, or concrete type -> interfaces it satisfies. doc returns the plain-text doc comment. List results are position-sorted and paged 50 at a time: count is always the TOTAL found, and a truncated response carries truncated=true plus next_offset — pass that back as offset for the next page.",
 			mcpObjSchema([]string{"kind"}, merge(symProps, map[string]any{
 				"kind": mcpStr("one of search, inspect, refs, callers, callees, implementations, doc"),
-				"q":    mcpStr("name fragment, for kind=search")}))},
+				"q":    mcpStr("name fragment, for kind=search"),
+				"offset": map[string]any{"type": "integer",
+					"description": "page offset into a list result; pass a prior response's next_offset"}}))},
 		{"view", "Render a declaration's source. Functions and methods get a per-statement nK: handle prefix and a generation counter for staleness checks; other declarations (const, var, type) render as plain source. Handles are meaningful only against the generation this same response reports.",
 			mcpObjSchema([]string{"pkg", "sym"}, symProps)},
 		{"patch", "Apply an ordered list of edit ops as one atomic, generation-checked transaction: every op applies to an in-memory copy, the dirty set re-typechecks once, then everything writes and splices together, or nothing does on any rejection. Ops compose: an op later in the list can address a handle an earlier op returned, referenced as $1, $2, ... by 1-based op index. dry_run runs the identical pipeline and reports accept/reject without writing. Op families, full schemas and examples via help: decl ops (rename, set_body, add_param, upsert_decl, delete_decl, set_doc, add_field, remove_field), statement ops (add_assign, add_if, add_for, add_switch, set_cond, wrap_stmts, wrap_error, ...), test ops (add_test, add_test_case, set_test_case, remove_test_case). A decl or test op (rename, set_body, add_param, upsert_decl, delete_decl, set_doc, add_field, remove_field, add_test, add_test_case, set_test_case, remove_test_case) and a statement op cannot edit the same file in one patch; run them as separate patches.",
@@ -169,7 +171,8 @@ func mcpCall(dir, name string, args map[string]any) (string, bool) {
 				sym = q
 			}
 		}
-		req := protocol.Request{Op: "query", Kind: get("kind"), Pkg: get("pkg"), Sym: sym}
+		offset, _ := args["offset"].(float64) // JSON numbers decode as float64
+		req := protocol.Request{Op: "query", Kind: get("kind"), Pkg: get("pkg"), Sym: sym, Offset: int(offset)}
 		out, err := roundTrip(dir, req, true)
 		if err != nil {
 			return fmt.Sprintf("ago error: %v", err), true

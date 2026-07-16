@@ -137,7 +137,7 @@ func TestSuggestOrdering(t *testing.T) {
 
 func TestRefs(t *testing.T) {
 	s := demo(t)
-	res, err := s.Refs("demo/lib", "Double")
+	res, err := s.Refs("demo/lib", "Double", 0)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -148,14 +148,14 @@ func TestRefs(t *testing.T) {
 
 func TestSearch(t *testing.T) {
 	s := demo(t)
-	res, err := s.Search("dou")
+	res, err := s.Search("dou", 0)
 	if err != nil {
 		t.Fatal(err)
 	}
 	if res["count"].(int) != 1 {
 		t.Fatalf("got %v", res)
 	}
-	res, err = s.Search("put")
+	res, err = s.Search("put", 0)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -182,7 +182,7 @@ func TestSetBodyAccept(t *testing.T) {
 	}
 	// The accept spliced the package in place; queries must see the result
 	// with no full reload.
-	res, err = s.Refs("demo/lib", "Double")
+	res, err = s.Refs("demo/lib", "Double", 0)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -199,14 +199,14 @@ func TestSetBodyAccept(t *testing.T) {
 // not re-typechecked, so identity must survive the drift.
 func TestSpliceKeepsIdentityAcrossPositionDrift(t *testing.T) {
 	s := demo(t)
-	before, err := s.Refs("demo/lib", "Tail")
+	before, err := s.Refs("demo/lib", "Tail", 0)
 	if err != nil {
 		t.Fatal(err)
 	}
 	if _, err := s.SetBody("demo/lib", "Double", "w := v\nw += v\nreturn w"); err != nil {
 		t.Fatal(err)
 	}
-	after, err := s.Refs("demo/lib", "Tail")
+	after, err := s.Refs("demo/lib", "Tail", 0)
 	if err != nil {
 		t.Fatal(err)
 	}

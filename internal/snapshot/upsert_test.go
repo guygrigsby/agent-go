@@ -53,7 +53,7 @@ func TestUpsertReplace(t *testing.T) {
 	if !strings.Contains(string(b), "v << 1") || strings.Contains(string(b), "v * 2") {
 		t.Errorf("declaration not replaced in place:\n%s", b)
 	}
-	refs, err := s.Refs("demo/lib", "Double")
+	refs, err := s.Refs("demo/lib", "Double", 0)
 	if err != nil || refs["count"].(int) != 2 {
 		t.Errorf("refs after replace: %v %v", refs, err)
 	}

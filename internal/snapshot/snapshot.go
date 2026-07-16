@@ -714,7 +714,9 @@ func (s *Snapshot) Status() (map[string]any, error) {
 // Search finds workspace symbols by case-insensitive substring: package
 // scope names, struct fields, and methods. This is the discovery op — the
 // bridge from a natural-language name fragment to an exact symbol address.
-func (s *Snapshot) Search(query string) (map[string]any, error) {
+// Hits arrive in package load order, scope names sorted within each
+// package — deterministic, so offset pages are stable.
+func (s *Snapshot) Search(query string, offset int) (map[string]any, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	ms, err := s.ensureFresh()
@@ -731,12 +733,11 @@ func (s *Snapshot) Search(query string) (map[string]any, error) {
 		Kind string `json:"kind"`
 		Pos  string `json:"pos"`
 	}
-	const limit = 200
 	var hits []hit
 	seen := map[string]bool{}
 	add := func(pkg, sym string, obj types.Object) {
 		key := pkg + "." + sym
-		if seen[key] || len(hits) >= limit {
+		if seen[key] {
 			return
 		}
 		seen[key] = true
@@ -770,10 +771,9 @@ func (s *Snapshot) Search(query string) (map[string]any, error) {
 			}
 		}
 	}
-	return map[string]any{
-		"status": "ok", "query": query, "count": len(hits),
-		"truncated": len(hits) >= limit, "symbols": hits, "load_ms": ms,
-	}, nil
+	return page(map[string]any{
+		"status": "ok", "query": query, "load_ms": ms,
+	}, "symbols", hits, offset), nil
 }
 
 func (s *Snapshot) Inspect(pkgPath, sym string) (map[string]any, error) {
@@ -795,7 +795,9 @@ func (s *Snapshot) Inspect(pkgPath, sym string) (map[string]any, error) {
 	}, nil
 }
 
-func (s *Snapshot) Refs(pkgPath, sym string) (map[string]any, error) {
+// Refs lists every reference to a symbol, position-sorted (references
+// sorts at source), paged by offset.
+func (s *Snapshot) Refs(pkgPath, sym string, offset int) (map[string]any, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	ms, err := s.ensureFresh()
@@ -815,10 +817,9 @@ func (s *Snapshot) Refs(pkgPath, sym string) (map[string]any, error) {
 	for _, r := range s.references(obj) {
 		refs = append(refs, ref{Pos: r.pos.String(), Pkg: r.pkg, Def: r.def})
 	}
-	return map[string]any{
-		"status": "ok", "symbol": pkgPath + "." + sym,
-		"count": len(refs), "refs": refs, "load_ms": ms,
-	}, nil
+	return page(map[string]any{
+		"status": "ok", "symbol": pkgPath + "." + sym, "load_ms": ms,
+	}, "refs", refs, offset), nil
 }
 
 // setBodyEdit locates sym's function body and validates it's editable

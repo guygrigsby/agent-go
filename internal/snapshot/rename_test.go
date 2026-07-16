@@ -24,7 +24,7 @@ func TestRename(t *testing.T) {
 		t.Errorf("renamed symbol not queryable: %v", err)
 	}
 	// The daemon's own writes must not read as external edits.
-	refs, err := s.Refs("demo/lib", "Twice")
+	refs, err := s.Refs("demo/lib", "Twice", 0)
 	if err != nil {
 		t.Fatal(err)
 	}

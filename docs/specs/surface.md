@@ -67,6 +67,11 @@ live help catalog appears here, so shipped rows cannot drift. Statuses:
 
 ## Query kinds
 
+List-returning kinds (search, refs, callers, callees, implementations)
+are position-sorted and paged 50 entries at a time: `count` is always the
+total found, and a truncated response carries `truncated: true` plus
+`next_offset` to pass back as `offset`.
+
 | kind | status | notes |
 |---|---|---|
 | `search` | shipped | |
