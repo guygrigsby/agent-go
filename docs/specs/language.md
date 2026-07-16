@@ -219,10 +219,15 @@ decoder).
 A rejection is the agent's error channel and must always answer "what is
 the correct next call": diagnostics say what broke, `did_you_mean` lists
 bare candidates, `possible_repairs` carries the corrected call whole —
-complete, paste-ready, and only ever a call the daemon would accept
-(candidates that would themselves reject are filtered out). Implemented
-for view addressing misses; patch ops are next. Patch rejections say
-which op index failed; earlier ops in the patch have no effect.
+complete and paste-ready. Addressing misses resend the corrected call
+(view, query, patch ops, and the sugar mutations), filtered so a repair
+never repeats the rejection that produced it; stale generations and
+unknown handles repair with the re-view call; a missing required op
+argument falls back to the `help` call; an undefined identifier in a
+typecheck reject gets the `search` call that locates it. Nothing is
+guessed: where no mechanical repair exists, diagnostics stand alone.
+Patch rejections say which op index failed; earlier ops in the patch
+have no effect.
 
 ## Guarantees
 
