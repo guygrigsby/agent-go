@@ -18,35 +18,37 @@ import (
 
 // addParamEdits computes add_param's edits without touching disk: symbol
 // lookup, the value-use/call-site scan, the declaration and call-site
-// insertion points, and the pre-existing-errors preflight, exactly as
-// AddParam has always done inline.
-func addParamEdits(s *Snapshot, pkgPath, sym, name, typ, defaultExpr string) (edits []edit, callersUpdated int, rej *Reject) {
+// insertion points, and the pre-existing-diagnostics baseline capture (the
+// dirty set's current errors, filtered against the caller's post-splice
+// retypecheck so only NEW diagnostics reject), exactly as AddParam has
+// always done inline.
+func addParamEdits(s *Snapshot, pkgPath, sym, name, typ, defaultExpr string) (edits []edit, callersUpdated int, baseline map[string]bool, rej *Reject) {
 	if !token.IsIdentifier(name) {
-		return nil, 0, &Reject{Reason: "parameter name is not a valid identifier", Detail: name}
+		return nil, 0, nil, &Reject{Reason: "parameter name is not a valid identifier", Detail: name}
 	}
 	if typ == "" {
-		return nil, 0, &Reject{Reason: "parameter type is required"}
+		return nil, 0, nil, &Reject{Reason: "parameter type is required"}
 	}
 	p, obj, rej0 := s.findObject(pkgPath, sym)
 	if rej0 != nil {
-		return nil, 0, rej0
+		return nil, 0, nil, rej0
 	}
 	fn, ok := obj.(*types.Func)
 	if !ok {
-		return nil, 0, &Reject{Reason: "symbol is not a function", Detail: objKind(obj)}
+		return nil, 0, nil, &Reject{Reason: "symbol is not a function", Detail: objKind(obj)}
 	}
 	decl, declFile := findFuncDecl(p, fn)
 	if decl == nil {
-		return nil, 0, &Reject{Reason: "function declaration not found", Detail: sym}
+		return nil, 0, nil, &Reject{Reason: "function declaration not found", Detail: sym}
 	}
 
 	calls, valueUses := s.callSites(fn)
 	if len(valueUses) > 0 {
-		return nil, 0, &Reject{Reason: "function is used as a value; add_param cannot repair those sites",
+		return nil, 0, nil, &Reject{Reason: "function is used as a value; add_param cannot repair those sites",
 			Diagnostics: valueUses}
 	}
 	if len(calls) > 0 && defaultExpr == "" {
-		return nil, 0, &Reject{Reason: "default expression required",
+		return nil, 0, nil, &Reject{Reason: "default expression required",
 			Detail: fmt.Sprintf("%d call sites need an argument", len(calls))}
 	}
 
@@ -65,7 +67,7 @@ func addParamEdits(s *Snapshot, pkgPath, sym, name, typ, defaultExpr string) (ed
 				continue
 			}
 			if promote == nil {
-				return nil, 0, &Reject{Reason: "parameter name collides with a declaration in the function body",
+				return nil, 0, nil, &Reject{Reason: "parameter name collides with a declaration in the function body",
 					Detail: name + " is already declared there and parameters share the body scope; rename or delete the local, or make default match its initializer so add_param can promote it",
 					Diagnostics: []Diagnostic{{Pos: s.fset.Position(pos).String(),
 						Msg: name + " declared here"}}}
@@ -146,10 +148,8 @@ func addParamEdits(s *Snapshot, pkgPath, sym, name, typ, defaultExpr string) (ed
 		editedFiles[e.file] = true
 	}
 	preDirty := append(s.dirtyByFiles(editedFiles), s.affected(pkgPath)...)
-	if diags := errorsIn(preDirty); len(diags) > 0 {
-		return nil, 0, &Reject{Reason: "affected packages have pre-existing errors", Diagnostics: diags}
-	}
-	return edits, len(calls), nil
+	baseline = errorSet(errorsIn(preDirty))
+	return edits, len(calls), baseline, nil
 }
 
 // AddParam appends a parameter to a function or method and rewrites every
@@ -164,7 +164,7 @@ func (s *Snapshot) AddParam(pkgPath, sym, name, typ, defaultExpr string) (map[st
 	if err != nil {
 		return nil, err
 	}
-	edits, callersUpdated, rej := addParamEdits(s, pkgPath, sym, name, typ, defaultExpr)
+	edits, callersUpdated, baseline, rej := addParamEdits(s, pkgPath, sym, name, typ, defaultExpr)
 	if rej != nil {
 		s.sugarRepairs(rej, "add_param",
 			map[string]any{"pkg": pkgPath, "sym": sym, "name": name,
@@ -205,7 +205,7 @@ func (s *Snapshot) AddParam(pkgPath, sym, name, typ, defaultExpr string) (map[st
 	}
 
 	dirty := append(s.dirtyByFiles(editedFiles), s.affected(pkgPath)...)
-	diags, n, err := s.retypecheck(dirty)
+	diags, n, err := s.retypecheck(dirty, baseline)
 	if err != nil {
 		s.rollback(originals)
 		return nil, err
@@ -217,7 +217,7 @@ func (s *Snapshot) AddParam(pkgPath, sym, name, typ, defaultExpr string) (map[st
 	// Sanity: the new signature must actually carry the parameter.
 	if _, obj, rej := s.findObject(pkgPath, sym); rej != nil || !hasParam(obj, name) {
 		s.rollback(originals)
-		s.retypecheck(dirty)
+		s.retypecheck(dirty, baseline)
 		return nil, &Reject{Reason: "parameter missing after edit", Detail: sym}
 	}
 	for file := range editedFiles {
@@ -228,12 +228,12 @@ func (s *Snapshot) AddParam(pkgPath, sym, name, typ, defaultExpr string) (map[st
 		files = append(files, file)
 	}
 	sort.Strings(files)
-	res := map[string]any{
+	res := addPreExisting(map[string]any{
 		"status": "accepted", "symbol": pkgPath + "." + sym,
 		"param": name + " " + typ, "callers_updated": callersUpdated,
 		"files": files, "load_ms": ms, "packages_rechecked": n,
 		"generation": s.generation(pkgPath, sym),
-	}
+	}, baseline)
 	// Call-site files were edited too, but the one declaration reshaped is
 	// the target function; its fresh view is what the next edit needs.
 	s.attachView(res, pkgPath, sym)
@@ -261,10 +261,11 @@ func (addParamOp) apply(ctx *patchCtx, raw json.RawMessage) *Reject {
 	}
 	pkg := orDefault(a.Pkg, ctx.pkg)
 	sym := orDefault(a.Sym, ctx.sym)
-	edits, _, rej := addParamEdits(ctx.s, pkg, sym, a.Name, a.Type, a.Default)
+	edits, _, baseline, rej := addParamEdits(ctx.s, pkg, sym, a.Name, a.Type, a.Default)
 	if rej != nil {
 		return rej
 	}
+	ctx.addBaseline(baseline)
 	if rej := ctx.applyDeclEdits(edits); rej != nil {
 		return rej
 	}

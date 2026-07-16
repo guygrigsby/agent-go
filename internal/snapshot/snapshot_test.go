@@ -268,11 +268,15 @@ func TestMutationAllowedDespiteUnrelatedRot(t *testing.T) {
 	if res["status"] != "accepted" {
 		t.Fatalf("got %v", res)
 	}
-	// But a mutation whose dirty set includes the rot is still refused.
-	_, err = s.UpsertDecl("demo/rot", "func Fine() int {\n\treturn 1\n}")
-	rej, ok := err.(*Reject)
-	if !ok || rej.Reason != "affected packages have pre-existing errors" {
-		t.Fatalf("want scoped preflight reject, got %v", err)
+	// A mutation whose dirty set includes the rot proceeds too — the
+	// baseline contract rejects only NEW diagnostics — and the tolerated
+	// rot stays visible via pre_existing.
+	res, err = s.UpsertDecl("demo/rot", "func Fine() int {\n\treturn 1\n}")
+	if err != nil {
+		t.Fatalf("upsert into rotted package blocked: %v", err)
+	}
+	if res["status"] != "accepted" || res["pre_existing"] != 1 {
+		t.Fatalf("want accepted with pre_existing 1, got %v", res)
 	}
 }
 

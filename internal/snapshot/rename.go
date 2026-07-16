@@ -29,7 +29,10 @@ type edit struct {
 
 // renameEdits computes a rename's edits without touching disk or the
 // snapshot: identifier validation, symbol lookup, the reference scan, the
-// workspace-boundary check, and the pre-existing-errors preflight, all
+// workspace-boundary check, and the pre-existing-diagnostics baseline
+// capture (the dirty set's current errors, keyed pos|msg, which the caller
+// filters its post-splice retypecheck against — pre-existing rot must not
+// block an edit, only NEW diagnostics reject), all
 // exactly as Rename has always done inline. old is the symbol's current
 // name, needed by both callers to verify a byte range still holds the
 // expected text before splicing it. declPos is the target's pristine
@@ -41,22 +44,22 @@ type edit struct {
 // the file's complete per-file ledger (ctx.declEdits), so a multi-rename
 // patch accounts for every sibling decl op's shift in the same file, not
 // just its own.
-func renameEdits(s *Snapshot, pkgPath, sym, to string) (edits []edit, old string, declPos token.Position, newSym string, rej *Reject) {
+func renameEdits(s *Snapshot, pkgPath, sym, to string) (edits []edit, old string, declPos token.Position, newSym string, baseline map[string]bool, rej *Reject) {
 	if !token.IsIdentifier(to) {
 		rej = &Reject{Reason: "new name is not a valid identifier", Detail: to}
 		if recv, name, ok := strings.Cut(to, "."); ok && token.IsIdentifier(recv) && token.IsIdentifier(name) {
 			rej.Detail = to + ": pass only the new member name; the receiver stays"
 			rej.DidYouMean = []string{name}
 		}
-		return nil, "", token.Position{}, "", rej
+		return nil, "", token.Position{}, "", nil, rej
 	}
 	_, obj, rej0 := s.findObject(pkgPath, sym)
 	if rej0 != nil {
-		return nil, "", token.Position{}, "", rej0
+		return nil, "", token.Position{}, "", nil, rej0
 	}
 	old = obj.Name()
 	if old == to {
-		return nil, "", token.Position{}, "", &Reject{Reason: "symbol already has that name", Detail: to}
+		return nil, "", token.Position{}, "", nil, &Reject{Reason: "symbol already has that name", Detail: to}
 	}
 	newSym = to
 	if recv, _, isMethod := strings.Cut(sym, "."); isMethod {
@@ -68,7 +71,7 @@ func renameEdits(s *Snapshot, pkgPath, sym, to string) (edits []edit, old string
 	}
 	for _, e := range edits {
 		if !strings.HasPrefix(e.file, s.dir+string(os.PathSeparator)) {
-			return nil, "", token.Position{}, "", &Reject{Reason: "symbol is referenced outside the workspace", Detail: e.file}
+			return nil, "", token.Position{}, "", nil, &Reject{Reason: "symbol is referenced outside the workspace", Detail: e.file}
 		}
 	}
 
@@ -77,12 +80,10 @@ func renameEdits(s *Snapshot, pkgPath, sym, to string) (edits []edit, old string
 		editedFiles[e.file] = true
 	}
 	preDirty := append(s.dirtyByFiles(editedFiles), s.affected(pkgPath)...)
-	if diags := errorsIn(preDirty); len(diags) > 0 {
-		return nil, "", token.Position{}, "", &Reject{Reason: "affected packages have pre-existing errors", Diagnostics: diags}
-	}
+	baseline = errorSet(errorsIn(preDirty))
 
 	declPos = s.fset.Position(obj.Pos())
-	return edits, old, declPos, newSym, nil
+	return edits, old, declPos, newSym, baseline, nil
 }
 
 // renameExpected computes a rename's expected post-splice reference
@@ -125,7 +126,7 @@ func (s *Snapshot) Rename(pkgPath, sym, to string) (map[string]any, error) {
 	if err != nil {
 		return nil, err
 	}
-	edits, old, declPos, newSym, rej := renameEdits(s, pkgPath, sym, to)
+	edits, old, declPos, newSym, baseline, rej := renameEdits(s, pkgPath, sym, to)
 	if rej != nil {
 		s.sugarRepairs(rej, "rename",
 			map[string]any{"pkg": pkgPath, "sym": sym, "to": to}, s.resolves)
@@ -170,7 +171,7 @@ func (s *Snapshot) Rename(pkgPath, sym, to string) (map[string]any, error) {
 	// of the target's package — a method rename can break interface
 	// satisfaction in a package that never names the method.
 	dirty := append(s.dirtyByFiles(editedFiles), s.affected(pkgPath)...)
-	diags, n, err := s.retypecheck(dirty)
+	diags, n, err := s.retypecheck(dirty, baseline)
 	if err != nil {
 		s.rollback(originals)
 		return nil, err
@@ -183,7 +184,7 @@ func (s *Snapshot) Rename(pkgPath, sym, to string) (map[string]any, error) {
 		s.rollback(originals)
 		// Splices already landed; re-typecheck the same set against the
 		// restored files to put the snapshot back.
-		s.retypecheck(dirty)
+		s.retypecheck(dirty, baseline)
 		return nil, rej
 	}
 	for file := range editedFiles {
@@ -194,12 +195,12 @@ func (s *Snapshot) Rename(pkgPath, sym, to string) (map[string]any, error) {
 		files = append(files, file)
 	}
 	sort.Strings(files)
-	res := map[string]any{
+	res := addPreExisting(map[string]any{
 		"status": "accepted", "symbol": pkgPath + "." + sym, "new_name": to,
 		"references": len(edits), "files": files,
 		"load_ms": ms, "packages_rechecked": n,
 		"generation": s.generation(pkgPath, newSym),
-	}
+	}, baseline)
 	// The viewed symbol is the NEW name; the old address no longer resolves.
 	s.attachView(res, pkgPath, newSym)
 	return res, nil
@@ -223,10 +224,11 @@ func (renameOp) apply(ctx *patchCtx, raw json.RawMessage) *Reject {
 	}
 	pkg := orDefault(a.Pkg, ctx.pkg)
 	sym := orDefault(a.Sym, ctx.sym)
-	edits, _, declPos, newSym, rej := renameEdits(ctx.s, pkg, sym, a.To)
+	edits, _, declPos, newSym, baseline, rej := renameEdits(ctx.s, pkg, sym, a.To)
 	if rej != nil {
 		return rej
 	}
+	ctx.addBaseline(baseline)
 	if rej := ctx.applyDeclEdits(edits); rej != nil {
 		return rej
 	}

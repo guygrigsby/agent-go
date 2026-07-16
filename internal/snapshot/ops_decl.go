@@ -30,10 +30,11 @@ func (setBodyOp) apply(ctx *patchCtx, raw json.RawMessage) *Reject {
 	}
 	pkg := orDefault(a.Pkg, ctx.pkg)
 	sym := orDefault(a.Sym, ctx.sym)
-	file, lbrace, rbrace, rej := setBodyEdit(ctx.s, pkg, sym)
+	file, lbrace, rbrace, baseline, rej := setBodyEdit(ctx.s, pkg, sym)
 	if rej != nil {
 		return rej
 	}
+	ctx.addBaseline(baseline)
 	if rej := ctx.applyDeclEdits([]edit{{file, lbrace, rbrace - lbrace + 1, "{\n" + a.Body + "\n}"}}); rej != nil {
 		return rej
 	}
@@ -70,9 +71,7 @@ func (upsertDeclOp) apply(ctx *patchCtx, raw json.RawMessage) *Reject {
 		return &Reject{Reason: "upsert_decl cannot create a new file in a composable patch",
 			Detail: "agent.go does not exist yet in " + pkg + "; use the single-op upsert_decl call"}
 	}
-	if rej := preexistingErrors(ctx.s, file, pkg); rej != nil {
-		return rej
-	}
+	ctx.addBaseline(preflightBaseline(ctx.s, file, pkg))
 	prefix := ""
 	if start > 0 {
 		prefix = "\n"
@@ -92,15 +91,15 @@ func (upsertDeclOp) apply(ctx *patchCtx, raw json.RawMessage) *Reject {
 	return nil
 }
 
-// preexistingErrors runs the same "affected packages have pre-existing
-// errors" preflight every decl op's core performs before computing its
-// edit: the dirty set is file's own compiling packages plus pkgPath's
-// transitive reverse importers.
-func preexistingErrors(s *Snapshot, file, pkgPath string) *Reject {
-	if diags := errorsIn(append(s.dirtyByFiles(map[string]bool{file: true}), s.affected(pkgPath)...)); len(diags) > 0 {
-		return &Reject{Reason: "affected packages have pre-existing errors", Diagnostics: diags}
-	}
-	return nil
+// preflightBaseline captures the pre-existing diagnostics every decl op's
+// core observes before computing its edit: the dirty set is file's own
+// compiling packages plus pkgPath's transitive reverse importers. Mutations
+// no longer refuse on this rot — real-world repos carry unrelated breakage —
+// instead each op folds the baseline into patchCtx (ctx.addBaseline) and
+// patchComposable filters its end-of-list retypecheck against it, rejecting
+// only when NEW diagnostics appear.
+func preflightBaseline(s *Snapshot, file, pkgPath string) map[string]bool {
+	return errorSet(errorsIn(append(s.dirtyByFiles(map[string]bool{file: true}), s.affected(pkgPath)...)))
 }
 
 // referencePositions collects up to 10 of obj's non-declaring reference
@@ -151,9 +150,6 @@ func deleteDeclEdit(s *Snapshot, pkgPath, sym string) (e edit, rej *Reject) {
 	if refs := referencePositions(s, obj, filename, startOff, endOff); len(refs) > 0 {
 		return edit{}, &Reject{Reason: "symbol is still referenced", Diagnostics: refs}
 	}
-	if rej := preexistingErrors(s, filename, pkgPath); rej != nil {
-		return edit{}, rej
-	}
 	return edit{filename, startOff, endOff - startOff, ""}, nil
 }
 
@@ -180,6 +176,7 @@ func (deleteDeclOp) apply(ctx *patchCtx, raw json.RawMessage) *Reject {
 	if rej != nil {
 		return rej
 	}
+	ctx.addBaseline(preflightBaseline(ctx.s, e.file, pkg))
 	if rej := ctx.applyDeclEdits([]edit{e}); rej != nil {
 		return rej
 	}
@@ -295,9 +292,6 @@ func addFieldEdit(s *Snapshot, pkgPath, sym, name, typ, tag string) (e edit, rej
 			}
 		}
 	}
-	if rej := preexistingErrors(s, file, pkgPath); rej != nil {
-		return edit{}, rej
-	}
 	offset := s.fset.Position(st.Fields.Closing).Offset
 	line := "\n\t" + name + " " + typ
 	if tag != "" {
@@ -332,6 +326,7 @@ func (addFieldOp) apply(ctx *patchCtx, raw json.RawMessage) *Reject {
 	if rej != nil {
 		return rej
 	}
+	ctx.addBaseline(preflightBaseline(ctx.s, e.file, pkg))
 	if rej := ctx.applyDeclEdits([]edit{e}); rej != nil {
 		return rej
 	}
@@ -377,9 +372,6 @@ func removeFieldEdit(s *Snapshot, pkgPath, sym string) (e edit, rej *Reject) {
 			return edit{}, &Reject{Reason: "field shares a declaration with other names; remove_field does not support that in v1",
 				Detail: fname}
 		}
-		if rej := preexistingErrors(s, file, pkgPath); rej != nil {
-			return edit{}, rej
-		}
 		start := s.fset.Position(f.Pos()).Offset
 		end := s.fset.Position(f.End()).Offset
 		return edit{file, start, end - start, ""}, nil
@@ -407,6 +399,7 @@ func (removeFieldOp) apply(ctx *patchCtx, raw json.RawMessage) *Reject {
 	if rej != nil {
 		return rej
 	}
+	ctx.addBaseline(preflightBaseline(ctx.s, e.file, pkg))
 	if rej := ctx.applyDeclEdits([]edit{e}); rej != nil {
 		return rej
 	}

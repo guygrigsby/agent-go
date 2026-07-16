@@ -317,13 +317,13 @@ func TestPatchCreatedFileRolledBackOnBadRef(t *testing.T) {
 	}
 }
 
-// TestAddTestPreexistingRotNotBlamed is Task 10 review Fix 3: a package
-// with pre-existing rot elsewhere in the package must not have that rot
-// blamed on the newly generated test. Before the fix, add_test's new-file
-// path typechecked the whole reloaded workspace and rejected ANY
-// diagnostic as "generated test does not typecheck", even a preexisting
-// one the new file didn't cause.
-func TestAddTestPreexistingRotNotBlamed(t *testing.T) {
+// TestAddTestToleratesPreexistingRot: a package with pre-existing rot
+// elsewhere in the package must neither have that rot blamed on the newly
+// generated test (Task 10 review Fix 3) nor have it block the test at all
+// (the baseline contract: only NEW diagnostics reject). Earlier revisions
+// rejected here with "affected packages have pre-existing errors"; now the
+// generated test lands and the tolerated rot stays visible via pre_existing.
+func TestAddTestToleratesPreexistingRot(t *testing.T) {
 	s := demo(t)
 	useFile := filepath.Join(s.dir, "lib", "use.go")
 	b, err := os.ReadFile(useFile)
@@ -334,17 +334,16 @@ func TestAddTestPreexistingRotNotBlamed(t *testing.T) {
 	if err := os.WriteFile(useFile, []byte(rotten), 0o644); err != nil {
 		t.Fatal(err)
 	}
-	_, err = s.Patch([]byte(`{"pkg":"demo/lib",
+	res, err := s.Patch([]byte(`{"pkg":"demo/lib",
 		"ops":[{"op":"add_test","target":"Double"}]}`))
-	rej, ok := err.(*Reject)
-	if !ok {
-		t.Fatalf("want reject, got %v", err)
+	if err != nil {
+		t.Fatalf("add_test blocked by pre-existing rot: %v", err)
 	}
-	if rej.Reason != "affected packages have pre-existing errors" {
-		t.Fatalf("got reason %q (want the rot misattribution fixed): %v", rej.Reason, rej)
+	if res["status"] != "accepted" || res["pre_existing"] != 1 {
+		t.Fatalf("want accepted with pre_existing 1, got %v", res)
 	}
-	if _, statErr := os.Stat(filepath.Join(s.dir, "lib", "lib_test.go")); statErr == nil {
-		t.Errorf("rejected add_test left lib_test.go behind")
+	if _, statErr := os.Stat(filepath.Join(s.dir, "lib", "lib_test.go")); statErr != nil {
+		t.Errorf("accepted add_test did not leave lib_test.go: %v", statErr)
 	}
 }
 

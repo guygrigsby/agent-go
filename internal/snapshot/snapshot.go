@@ -5,7 +5,11 @@
 // whose files changed plus, when an edit can alter a method set or exported
 // API, the transitive reverse importers of the target package. Those are
 // re-typechecked in dependency order against the in-memory graph and
-// spliced into the snapshot, or rolled back wholesale on any diagnostic.
+// spliced into the snapshot, or rolled back wholesale on any NEW diagnostic.
+// Diagnostics the dirty set already carried before the edit (real-world
+// repos accumulate unrelated rot) are captured as a baseline at preflight
+// and filtered out afterward: the contract is "no new errors", not "no
+// errors".
 package snapshot
 
 import (
@@ -164,6 +168,47 @@ func errorsIn(pkgs []*packages.Package) []Diagnostic {
 		}
 	}
 	return diags
+}
+
+// errorSet keys diagnostics as pos|msg — the identity a diagnostic keeps
+// across an incremental retypecheck when the code around it is untouched —
+// for baseline capture. A nil set means no pre-existing diagnostics.
+func errorSet(diags []Diagnostic) map[string]bool {
+	if len(diags) == 0 {
+		return nil
+	}
+	set := make(map[string]bool, len(diags))
+	for _, d := range diags {
+		set[d.Pos+"|"+d.Msg] = true
+	}
+	return set
+}
+
+// filterNew drops diagnostics already present in baseline, leaving only the
+// ones the current edit introduced. Position-keyed, so a pre-existing
+// diagnostic whose position the edit itself shifts reads as new — the safe
+// direction: at worst a genuinely-unrelated error rejects an edit, never
+// the reverse.
+func filterNew(diags []Diagnostic, baseline map[string]bool) []Diagnostic {
+	if len(baseline) == 0 || len(diags) == 0 {
+		return diags
+	}
+	var out []Diagnostic
+	for _, d := range diags {
+		if !baseline[d.Pos+"|"+d.Msg] {
+			out = append(out, d)
+		}
+	}
+	return out
+}
+
+// addPreExisting records the count of tolerated pre-existing diagnostics on
+// an accepted response, so baseline rot stays visible to the caller.
+func addPreExisting(res map[string]any, baseline map[string]bool) map[string]any {
+	if len(baseline) > 0 {
+		res["pre_existing"] = len(baseline)
+	}
+	return res
 }
 
 // primary returns the non-test variant of a package.
@@ -499,11 +544,19 @@ type pkgState struct {
 // retypecheck re-typechecks the dirty packages in dependency order, reading
 // current file contents from disk, and splices results into the snapshot in
 // place. Importers see spliced results immediately because Imports shares
-// package pointers. Any diagnostic rolls back every splice.
+// package pointers. Any diagnostic NOT in baseline (pos|msg keys captured
+// from the dirty set at the caller's preflight, before any bytes changed)
+// rolls back every splice; only new diagnostics are returned. Pre-existing
+// diagnostics are tolerated: the splice lands and each package keeps them
+// on p.Errors, so the next mutation's preflight still sees the rot.
+//
+// Parse failures are the exception: a dirty package that no longer parses
+// cannot be spliced at all, so those reject unfiltered even when the parse
+// error predates the edit.
 //
 // ponytail: each splice re-parses into the shared FileSet, which only grows;
 // a long-lived daemon on a huge repo will accumulate. Idle-exit bounds it.
-func (s *Snapshot) retypecheck(dirty []*packages.Package) ([]Diagnostic, int, error) {
+func (s *Snapshot) retypecheck(dirty []*packages.Package, baseline map[string]bool) ([]Diagnostic, int, error) {
 	var work []*packages.Package
 	seen := map[string]bool{}
 	for _, p := range dirty {
@@ -542,7 +595,7 @@ func (s *Snapshot) retypecheck(dirty []*packages.Package) ([]Diagnostic, int, er
 				return nil, 0, err
 			}
 			_ = ms
-			return s.errors(), len(order), nil
+			return filterNew(s.errors(), baseline), len(order), nil
 		}
 		if len(parseDiags) > 0 {
 			restore()
@@ -575,15 +628,22 @@ func (s *Snapshot) retypecheck(dirty []*packages.Package) ([]Diagnostic, int, er
 		}
 		tpkg, _ := conf.Check(p.PkgPath, s.fset, files, info)
 		saved[p] = pkgState{p.Types, p.TypesInfo, p.Syntax, p.Errors}
-		p.Types, p.TypesInfo, p.Syntax, p.Errors = tpkg, info, files, nil
+		// Keep the fresh diagnostics on p.Errors (nil when clean): when a
+		// splice with tolerated pre-existing rot lands, the next mutation's
+		// preflight must still observe that rot to baseline it.
+		var perrs []packages.Error
+		for _, d := range perr {
+			perrs = append(perrs, packages.Error{Pos: d.Pos, Msg: d.Msg, Kind: packages.TypeError})
+		}
+		p.Types, p.TypesInfo, p.Syntax, p.Errors = tpkg, info, files, perrs
 		diags = append(diags, perr...)
 	}
-	if len(diags) > 0 {
+	if fresh := filterNew(diags, baseline); len(fresh) > 0 {
 		restore()
-	} else {
-		s.bumpGenerations(order)
+		return fresh, len(order), nil
 	}
-	return diags, len(order), nil
+	s.bumpGenerations(order)
+	return nil, len(order), nil
 }
 
 // parsePkg parses a package's current files from disk into the shared FileSet.
@@ -822,30 +882,29 @@ func (s *Snapshot) Refs(pkgPath, sym string, offset int) (map[string]any, error)
 	}, "refs", refs, offset), nil
 }
 
-// setBodyEdit locates sym's function body and validates it's editable
-// (existing declaration, no pre-existing errors in the file's dirty set),
-// returning the byte offsets of its opening and closing braces. Pure
-// position computation: callers read the file themselves and splice body
-// into place (SetBody via spliceBody, which also gofmts the whole file; the
-// composable set_body op via the decl-op ledger, deferring formatting to
-// patchComposable's end-of-list imports.Process).
-func setBodyEdit(s *Snapshot, pkgPath, sym string) (filename string, lbrace, rbrace int, rej *Reject) {
+// setBodyEdit locates sym's function body, returning the byte offsets of
+// its opening and closing braces plus the baseline of pre-existing
+// diagnostics in the file's dirty set (captured here, where the dirty set
+// is already in hand; the caller filters its post-splice retypecheck
+// against it). Pure position computation otherwise: callers read the file
+// themselves and splice body into place (SetBody via spliceBody, which also
+// gofmts the whole file; the composable set_body op via the decl-op ledger,
+// deferring formatting to patchComposable's end-of-list imports.Process).
+func setBodyEdit(s *Snapshot, pkgPath, sym string) (filename string, lbrace, rbrace int, baseline map[string]bool, rej *Reject) {
 	p, obj, rej0 := s.findObject(pkgPath, sym)
 	if rej0 != nil {
-		return "", 0, 0, rej0
+		return "", 0, 0, nil, rej0
 	}
 	fn, ok := obj.(*types.Func)
 	if !ok {
-		return "", 0, 0, &Reject{Reason: "symbol is not a function", Detail: objKind(obj)}
+		return "", 0, 0, nil, &Reject{Reason: "symbol is not a function", Detail: objKind(obj)}
 	}
 	decl, filename := findFuncDecl(p, fn)
 	if decl == nil || decl.Body == nil {
-		return "", 0, 0, &Reject{Reason: "function declaration not found", Detail: sym}
+		return "", 0, 0, nil, &Reject{Reason: "function declaration not found", Detail: sym}
 	}
-	if diags := errorsIn(s.dirtyByFiles(map[string]bool{filename: true})); len(diags) > 0 {
-		return "", 0, 0, &Reject{Reason: "affected packages have pre-existing errors", Diagnostics: diags}
-	}
-	return filename, s.fset.Position(decl.Body.Lbrace).Offset, s.fset.Position(decl.Body.Rbrace).Offset, nil
+	baseline = errorSet(errorsIn(s.dirtyByFiles(map[string]bool{filename: true})))
+	return filename, s.fset.Position(decl.Body.Lbrace).Offset, s.fset.Position(decl.Body.Rbrace).Offset, baseline, nil
 }
 
 // SetBody replaces a function's body. A body edit cannot change the
@@ -858,7 +917,7 @@ func (s *Snapshot) SetBody(pkgPath, sym, body string) (map[string]any, error) {
 	if err != nil {
 		return nil, err
 	}
-	filename, lbrace, rbrace, rej := setBodyEdit(s, pkgPath, sym)
+	filename, lbrace, rbrace, baseline, rej := setBodyEdit(s, pkgPath, sym)
 	if rej != nil {
 		s.sugarRepairs(rej, "set_body",
 			map[string]any{"pkg": pkgPath, "sym": sym, "body": body}, s.resolvesToFunc)
@@ -877,7 +936,7 @@ func (s *Snapshot) SetBody(pkgPath, sym, body string) (map[string]any, error) {
 		return nil, err
 	}
 	start := time.Now()
-	diags, n, err := s.retypecheck(s.dirtyByFiles(map[string]bool{filename: true}))
+	diags, n, err := s.retypecheck(s.dirtyByFiles(map[string]bool{filename: true}), baseline)
 	checkMS := time.Since(start).Milliseconds()
 	if err != nil {
 		s.rollback(map[string][]byte{filename: src})
@@ -888,11 +947,11 @@ func (s *Snapshot) SetBody(pkgPath, sym, body string) (map[string]any, error) {
 		return nil, diagnosticRepairs(&Reject{Reason: "edit does not typecheck", Diagnostics: diags})
 	}
 	s.noteWrite(filename)
-	res := map[string]any{
+	res := addPreExisting(map[string]any{
 		"status": "accepted", "symbol": pkgPath + "." + sym, "file": filename,
 		"load_ms": ms, "check_ms": checkMS, "packages_rechecked": n,
 		"generation": s.generation(pkgPath, sym),
-	}
+	}, baseline)
 	s.attachView(res, pkgPath, sym)
 	return res, nil
 }

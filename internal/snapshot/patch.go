@@ -66,6 +66,13 @@ type patchCtx struct {
 	// see the ceiling comment on patchComposable's accept path.
 	touched []touchedDecl
 
+	// baseline accumulates every op's preflight capture of pre-existing
+	// diagnostics (pos|msg keys) across the whole op list. Pre-existing rot
+	// in the dirty set no longer refuses a patch; patchComposable filters
+	// the end-of-list retypecheck against this set and rejects only when
+	// NEW diagnostics appear.
+	baseline map[string]bool
+
 	// postChecks run once, after the shared end-of-list retypecheck
 	// succeeds, against the now-spliced live snapshot: rename's
 	// verifyResolution (reference-capture detection) and add_param's
@@ -270,9 +277,7 @@ func (s *Snapshot) patchComposable(env patchEnvelope, names []string) (map[strin
 			return nil, err
 		}
 		preDirty := append(s.dirtyByFiles(map[string]bool{nt.file: true}), s.affected(env.Pkg)...)
-		if diags := errorsIn(preDirty); len(diags) > 0 {
-			return nil, &Reject{Reason: "affected packages have pre-existing errors", Diagnostics: diags}
-		}
+		ctx.addBaseline(errorSet(errorsIn(preDirty)))
 		ctx.file = nt.file
 		ctx.src[nt.file] = append([]byte(nil), src...)
 		// Every statement op addresses handles inside this one function, so
@@ -347,6 +352,13 @@ func (s *Snapshot) patchComposable(env patchEnvelope, names []string) (map[strin
 	for pkg := range ctx.affectedPkgs {
 		dirty = append(dirty, s.affected(pkg)...)
 	}
+	// The final dirty set is a superset of every op's own preflight scope:
+	// affected(env.Pkg) joins unconditionally, even when no op named env.Pkg
+	// (a decl-only patch never runs the needsFunc preflight above). Capture
+	// its pre-existing diagnostics too — p.Errors still reflects the
+	// pre-splice snapshot here; only disk has changed — so rot in a reverse
+	// importer no op touched doesn't read as new below.
+	ctx.addBaseline(errorSet(errorsIn(dirty)))
 
 	// dry_run previews the same retypecheck a commit would run, so it must
 	// see the same accept/reject outcome. But the resync retypecheck below
@@ -364,7 +376,7 @@ func (s *Snapshot) patchComposable(env patchEnvelope, names []string) (map[strin
 			}
 		}
 	}
-	diags, n, err := s.retypecheck(dirty)
+	diags, n, err := s.retypecheck(dirty, ctx.baseline)
 	if err != nil {
 		s.rollback(originals)
 		ctx.cleanupCreatedFiles()
@@ -384,7 +396,7 @@ func (s *Snapshot) patchComposable(env patchEnvelope, names []string) (map[strin
 	}
 	if env.DryRun {
 		s.rollback(originals)
-		s.retypecheck(dirty)
+		s.retypecheck(dirty, ctx.baseline)
 		// cleanupCreatedFiles must run before the gens restore below: its
 		// forced full reload (when add_test created a file this patch) bumps
 		// every workspace package's generation counter same as any reload,
@@ -401,7 +413,7 @@ func (s *Snapshot) patchComposable(env patchEnvelope, names []string) (map[strin
 		if opRej != nil {
 			return nil, opRej
 		}
-		return map[string]any{"status": "ok", "dry_run": true, "would": "accepted"}, nil
+		return addPreExisting(map[string]any{"status": "ok", "dry_run": true, "would": "accepted"}, ctx.baseline), nil
 	}
 	if len(diags) > 0 {
 		s.rollback(originals)
@@ -420,7 +432,7 @@ func (s *Snapshot) patchComposable(env patchEnvelope, names []string) (map[strin
 		// Accepted, same direction as the rest of the generation contract: a
 		// stale view after a failed patch is safe (it just forces a re-view),
 		// where restoring counters to un-bump them is not worth tracking.
-		s.retypecheck(dirty)
+		s.retypecheck(dirty, ctx.baseline)
 		// Runs after the resync above for the same reason as the dry_run
 		// arm: cleanupCreatedFiles' own reload (when this patch's op list
 		// created a file) would otherwise be redone by, or race with, the
@@ -431,12 +443,12 @@ func (s *Snapshot) patchComposable(env patchEnvelope, names []string) (map[strin
 	for _, file := range touched {
 		s.noteWrite(file)
 	}
-	res := map[string]any{
+	res := addPreExisting(map[string]any{
 		"status": "accepted", "symbol": env.Pkg + "." + env.Sym,
 		"ops_applied": len(env.Ops), "files": touched,
 		"load_ms": ms, "packages_rechecked": n,
 		"generation": s.generation(env.Pkg, env.Sym),
-	}
+	}, ctx.baseline)
 	// Ceiling: the accept response embeds a fresh view only when exactly ONE
 	// declaration was touched (however many ops touched it). A multi-decl
 	// patch — several decl ops on different symbols, an atomic multi-rename —
@@ -535,6 +547,21 @@ func (ctx *patchCtx) addAffected(pkg string) {
 		ctx.affectedPkgs = map[string]bool{}
 	}
 	ctx.affectedPkgs[pkg] = true
+}
+
+// addBaseline folds one op's preflight capture of pre-existing diagnostics
+// into the patch-wide baseline patchComposable filters against at
+// end-of-list.
+func (ctx *patchCtx) addBaseline(set map[string]bool) {
+	if len(set) == 0 {
+		return
+	}
+	if ctx.baseline == nil {
+		ctx.baseline = map[string]bool{}
+	}
+	for k := range set {
+		ctx.baseline[k] = true
+	}
 }
 
 // cleanupCreatedFiles deletes every file ctx.createdFiles registered and

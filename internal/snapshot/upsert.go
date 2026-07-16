@@ -97,12 +97,16 @@ func (s *Snapshot) UpsertDecl(pkgPath, text string) (map[string]any, error) {
 	}
 
 	preDirty := append(s.dirtyByFiles(map[string]bool{file: true}), s.affected(pkgPath)...)
-	if diags := errorsIn(preDirty); len(diags) > 0 {
-		return nil, &Reject{Reason: "affected packages have pre-existing errors", Diagnostics: diags}
-	}
+	baseline := errorSet(errorsIn(preDirty))
 	created := ""
+	var wsBaseline map[string]bool
 	if _, err := os.Stat(file); err != nil {
 		created = file
+		// A created file forces a full workspace reload below, whose
+		// diagnostics are workspace-wide rather than dirty-set-scoped;
+		// baseline the whole workspace's pre-edit errors for that path so
+		// unrelated rot elsewhere doesn't read as new.
+		wsBaseline = errorSet(s.errors())
 	}
 	originals := map[string][]byte{}
 	if created == "" {
@@ -127,10 +131,10 @@ func (s *Snapshot) UpsertDecl(pkgPath, text string) (map[string]any, error) {
 	var diags []Diagnostic
 	n := 0
 	if s.loaded {
-		diags, n, err = s.retypecheck(dirty)
+		diags, n, err = s.retypecheck(dirty, baseline)
 	} else {
 		_, err = s.load()
-		diags = s.errors()
+		diags = filterNew(s.errors(), wsBaseline)
 	}
 	if err != nil {
 		undo()
@@ -147,11 +151,11 @@ func (s *Snapshot) UpsertDecl(pkgPath, text string) (map[string]any, error) {
 		return nil, &Reject{Reason: "declaration missing after edit", Detail: sym}
 	}
 	s.noteWrite(file)
-	res := map[string]any{
+	res := addPreExisting(map[string]any{
 		"status": "accepted", "symbol": pkgPath + "." + sym, "action": action,
 		"file": file, "load_ms": ms, "packages_rechecked": n,
 		"generation": s.generation(pkgPath, sym),
-	}
+	}, baseline)
 	s.attachView(res, pkgPath, sym)
 	return res, nil
 }
@@ -181,6 +185,10 @@ func (s *Snapshot) upsertNewPackage(pkgPath, text, sym string, loadMS int64) (ma
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		return nil, err
 	}
+	// The new package reloads the whole workspace; baseline its pre-edit
+	// errors so unrelated rot elsewhere doesn't read as caused by the new
+	// declaration.
+	baseline := errorSet(s.errors())
 	if err := os.WriteFile(file, fixed, 0o644); err != nil {
 		return nil, err
 	}
@@ -189,7 +197,7 @@ func (s *Snapshot) upsertNewPackage(pkgPath, text, sym string, loadMS int64) (ma
 		os.Remove(file)
 		return nil, err
 	}
-	if diags := s.errors(); len(diags) > 0 {
+	if diags := filterNew(s.errors(), baseline); len(diags) > 0 {
 		os.Remove(file)
 		s.loaded = false
 		return nil, diagnosticRepairs(&Reject{Reason: "declaration does not typecheck", Diagnostics: diags})
@@ -199,10 +207,10 @@ func (s *Snapshot) upsertNewPackage(pkgPath, text, sym string, loadMS int64) (ma
 		s.loaded = false
 		return nil, &Reject{Reason: "declaration missing after edit", Detail: pkgPath + "." + sym}
 	}
-	res := map[string]any{
+	res := addPreExisting(map[string]any{
 		"status": "accepted", "symbol": pkgPath + "." + sym, "action": "created-package",
 		"file": file, "load_ms": loadMS,
-	}
+	}, baseline)
 	s.attachView(res, pkgPath, sym)
 	return res, nil
 }
