@@ -35,3 +35,12 @@ now a first-class cross-model comparison axis.
 - 9237d6f7 semantic: 3 scored_fail (finished, failed predicate) — the
   one task where semantic completes but edits the wrong thing; worth a
   look alongside the next round.
+
+## Post-export identity note (2026-07-16)
+
+The benchmark harness's sizing pass (N=1) reused iter 0, aliasing 22
+sizing episodes with their real-iteration twins: episodes.jsonl kept both
+records (all 88 are in MLflow, collision-suffixed), but the sizing
+episodes' per-directory transcripts and request logs were overwritten on
+disk. Fixed in the runner the same day (unique per-cell counters); this
+run is the only one affected.
