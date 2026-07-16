@@ -82,6 +82,7 @@ type Snapshot struct {
 	// types mismatch ("context.Context does not implement context.Context").
 	importCache map[string]*types.Package
 	stdImp      types.Importer
+	impMu       sync.Mutex // importCache/stdImp: workers race during parallel retypecheck
 }
 
 func New(dir string) *Snapshot {
@@ -584,49 +585,105 @@ func (s *Snapshot) retypecheck(dirty []*packages.Package, baseline map[string]bo
 			p.Types, p.TypesInfo, p.Syntax, p.Errors = st.types, st.info, st.syntax, st.errs
 		}
 	}
-	var diags []Diagnostic
-	for _, p := range order {
-		files, cgo, parseDiags := s.parsePkg(p)
-		if cgo {
-			// cgo needs the go tool's preprocessing; splice the whole world.
-			restore()
-			ms, err := s.load()
-			if err != nil {
-				return nil, 0, err
+
+	workers := runtime.GOMAXPROCS(0)
+	if os.Getenv("AGO_SERIAL_TYPECHECK") != "" {
+		workers = 1
+	}
+
+	// Phase 1: parse every dirty package concurrently. Parsing needs no
+	// dependency order, and the parsed files are what the scheduling edges
+	// must come from: an edit can CHANGE the import graph (move_decl adds
+	// an import the pre-edit p.Imports doesn't know), so scheduling off
+	// the stale graph would let an importer check against unspliced types.
+	filesBy := make([][]*ast.File, len(order))
+	parseFail := make([][]Diagnostic, len(order))
+	sawCgo := false
+	var pmu sync.Mutex
+	var pwg sync.WaitGroup
+	psem := make(chan struct{}, workers)
+	for i := range order {
+		pwg.Add(1)
+		go func(i int) {
+			defer pwg.Done()
+			psem <- struct{}{}
+			defer func() { <-psem }()
+			files, cgo, pd := s.parsePkg(order[i])
+			pmu.Lock()
+			if cgo {
+				sawCgo = true
+			} else if len(pd) > 0 {
+				parseFail[i] = pd
+			} else {
+				filesBy[i] = files
 			}
-			_ = ms
-			return filterNew(s.errors(), baseline), len(order), nil
+			pmu.Unlock()
+		}(i)
+	}
+	pwg.Wait()
+	if sawCgo {
+		// cgo needs the go tool's preprocessing; splice the whole world.
+		if _, err := s.load(); err != nil {
+			return nil, 0, err
 		}
-		if len(parseDiags) > 0 {
-			restore()
-			return parseDiags, len(order), nil
+		return filterNew(s.errors(), baseline), len(order), nil
+	}
+	for _, pd := range parseFail {
+		// First parse failure in topo order, matching the old contract.
+		if pd != nil {
+			return pd, len(order), nil
 		}
-		info := &types.Info{
-			Defs:         map[*ast.Ident]types.Object{},
-			Uses:         map[*ast.Ident]types.Object{},
-			Types:        map[ast.Expr]types.TypeAndValue{},
-			Selections:   map[*ast.SelectorExpr]*types.Selection{},
-			Implicits:    map[ast.Node]types.Object{},
-			Scopes:       map[ast.Node]*types.Scope{},
-			Instances:    map[*ast.Ident]types.Instance{},
-			FileVersions: map[*ast.File]string{},
+	}
+
+	// The import-fallback cache may hold a pointer to a package this round
+	// re-splices; a cached stale *types.Package would leak old types into
+	// fresh importers.
+	s.impMu.Lock()
+	for _, p := range order {
+		delete(s.importCache, p.PkgPath)
+	}
+	s.impMu.Unlock()
+
+	// Phase 2: dependency-counter scheduling over POST-EDIT edges — each
+	// parsed file's import specs, resolved to the in-set primary variant.
+	// A dependent is released only after its dependency's results are
+	// spliced, so every importer observes finished packages exactly as the
+	// serial loop guaranteed. Results are kept per topo index and
+	// flattened in topo order, so diagnostics stay byte-identical to the
+	// serial driver (AGO_SERIAL_TYPECHECK=1 forces one worker for A/B).
+	primaryIdx := map[string]int{}
+	for i, p := range order {
+		if p.ID == p.PkgPath {
+			primaryIdx[p.PkgPath] = i
 		}
-		var perr []Diagnostic
-		conf := types.Config{
-			Importer: importerFor(s, p),
-			Sizes:    types.SizesFor("gc", runtime.GOARCH),
-			Error: func(err error) {
-				if te, ok := err.(types.Error); ok {
-					perr = append(perr, Diagnostic{Pos: te.Fset.Position(te.Pos).String(), Msg: te.Msg})
-				} else {
-					perr = append(perr, Diagnostic{Msg: err.Error()})
+	}
+	depCount := make([]int, len(order))
+	dependents := make([][]int, len(order))
+	for i := range order {
+		seenDep := map[int]bool{}
+		for _, f := range filesBy[i] {
+			for _, imp := range f.Imports {
+				path := strings.Trim(imp.Path.Value, `"`)
+				j, ok := primaryIdx[path]
+				if !ok || j == i || seenDep[j] {
+					continue
 				}
-			},
+				seenDep[j] = true
+				depCount[i]++
+				dependents[j] = append(dependents[j], i)
+			}
 		}
-		if p.Module != nil && p.Module.GoVersion != "" {
-			conf.GoVersion = "go" + p.Module.GoVersion
-		}
-		tpkg, _ := conf.Check(p.PkgPath, s.fset, files, info)
+	}
+	var (
+		mu      sync.Mutex
+		wg      sync.WaitGroup
+		sem     = make(chan struct{}, workers)
+		diagsBy = make([][]Diagnostic, len(order))
+		done    = make([]bool, len(order))
+	)
+	splice := func(i int, tpkg *types.Package, info *types.Info, perr []Diagnostic) {
+		// Caller holds mu.
+		p := order[i]
 		saved[p] = pkgState{p.Types, p.TypesInfo, p.Syntax, p.Errors}
 		// Keep the fresh diagnostics on p.Errors (nil when clean): when a
 		// splice with tolerated pre-existing rot lands, the next mutation's
@@ -635,8 +692,49 @@ func (s *Snapshot) retypecheck(dirty []*packages.Package, baseline map[string]bo
 		for _, d := range perr {
 			perrs = append(perrs, packages.Error{Pos: d.Pos, Msg: d.Msg, Kind: packages.TypeError})
 		}
-		p.Types, p.TypesInfo, p.Syntax, p.Errors = tpkg, info, files, perrs
-		diags = append(diags, perr...)
+		p.Types, p.TypesInfo, p.Syntax, p.Errors = tpkg, info, filesBy[i], perrs
+		diagsBy[i] = perr
+		done[i] = true
+	}
+	var launch func(i int)
+	launch = func(i int) {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			sem <- struct{}{}
+			defer func() { <-sem }()
+			tpkg, info, perr := s.checkOne(order[i], filesBy[i])
+			mu.Lock()
+			splice(i, tpkg, info, perr)
+			for _, d := range dependents[i] {
+				if depCount[d]--; depCount[d] == 0 {
+					launch(d)
+				}
+			}
+			mu.Unlock()
+		}()
+	}
+	mu.Lock()
+	for i := range order {
+		if depCount[i] == 0 {
+			launch(i)
+		}
+	}
+	mu.Unlock()
+	wg.Wait()
+	// A post-edit import cycle leaves nodes unscheduled (their counters
+	// never reach zero). Check them serially in topo order; the checker
+	// itself reports the cycle as a diagnostic.
+	for i := range order {
+		if !done[i] {
+			tpkg, info, perr := s.checkOne(order[i], filesBy[i])
+			splice(i, tpkg, info, perr)
+		}
+	}
+
+	var diags []Diagnostic
+	for _, d := range diagsBy {
+		diags = append(diags, d...)
 	}
 	if fresh := filterNew(diags, baseline); len(fresh) > 0 {
 		restore()
@@ -644,6 +742,41 @@ func (s *Snapshot) retypecheck(dirty []*packages.Package, baseline map[string]bo
 	}
 	s.bumpGenerations(order)
 	return nil, len(order), nil
+}
+
+// checkOne typechecks one package's freshly parsed files. Safe to run
+// concurrently across packages: the shared FileSet is synchronized, an
+// imported *types.Package is immutable once its check completed (the
+// scheduler releases dependents only after the splice), and the import
+// fallback cache carries its own lock.
+func (s *Snapshot) checkOne(p *packages.Package, files []*ast.File) (*types.Package, *types.Info, []Diagnostic) {
+	info := &types.Info{
+		Defs:         map[*ast.Ident]types.Object{},
+		Uses:         map[*ast.Ident]types.Object{},
+		Types:        map[ast.Expr]types.TypeAndValue{},
+		Selections:   map[*ast.SelectorExpr]*types.Selection{},
+		Implicits:    map[ast.Node]types.Object{},
+		Scopes:       map[ast.Node]*types.Scope{},
+		Instances:    map[*ast.Ident]types.Instance{},
+		FileVersions: map[*ast.File]string{},
+	}
+	var perr []Diagnostic
+	conf := types.Config{
+		Importer: importerFor(s, p),
+		Sizes:    types.SizesFor("gc", runtime.GOARCH),
+		Error: func(err error) {
+			if te, ok := err.(types.Error); ok {
+				perr = append(perr, Diagnostic{Pos: te.Fset.Position(te.Pos).String(), Msg: te.Msg})
+			} else {
+				perr = append(perr, Diagnostic{Msg: err.Error()})
+			}
+		},
+	}
+	if p.Module != nil && p.Module.GoVersion != "" {
+		conf.GoVersion = "go" + p.Module.GoVersion
+	}
+	tpkg, _ := conf.Check(p.PkgPath, s.fset, files, info)
+	return tpkg, info, perr
 }
 
 // parsePkg parses a package's current files from disk into the shared FileSet.
@@ -685,6 +818,8 @@ func importerFor(s *Snapshot, p *packages.Package) types.Importer {
 // reload to discover via the real module graph (as UpsertDecl already does
 // when it creates a new package). Caller holds mu.
 func (s *Snapshot) importFallback(path string) (*types.Package, error) {
+	s.impMu.Lock()
+	defer s.impMu.Unlock()
 	if pkg, ok := s.importCache[path]; ok {
 		return pkg, nil
 	}
