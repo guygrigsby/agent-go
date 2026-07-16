@@ -458,7 +458,7 @@ func (s *Snapshot) patchComposable(env patchEnvelope, names []string) (map[strin
 	// says why; the caller views the declarations it still needs explicitly.
 	switch {
 	case len(ctx.touched) == 1 && ctx.touched[0].gone:
-		res["views_omitted"] = "declaration was deleted"
+		res["views_omitted"] = "declaration no longer exists at its old address"
 	case len(ctx.touched) == 1:
 		s.attachView(res, ctx.touched[0].pkg, ctx.touched[0].sym)
 	default:
