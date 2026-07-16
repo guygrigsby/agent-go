@@ -60,7 +60,17 @@ work. Same rule shapes scoring: a test gate no ground truth could pass is
 vacuous, not failed. Enforced by baseline capture and filter in the
 engine and the pristine-worktree baseline in bench scoring.
 
-## 7. The data is the contribution
+## 7. Meet the codebase where it is
+
+Production code bends to deadlines, migrations, and business reality.
+That is not a defect to punish; it is the medium. The protocol serves the
+engineer shipping under those constraints, not an imagined ideal repo,
+and nothing here demands a clean world before it helps. Enforced by the
+bench itself: every task is mined from a real commit in a production
+repo (traefik, vault, boundary), never hand-written, so the tool is
+measured on the code people actually live in.
+
+## 8. The data is the contribution
 
 Every run is captured as if a reader will check the work: transcripts,
 configs, diffs, scores, tokens, failure kinds, and request logs in git,
@@ -70,7 +80,7 @@ Go-with-local-models in this flavor; the data matters as much as the
 code. Enforced by the bench record path, the results-in-git convention,
 and the MLflow export.
 
-## 8. Tooling speaks the project's language
+## 9. Tooling speaks the project's language
 
 No sidecar scripts. A committed script is a missing subcommand; mining,
 reporting, extraction, and validation are Go code with tests, living
