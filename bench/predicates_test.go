@@ -24,10 +24,10 @@ func TestPassRule(t *testing.T) {
 	cases := []struct {
 		pred, tc, tests, baseline, want bool
 	}{
-		{true, true, true, true, true},    // everything green
-		{true, true, false, true, false},  // tests fail where baseline passes: real failure
-		{true, true, false, false, true},  // tests fail but baseline also fails: gate vacuous
-		{false, true, true, true, false},  // predicate is never waived
+		{true, true, true, true, true},     // everything green
+		{true, true, false, true, false},   // tests fail where baseline passes: real failure
+		{true, true, false, false, true},   // tests fail but baseline also fails: gate vacuous
+		{false, true, true, true, false},   // predicate is never waived
 		{true, false, false, false, false}, // typecheck is never waived
 	}
 	for i, c := range cases {
