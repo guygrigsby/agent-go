@@ -17,6 +17,7 @@ import (
 	"go/types"
 	"os"
 	"runtime"
+	"sort"
 	"strings"
 	"sync"
 	"time"
@@ -372,7 +373,10 @@ type refInfo struct {
 }
 
 // references returns every Def and Use of obj across the workspace,
-// deduplicated across test-variant packages.
+// deduplicated across test-variant packages, in position order. The idents
+// come from TypesInfo's Defs/Uses maps, whose iteration order is random;
+// sorting here keeps every consumer (Refs output, rename and delete-decl
+// edit application) deterministic.
 func (s *Snapshot) references(obj types.Object) []refInfo {
 	key := s.objKey(obj)
 	seen := map[string]bool{}
@@ -402,6 +406,16 @@ func (s *Snapshot) references(obj types.Object) []refInfo {
 			add(id.Pos(), o, false)
 		}
 	}
+	sort.Slice(refs, func(i, j int) bool {
+		a, b := refs[i].pos, refs[j].pos
+		if a.Filename != b.Filename {
+			return a.Filename < b.Filename
+		}
+		if a.Line != b.Line {
+			return a.Line < b.Line
+		}
+		return a.Column < b.Column
+	})
 	return refs
 }
 

@@ -246,10 +246,17 @@ func (s *Snapshot) funcUses(fn *types.Func, visit func(p *packages.Package, id *
 		if p.TypesInfo == nil {
 			continue
 		}
+		// Uses is a map; collect and sort so visit order (and thus Callers
+		// output and add_param edit order) is deterministic.
+		var ids []*ast.Ident
 		for id, o := range p.TypesInfo.Uses {
 			if o == nil || o.Name() != fn.Name() || s.objKey(o) != key {
 				continue
 			}
+			ids = append(ids, id)
+		}
+		sort.Slice(ids, func(i, j int) bool { return ids[i].Pos() < ids[j].Pos() })
+		for _, id := range ids {
 			pos := p.Fset.Position(id.Pos())
 			call := enclosingCall(fileFor(p, id.Pos()), id)
 			visit(p, id, pos, call)
