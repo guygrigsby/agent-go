@@ -2,9 +2,26 @@
   "glm-flash": {
     "endpoint": "https://llama.lab.aeryx.ai/v1",
     "model": "unsloth/GLM-4.7-Flash-GGUF:UD-Q4_K_XL",
-    "sampler": {"temperature": 0.7, "top_p": 0.95, "top_k": 40, "repeat_penalty": 1.0},
+    "sampler": {
+      "temperature": 0.7,
+      "top_p": 0.95,
+      "top_k": 40,
+      "repeat_penalty": 1.0
+    },
     "quant": "UD-Q4_K_XL",
     "context": 65536,
     "notes": "incumbent; llama-server on the rig. repeat_penalty 1.0 is deliberate: op JSON repeats keys and handles by design (glm4.7-flash.md)."
+  },
+  "qwen3.5-9b": {
+    "endpoint": "https://qwen.lab.aeryx.ai/v1",
+    "model": "/home/guygrigsby/models/qwen3.5-9b/Qwen3.5-9B-Q4_K_M.gguf",
+    "sampler": {
+      "temperature": 0.7,
+      "top_p": 0.8,
+      "top_k": 20,
+      "repeat_penalty": 1.0
+    },
+    "quant": "Q4_K_M",
+    "notes": "floor cell (roster: ~8-9B, any laptop). Raw mode expected near zero; scored separately per cross-model.md. repeat_penalty 1.0 deliberate."
   }
 }
