@@ -6,22 +6,32 @@ import (
 	"testing"
 )
 
-// Every repair on a view rejection must be a complete view call that
-// succeeds when executed verbatim.
+// Every repair on a view rejection must be a complete call that succeeds
+// when executed verbatim — a view call, or a discovery query (inspect,
+// search) when substitution had nothing.
 func execViewRepairs(t *testing.T, s *Snapshot, rej *Reject) {
 	t.Helper()
 	if len(rej.PossibleRepairs) == 0 {
 		t.Fatalf("reject carries no repairs: %+v", rej)
 	}
 	for _, r := range rej.PossibleRepairs {
-		if r.Call["tool"] != "view" {
-			t.Fatalf("repair tool = %v, want view", r.Call["tool"])
-		}
 		args, ok := r.Call["args"].(map[string]any)
 		if !ok {
 			t.Fatalf("repair args missing: %+v", r.Call)
 		}
-		res, err := s.View(args["pkg"].(string), args["sym"].(string))
+		var res map[string]any
+		var err error
+		switch r.Call["tool"] {
+		case "view":
+			res, err = s.View(args["pkg"].(string), args["sym"].(string))
+		case "query":
+			pkg, _ := args["pkg"].(string)
+			sym, _ := args["sym"].(string)
+			q, _ := args["q"].(string)
+			res, err = s.Query(args["kind"].(string), pkg, sym, q, 0)
+		default:
+			t.Fatalf("unexpected repair tool %v", r.Call["tool"])
+		}
 		if err != nil {
 			t.Fatalf("repair %v rejected: %v", r.Call, err)
 		}
