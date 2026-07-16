@@ -149,7 +149,7 @@ func TestPatchDeleteDeclOmitsView(t *testing.T) {
 	if _, ok := res["view"]; ok {
 		t.Fatalf("deleted decl must omit view: %v", res)
 	}
-	if res["views_omitted"] != "declaration was deleted" {
+	if res["views_omitted"] != "declaration no longer exists at its old address" {
 		t.Fatalf("want deleted-decl reason, got %v", res["views_omitted"])
 	}
 }

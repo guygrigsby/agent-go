@@ -58,7 +58,7 @@ live help catalog appears here, so shipped rows cannot drift. Statuses:
 | `add_bench` | planned | [agent-go-596] |
 | `add_dependency` | planned | [agent-go-9mg] project tier |
 | `remove_dependency` | planned | [agent-go-9mg] |
-| `move_file` | planned | [agent-go-9mg] |
+| `move_file` | shipped | same dir renames; cross package rewrites the clause, rejects while externally referenced |
 | `delete_file` | shipped | rejects while the file declares referenced symbols |
 | `mod_tidy` | planned | [agent-go-9mg] |
 | `wrap_stmts with:go` | candidate | [agent-go-96n]; needs mined concurrency tasks |
