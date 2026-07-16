@@ -76,8 +76,9 @@ Views are projections; agents read them, never edit them.
 ## Patch
 
 ```json
-{"pkg": "...", "sym": "...", "generation": 14, "dry_run": false,
- "ops": [ {"op": "...", ...}, ... ]}
+{"pkg": "demo/lib", "sym": "UseHelper", "generation": 14, "dry_run": false,
+ "ops": [{"op": "add_if", "at": "n1", "where": "after", "cond": "v > 0"},
+         {"op": "add_return", "at": "$1", "where": "first", "exprs": ["v"]}]}
 ```
 
 Ordered. Validated as one unit: all ops apply to an in-memory copy, the

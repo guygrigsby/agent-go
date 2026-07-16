@@ -6,7 +6,7 @@ import "encoding/json"
 // whenever an op is added, removed, or its argument shape changes, so a
 // caller can detect a stale cached copy instead of guessing from the op
 // list's length.
-const catalogVersion = "v1"
+const catalogVersion = "v2"
 
 // helpArg documents one op argument's wire shape.
 type helpArg struct {
