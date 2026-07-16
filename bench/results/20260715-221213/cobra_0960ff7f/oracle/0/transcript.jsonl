@@ -1,0 +1,1 @@
+{"call":["rename","-p","","-s","Command.IsHelpCommand","-to","IsAdditionalHelpTopicCommand"],"res":{"detail":"","diagnostics":null,"did_you_mean":null,"possible_repairs":null,"reason":"package not found","status":"rejected"}}

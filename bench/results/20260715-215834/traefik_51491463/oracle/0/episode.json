@@ -1,0 +1,34 @@
+{
+ "agent_done": "2026-07-16T03:58:55.761893417Z",
+ "agent_started": "2026-07-16T03:58:55.616845Z",
+ "cache_read": 0,
+ "cache_write": 0,
+ "capped": false,
+ "failure_kind": "",
+ "iter": 0,
+ "mode": "oracle",
+ "new_errors": null,
+ "pass": true,
+ "predicate": true,
+ "profile": "adhoc",
+ "prompt": "Rename traefik.docker.* labels for Docker Swarm to traefik.swarm.*\n\nSpecifically, rename: extractLabels -\u003e extractSwarmLabels",
+ "specs": [
+  {
+   "baseline_refs": 6,
+   "new_refs": 6,
+   "ok": true,
+   "old_refs_left": 0,
+   "sym": "github.com/traefik/traefik/v3/pkg/provider/docker.Shared.extractLabels",
+   "to": "extractSwarmLabels"
+  }
+ ],
+ "steps": 0,
+ "task": "traefik_51491463",
+ "tests": true,
+ "tests_baseline": true,
+ "tokens_in": 0,
+ "tokens_out": 0,
+ "tokens_reasoning": 0,
+ "typecheck": true,
+ "wall_s": 0.145048417
+}

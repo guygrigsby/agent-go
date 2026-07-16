@@ -1,0 +1,6 @@
+{"ms":2968,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T04:00:04.342537Z"}
+{"ms":28,"op":"add-param","outcome":"rejected","pkg":"github.com/hashicorp/vault/builtin/audit/file","reason":"function is used as a value; add_param cannot repair those sites","repairs":0,"req_sha":"bff0b09e3a08374a","sym":"Factory","ts":"2026-07-16T04:00:07.316755Z"}
+{"ms":4,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/vault/builtin/audit/file","req_sha":"4c3540a12b62c322","sym":"Factory","ts":"2026-07-16T04:00:07.352525Z"}
+{"ms":3,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/vault/builtin/audit/socket","req_sha":"a0e3f335d0446612","sym":"Factory","ts":"2026-07-16T04:00:07.362763Z"}
+{"ms":3,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/vault/builtin/audit/syslog","req_sha":"14a613cd501bbcea","sym":"Factory","ts":"2026-07-16T04:00:07.373015Z"}
+{"ms":6,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T04:00:07.382019Z"}
