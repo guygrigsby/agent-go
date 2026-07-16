@@ -70,14 +70,14 @@ the compiler's own diagnostics:
 }
 ```
 
-Rejections are data, not errors: the agent loop is query → mutate →
-(rejection → adjust → retry). Most rejections also carry
-`possible_repairs` — complete, paste-ready calls (the corrected mutation,
-the re-view that refreshes handles, the search that locates an undefined
-identifier) — and an exact resend of a rejected call gets an escalated
-rejection instead of the same one forever. Rename additionally proves
-that every rewritten reference still resolves to the renamed symbol, so
-shadowing capture is rejected even when the compiler is satisfied.
+Rejections are data, not errors: the agent loop is query, mutate, and on
+rejection adjust and retry. Most rejections carry `possible_repairs`,
+complete paste-ready calls: the corrected mutation, the re-view that
+refreshes handles, the search that locates an undefined identifier.
+Resending a rejected call unchanged gets an escalated rejection instead
+of the same one forever. Rename also proves every rewritten reference
+still resolves to the renamed symbol, so shadowing capture is rejected
+even when the compiler is satisfied.
 
 ## Bench
 
@@ -86,10 +86,10 @@ harness (opencode), same mined tasks (rename and add-param kinds, from
 traefik, vault, boundary, and cobra); one mode gets shell and file
 editing, the other gets only the protocol.
 
-The **oracle** is the bench's third arm: a scripted replay of each
-task's ground-truth commit through the protocol itself, no model in the
-loop. Every mined task carries the real change its source commit made;
-the oracle submits that change as protocol calls and must reach green. A
+The oracle is the bench's third arm: a scripted replay of each task's
+ground-truth commit through the protocol itself, no model in the loop.
+Every mined task carries the real change its source commit made; the
+oracle submits that change as protocol calls and must reach green. A
 task enters the roster only after the oracle certifies it, so "the model
 failed" is never confused with "the task was impossible". Oracle
 rejections are findings (an engine bug, a bad extraction, or a named
@@ -133,24 +133,24 @@ Rules of the road:
   test fixture, and README invocations must match the real CLI dispatch.
   Change behavior and the guard tells you which doc to touch.
 - The demo fixture (`internal/snapshot/testdata/demo`) is copied per
-  test; never mutate it in place, and be careful adding to `demo/lib` —
-  view-handle tests depend on its exact layout (`demo/sig` is the place
-  for new fixture shapes).
+  test; never mutate it in place. Be careful adding to `demo/lib`, the
+  view-handle tests depend on its exact layout. `demo/sig` is the place
+  for new fixture shapes.
 - Race-sensitive changes (the parallel retypecheck) should run under
   `go test -race ./internal/snapshot`.
 
 ## Docs
 
-- `docs/specs/language.md` — the full op catalog: decl, statement, test ops
-- `docs/specs/surface.md` — running list of shipped and foreseen calls, drift-guarded by test
-- `docs/specs/protocol.md` — protocol semantics, guarantees
-- `docs/specs/bench.md` — bench design
-- `docs/specs/plan.md` — status and build order
-- `docs/optimizations/` — per-model serving research and the cross-model build list
-- `docs/tenets.md` — the engineering principles this repo lives by
-- `docs/model-strategies.md` — brainstorm: strategies for coding with local models
-- `docs/adr/` — architecture decisions
-- `idea.md` — the original thesis
+- `docs/specs/language.md`: the full op catalog, decl through test ops
+- `docs/specs/surface.md`: shipped and foreseen calls, drift-guarded by test
+- `docs/specs/protocol.md`: protocol semantics and guarantees
+- `docs/specs/bench.md`: bench design
+- `docs/specs/plan.md`: status and build order
+- `docs/optimizations/`: per-model serving research and the cross-model build list
+- `docs/tenets.md`: the engineering principles this repo lives by
+- `docs/model-strategies.md`: brainstorm on coding with local models
+- `docs/adr/`: architecture decisions
+- `idea.md`: the original thesis
 
 Work is tracked in [beads](https://github.com/steveyegge/beads): `bd ready`
 for the queue, `bd list` for everything; issues sync through

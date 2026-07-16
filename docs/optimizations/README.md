@@ -17,7 +17,7 @@ class) are the lower tier and serve the small end of each family.
 | doc | family | local variants in scope |
 |---|---|---|
 | [glm4.7-flash.md](glm4.7-flash.md) | GLM | 4.7-Flash (30B-A3B, ~18GB Q4); the GLM-5.x line is 753B and out |
-| [qwen.md](qwen.md) | Qwen | Coder-Next (80B-A3B, ~52GB Q4), Qwen3.6-27B MTP (~17GB Q4), Qwen3.6-8B (~5GB Q4, floor cell; fall back Qwen3.5-8B) |
+| [qwen.md](qwen.md) | Qwen | Coder-Next (80B-A3B, ~52GB Q4), Qwen3.6-27B MTP (~17GB Q4), Qwen3.6-8B (\~5GB Q4, floor cell; fall back Qwen3.5-8B) |
 | [deepseek.md](deepseek.md) | DeepSeek | V4 Flash (284B MoE) via ds4 selective 2-bit, ~81GB; V4 Pro out |
 | [gpt-oss.md](gpt-oss.md) | gpt-oss | 20b (~16GB) and 120b (~64GB), native MXFP4 only |
 | [devstral.md](devstral.md) | Devstral | Small 2 (24B, ~14GB Q4), 123B (~70GB Q4, Mac only) |

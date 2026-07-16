@@ -94,7 +94,7 @@ instead of synthesizing arbitrary patches.
 
 rust-analyzer is an excellent semantic engine: query-driven incremental
 analysis, separate syntax and semantic representations. Philosophically it
-is very close to what this needs.
+is close to what this needs.
 
 Rust itself is the problem for a weak model:
 

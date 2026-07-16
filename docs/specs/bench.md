@@ -24,7 +24,7 @@ Subjects of mined refactor commits are already what a user would type:
 
 A run passes when all three hold within the time cap:
 
-1. **Goal predicate** — the change happened. Derived mechanically from the
+1. **Goal predicate**: the change happened. Derived mechanically from the
    ground-truth commit, checked with `ago` queries:
    - rename: old symbol gone; new symbol exists with the old reference count
    - add-param: target signature includes the new parameter

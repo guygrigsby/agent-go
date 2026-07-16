@@ -7,29 +7,29 @@ the thesis.
 
 ## Language
 
-- **Workspace** — one Go module tree (go.work planned). Unit of daemon
+- **Workspace**: one Go module tree (go.work planned). Unit of daemon
   ownership and snapshot state.
-- **Snapshot** — the typechecked in-memory view of a workspace: packages,
+- **Snapshot**: the typechecked in-memory view of a workspace: packages,
   syntax, types, reference info. Owned by the daemon, never by clients.
-- **Symbol address** — `pkg` (import path) + `sym` (`Name`, or
+- **Symbol address**: `pkg` (import path) + `sym` (`Name`, or
   `Type.Member` for methods and fields). Locals and import aliases are not
   addressable yet; that needs scope- or position-qualified addressing.
-- **Query** — read-only question answered from the snapshot: `status`,
+- **Query**: read-only question answered from the snapshot: `status`,
   `search`, `inspect`, `refs`, `callers`, `callees`, `implementations`,
   `doc`. Milliseconds; never touches disk. List results page at 50 with
   a total `count`, `truncated`, and `next_offset`/`offset`.
-- **Mutation** — a checked edit: the full op catalog in language.md
+- **Mutation**: a checked edit: the full op catalog in language.md
   (decl, statement, and test ops, incl. `set_signature` and `move_decl`),
   plus the four sugar tools. Validated against the snapshot before any
   file is written. All-or-nothing: failure writes nothing and rolls back
   everything. An accepted mutation that reshaped exactly one declaration
   embeds that declaration's fresh view in its response.
-- **Rejection** — the structured refusal of a mutation: reason, detail,
-  compiler diagnostics, `did_you_mean` candidates, and `possible_repairs`
-  — complete paste-ready next calls. A rejection is data for the agent,
+- **Rejection**: the structured refusal of a mutation. Reason, detail,
+  compiler diagnostics, `did_you_mean` candidates, and `possible_repairs`,
+  complete paste-ready next calls. A rejection is data for the agent,
   not an error; the agent loop is query → mutate → (rejection → repair →
   retry). Exact resends of a rejected call escalate instead of repeating.
-- **Splice** — package-level revalidation: re-typecheck only the dirty set
+- **Splice**: package-level revalidation: re-typecheck only the dirty set
   (edited-file packages, plus transitive reverse importers when the edit
   can change API or method sets) and swap results into the live snapshot.
   Packages check in parallel, one goroutine each, scheduled over the
@@ -39,7 +39,8 @@ the thesis.
 ## Guarantees
 
 The canonical guarantees list lives in language.md (its list is the
-superset: atomicity, generations, rot tolerance, embedded views). In
+superset: atomicity, generations, tolerance for pre-existing issues,
+embedded views). In
 one line: a mutation introduces no new diagnostic or it changes nothing.
 
 ## Surface
