@@ -238,10 +238,10 @@ the total, truncated responses carry `truncated` and `next_offset`, and
 
 ## Guarantees
 
-1. No accepted operation introduces a new diagnostic. Pre-existing rot
-   in the affected packages (real repos accumulate it) is tolerated:
-   baselined at preflight, filtered after the splice, and surfaced on the
-   accepted response as `pre_existing`.
+1. No accepted operation introduces a new diagnostic. Pre-existing
+   issues in the affected packages (real codebases carry history) are
+   tolerated: baselined at preflight, filtered after the splice, and
+   surfaced on the accepted response as `pre_existing`.
 2. A rejected patch changes nothing — disk, snapshot, or generation.
 3. Rename (and move) prove resolution: every rewritten reference resolves
    to the intended object afterward; capture rejects even when the
