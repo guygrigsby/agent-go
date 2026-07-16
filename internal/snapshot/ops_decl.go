@@ -5,9 +5,11 @@ import (
 	"go/ast"
 	"go/token"
 	"go/types"
+	"os"
 	"strings"
 
 	"golang.org/x/tools/go/packages"
+	"golang.org/x/tools/imports"
 )
 
 // setBodyOp is set_body's composable form: same setBodyEdit core (locate
@@ -44,8 +46,10 @@ func (setBodyOp) apply(ctx *patchCtx, raw json.RawMessage) *Reject {
 
 // upsertDeclOp is upsert_decl's composable form: same upsertDeclEdit core
 // (locate an existing declaration to replace, or an existing agent.go to
-// append to), applied through the decl-op ledger. Creating a brand-new file
-// or package is a documented v1 ceiling here — see upsertDeclEdit.
+// append to), applied through the decl-op ledger. A brand-new agent.go is
+// created via the add_test-style write-and-reload path below; a brand-new
+// PACKAGE remains a v1 ceiling of the composable form (the standalone
+// upsert_decl tool handles it).
 type upsertDeclOp struct{}
 
 func (upsertDeclOp) name() string { return "upsert_decl" }
@@ -68,8 +72,39 @@ func (upsertDeclOp) apply(ctx *patchCtx, raw json.RawMessage) *Reject {
 		return rej
 	}
 	if needsCreate {
-		return &Reject{Reason: "upsert_decl cannot create a new file in a composable patch",
-			Detail: "agent.go does not exist yet in " + pkg + "; use the single-op upsert_decl call"}
+		// Mirrors add_test's new-file path (ops_testgen.go): a new file
+		// changes the package's CompiledGoFiles, which the incremental
+		// retypecheck never picks up, so write and reload immediately rather
+		// than through the ctx.src ledger. cleanupCreatedFiles owns removal
+		// on every failure and dry_run path once the file registers in
+		// ctx.createdFiles; later ops in the same patch compose against the
+		// reloaded snapshot, where the file simply exists.
+		before := errorSet(errorsIn(ctx.s.affected(pkg)))
+		ctx.addBaseline(before)
+		p := ctx.s.primary(pkg)
+		src := "package " + p.Types.Name() + "\n\n" + strings.TrimSpace(a.Text) + "\n"
+		fixed, err := imports.Process(file, []byte(src), nil)
+		if err != nil {
+			return &Reject{Reason: "declaration does not parse in place", Detail: err.Error()}
+		}
+		if err := os.WriteFile(file, fixed, 0o644); err != nil {
+			return &Reject{Reason: "failed to create file", Detail: err.Error()}
+		}
+		ctx.createdFiles = append(ctx.createdFiles, file)
+		ctx.s.loaded = false
+		if _, err := ctx.s.load(); err != nil {
+			return &Reject{Reason: "workspace failed to reload", Detail: err.Error()}
+		}
+		if diags := filterNew(errorsIn(ctx.s.affected(pkg)), before); len(diags) > 0 {
+			return diagnosticRepairs(&Reject{Reason: "declaration does not typecheck", Diagnostics: diags})
+		}
+		if _, _, rej := ctx.s.findObject(pkg, sym); rej != nil {
+			return &Reject{Reason: "declaration missing after edit", Detail: sym}
+		}
+		ctx.s.noteWrite(file)
+		ctx.addAffected(pkg)
+		ctx.noteTouched(pkg, sym, false)
+		return nil
 	}
 	ctx.addBaseline(preflightBaseline(ctx.s, file, pkg))
 	prefix := ""

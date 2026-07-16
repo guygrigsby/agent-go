@@ -231,16 +231,57 @@ func TestPatchUpsertDeclAppendsToExistingFile(t *testing.T) {
 	}
 }
 
-// Creating a brand-new agent.go mid-patch is a documented v1 ceiling: a new
-// file changes CompiledGoFiles, which the incremental retypecheck never
-// picks up without a full reload the composable pipeline doesn't perform.
-func TestPatchUpsertDeclRejectsNewFile(t *testing.T) {
+// Creating a brand-new agent.go mid-patch mirrors add_test's new-file path:
+// write and reload immediately, register in createdFiles so every failure
+// path cleans up. Later ops in the same patch compose against the reloaded
+// snapshot (the second upsert_decl below appends to the just-created file
+// through the ledger).
+func TestPatchUpsertDeclCreatesNewFile(t *testing.T) {
+	s := demo(t)
+	res, err := s.Patch([]byte(`{"pkg":"demo/lib",
+		"ops":[{"op":"upsert_decl","text":"func Triple(v int) int {\n\treturn v * 3\n}"},
+		       {"op":"upsert_decl","text":"func Nonuple(v int) int {\n\treturn Triple(Triple(v))\n}"}]}`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if res["status"] != "accepted" {
+		t.Fatalf("got %v", res)
+	}
+	b, err := os.ReadFile(filepath.Join(s.dir, "lib", "agent.go"))
+	if err != nil || !strings.Contains(string(b), "Triple") || !strings.Contains(string(b), "Nonuple") {
+		t.Fatalf("agent.go missing decls: %v\n%s", err, b)
+	}
+	if _, err := s.Inspect("demo/lib", "Nonuple"); err != nil {
+		t.Errorf("new decl not queryable: %v", err)
+	}
+}
+
+// A later op's rejection must not leave the created file behind.
+func TestPatchUpsertDeclNewFileRejectionCleansUp(t *testing.T) {
 	s := demo(t)
 	_, err := s.Patch([]byte(`{"pkg":"demo/lib",
+		"ops":[{"op":"upsert_decl","text":"func Triple(v int) int {\n\treturn v * 3\n}"},
+		       {"op":"upsert_decl","text":"func Broken() int {\n\treturn undefinedIdent\n}"}]}`))
+	if err == nil {
+		t.Fatal("want rejection")
+	}
+	if _, serr := os.Stat(filepath.Join(s.dir, "lib", "agent.go")); serr == nil {
+		t.Fatal("agent.go survived a rejected patch")
+	}
+	if _, err := s.Inspect("demo/lib", "Double"); err != nil {
+		t.Errorf("snapshot broken after cleanup: %v", err)
+	}
+}
+
+func TestPatchUpsertDeclNewFileDryRun(t *testing.T) {
+	s := demo(t)
+	res, err := s.Patch([]byte(`{"pkg":"demo/lib","dry_run":true,
 		"ops":[{"op":"upsert_decl","text":"func Triple(v int) int {\n\treturn v * 3\n}"}]}`))
-	rej, ok := err.(*Reject)
-	if !ok || rej.Reason != "upsert_decl cannot create a new file in a composable patch" {
-		t.Fatalf("got %v", err)
+	if err != nil || res["would"] != "accepted" {
+		t.Fatalf("got %v %v", res, err)
+	}
+	if _, serr := os.Stat(filepath.Join(s.dir, "lib", "agent.go")); serr == nil {
+		t.Fatal("dry_run left agent.go on disk")
 	}
 }
 
