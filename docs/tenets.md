@@ -86,3 +86,13 @@ Candidates → extracted specs → oracle-certified → measured. Every stage
 records what it dropped and why (`needs_review`, oracle rejections,
 `views_omitted`, truncation markers). Silent shrinkage reads as
 coverage; the funnel must say what it lost.
+
+## 12. Save all data with the intent to publish
+
+Every run is captured as if a reader will check the work: full episode
+evidence in git (transcripts, configs, diffs, scores, request logs),
+serving setups pinned per run, prompts token-counted, revisions recorded.
+Nobody has measured Go-with-local-models in this flavor; the data is the
+contribution as much as the code. Enforced by the bench record path and
+the results-in-git convention; the MLflow export (agent-go-js2.14) makes
+the same data queryable.
