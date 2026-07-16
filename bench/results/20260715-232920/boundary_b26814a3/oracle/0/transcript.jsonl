@@ -1,0 +1,1 @@
+{"call":["patch","{\"ops\":[{\"op\":\"move_decl\",\"sym\":\"RecoveryUserId\",\"to_pkg\":\"github.com/hashicorp/boundary/globals\"}],\"pkg\":\"github.com/hashicorp/boundary/internal/perms\"}"],"res":{"detail":"RecoveryUserId","diagnostics":null,"did_you_mean":null,"possible_repairs":null,"reason":"declaration not found","status":"rejected"}}

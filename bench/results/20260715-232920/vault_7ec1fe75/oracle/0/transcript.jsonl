@@ -1,0 +1,1 @@
+{"call":["patch","{\"ops\":[{\"op\":\"move_decl\",\"sym\":\"DRReplicationALPN\",\"to_pkg\":\"github.com/hashicorp/vault/sdk/helper/consts\"}],\"pkg\":\"github.com/hashicorp/vault/vault\"}"],"res":{"detail":"github.com/hashicorp/vault/sdk/helper/consts","diagnostics":null,"did_you_mean":null,"possible_repairs":null,"reason":"target package not found","status":"rejected"}}
