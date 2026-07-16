@@ -235,6 +235,18 @@ func (s *Snapshot) patchOpRepairs(rej *Reject, env patchEnvelope, i int) {
 		}
 		return
 	}
+	if rej.Reason == "target package not found" && opNameAt(env, i) == "move_decl" {
+		// A module-local target the ground-truth change would have created:
+		// offer the same call with create_pkg set. Non-local paths get only
+		// the did_you_mean candidates below via repairField.
+		if len(s.pkgs) > 0 && s.pkgs[0].Module != nil &&
+			strings.HasPrefix(rej.Detail, s.pkgs[0].Module.Path+"/") {
+			if call, ok := patchCall(env, i, "create_pkg", true); ok {
+				rej.PossibleRepairs = append(rej.PossibleRepairs,
+					Repair{Why: "creates " + rej.Detail + " as part of this patch", Call: call})
+			}
+		}
+	}
 	if field := repairField[rej.Reason]; field != "" {
 		for _, c := range rej.DidYouMean {
 			call, ok := patchCall(env, i, field, c)
@@ -313,7 +325,17 @@ func (s *Snapshot) patchAddressRepairs(rej *Reject, env patchEnvelope, i int) {
 // patchCall rebuilds the complete patch invocation from a parsed envelope
 // with op index i's field replaced by cand. Only envelope fields are
 // echoed, so transport extras in the original bytes are dropped.
-func patchCall(env patchEnvelope, i int, field, cand string) (map[string]any, bool) {
+// opNameAt reports the op name at index i of the envelope, or "".
+func opNameAt(env patchEnvelope, i int) string {
+	if i < 0 || i >= len(env.Ops) {
+		return ""
+	}
+	var probe opName
+	json.Unmarshal(env.Ops[i], &probe)
+	return probe.Op
+}
+
+func patchCall(env patchEnvelope, i int, field string, cand any) (map[string]any, bool) {
 	ops := make([]any, len(env.Ops))
 	for j, raw := range env.Ops {
 		var m map[string]any

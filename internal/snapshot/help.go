@@ -6,7 +6,7 @@ import "encoding/json"
 // whenever an op is added, removed, or its argument shape changes, so a
 // caller can detect a stale cached copy instead of guessing from the op
 // list's length.
-const catalogVersion = "v5"
+const catalogVersion = "v6"
 
 // helpArg documents one op argument's wire shape.
 type helpArg struct {
@@ -153,6 +153,7 @@ var opCatalog = []helpOp{
 			{"pkg", "string", false, "source package import path; defaults to the envelope's pkg"},
 			{"sym", "string", false, "top-level declaration name; defaults to the envelope's sym"},
 			{"to_pkg", "string", true, "target package import path (must exist by the time this op runs; an earlier upsert_decl in the same patch can create it)"},
+			{"create_pkg", "boolean", false, "create a missing module-local target package as part of this patch; without it a missing target rejects (typo safety) and offers this flag as a repair"},
 		},
 		Example: json.RawMessage(`[{"op":"move_decl","pkg":"demo/sig","sym":"Fetch","to_pkg":"demo/lib"}]`),
 		Notes:   "relocates the whole declaration (doc comment included) and requalifies every reference, adding imports where needed. v1 ceilings: the declaration must be self-contained (no uses of its old package's other top-level symbols) and a moved type may not have methods; both reject with the blocking names",
@@ -166,7 +167,7 @@ var opCatalog = []helpOp{
 			{"defaults", "object", false, "argument expression per NEW parameter name, spliced into every existing call site; required for any new parameter when call sites exist"},
 		},
 		Example: json.RawMessage(`[{"op":"set_signature","pkg":"demo/sig","sym":"Fetch","signature":"(ctx context.Context, a int, b string, rest ...int) int","defaults":{"ctx":"context.Background()"}}]`),
-		Notes:   "full parameter/result rewrite: parameters are matched to the old signature by name — carried ones keep each call site's argument (reordering reorders them), dropped ones drop it, new ones take their default; a spread call site f(args...) survives insertions before the variadic. Value uses of the function and the body itself are not rewritten: repair them with sibling ops in the same patch or the end-of-list typecheck rejects with the site positions",
+		Notes:   "full parameter/result rewrite: parameters are matched to the old signature by name — carried ones keep each call site's argument (reordering reorders them), dropped ones drop it, new ones take their default; underscore params pair positionally when their type matches, so widening func(ctx context.Context, _ DecryptFn) keeps the _ argument; a spread call site f(args...) survives insertions before the variadic. Value uses of the function and the body itself are not rewritten: repair them with sibling ops in the same patch or the end-of-list typecheck rejects with the site positions",
 	},
 
 	// Project ops (docs/specs/language.md "Project ops"): the file tier.

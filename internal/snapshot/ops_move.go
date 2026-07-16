@@ -6,6 +6,7 @@ import (
 	"go/token"
 	"go/types"
 	"os"
+	"path/filepath"
 	"sort"
 	"strings"
 
@@ -216,9 +217,10 @@ func (moveDeclOp) name() string { return "move_decl" }
 
 func (moveDeclOp) apply(ctx *patchCtx, raw json.RawMessage) *Reject {
 	var a struct {
-		Pkg   string `json:"pkg"`
-		Sym   string `json:"sym"`
-		ToPkg string `json:"to_pkg"`
+		Pkg       string `json:"pkg"`
+		Sym       string `json:"sym"`
+		ToPkg     string `json:"to_pkg"`
+		CreatePkg bool   `json:"create_pkg"`
 	}
 	if rej := decodeOpArgs(raw, &a); rej != nil {
 		return rej
@@ -228,6 +230,25 @@ func (moveDeclOp) apply(ctx *patchCtx, raw json.RawMessage) *Reject {
 	}
 	pkg := orDefault(a.Pkg, ctx.pkg)
 	sym := orDefault(a.Sym, ctx.sym)
+	if a.CreatePkg && ctx.s.primary(a.ToPkg) == nil {
+		// Opt-in only: a typo'd to_pkg must reject with candidates, never
+		// silently create a package. The created file is just the package
+		// clause; moveDeclEdits below appends the declaration to it.
+		s := ctx.s
+		if len(s.pkgs) == 0 || s.pkgs[0].Module == nil {
+			return &Reject{Reason: "target package not found", Detail: a.ToPkg}
+		}
+		mod := s.pkgs[0].Module
+		rel, ok := strings.CutPrefix(a.ToPkg, mod.Path+"/")
+		if !ok {
+			return &Reject{Reason: "package is outside the module",
+				Detail: a.ToPkg + " not under " + mod.Path}
+		}
+		file := filepath.Join(mod.Dir, rel, "agent.go")
+		if rej := createFileInPatch(ctx, a.ToPkg, file, "package "+filepath.Base(rel)+"\n", ""); rej != nil {
+			return rej
+		}
+	}
 	edits, rej := moveDeclEdits(ctx.s, pkg, sym, a.ToPkg)
 	if rej != nil {
 		return rej

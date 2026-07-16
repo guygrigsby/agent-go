@@ -146,6 +146,14 @@ func createFileInPatch(ctx *patchCtx, pkg, file, src, sym string) *Reject {
 	if diags := filterNew(ctx.s.errors(), before); len(diags) > 0 {
 		return diagnosticRepairs(&Reject{Reason: "declaration does not typecheck", Diagnostics: diags})
 	}
+	// An empty sym means the file carries only its package clause
+	// (move_decl's create_pkg path); there is no declaration to verify or
+	// note.
+	if sym == "" {
+		ctx.s.noteWrite(file)
+		ctx.addAffected(pkg)
+		return nil
+	}
 	if _, _, rej := ctx.s.findObject(pkg, sym); rej != nil {
 		return &Reject{Reason: "declaration missing after edit", Detail: pkg + "." + sym}
 	}
