@@ -115,6 +115,12 @@ func (s *Snapshot) Patch(raw []byte) (map[string]any, error) {
 		return nil, &Reject{Reason: "malformed patch", Detail: err.Error()}
 	}
 	if rej := s.checkGeneration(env.Pkg, env.Sym, env.Generation); rej != nil {
+		s.mu.Lock()
+		if env.Sym != "" && s.viewable(env.Pkg, env.Sym) {
+			rej.PossibleRepairs = append(rej.PossibleRepairs,
+				Repair{Why: "refreshes generation and handles", Call: viewCall(env.Pkg, env.Sym)})
+		}
+		s.mu.Unlock()
 		return nil, rej
 	}
 	if len(env.Ops) == 0 {
@@ -127,7 +133,24 @@ func (s *Snapshot) Patch(raw []byte) (map[string]any, error) {
 			return nil, &Reject{Reason: "malformed op", Detail: err.Error()}
 		}
 		if opRegistry[n.Op] == nil {
-			return nil, &Reject{Reason: "unknown op", Detail: n.Op, DidYouMean: nearestOps(n.Op)}
+			cands := nearestOps(n.Op)
+			rej := &Reject{Reason: "unknown op", Detail: n.Op, DidYouMean: cands}
+			// A full-catalog fallback is not a near miss; substituting
+			// arbitrary ops into the patch would invent repairs.
+			if len(cands) < len(opRegistry) {
+				for _, c := range cands {
+					call, ok := patchCall(env, i, c)
+					if !ok {
+						break
+					}
+					rej.PossibleRepairs = append(rej.PossibleRepairs,
+						Repair{Why: "op " + c + " exists", Call: call})
+					if len(rej.PossibleRepairs) == maxRepairs {
+						break
+					}
+				}
+			}
+			return nil, rej
 		}
 		names[i] = n.Op
 	}

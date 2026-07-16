@@ -1,6 +1,7 @@
 package snapshot
 
 import (
+	"encoding/json"
 	"go/types"
 	"strings"
 )
@@ -37,6 +38,32 @@ func (s *Snapshot) viewRepairs(rej *Reject, pkgPath, sym string) {
 			return
 		}
 	}
+}
+
+// patchCall rebuilds the complete patch invocation from a parsed envelope
+// with op index i's name replaced by cand. Only envelope fields are echoed,
+// so transport extras in the original bytes are dropped.
+func patchCall(env patchEnvelope, i int, cand string) (map[string]any, bool) {
+	ops := make([]any, len(env.Ops))
+	for j, raw := range env.Ops {
+		var m map[string]any
+		if json.Unmarshal(raw, &m) != nil {
+			return nil, false
+		}
+		ops[j] = m
+	}
+	ops[i].(map[string]any)["op"] = cand
+	args := map[string]any{"pkg": env.Pkg, "ops": ops}
+	if env.Sym != "" {
+		args["sym"] = env.Sym
+	}
+	if env.Generation != 0 {
+		args["generation"] = env.Generation
+	}
+	if env.DryRun {
+		args["dry_run"] = true
+	}
+	return map[string]any{"tool": "patch", "args": args}, true
 }
 
 // viewable mirrors View's acceptance: the address resolves and is not a
