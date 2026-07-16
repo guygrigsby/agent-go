@@ -76,8 +76,13 @@ AGO_BENCH_SCRATCH=<clones dir> go test ./bench -bench Rename -benchtime 3x -time
 - `docs/specs/protocol.md` — protocol semantics, guarantees
 - `docs/specs/bench.md` — bench design
 - `docs/specs/plan.md` — status and build order
+- `docs/optimizations/` — per-model serving research and the cross-model build list
 - `docs/adr/` — architecture decisions
 - `idea.md` — the original thesis
+
+Work is tracked in [beads](https://github.com/steveyegge/beads): `bd ready`
+for the queue, `bd list` for everything; issues sync through
+`.beads/issues.jsonl`.
 
 Experimental. Interfaces change without notice.
 
