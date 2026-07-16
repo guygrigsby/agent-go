@@ -276,7 +276,7 @@ func episode(b testing.TB, c config, t Manifest, mode string, iter int) bool {
 	wall := time.Since(start)
 	stopTimer()
 
-	res := score(c, wt, t, baseline, baseErrs)
+	res := score(b, c, wt, t, baseline, baseErrs)
 	res["task"] = t.Repo + "_" + t.SHA[:8]
 	res["mode"] = mode
 	res["profile"] = c.profile.Name
@@ -428,7 +428,15 @@ func renamePredicate(c config, wt string, t Manifest, baseline map[string]int) (
 	return predicate, specs
 }
 
-func score(c config, wt string, t Manifest, baseline map[string]int, baseErrs map[string]bool) map[string]any {
+// passRule: predicate and typecheck are absolute; the tests gate counts
+// only when the same scoped tests pass on a pristine worktree — a failing
+// baseline (docker deps, parent rot) makes the gate vacuous, since not
+// even the ground truth could clear it here.
+func passRule(predicate, typecheck, tests, baselineTests bool) bool {
+	return predicate && typecheck && (tests || !baselineTests)
+}
+
+func score(b testing.TB, c config, wt string, t Manifest, baseline map[string]int, baseErrs map[string]bool) map[string]any {
 	fn := predicateFor(t.Kind)
 	if fn == nil {
 		return map[string]any{"predicate": false, "typecheck": false, "tests": false,
@@ -447,12 +455,22 @@ func score(c config, wt string, t Manifest, baseline map[string]int, baseErrs ma
 		}
 	}
 	tests := false
+	baselineTests := true
 	if predicate && typecheck {
 		tests = scopedTests(c, wt, t)
+		if !tests {
+			// Lazy baseline: only a failing gate pays for the pristine
+			// worktree that decides whether the gate could pass at all.
+			pw := worktree(b, c, t)
+			defer teardown(c, t, pw)
+			run(pw, c.cap, "go", "mod", "download")
+			baselineTests = scopedTests(c, pw, t)
+		}
 	}
 	return map[string]any{
 		"predicate": predicate, "typecheck": typecheck, "tests": tests,
-		"pass": predicate && typecheck && tests, "specs": specs,
+		"tests_baseline": baselineTests,
+		"pass":           passRule(predicate, typecheck, tests, baselineTests), "specs": specs,
 		"new_errors": newErrs,
 	}
 }

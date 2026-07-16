@@ -1,0 +1,22 @@
+{"ms":5484,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T03:48:57.778852Z"}
+{"ms":383,"op":"add-param","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/census","reason":"add_param does not typecheck","repairs":0,"req_sha":"03d5df849104b66d","sym":"censusJob.Run","ts":"2026-07-16T03:49:03.282591Z"}
+{"ms":10,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/census","req_sha":"fd1b0afe7fcaa3cb","sym":"censusJob.Run","ts":"2026-07-16T03:49:03.679057Z"}
+{"ms":9,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/credential/vault","req_sha":"44a6f9c99582b1d6","sym":"TokenRevocationJob.Run","ts":"2026-07-16T03:49:03.7038Z"}
+{"ms":11,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/credential/vault","req_sha":"d98d438570f884d9","sym":"CredentialRenewalJob.Run","ts":"2026-07-16T03:49:03.735502Z"}
+{"ms":11,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/credential/vault","req_sha":"5697329ba0336e79","sym":"TokenRenewalJob.Run","ts":"2026-07-16T03:49:03.769523Z"}
+{"ms":18,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/credential/vault","req_sha":"0b523abfa9a84d37","sym":"CredentialCleanupJob.Run","ts":"2026-07-16T03:49:03.836853Z"}
+{"ms":12,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/credential/vault","req_sha":"a98f51e0d7e87d93","sym":"CredentialRevocationJob.Run","ts":"2026-07-16T03:49:03.869194Z"}
+{"ms":8,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/credential/vault","req_sha":"b3a47668310bf317","sym":"CredentialStoreCleanupJob.Run","ts":"2026-07-16T03:49:03.891898Z"}
+{"ms":9,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/host/plugin","req_sha":"932302a0ae260ffc","sym":"OrphanedHostCleanupJob.Run","ts":"2026-07-16T03:49:03.945184Z"}
+{"ms":8,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/host/plugin","req_sha":"7cf776ca60c1c8e5","sym":"SetSyncJob.Run","ts":"2026-07-16T03:49:03.963862Z"}
+{"ms":8,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/kms/job","req_sha":"412ec035e14e9266","sym":"dataKeyVersionDestructionMonitorJob.Run","ts":"2026-07-16T03:49:03.993754Z"}
+{"ms":9,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/kms/job","req_sha":"aa1c67d6bfb1bddb","sym":"tableRewrappingJob.Run","ts":"2026-07-16T03:49:04.069998Z"}
+{"ms":9,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/pagination/purge","req_sha":"996d2a7f9a8bfbbd","sym":"purgeJob.Run","ts":"2026-07-16T03:49:04.125018Z"}
+{"ms":9,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/scheduler/cleaner","req_sha":"d5f51e80832aadfe","sym":"cleanerJob.Run","ts":"2026-07-16T03:49:04.157992Z"}
+{"ms":56,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/scheduler","req_sha":"d158a06cb778643d","sym":"testJob.Run","ts":"2026-07-16T03:49:04.195607Z"}
+{"ms":9,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/server/job","req_sha":"1ba696c03592618c","sym":"rotateRootsJob.Run","ts":"2026-07-16T03:49:04.263737Z"}
+{"ms":7,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/server/job","req_sha":"2b4f703a5f817022","sym":"upsertWorkerStorageBucketJob.Run","ts":"2026-07-16T03:49:04.287107Z"}
+{"ms":7,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/session","req_sha":"d2e5108a2630e103","sym":"deleteTerminatedJob.Run","ts":"2026-07-16T03:49:04.320645Z"}
+{"ms":9,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/session","req_sha":"e54cc033dcc12c7e","sym":"sessionConnectionCleanupJob.Run","ts":"2026-07-16T03:49:04.352728Z"}
+{"ms":19,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/snapshot","req_sha":"f92a60ad5390562f","sym":"snapshotJob.Run","ts":"2026-07-16T03:49:04.380828Z"}
+{"ms":12,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T03:49:04.408197Z"}

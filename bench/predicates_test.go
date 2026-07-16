@@ -15,3 +15,24 @@ func TestPredicateDispatch(t *testing.T) {
 		t.Fatal("unknown kind must have no predicate")
 	}
 }
+
+// The tests gate only counts when ground-truth-equivalent code could pass
+// it in this environment: four oracle-run rename tasks failed scoped tests
+// on a perfect change (docker deps, parent rot). A failing baseline makes
+// the gate vacuous, not the episode failed.
+func TestPassRule(t *testing.T) {
+	cases := []struct {
+		pred, tc, tests, baseline, want bool
+	}{
+		{true, true, true, true, true},    // everything green
+		{true, true, false, true, false},  // tests fail where baseline passes: real failure
+		{true, true, false, false, true},  // tests fail but baseline also fails: gate vacuous
+		{false, true, true, true, false},  // predicate is never waived
+		{true, false, false, false, false}, // typecheck is never waived
+	}
+	for i, c := range cases {
+		if got := passRule(c.pred, c.tc, c.tests, c.baseline); got != c.want {
+			t.Errorf("case %d: got %v, want %v", i, got, c.want)
+		}
+	}
+}
