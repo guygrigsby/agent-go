@@ -105,7 +105,8 @@ func handle(conn net.Conn, snap *snapshot.Snapshot) (stop bool) {
 	}
 	if rej, ok := err.(*snapshot.Reject); ok {
 		res = map[string]any{"status": "rejected", "reason": rej.Reason,
-			"detail": rej.Detail, "diagnostics": rej.Diagnostics, "did_you_mean": rej.DidYouMean}
+			"detail": rej.Detail, "diagnostics": rej.Diagnostics, "did_you_mean": rej.DidYouMean,
+			"possible_repairs": rej.PossibleRepairs}
 	} else if err != nil {
 		res = map[string]any{"status": "error", "error": err.Error()}
 	}

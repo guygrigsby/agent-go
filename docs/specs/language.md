@@ -212,14 +212,17 @@ decoder).
 {"status": "rejected", "reason": "...", "detail": "...",
  "diagnostics": [{"pos": "...", "msg": "..."}],
  "did_you_mean": ["..."],
- "possible_repairs": [{"op": "add_param", "why": "callers need an argument"}]}
+ "possible_repairs": [{"why": "demo/lib.Double resolves",
+   "call": {"tool": "view", "args": {"pkg": "demo/lib", "sym": "Double"}}}]}
 ```
 
 A rejection is the agent's error channel and must always answer "what is
-the correct next call": diagnostics say what broke, `did_you_mean` fixes
-addressing misses, `possible_repairs` names ops (future; v1 emits
-`did_you_mean`). Patch rejections say which op index failed; earlier ops
-in the patch have no effect.
+the correct next call": diagnostics say what broke, `did_you_mean` lists
+bare candidates, `possible_repairs` carries the corrected call whole —
+complete, paste-ready, and only ever a call the daemon would accept
+(candidates that would themselves reject are filtered out). Implemented
+for view addressing misses; patch ops are next. Patch rejections say
+which op index failed; earlier ops in the patch have no effect.
 
 ## Guarantees
 

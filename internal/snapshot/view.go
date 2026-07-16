@@ -110,6 +110,7 @@ func (s *Snapshot) View(pkgPath, sym string) (map[string]any, error) {
 	}
 	p, obj, rej := s.findObject(pkgPath, sym)
 	if rej != nil {
+		s.viewRepairs(rej, pkgPath, sym)
 		return nil, rej
 	}
 	gen := s.generation(pkgPath, sym)
@@ -118,8 +119,10 @@ func (s *Snapshot) View(pkgPath, sym string) (map[string]any, error) {
 		// Fields (e.g. "Store.n") are not independently viewable.
 		if strings.Contains(sym, ".") {
 			owner, _, _ := strings.Cut(sym, ".")
-			return nil, &Reject{Reason: "fields are not independently viewable; view the containing type",
+			rej := &Reject{Reason: "fields are not independently viewable; view the containing type",
 				Detail: pkgPath + "." + sym, DidYouMean: []string{owner}}
+			s.viewRepairs(rej, pkgPath, sym)
+			return nil, rej
 		}
 		text, err := s.declText(p, obj, sym)
 		if err != nil {

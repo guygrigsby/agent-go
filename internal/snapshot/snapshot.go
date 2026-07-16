@@ -41,6 +41,15 @@ type Reject struct {
 	// found" produces flailing retries, a candidate list produces the
 	// correct next call.
 	DidYouMean []string `json:"did_you_mean,omitempty"`
+	// PossibleRepairs carry the correct next call whole: the agent
+	// resends Call verbatim instead of composing a fix from prose.
+	PossibleRepairs []Repair `json:"possible_repairs,omitempty"`
+}
+
+// Repair is one complete, paste-ready next call.
+type Repair struct {
+	Why  string         `json:"why,omitempty"`
+	Call map[string]any `json:"call"`
 }
 
 func (r *Reject) Error() string { return r.Reason }
@@ -268,7 +277,7 @@ func (s *Snapshot) suggestSymbols(pkgPath, name string) []string {
 			if tn, ok := scope.Lookup(n).(*types.TypeName); ok {
 				for sel := range types.NewMethodSet(types.NewPointer(tn.Type())).Methods() {
 					m := sel.Obj().Name()
-					if lm := strings.ToLower(m); lm == lower || strings.Contains(lm, lower) {
+					if lm := strings.ToLower(m); lm == lower || strings.Contains(lm, lower) || strings.Contains(lower, lm) {
 						add(n + "." + m)
 					}
 				}
