@@ -1,6 +1,8 @@
-// Command bench prepares and runs the raw-vs-semantic agent benchmark.
+// Command bench prepares, runs, and reports the raw-vs-semantic agent
+// benchmark.
 //
 //	bench prep-rename -scratch <dir with repo clones> [-tasks f] [-out f]
+//	bench report [-curve out.csv] <run dir>...
 package main
 
 import (
@@ -11,13 +13,14 @@ import (
 
 func main() {
 	if len(os.Args) < 2 {
-		fail("usage: bench <prep-rename> [flags]")
+		fail("usage: bench <prep-rename|report> [flags]")
 	}
 	cmd, args := os.Args[1], os.Args[2:]
 	fs := flag.NewFlagSet(cmd, flag.ExitOnError)
 	scratch := fs.String("scratch", "", "directory containing the bench repo clones")
 	tasks := fs.String("tasks", "bench/tasks.json", "validated task list")
 	out := fs.String("out", "bench/tasks-rename.json", "output manifest")
+	curve := fs.String("curve", "", "write the completion-time curve CSV here")
 	fs.Parse(args)
 
 	switch cmd {
@@ -27,6 +30,13 @@ func main() {
 		}
 		if err := prepRename(*scratch, *tasks, *out); err != nil {
 			fail("prep-rename: %v", err)
+		}
+	case "report":
+		if fs.NArg() == 0 {
+			fail("report requires at least one run dir")
+		}
+		if err := report(fs.Args(), *curve); err != nil {
+			fail("report: %v", err)
 		}
 	default:
 		fail("unknown command %q", cmd)
