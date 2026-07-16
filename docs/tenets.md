@@ -67,8 +67,10 @@ That is not a defect to punish; it is the medium. The protocol serves the
 engineer shipping under those constraints, not an imagined ideal repo,
 and nothing here demands a clean world before it helps. Enforced by the
 bench itself: every task is mined from a real commit in a production
-repo (traefik, vault, boundary), never hand-written, so the tool is
-measured on the code people actually live in.
+repo ([traefik](https://github.com/traefik/traefik),
+[vault](https://github.com/hashicorp/vault),
+[boundary](https://github.com/hashicorp/boundary)), never hand-written,
+so the tool is measured on the code people actually live in.
 
 ## 8. The data is the contribution
 
