@@ -3,7 +3,9 @@ package daemon
 import (
 	"encoding/json"
 	"net"
+	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/guygrigsby/agent-go/internal/protocol"
@@ -21,7 +23,7 @@ func TestHandlePreservesDidYouMean(t *testing.T) {
 	snap := snapshot.New(dir)
 	client, server := net.Pipe()
 	done := make(chan bool, 1)
-	go func() { done <- handle(server, snap) }()
+	go func() { done <- handle(server, snap, nil) }()
 
 	req := protocol.Request{Op: "inspect", Pkg: "demo/lib", Sym: "Doubl"}
 	if err := json.NewEncoder(client).Encode(req); err != nil {
@@ -61,7 +63,7 @@ func TestHandlePreservesPossibleRepairs(t *testing.T) {
 	snap := snapshot.New(dir)
 	client, server := net.Pipe()
 	done := make(chan bool, 1)
-	go func() { done <- handle(server, snap) }()
+	go func() { done <- handle(server, snap, nil) }()
 
 	req := protocol.Request{Op: "view", Pkg: "demo/lib", Sym: "Doub"}
 	if err := json.NewEncoder(client).Encode(req); err != nil {
@@ -83,5 +85,70 @@ func TestHandlePreservesPossibleRepairs(t *testing.T) {
 	call, ok := reps[0].(map[string]any)["call"].(map[string]any)
 	if !ok || call["tool"] != "view" {
 		t.Fatalf("want a complete view call, got %v", reps[0])
+	}
+}
+
+// With a request log open, every handled request appends one JSONL record
+// carrying op, outcome, rejection evidence, and latency — the raw material
+// for the per-episode counters.
+func TestHandleWritesRequestLog(t *testing.T) {
+	dir, err := filepath.Abs("../snapshot/testdata/demo")
+	if err != nil {
+		t.Fatal(err)
+	}
+	logPath := filepath.Join(t.TempDir(), "requests.jsonl")
+	rlog, err := openRequestLog(logPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	snap := snapshot.New(dir)
+
+	send := func(req protocol.Request) {
+		client, server := net.Pipe()
+		done := make(chan bool, 1)
+		go func() { done <- handle(server, snap, rlog) }()
+		if err := json.NewEncoder(client).Encode(req); err != nil {
+			t.Fatal(err)
+		}
+		var res map[string]any
+		if err := json.NewDecoder(client).Decode(&res); err != nil {
+			t.Fatal(err)
+		}
+		<-done
+	}
+	send(protocol.Request{Op: "view", Pkg: "demo/lib", Sym: "Doub"})
+	send(protocol.Request{Op: "view", Pkg: "demo/lib", Sym: "Double"})
+	send(protocol.Request{Op: "view", Pkg: "demo/lib", Sym: "Doub"}) // identical resend
+	rlog.Close()
+
+	b, err := os.ReadFile(logPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	lines := strings.Split(strings.TrimSpace(string(b)), "\n")
+	if len(lines) != 3 {
+		t.Fatalf("want 3 records, got %d:\n%s", len(lines), b)
+	}
+	var first, second, third map[string]any
+	for i, target := range []*map[string]any{&first, &second, &third} {
+		if err := json.Unmarshal([]byte(lines[i]), target); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if first["op"] != "view" || first["outcome"] != "rejected" ||
+		first["reason"] != "symbol not found" || first["repairs"].(float64) < 1 {
+		t.Fatalf("first record wrong: %v", first)
+	}
+	if second["outcome"] != "ok" {
+		t.Fatalf("second record wrong: %v", second)
+	}
+	if first["req_sha"] != third["req_sha"] {
+		t.Fatal("identical resend must hash identically")
+	}
+	if first["req_sha"] == second["req_sha"] {
+		t.Fatal("different requests must hash differently")
+	}
+	if _, ok := first["ms"]; !ok {
+		t.Fatalf("record missing latency: %v", first)
 	}
 }

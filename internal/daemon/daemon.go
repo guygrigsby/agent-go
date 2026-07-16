@@ -24,8 +24,20 @@ func SocketPath(dir string) string {
 }
 
 // Run serves until idle seconds pass with no requests. One request per
-// connection; snapshot methods serialize internally.
-func Run(dir string, idle time.Duration) error {
+// connection; snapshot methods serialize internally. logPath, when
+// non-empty, appends one JSONL record per request (see requestLog); the
+// AGO_LOG_REQUESTS env var reaches auto-spawned daemons because spawn
+// inherits the parent environment.
+func Run(dir string, idle time.Duration, logPath string) error {
+	var rlog *requestLog
+	if logPath != "" {
+		l, err := openRequestLog(logPath)
+		if err != nil {
+			return err
+		}
+		rlog = l
+		defer rlog.Close()
+	}
 	sock := SocketPath(dir)
 	if err := os.MkdirAll(filepath.Dir(sock), 0o700); err != nil {
 		return err
@@ -46,19 +58,20 @@ func Run(dir string, idle time.Duration) error {
 			return nil // idle close or shutdown
 		}
 		timer.Reset(idle)
-		if stop := handle(conn, snap); stop {
+		if stop := handle(conn, snap, rlog); stop {
 			return nil
 		}
 	}
 }
 
-func handle(conn net.Conn, snap *snapshot.Snapshot) (stop bool) {
+func handle(conn net.Conn, snap *snapshot.Snapshot, rlog *requestLog) (stop bool) {
 	defer conn.Close()
 	var req protocol.Request
 	if err := json.NewDecoder(conn).Decode(&req); err != nil {
 		writeJSON(conn, map[string]any{"status": "error", "error": "bad request: " + err.Error()})
 		return false
 	}
+	start := time.Now()
 	var res map[string]any
 	var err error
 	switch req.Op {
@@ -110,6 +123,7 @@ func handle(conn net.Conn, snap *snapshot.Snapshot) (stop bool) {
 	} else if err != nil {
 		res = map[string]any{"status": "error", "error": err.Error()}
 	}
+	rlog.note(req, res, start)
 	writeJSON(conn, res)
 	return false
 }

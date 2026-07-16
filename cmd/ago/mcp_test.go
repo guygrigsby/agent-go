@@ -46,7 +46,7 @@ func TestMCPInitializeAndToolsList(t *testing.T) {
 
 	sock := daemon.SocketPath(abs)
 	daemonDone := make(chan error, 1)
-	go func() { daemonDone <- daemon.Run(abs, time.Minute) }()
+	go func() { daemonDone <- daemon.Run(abs, time.Minute, "") }()
 	t.Cleanup(func() {
 		roundTrip(abs, protocol.Request{Op: "stop"}, false)
 		<-daemonDone
@@ -181,7 +181,7 @@ func TestMCPCallPatchWiring(t *testing.T) {
 
 	sock := daemon.SocketPath(abs)
 	daemonDone := make(chan error, 1)
-	go func() { daemonDone <- daemon.Run(abs, time.Minute) }()
+	go func() { daemonDone <- daemon.Run(abs, time.Minute, "") }()
 	t.Cleanup(func() {
 		roundTrip(abs, protocol.Request{Op: "stop"}, false)
 		<-daemonDone

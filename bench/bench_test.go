@@ -151,6 +151,14 @@ func episode(b *testing.B, c config, t Manifest, mode string, iter int) bool {
 	if err := os.MkdirAll(epDir, 0o755); err != nil {
 		b.Fatal(err)
 	}
+	// Every daemon this episode spawns (warm-up, agent, scoring) inherits
+	// the env and logs its requests here. Episodes run sequentially, so a
+	// process-level env var is safe. Scorer queries land in the same file;
+	// agent_started/agent_done in episode.json bound the agent's window.
+	if absLog, err := filepath.Abs(filepath.Join(epDir, "requests.jsonl")); err == nil {
+		os.Setenv("AGO_LOG_REQUESTS", absLog)
+		defer os.Unsetenv("AGO_LOG_REQUESTS")
+	}
 	writeOpencodeConfig(b, c, wt, mode)
 	// Warm what any agent would find warm on a dev machine: module cache,
 	// build cache, and (semantic mode) the daemon snapshot.
@@ -183,6 +191,8 @@ func episode(b *testing.B, c config, t Manifest, mode string, iter int) bool {
 	res["iter"] = iter
 	res["prompt"] = t.Prompt
 	res["wall_s"] = wall.Seconds()
+	res["agent_started"] = start.UTC().Format(time.RFC3339Nano)
+	res["agent_done"] = start.Add(wall).UTC().Format(time.RFC3339Nano)
 	res["capped"] = timedOut
 	pass0, _ := res["pass"].(bool)
 	res["failure_kind"] = classifyFailure(agentErr, timedOut, agentOut, pass0)

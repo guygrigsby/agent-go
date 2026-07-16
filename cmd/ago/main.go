@@ -61,7 +61,7 @@ func main() {
 	}
 
 	if cmd == "daemon" {
-		if err := daemon.Run(abs, 5*time.Minute); err != nil {
+		if err := daemon.Run(abs, 5*time.Minute, os.Getenv("AGO_LOG_REQUESTS")); err != nil {
 			fail("daemon: %v", err)
 		}
 		return
