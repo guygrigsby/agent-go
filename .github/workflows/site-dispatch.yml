@@ -8,6 +8,6 @@ jobs:
   dispatch:
     runs-on: ubuntu-latest
     steps:
-      - run: gh api repos/guygrigsby/agent-go-site/dispatches -f event_type=agent-go-push
+      - run: gh api repos/guygrigsby/agent-go-docs/dispatches -f event_type=agent-go-push
         env:
           GH_TOKEN: ${{ secrets.SITE_DISPATCH_TOKEN }}
