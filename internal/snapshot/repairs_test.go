@@ -2,6 +2,7 @@ package snapshot
 
 import (
 	"encoding/json"
+	"strings"
 	"testing"
 )
 
@@ -262,6 +263,27 @@ func TestPatchTypecheckUndefinedRepairIsSearch(t *testing.T) {
 	res, err := s.Query("search", "", "", args["q"].(string))
 	if err != nil || res["status"] != "ok" {
 		t.Fatalf("search repair not executable: %v %v", res, err)
+	}
+}
+
+// add_param whose parameter type needs an import the file lacks must add
+// the import, not reject with "undefined". Oracle finding: task
+// boundary_b4b95e0f rejected adding ctx context.Context this way.
+func TestAddParamManagesImports(t *testing.T) {
+	s := demo(t)
+	res, err := s.AddParam("demo/lib", "Double", "ctx", "context.Context", "context.Background()")
+	if err != nil {
+		t.Fatalf("add_param rejected: %v", err)
+	}
+	if res["status"] != "accepted" {
+		t.Fatalf("got %v", res)
+	}
+	out, err := s.View("demo/lib", "Double")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if text := out["text"].(string); !strings.Contains(text, "ctx context.Context") {
+		t.Fatalf("param missing:\n%s", text)
 	}
 }
 

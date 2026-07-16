@@ -69,6 +69,14 @@ type Snapshot struct {
 	loaded bool
 	rev    map[string][]*packages.Package // package ID -> importers
 	gens   map[string]int64               // package path -> generation
+
+	// importCache and stdImp back retypecheck's import fallback for paths
+	// the dirty package's own pre-edit graph does not carry. One shared
+	// cache per snapshot: two dirty packages gaining the same new import
+	// must resolve to one *types.Package, or cross-package uses of its
+	// types mismatch ("context.Context does not implement context.Context").
+	importCache map[string]*types.Package
+	stdImp      types.Importer
 }
 
 func New(dir string) *Snapshot {
@@ -88,6 +96,8 @@ func (s *Snapshot) load() (int64, error) {
 	s.pkgs = pkgs
 	s.fset = cfg.Fset
 	s.rev = nil
+	s.importCache = nil
+	s.stdImp = nil
 	s.mtimes = map[string]time.Time{}
 	for _, p := range pkgs {
 		for _, f := range p.CompiledGoFiles {
@@ -510,7 +520,7 @@ func (s *Snapshot) retypecheck(dirty []*packages.Package) ([]Diagnostic, int, er
 		}
 		var perr []Diagnostic
 		conf := types.Config{
-			Importer: importerFor(p),
+			Importer: importerFor(s, p),
 			Sizes:    types.SizesFor("gc", runtime.GOARCH),
 			Error: func(err error) {
 				if te, ok := err.(types.Error); ok {
@@ -554,28 +564,51 @@ func (s *Snapshot) parsePkg(p *packages.Package) ([]*ast.File, bool, []Diagnosti
 	return files, false, nil
 }
 
-func importerFor(p *packages.Package) types.Importer {
+func importerFor(s *Snapshot, p *packages.Package) types.Importer {
 	return importerFunc(func(path string) (*types.Package, error) {
 		if imp, ok := p.Imports[path]; ok && imp.Types != nil {
 			return imp.Types, nil
 		}
-		// p.Imports only knows the dependency graph packages.Load walked
-		// before this edit. A patch can splice in a fresh import goimports
-		// added that nothing in p previously used (wrap_error's
-		// "fmt.Errorf(...)" being the case that surfaced this: a file with no
-		// prior fmt import gets one added by imports.Process at end-of-list
-		// formatting). Standard-library paths resolve independent of this
-		// workspace's module graph, so fall back to the running toolchain's
-		// own importer for those. A third-party or module-local package
-		// introduced this way is not covered — that needs a full workspace
-		// reload to discover via the real module graph (as UpsertDecl already
-		// does when it creates a new package), out of scope for this
-		// fallback.
-		if pkg, err := importer.Default().Import(path); err == nil {
-			return pkg, nil
-		}
-		return nil, fmt.Errorf("package %q not in snapshot", path)
+		return s.importFallback(path)
 	})
+}
+
+// importFallback resolves an import path the dirty package's own pre-edit
+// graph does not carry — a fresh import goimports added that nothing in p
+// previously used (wrap_error's "fmt.Errorf(...)", add_param's parameter
+// type). Resolution order matters for type identity: first anywhere else
+// in the loaded workspace graph, so uses agree with packages already
+// typechecked against it; then, for paths new to the whole workspace, one
+// snapshot-shared toolchain importer, so two dirty packages gaining the
+// same new import see one *types.Package. A third-party or module-local
+// package introduced this way is not covered — that needs a full workspace
+// reload to discover via the real module graph (as UpsertDecl already does
+// when it creates a new package). Caller holds mu.
+func (s *Snapshot) importFallback(path string) (*types.Package, error) {
+	if pkg, ok := s.importCache[path]; ok {
+		return pkg, nil
+	}
+	var found *types.Package
+	packages.Visit(s.pkgs, nil, func(p *packages.Package) {
+		if found == nil && p.PkgPath == path && p.Types != nil {
+			found = p.Types
+		}
+	})
+	if found == nil {
+		if s.stdImp == nil {
+			s.stdImp = importer.Default()
+		}
+		pkg, err := s.stdImp.Import(path)
+		if err != nil {
+			return nil, fmt.Errorf("package %q not in snapshot", path)
+		}
+		found = pkg
+	}
+	if s.importCache == nil {
+		s.importCache = map[string]*types.Package{}
+	}
+	s.importCache[path] = found
+	return found, nil
 }
 
 type importerFunc func(string) (*types.Package, error)

@@ -12,6 +12,7 @@ import (
 
 	"golang.org/x/tools/go/ast/astutil"
 	"golang.org/x/tools/go/packages"
+	"golang.org/x/tools/imports"
 )
 
 // addParamEdits computes add_param's edits without touching disk: symbol
@@ -132,7 +133,14 @@ func (s *Snapshot) AddParam(pkgPath, sym, name, typ, defaultExpr string) (map[st
 		for _, e := range fedits {
 			out = append(append(append([]byte{}, out[:e.offset]...), e.text...), out[e.offset+e.length:]...)
 		}
-		if err := os.WriteFile(file, out, 0o644); err != nil {
+		// The new parameter's type (and the default expression at call
+		// sites) can name a package the file does not import yet.
+		fixed, ferr := imports.Process(file, out, nil)
+		if ferr != nil {
+			s.rollback(originals)
+			return nil, &Reject{Reason: "add_param result does not parse", Detail: file + ": " + ferr.Error()}
+		}
+		if err := os.WriteFile(file, fixed, 0o644); err != nil {
 			s.rollback(originals)
 			return nil, err
 		}
