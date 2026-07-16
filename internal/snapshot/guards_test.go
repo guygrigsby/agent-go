@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"path/filepath"
 	"regexp"
 	"sort"
 	"strings"
@@ -34,6 +35,38 @@ func TestCatalogVersionBumpedOnShapeChange(t *testing.T) {
 		t.Fatalf("catalog shape changed: hash %s (recorded %s), catalogVersion %q (recorded %q).\n"+
 			"Bump catalogVersion in help.go and record the new hash and version in this test.",
 			got, wantCatalogHash, catalogVersion, wantVersion)
+	}
+}
+
+// The view-handle tests depend on demo/lib's exact layout: handles are
+// positional, so any added declaration or file shifts them and the
+// failures land far from the cause. New fixture shapes belong in
+// demo/sig. When this fails: if you touched demo/lib deliberately and
+// re-verified the view-handle tests, record the printed hash here;
+// otherwise move the addition to demo/sig.
+func TestDemoLibFixtureFrozen(t *testing.T) {
+	const wantLibHash = "c2159b0b5c43b2b8"
+	dir := filepath.Join("testdata", "demo", "lib")
+	ents, err := os.ReadDir(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var parts []string
+	for _, e := range ents {
+		b, err := os.ReadFile(filepath.Join(dir, e.Name()))
+		if err != nil {
+			t.Fatal(err)
+		}
+		sum := sha256.Sum256(b)
+		parts = append(parts, e.Name()+":"+hex.EncodeToString(sum[:8]))
+	}
+	sort.Strings(parts)
+	sum := sha256.Sum256([]byte(strings.Join(parts, ";")))
+	if got := hex.EncodeToString(sum[:8]); got != wantLibHash {
+		t.Fatalf("demo/lib changed: hash %s (recorded %s).\n"+
+			"View-handle tests depend on demo/lib's exact layout; new fixture shapes go in demo/sig.\n"+
+			"If this change is deliberate, re-run the view-handle tests and record the new hash here.\n"+
+			"Files: %s", got, wantLibHash, strings.Join(parts, " "))
 	}
 }
 
