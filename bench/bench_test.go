@@ -33,6 +33,16 @@ type config struct {
 	cap                                              time.Duration
 	profile                                          Profile
 	profiles                                         []Profile
+	canary                                           canarySpec
+	restartCmd                                       string
+}
+
+// ensureCanary is a no-op until AGO_BENCH_CANARY configures a probe.
+func ensureCanary(c config) error {
+	if c.canary.Prompt == "" {
+		return nil
+	}
+	return canaryWithRestart(c.endpoint, c.model, c.canary, c.restartCmd)
 }
 
 func setup(b *testing.B) config {
@@ -65,6 +75,16 @@ func setup(b *testing.B) config {
 	c.endpoint, c.model = c.profile.Endpoint, c.profile.Model
 	if c.endpoint == "" || c.model == "" || c.scratch == "" {
 		b.Skip("set AGO_BENCH_PROFILE (or AGO_BENCH_ENDPOINT + AGO_BENCH_MODEL) and AGO_BENCH_SCRATCH to run bench")
+	}
+	if path := os.Getenv("AGO_BENCH_CANARY"); path != "" {
+		raw, err := os.ReadFile(path)
+		if err != nil {
+			b.Fatal(err)
+		}
+		if err := json.Unmarshal(raw, &c.canary); err != nil {
+			b.Fatalf("AGO_BENCH_CANARY: %v", err)
+		}
+		c.restartCmd = os.Getenv("AGO_BENCH_RESTART_CMD")
 	}
 	if v := os.Getenv("AGO_BENCH_CAP"); v != "" {
 		d, err := time.ParseDuration(v)
@@ -172,6 +192,10 @@ func episode(b *testing.B, c config, t Manifest, mode string, iter int) bool {
 	baseErrs := errorSet(agoJSON(c, wt, "status"))
 	if mode == "raw" {
 		agoStop(c, wt) // raw mode gets no daemon; scoring respawns it later
+	}
+
+	if err := ensureCanary(c); err != nil {
+		b.Fatalf("server failed canary before episode: %v", err)
 	}
 
 	b.StartTimer()
