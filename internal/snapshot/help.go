@@ -135,6 +135,17 @@ var opCatalog = []helpOp{
 		Example: json.RawMessage(`[{"op":"remove_field","sym":"Store.Tag"}]`),
 		Notes:   "rejected while referenced. v1 ceiling: a field sharing a multi-name declaration (\"a, b int\") or an embedded field is not supported",
 	},
+	{
+		Op: "set_signature",
+		Args: []helpArg{
+			{"pkg", "string", false, "package import path; defaults to the envelope's pkg"},
+			{"sym", "string", false, "symbol: Name or Type.Member; defaults to the envelope's sym"},
+			{"signature", "string", true, "the complete new signature as Go text: \"(params) results\""},
+			{"defaults", "object", false, "argument expression per NEW parameter name, spliced into every existing call site; required for any new parameter when call sites exist"},
+		},
+		Example: json.RawMessage(`[{"op":"set_signature","sym":"Fetch","signature":"(ctx context.Context, a int, rest ...int) int","defaults":{"ctx":"context.Background()"}}]`),
+		Notes:   "full parameter/result rewrite: parameters are matched to the old signature by name — carried ones keep each call site's argument (reordering reorders them), dropped ones drop it, new ones take their default; a spread call site f(args...) survives insertions before the variadic. Value uses of the function and the body itself are not rewritten: repair them with sibling ops in the same patch or the end-of-list typecheck rejects with the site positions",
+	},
 
 	// Statement ops (docs/specs/language.md "Statement ops"). All address a
 	// handle from the most recent view (or a $N reference to an earlier op

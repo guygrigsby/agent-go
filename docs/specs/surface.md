@@ -51,7 +51,7 @@ live help catalog appears here, so shipped rows cannot drift. Statuses:
 | `add_test_case` | shipped | |
 | `set_test_case` | shipped | |
 | `remove_test_case` | shipped | |
-| `set_signature` | planned | [agent-go-596]; oracle-proven need: func-as-value, spread sites, interface+implementors atomic change |
+| `set_signature` | shipped | patch-only op; name-matched param carry, defaults for new params, spread-site insertion; interface methods pending |
 | `move_decl` | planned | [agent-go-596]; 24 mined move tasks blocked |
 | `remove_param` | planned | [agent-go-596] |
 | `implement_interface` | planned | [agent-go-596] |
