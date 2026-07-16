@@ -6,7 +6,7 @@ import "testing"
 // original task family). An unknown kind has no predicate and the episode
 // must record itself unscorable rather than silently passing.
 func TestPredicateDispatch(t *testing.T) {
-	for _, kind := range []string{"", "rename"} {
+	for _, kind := range []string{"", "rename", "add-param"} {
 		if predicateFor(kind) == nil {
 			t.Fatalf("no predicate for kind %q", kind)
 		}

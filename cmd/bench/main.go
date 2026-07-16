@@ -31,6 +31,16 @@ func main() {
 		if err := prepRename(*scratch, *tasks, *out); err != nil {
 			fail("prep-rename: %v", err)
 		}
+	case "prep-addparam":
+		if *scratch == "" {
+			fail("prep-addparam requires -scratch")
+		}
+		if *out == "bench/tasks-rename.json" {
+			*out = "bench/tasks-addparam.json"
+		}
+		if err := prepAddParam(*scratch, *tasks, *out); err != nil {
+			fail("prep-addparam: %v", err)
+		}
 	case "report":
 		if fs.NArg() == 0 {
 			fail("report requires at least one run dir")

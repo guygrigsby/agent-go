@@ -30,8 +30,9 @@ type Task struct {
 // Manifest and RenameSpec are shared with the runner; the prep tool
 // writes what the runner scores.
 type (
-	Manifest   = bench.Manifest
-	RenameSpec = bench.RenameSpec
+	Manifest     = bench.Manifest
+	RenameSpec   = bench.RenameSpec
+	AddParamSpec = bench.AddParamSpec
 )
 
 var (

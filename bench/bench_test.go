@@ -140,7 +140,7 @@ func BenchmarkRename(b *testing.B) {
 		c := c
 		c.profile, c.endpoint, c.model = p, p.Endpoint, p.Model
 		for _, t := range tasks {
-			if len(t.Renames) == 0 {
+			if !t.HasSpecs() {
 				continue
 			}
 			for _, mode := range []string{"raw", "semantic"} {
@@ -272,6 +272,27 @@ type predicateFn func(c config, wt string, t Manifest, baseline map[string]int) 
 
 var predicates = map[string]predicateFn{
 	"": renamePredicate, "rename": renamePredicate,
+	"add-param": addParamPredicate,
+}
+
+func addParamPredicate(c config, wt string, t Manifest, _ map[string]int) (bool, []map[string]any) {
+	predicate := len(t.AddParams) > 0
+	var specs []map[string]any
+	for _, a := range t.AddParams {
+		sig := ""
+		if out := agoJSON(c, wt, "inspect", "-p", a.Pkg, "-s", a.Sym); out != nil && out["status"] == "ok" {
+			sig, _ = out["type"].(string)
+		}
+		ok := sigHasParam(sig, a.Name, a.Type)
+		specs = append(specs, map[string]any{
+			"sym": a.Pkg + "." + a.Sym, "param": a.Name + " " + a.Type,
+			"ok": ok, "signature": sig,
+		})
+		if !ok {
+			predicate = false
+		}
+	}
+	return predicate, specs
 }
 
 func predicateFor(kind string) predicateFn { return predicates[kind] }
