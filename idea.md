@@ -12,8 +12,7 @@ agent's job has to be easy; mine only has to be possible.
 
 ## Why Go fits weaker agents
 
-Go already removes most of the ambiguity that makes local models look
-stupid:
+Go already removes most of the ambiguity that trips up local models:
 
 * small grammar
 * very little syntactic variation

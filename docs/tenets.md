@@ -1,7 +1,9 @@
 # Engineering tenets
 
 The principles this repo lives by. Each names its enforcement; a tenet
-without a mechanism is a wish.
+without a mechanism is a wish. The rules are strict on purpose: this work
+is meant to be checked, used, and built on by other people, and the rigor
+is for them. We care about the work and the humans it lands on.
 
 ## 1. Automate everything so drift is impossible
 
@@ -51,11 +53,12 @@ blocked them.
 
 ## 6. Tolerate the world, reject the change
 
-Real repos carry rot. Pre-existing brokenness never blocks an unrelated
-edit; a mutation is judged only on the diagnostics it introduces. Same
-rule shapes scoring: a test gate no ground truth could pass is vacuous,
-not failed. Enforced by baseline capture and filter in the engine and the
-pristine-worktree baseline in bench scoring.
+Real codebases carry history, and the people working in them shouldn't be
+blocked by problems they inherited. A mutation is judged only on the
+diagnostics it introduces; what was already failing never stops unrelated
+work. Same rule shapes scoring: a test gate no ground truth could pass is
+vacuous, not failed. Enforced by baseline capture and filter in the
+engine and the pristine-worktree baseline in bench scoring.
 
 ## 7. The data is the contribution
 
