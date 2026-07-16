@@ -167,7 +167,8 @@ func episode(b *testing.B, c config, t Manifest, mode string, iter int) bool {
 	res["prompt"] = t.Prompt
 	res["wall_s"] = wall.Seconds()
 	res["capped"] = timedOut
-	res["agent_error"] = agentErr != nil
+	pass0, _ := res["pass"].(bool)
+	res["failure_kind"] = classifyFailure(agentErr, timedOut, agentOut, pass0)
 	record(c, epDir, wt, agentOut, res)
 	pass, _ := res["pass"].(bool)
 	if !pass && testing.Verbose() {
