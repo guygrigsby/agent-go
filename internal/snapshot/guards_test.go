@@ -114,6 +114,79 @@ func TestSurfacePlannedRowsCiteOpenIssues(t *testing.T) {
 	}
 }
 
+// Tenet 5 (name the ceiling): language.md op-table rows marked UNSHIPPED
+// must not be registered, and every registered op must appear in the
+// spec's op tables. Either direction of drift teaches readers a surface
+// that does not exist.
+func TestLanguageSpecOpRowsMatchRegistry(t *testing.T) {
+	doc, err := os.ReadFile("../../docs/specs/language.md")
+	if err != nil {
+		t.Fatal(err)
+	}
+	opName := regexp.MustCompile("`([a-z_]+)`")
+	documented := map[string]bool{}
+	for _, line := range strings.Split(string(doc), "\n") {
+		if !strings.HasPrefix(line, "| `") {
+			continue
+		}
+		cells := strings.Split(line, "|")
+		if len(cells) < 3 {
+			continue
+		}
+		// A row may name several ops in its first cell
+		// (`set_test_case` / `remove_test_case` share one).
+		for _, m := range opName.FindAllStringSubmatch(cells[1], -1) {
+			op := m[1]
+			// The tools table names tools, not ops; sugar names overlap
+			// the registry and are covered as ops elsewhere.
+			switch op {
+			case "status", "help", "query", "view", "patch", "test":
+				continue
+			}
+			documented[op] = true
+			if strings.Contains(line, "UNSHIPPED") && opRegistry[op] != nil {
+				t.Errorf("language.md marks %q UNSHIPPED but it is registered; update the row", op)
+			}
+			if !strings.Contains(line, "UNSHIPPED") && opRegistry[op] == nil {
+				t.Errorf("language.md documents %q as shipped but it is not registered", op)
+			}
+		}
+	}
+	for op := range opRegistry {
+		if !documented[op] {
+			t.Errorf("op %q is registered but has no row in language.md", op)
+		}
+	}
+}
+
+// Tenet 4 (deterministic by test): the identical query against the
+// identical snapshot returns identical bytes. Map iteration order is not
+// an ordering; caches and result comparability hang on this.
+func TestQueryDeterministicBytes(t *testing.T) {
+	s := demo(t)
+	for _, q := range [][3]string{
+		{"search", "", "e"},
+		{"refs", "demo/lib", "Double"},
+		{"inspect", "demo/lib", "Store"},
+	} {
+		res1, err := s.Query(q[0], q[1], q[2], q[2], 0)
+		if err != nil {
+			t.Fatal(err)
+		}
+		delete(res1, "load_ms") // timing, not payload
+		b1, _ := json.Marshal(res1)
+		res2, err := s.Query(q[0], q[1], q[2], q[2], 0)
+		if err != nil {
+			t.Fatal(err)
+		}
+		delete(res2, "load_ms")
+		b2, _ := json.Marshal(res2)
+		if string(b1) != string(b2) {
+			t.Errorf("query %v not byte-deterministic:\n%s\n%s", q, b1, b2)
+		}
+	}
+}
+
 // Every JSON code block in language.md must parse, and any block shaped
 // like a patch envelope or ops array must name only registered ops with
 // arguments their schemas accept. Docs examples are few-shot material;

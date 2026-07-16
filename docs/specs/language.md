@@ -150,7 +150,7 @@ agent should compose it from data, not synthesize its shape.
 | `add_test` | pkg, target (sym under test), name? | scaffolds a table-driven test: case struct derived from the target's signature (inputs from params, `want` from results), rows slice, `range` + `t.Run` loop, one starter failure message. v1: address the test by name in follow-up ops. Name defaults to `Test<Target>` |
 | `add_test_case` | test (name), name, args[], want[] | appends one row; values are expression atoms typechecked against the case struct. v1 addresses tests by name; table handles are future |
 | `set_test_case` / `remove_test_case` | case addressed by test + row name | |
-| `add_bench` | pkg, target, name? | `BenchmarkXxx(b *testing.B)` skeleton |
+| `add_bench` | pkg, target, name? | UNSHIPPED; `BenchmarkXxx(b *testing.B)` skeleton |
 
 Placement and form rules, enforced at validation:
 

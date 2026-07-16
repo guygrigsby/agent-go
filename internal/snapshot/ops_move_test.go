@@ -75,15 +75,24 @@ func TestMoveDeclMissingTargetOffersCreateRepair(t *testing.T) {
 	if !ok || rej.Reason != "target package not found" {
 		t.Fatalf("got %v", err)
 	}
-	found := false
+	var repair map[string]any
 	for _, r := range rej.PossibleRepairs {
 		b, _ := json.Marshal(r.Call)
 		if strings.Contains(string(b), `"create_pkg":true`) {
-			found = true
+			repair = r.Call
 		}
 	}
-	if !found {
+	if repair == nil {
 		t.Fatalf("no create_pkg repair offered: %+v", rej.PossibleRepairs)
+	}
+	// Tenet 3: a repair is executed verbatim, never just displayed.
+	args, _ := json.Marshal(repair["args"])
+	res, rerr := s.Patch(args)
+	if rerr != nil {
+		t.Fatalf("offered repair rejected when pasted back: %v", rerr)
+	}
+	if res["status"] != "accepted" {
+		t.Fatalf("offered repair not accepted: %v", res)
 	}
 }
 
