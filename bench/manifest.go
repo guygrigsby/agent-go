@@ -1,5 +1,7 @@
 package bench
 
+import "sort"
+
 // Manifest is one bench task, shared by the prep tool that writes it and
 // the runner that scores it. Kind selects the goal predicate; empty means
 // rename, the original task family.
@@ -25,6 +27,37 @@ type Manifest struct {
 // EligibleForModel reports whether a model round may spend time on this
 // task: it must carry specs and be oracle certified.
 func (t Manifest) EligibleForModel() bool { return t.HasSpecs() && t.Certified }
+
+// suiteTasks selects the run tier. "full" (or empty) passes everything
+// through; "smoke" picks one model-eligible task per kind, smallest repo
+// first (by GoFiles, then repo name for determinism), so first contact
+// with a new model or harness change costs minutes, not a round.
+func suiteTasks(tasks []Manifest, suite string) []Manifest {
+	if suite != "smoke" {
+		return tasks
+	}
+	best := map[string]Manifest{}
+	for _, t := range tasks {
+		if !t.EligibleForModel() {
+			continue
+		}
+		cur, ok := best[t.Kind]
+		if !ok || t.GoFiles < cur.GoFiles ||
+			(t.GoFiles == cur.GoFiles && t.Repo < cur.Repo) {
+			best[t.Kind] = t
+		}
+	}
+	kinds := make([]string, 0, len(best))
+	for k := range best {
+		kinds = append(kinds, k)
+	}
+	sort.Strings(kinds)
+	out := make([]Manifest, 0, len(best))
+	for _, k := range kinds {
+		out = append(out, best[k])
+	}
+	return out
+}
 
 // MoveSpec is one declaration the ground-truth commit relocated: the goal
 // predicate checks it resolves in ToPkg and no longer in Pkg.

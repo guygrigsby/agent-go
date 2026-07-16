@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"strings"
 	"testing"
 )
 
@@ -23,6 +24,37 @@ func TestEligibleForModelRequiresCertification(t *testing.T) {
 	m.Renames = nil
 	if m.EligibleForModel() {
 		t.Fatal("certification without specs must not be model-eligible")
+	}
+}
+
+// The smoke suite is one certified task per kind, smallest first, so a
+// new model or harness change gets first contact in minutes instead of a
+// full round.
+func TestSmokeSuitePicksOnePerKind(t *testing.T) {
+	tasks := []Manifest{
+		{Repo: "vault", SHA: strings.Repeat("a", 40), Kind: "rename", GoFiles: 500,
+			Renames: []RenameSpec{{Pkg: "p", Sym: "A", To: "B"}}, Certified: true},
+		{Repo: "cobra", SHA: strings.Repeat("b", 40), Kind: "rename", GoFiles: 60,
+			Renames: []RenameSpec{{Pkg: "p", Sym: "A", To: "B"}}, Certified: true},
+		{Repo: "boundary", SHA: strings.Repeat("c", 40), Kind: "add-param", GoFiles: 580,
+			AddParams: []AddParamSpec{{Pkg: "p", Sym: "F", Name: "ctx", Type: "context.Context"}}, Certified: true},
+		{Repo: "traefik", SHA: strings.Repeat("d", 40), Kind: "add-param", GoFiles: 400,
+			AddParams: []AddParamSpec{{Pkg: "p", Sym: "F", Name: "ctx", Type: "context.Context"}}},
+	}
+	got := suiteTasks(tasks, "smoke")
+	if len(got) != 2 {
+		t.Fatalf("want one per certified kind, got %d: %+v", len(got), got)
+	}
+	if got[0].Repo != "cobra" && got[1].Repo != "cobra" {
+		t.Errorf("smoke must pick the smallest rename (cobra), got %+v", got)
+	}
+	for _, m := range got {
+		if m.Kind == "add-param" && m.Repo != "boundary" {
+			t.Errorf("uncertified traefik task selected over certified boundary: %+v", m)
+		}
+	}
+	if full := suiteTasks(tasks, "full"); len(full) != len(tasks) {
+		t.Errorf("full suite must pass tasks through, got %d", len(full))
 	}
 }
 

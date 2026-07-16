@@ -1,0 +1,15 @@
+{"ms":2757,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/boundary/testing/internal/e2e/boundary","req_sha":"8f6ab6a253fc8cb5","sym":"CreateStaticCredentialPasswordCli","ts":"2026-07-16T22:14:05.654353Z"}
+{"ms":8,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T22:14:08.417255Z"}
+{"ms":0,"op":"help","outcome":"ok","req_sha":"0b56758d64d8a078","ts":"2026-07-16T22:14:17.99419Z"}
+{"ms":2567,"op":"query","outcome":"ok","req_sha":"76d616a74f9f1e50","sym":"CreateStaticCredentialPasswordCli","ts":"2026-07-16T22:14:24.049174Z"}
+{"ms":38,"op":"query","outcome":"ok","pkg":"github.com/hashicorp/boundary/testing/internal/e2e/boundary","req_sha":"ee16e7a4a10489e0","sym":"CreateStaticCredentialPasswordCli","ts":"2026-07-16T22:14:29.148463Z"}
+{"ms":103,"op":"rename","outcome":"accepted","pkg":"github.com/hashicorp/boundary/testing/internal/e2e/boundary","req_sha":"0d1c605671ef09c4","sym":"CreateStaticCredentialPasswordCli","ts":"2026-07-16T22:14:32.63422Z"}
+{"ms":134553,"op":"test","outcome":"ok","req_sha":"12ef5d31bdb89522","ts":"2026-07-16T22:14:35.057679Z"}
+{"ms":73,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T22:16:49.624366Z"}
+{"ms":3050,"op":"test","outcome":"ok","pkg":"github.com/hashicorp/boundary/testing/internal/e2e/tests/base","req_sha":"d1d26db4fd1de783","ts":"2026-07-16T22:16:49.697687Z"}
+{"ms":28,"op":"query","outcome":"ok","req_sha":"76d616a74f9f1e50","sym":"CreateStaticCredentialPasswordCli","ts":"2026-07-16T22:16:56.879733Z"}
+{"ms":27,"op":"query","outcome":"ok","req_sha":"ab5ac78b248d1a39","sym":"CreateStaticCredentialUsernamePasswordCli","ts":"2026-07-16T22:16:58.710411Z"}
+{"ms":1246,"op":"test","outcome":"ok","pkg":"github.com/hashicorp/boundary/testing/internal/e2e/tests/database","req_sha":"d751ed307a2b9b78","ts":"2026-07-16T22:17:00.576943Z"}
+{"ms":2546,"op":"refs","outcome":"rejected","pkg":"github.com/hashicorp/boundary/testing/internal/e2e/boundary","reason":"symbol not found","repairs":0,"req_sha":"8f6ab6a253fc8cb5","sym":"CreateStaticCredentialPasswordCli","ts":"2026-07-16T22:17:04.541342Z"}
+{"ms":69,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/boundary/testing/internal/e2e/boundary","req_sha":"b39dfcf0f376a9ac","sym":"CreateStaticCredentialUsernamePasswordCli","ts":"2026-07-16T22:17:07.09675Z"}
+{"ms":14,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T22:17:07.173195Z"}

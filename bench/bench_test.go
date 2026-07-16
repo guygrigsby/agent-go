@@ -193,7 +193,9 @@ func TestOracleSweep(t *testing.T) {
 
 func BenchmarkRename(b *testing.B) {
 	c := setup(b)
-	tasks := loadTasks(b)
+	// AGO_BENCH_SUITE=smoke runs one certified task per kind from the
+	// smallest repo; anything else is the full roster.
+	tasks := suiteTasks(loadTasks(b), os.Getenv("AGO_BENCH_SUITE"))
 	// The harness runs each sub-benchmark twice (a sizing pass with N=1,
 	// then the requested N), so a loop index would reuse iter 0 and alias
 	// two different episodes' identity and evidence dirs. A persistent

@@ -4,8 +4,10 @@
 workspace and submit compiler-checked mutations instead of editing text.
 
 Go as a language for agents. The protocol puts the Go toolchain between
-the model and the files, so every edit is validated before anything
-touches disk.
+the model and the files: an edit that does not typecheck cannot reach
+disk. LSP-backed tools have the same compiler diagnostics available and
+can still write broken code, because checking is advisory there. Here
+invalid edits are unrepresentable, not merely checked.
 
 The thesis under test: weak local models become effective repo-scale Go
 editors when raw file editing is replaced by semantic queries and validated
@@ -104,6 +106,10 @@ usage, failure kind, and the daemon's per-request log under
 `bench/profiles.json` and embedded in each run's `run.json`.
 
 ```
+# smoke: one certified task per kind, smallest repo, for first contact
+AGO_BENCH_SUITE=smoke AGO_BENCH_PROFILE=<name> AGO_BENCH_SCRATCH=<clones dir> \
+go test ./bench -bench Rename -benchtime 1x -timeout 0
+
 # model round, k=3
 AGO_BENCH_PROFILE=glm-flash AGO_BENCH_SCRATCH=<clones dir> \
 go test ./bench -bench Rename -benchtime 3x -timeout 0

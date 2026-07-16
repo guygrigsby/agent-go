@@ -62,6 +62,7 @@ AGO_BENCH_MODES=oracle AGO_BENCH_SCRATCH=~/.cache/ago-bench/clones \
   go test ./bench -run OracleSweep -parallel 4 -timeout 0    # certify ground truth, no model
 AGO_BENCH_PROFILE=<name> AGO_BENCH_SCRATCH=~/.cache/ago-bench/clones \
   go test ./bench -bench Rename -benchtime 3x -timeout 0     # model round (profiles.json)
+# AGO_BENCH_SUITE=smoke: one certified task per kind, smallest repo (first contact tier)
 go run ./cmd/bench certify bench/results/<run> ...           # flip certified flags from oracle evidence
 go run ./cmd/bench report|export|paper bench/results/<run>   # Wilson CIs | MLflow | LaTeX tables
 ```
