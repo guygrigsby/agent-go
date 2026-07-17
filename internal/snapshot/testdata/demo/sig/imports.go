@@ -35,3 +35,7 @@ func (c *Counter) Total() int {
 type Tainted struct{}
 
 func (Tainted) Use() int { return UseFetch() }
+
+// NewCounter is Counter's constructor: an intra-set dependency when the
+// two move together.
+func NewCounter() *Counter { return &Counter{} }

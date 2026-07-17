@@ -19,17 +19,9 @@ import (
 // v1 ceiling: the declaration must be self-contained (no references to
 // other package-level symbols of its own package — moving those would need
 // a dependency-closure move) and a moved type may not have methods yet.
-func moveDeclEdits(s *Snapshot, pkgPath, sym, toPkg string) ([]edit, *Reject) {
-	if strings.Contains(sym, ".") {
-		return nil, &Reject{Reason: "move_decl moves top-level declarations",
-			Detail: sym + " names a member; move the containing declaration"}
-	}
+func moveDeclEdits(s *Snapshot, pkgPath string, syms []string, toPkg string) ([]edit, *Reject) {
 	if toPkg == pkgPath {
 		return nil, &Reject{Reason: "declaration is already in that package", Detail: toPkg}
-	}
-	p, obj, rej := s.findObject(pkgPath, sym)
-	if rej != nil {
-		return nil, rej
 	}
 	tgt := s.primary(toPkg)
 	if tgt == nil || tgt.Types == nil {
@@ -37,52 +29,71 @@ func moveDeclEdits(s *Snapshot, pkgPath, sym, toPkg string) ([]edit, *Reject) {
 			DidYouMean: s.suggestPackages(toPkg)}
 	}
 
-	declFile, start, end := s.findDeclRange(p, obj.Name(), sym)
-	grouped := ""
-	if declFile == "" {
-		// Not a standalone declaration: it may be one spec inside a grouped
-		// const/var/type block (boundary b26814a3's RecoveryUserId). The
-		// spec is extracted standalone into the target and deleted from the
-		// group; the group and its siblings stay put.
-		var gd *ast.GenDecl
-		var sp ast.Spec
-		declFile, gd, sp = s.findGroupedSpec(p, obj.Name())
-		if declFile == "" {
-			return nil, &Reject{Reason: "declaration not found", Detail: sym}
-		}
-		if rej := groupedSpecMovable(sp); rej != nil {
-			return nil, rej
-		}
-		start, end = s.specRange(sp)
-		grouped = gd.Tok.String()
-	}
-	// The move is a span set: the declaration itself, plus the whole
-	// method set when it is a type with methods (the dependency-closure
-	// move; boundary 687dd1bd relocates a job type and its methods as one
-	// unit). Closure-internal references are legal by construction: method
-	// objects live outside the package scope, so the dependency scan below
-	// never flags a method calling its sibling or naming its receiver.
+	// Resolve every mover up front. Movers are legal dependencies of each
+	// other: a batched set (type + constructor + tests, boundary 687dd1bd)
+	// validates as one unit.
 	type span struct {
 		file       string
 		start, end int
+		grouped    string // group token when the span is one extracted spec
 	}
-	spans := []span{{declFile, start, end}}
-	if tn, ok := obj.(*types.TypeName); ok {
-		for _, f := range p.Syntax {
-			for _, d := range f.Decls {
-				fd, isFn := d.(*ast.FuncDecl)
-				if !isFn || fd.Recv == nil || recvTypeName(fd) != tn.Name() {
-					continue
+	var spans []span
+	movers := map[types.Object]bool{}
+	var p *packages.Package
+	var moverObjs []types.Object
+	for _, sym := range syms {
+		if strings.Contains(sym, ".") {
+			return nil, &Reject{Reason: "move_decl moves top-level declarations",
+				Detail: sym + " names a member; move the containing declaration"}
+		}
+		sp, obj, rej := s.findObject(pkgPath, sym)
+		if rej != nil {
+			return nil, rej
+		}
+		if p == nil {
+			p = sp
+		}
+		movers[obj] = true
+		moverObjs = append(moverObjs, obj)
+		declFile, start, end := s.findDeclRange(sp, obj.Name(), sym)
+		grouped := ""
+		if declFile == "" {
+			// Not a standalone declaration: it may be one spec inside a
+			// grouped const/var/type block (boundary b26814a3's
+			// RecoveryUserId). The spec is extracted standalone into the
+			// target and deleted from the group; the group and its siblings
+			// stay put.
+			var gd *ast.GenDecl
+			var gsp ast.Spec
+			declFile, gd, gsp = s.findGroupedSpec(sp, obj.Name())
+			if declFile == "" {
+				return nil, &Reject{Reason: "declaration not found", Detail: sym}
+			}
+			if rej := groupedSpecMovable(gsp); rej != nil {
+				return nil, rej
+			}
+			start, end = s.specRange(gsp)
+			grouped = gd.Tok.String()
+		}
+		spans = append(spans, span{declFile, start, end, grouped})
+		if tn, ok := obj.(*types.TypeName); ok {
+			for _, f := range sp.Syntax {
+				for _, d := range f.Decls {
+					fd, isFn := d.(*ast.FuncDecl)
+					if !isFn || fd.Recv == nil || recvTypeName(fd) != tn.Name() {
+						continue
+					}
+					st := fd.Pos()
+					if fd.Doc != nil {
+						st = fd.Doc.Pos()
+					}
+					spans = append(spans, span{s.fset.Position(fd.Pos()).Filename,
+						s.fset.Position(st).Offset, s.fset.Position(fd.End()).Offset, ""})
 				}
-				st := fd.Pos()
-				if fd.Doc != nil {
-					st = fd.Doc.Pos()
-				}
-				spans = append(spans, span{s.fset.Position(fd.Pos()).Filename,
-					s.fset.Position(st).Offset, s.fset.Position(fd.End()).Offset})
 			}
 		}
 	}
+	sym := syms[0]
 	srcByFile := map[string][]byte{}
 	for _, sp := range spans {
 		if srcByFile[sp.file] == nil {
@@ -93,7 +104,6 @@ func moveDeclEdits(s *Snapshot, pkgPath, sym, toPkg string) ([]edit, *Reject) {
 			srcByFile[sp.file] = b
 		}
 	}
-	declSrc := srcByFile[declFile]
 	inSpans := func(file string, off int) bool {
 		for _, sp := range spans {
 			if sp.file == file && off >= sp.start && off < sp.end {
@@ -136,7 +146,7 @@ func moveDeclEdits(s *Snapshot, pkgPath, sym, toPkg string) ([]edit, *Reject) {
 				return true
 			}
 			o := p.TypesInfo.Uses[id]
-			if o == nil || o == obj {
+			if o == nil || movers[o] {
 				return true
 			}
 			if pn, isPkg := o.(*types.PkgName); isPkg {
@@ -188,8 +198,8 @@ func moveDeclEdits(s *Snapshot, pkgPath, sym, toPkg string) ([]edit, *Reject) {
 			}
 		}
 		delEnd := sp.end
-		if i == 0 && grouped != "" {
-			text = grouped + " " + text
+		if sp.grouped != "" {
+			text = sp.grouped + " " + text
 			// Consume the spec's own line ending so the group doesn't
 			// keep a blank line where the spec was.
 			if delEnd < len(srcByFile[sp.file]) && srcByFile[sp.file][delEnd] == '\n' {
@@ -199,63 +209,76 @@ func moveDeclEdits(s *Snapshot, pkgPath, sym, toPkg string) ([]edit, *Reject) {
 		declTexts = append(declTexts, text)
 		edits = append(edits, edit{sp.file, sp.start, delEnd - sp.start, ""})
 	}
-	declText := strings.Join(declTexts, "\n\n")
-
-	// Land in a target file of the same test-ness as the source: a decl
-	// from a _test.go must land in a _test.go (go test ignores it anywhere
-	// else), everything else in a non-test file. Test files live on the
-	// test-variant package, so collect candidates across every variant of
+	// Land each mover in a target file of its own test-ness: a decl from a
+	// _test.go must land in a _test.go (go test ignores it anywhere else),
+	// everything else in a non-test file. Test files live on the
+	// test-variant package, so candidates come from every variant of
 	// toPkg. Appended at the end; the patch pipeline's imports.Process
-	// fixes both files' import blocks.
-	fromTest := strings.HasSuffix(declFile, "_test.go")
-	tgtFile := ""
-	tgtOwner := tgt
-	for _, tp := range s.pkgs {
-		if tp.PkgPath != toPkg {
-			continue
-		}
-		for _, f := range tp.CompiledGoFiles {
-			if strings.HasSuffix(f, "_test.go") == fromTest {
-				tgtFile = f
-				tgtOwner = tp
-				break
+	// fixes the import blocks.
+	findTgt := func(fromTest bool) (string, *packages.Package) {
+		for _, tp := range s.pkgs {
+			if tp.PkgPath != toPkg {
+				continue
+			}
+			for _, f := range tp.CompiledGoFiles {
+				if strings.HasSuffix(f, "_test.go") == fromTest {
+					return f, tp
+				}
 			}
 		}
-		if tgtFile != "" {
-			break
+		return "", nil
+	}
+	groupTexts := map[bool][]string{}
+	for i, sp := range spans {
+		groupTexts[strings.HasSuffix(sp.file, "_test.go")] = append(
+			groupTexts[strings.HasSuffix(sp.file, "_test.go")], declTexts[i])
+	}
+	var carryTargets []struct {
+		file  string
+		owner *packages.Package
+	}
+	for _, fromTest := range []bool{false, true} {
+		texts := groupTexts[fromTest]
+		if len(texts) == 0 {
+			continue
 		}
-	}
-	if tgtFile == "" {
-		if fromTest {
-			return nil, &Reject{Reason: "target package has no test file", Detail: toPkg}
+		tgtFile, tgtOwner := findTgt(fromTest)
+		if tgtFile == "" {
+			if fromTest {
+				return nil, &Reject{Reason: "target package has no test file", Detail: toPkg}
+			}
+			return nil, &Reject{Reason: "target package has no non-test file", Detail: toPkg}
 		}
-		return nil, &Reject{Reason: "target package has no non-test file", Detail: toPkg}
+		tgtSrc, err := os.ReadFile(tgtFile)
+		if err != nil {
+			return nil, &Reject{Reason: "file not found", Detail: tgtFile}
+		}
+		edits = append(edits, edit{tgtFile, len(tgtSrc), 0, "\n\n" + strings.Join(texts, "\n\n") + "\n"})
+		carryTargets = append(carryTargets, struct {
+			file  string
+			owner *packages.Package
+		}{tgtFile, tgtOwner})
 	}
-	tgtSrc, err := os.ReadFile(tgtFile)
-	if err != nil {
-		return nil, &Reject{Reason: "file not found", Detail: tgtFile}
-	}
-	edits = append(edits, edit{tgtFile, len(tgtSrc), 0, "\n\n" + declText + "\n"})
 	carriedPaths := make([]string, 0, len(carried))
 	for path := range carried {
 		carriedPaths = append(carriedPaths, path)
 	}
 	sort.Strings(carriedPaths)
-	for _, path := range carriedPaths {
-		if e := importEdit(s, tgtOwner, tgtFile, path, carried[path]); e != nil {
-			edits = append(edits, *e)
+	for _, ct := range carryTargets {
+		for _, path := range carriedPaths {
+			if e := importEdit(s, ct.owner, ct.file, path, carried[path]); e != nil {
+				edits = append(edits, *e)
+			}
 		}
 	}
 
-	// Requalify references. Qualified refs swap their package qualifier;
-	// bare same-package refs gain the target's package name. goimports
-	// cannot reliably resolve module-local packages offline, so each file
-	// gaining a qualifier also gains the import explicitly.
+	// Requalify references, per mover. Qualified refs swap their package
+	// qualifier; bare same-package refs gain the target's package name.
+	// goimports cannot reliably resolve module-local packages offline, so
+	// each file gaining a qualifier also gains the import explicitly.
 	tgtName := tgt.Types.Name()
-	key := s.objKey(obj)
 	seen := map[string]bool{}
 	importAdded := map[string]bool{}
-	srcBytes := map[string][]byte{declFile: declSrc}
 	for _, p2 := range s.pkgs {
 		if p2.TypesInfo == nil || strings.HasSuffix(p2.ID, ".test") {
 			continue
@@ -270,44 +293,40 @@ func moveDeclEdits(s *Snapshot, pkgPath, sym, toPkg string) ([]edit, *Reject) {
 				return true
 			})
 		}
-		for id, o := range p2.TypesInfo.Uses {
-			if o == nil || o.Name() != obj.Name() || s.objKey(o) != key {
-				continue
-			}
-			pos := p2.Fset.Position(id.Pos())
-			if seen[pos.String()] {
-				continue
-			}
-			seen[pos.String()] = true
-			off := pos.Offset
-			if inSpans(pos.Filename, off) {
-				continue // a self-reference moves with the text
-			}
-			from, length := off, len(obj.Name())
-			text := tgtName + "." + obj.Name()
-			if sel, ok := selOf[id]; ok {
-				if x, isIdent := sel.X.(*ast.Ident); isIdent {
-					if _, isPkg := p2.TypesInfo.Uses[x].(*types.PkgName); isPkg {
-						from = p2.Fset.Position(x.Pos()).Offset
-						length = p2.Fset.Position(sel.End()).Offset - from
+		for _, obj := range moverObjs {
+			key := s.objKey(obj)
+			for id, o := range p2.TypesInfo.Uses {
+				if o == nil || o.Name() != obj.Name() || s.objKey(o) != key {
+					continue
+				}
+				pos := p2.Fset.Position(id.Pos())
+				if seen[pos.String()] {
+					continue
+				}
+				seen[pos.String()] = true
+				off := pos.Offset
+				if inSpans(pos.Filename, off) {
+					continue // a self-reference moves with the text
+				}
+				from, length := off, len(obj.Name())
+				text := tgtName + "." + obj.Name()
+				if sel, ok := selOf[id]; ok {
+					if x, isIdent := sel.X.(*ast.Ident); isIdent {
+						if _, isPkg := p2.TypesInfo.Uses[x].(*types.PkgName); isPkg {
+							from = p2.Fset.Position(x.Pos()).Offset
+							length = p2.Fset.Position(sel.End()).Offset - from
+						}
 					}
 				}
-			}
-			if p2.PkgPath == toPkg {
-				text = obj.Name()
-			}
-			if srcBytes[pos.Filename] == nil {
-				b, err := os.ReadFile(pos.Filename)
-				if err != nil {
-					return nil, &Reject{Reason: "file not found", Detail: pos.Filename}
+				if p2.PkgPath == toPkg {
+					text = obj.Name()
 				}
-				srcBytes[pos.Filename] = b
-			}
-			edits = append(edits, edit{pos.Filename, from, length, text})
-			if p2.PkgPath != toPkg && !importAdded[pos.Filename] {
-				importAdded[pos.Filename] = true
-				if e := importEdit(s, p2, pos.Filename, toPkg, ""); e != nil {
-					edits = append(edits, *e)
+				edits = append(edits, edit{pos.Filename, from, length, text})
+				if p2.PkgPath != toPkg && !importAdded[pos.Filename] {
+					importAdded[pos.Filename] = true
+					if e := importEdit(s, p2, pos.Filename, toPkg, ""); e != nil {
+						edits = append(edits, *e)
+					}
 				}
 			}
 		}
@@ -444,10 +463,11 @@ func (moveDeclOp) name() string { return "move_decl" }
 
 func (moveDeclOp) apply(ctx *patchCtx, raw json.RawMessage) *Reject {
 	var a struct {
-		Pkg       string `json:"pkg"`
-		Sym       string `json:"sym"`
-		ToPkg     string `json:"to_pkg"`
-		CreatePkg bool   `json:"create_pkg"`
+		Pkg       string   `json:"pkg"`
+		Sym       string   `json:"sym"`
+		Syms      []string `json:"syms"`
+		ToPkg     string   `json:"to_pkg"`
+		CreatePkg bool     `json:"create_pkg"`
 	}
 	if rej := decodeOpArgs(raw, &a); rej != nil {
 		return rej
@@ -456,7 +476,12 @@ func (moveDeclOp) apply(ctx *patchCtx, raw json.RawMessage) *Reject {
 		return &Reject{Reason: "to_pkg is required"}
 	}
 	pkg := orDefault(a.Pkg, ctx.pkg)
-	sym := orDefault(a.Sym, ctx.sym)
+	syms := a.Syms
+	if len(syms) == 0 {
+		syms = []string{orDefault(a.Sym, ctx.sym)}
+	} else if a.Sym != "" {
+		return &Reject{Reason: "sym and syms are mutually exclusive"}
+	}
 	if a.CreatePkg && ctx.s.primary(a.ToPkg) == nil {
 		// Opt-in only: a typo'd to_pkg must reject with candidates, never
 		// silently create a package. The created file is just the package
@@ -483,7 +508,7 @@ func (moveDeclOp) apply(ctx *patchCtx, raw json.RawMessage) *Reject {
 			return rej
 		}
 	}
-	edits, rej := moveDeclEdits(ctx.s, pkg, sym, a.ToPkg)
+	edits, rej := moveDeclEdits(ctx.s, pkg, syms, a.ToPkg)
 	if rej != nil && rej.Reason == "target package has no test file" {
 		// Moving a test declaration needs a _test.go to land in; creating
 		// one is unambiguous (no typo risk — the target package itself
@@ -497,7 +522,7 @@ func (moveDeclOp) apply(ctx *patchCtx, raw json.RawMessage) *Reject {
 		if crej := createFileInPatch(ctx, a.ToPkg, file, "package "+tgt.Types.Name()+"\n", ""); crej != nil {
 			return crej
 		}
-		edits, rej = moveDeclEdits(ctx.s, pkg, sym, a.ToPkg)
+		edits, rej = moveDeclEdits(ctx.s, pkg, syms, a.ToPkg)
 	}
 	if rej != nil {
 		return rej
@@ -507,7 +532,9 @@ func (moveDeclOp) apply(ctx *patchCtx, raw json.RawMessage) *Reject {
 	}
 	ctx.addAffected(pkg)
 	ctx.addAffected(a.ToPkg)
-	ctx.noteTouched(a.ToPkg, sym, false)
+	for _, sy := range syms {
+		ctx.noteTouched(a.ToPkg, sy, false)
+	}
 	return nil
 }
 

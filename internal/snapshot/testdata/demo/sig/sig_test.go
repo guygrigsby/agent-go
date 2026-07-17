@@ -31,3 +31,11 @@ func TestSelfContained(t *testing.T) {
 		t.Fatal("arithmetic broke")
 	}
 }
+
+// TestCounter moves alongside Counter and NewCounter in the batched-move
+// fixture set.
+func TestCounter(t *testing.T) {
+	if NewCounter().Total() != 0 {
+		t.Fatal("fresh counter not zero")
+	}
+}

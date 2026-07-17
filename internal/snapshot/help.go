@@ -6,7 +6,7 @@ import "encoding/json"
 // whenever an op is added, removed, or its argument shape changes, so a
 // caller can detect a stale cached copy instead of guessing from the op
 // list's length.
-const catalogVersion = "v6"
+const catalogVersion = "v7"
 
 // helpArg documents one op argument's wire shape.
 type helpArg struct {
@@ -152,6 +152,7 @@ var opCatalog = []helpOp{
 		Args: []helpArg{
 			{"pkg", "string", false, "source package import path; defaults to the envelope's pkg"},
 			{"sym", "string", false, "top-level declaration name; defaults to the envelope's sym"},
+			{"syms", "array", false, "several declarations moving as one set (type + constructor + tests); intra-set references are legal; mutually exclusive with sym"},
 			{"to_pkg", "string", true, "target package import path (must exist by the time this op runs; an earlier upsert_decl in the same patch can create it)"},
 			{"create_pkg", "boolean", false, "create a missing module-local target package as part of this patch; without it a missing target rejects (typo safety) and offers this flag as a repair"},
 		},

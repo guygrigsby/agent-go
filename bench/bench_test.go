@@ -24,6 +24,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"slices"
+	"sort"
 	"strings"
 	"testing"
 	"time"
@@ -416,18 +417,41 @@ func runOracle(c config, wt string, t Manifest) (string, error) {
 			}
 		}
 	case "move":
-		// Deferred-retry queue: a move blocked on a package-local sibling
-		// that is itself in the move set becomes unblocked once the sibling
-		// moves (its reference requalifies to the target package). A full
-		// pass of deferrals with no acceptance is a genuine blocker.
-		queue := append([]MoveSpec(nil), t.Moves...)
+		// Movers sharing a source and target batch into one op: intra-set
+		// dependencies (a type, its constructor, its tests) are legal
+		// inside a batch where sequential single moves would reject.
+		// Compound (renamed) movers still go one at a time, move then
+		// rename. A full pass of deferrals with no acceptance is a genuine
+		// blocker.
+		type cell struct{ pkg, toPkg string }
+		batches := map[cell][]string{}
+		var queue []MoveSpec
+		for _, m := range t.Moves {
+			if m.ToName == "" {
+				batches[cell{m.Pkg, m.ToPkg}] = append(batches[cell{m.Pkg, m.ToPkg}], m.Sym)
+			} else {
+				queue = append(queue, m)
+			}
+		}
+		for bc, syms := range batches {
+			// create_pkg unconditionally: the oracle replays ground truth,
+			// and the commit either created the target package or it
+			// already existed (the flag is a no-op then).
+			sort.Strings(syms)
+			env, _ := json.Marshal(map[string]any{"pkg": bc.pkg, "ops": []map[string]any{
+				{"op": "move_decl", "syms": syms, "to_pkg": bc.toPkg, "create_pkg": true}}})
+			out := agoJSONStdin(c, wt, string(env), "patch", "--body-file", "-")
+			rec, _ := json.Marshal(map[string]any{"call": []string{"patch", string(env)}, "res": out})
+			b.Write(rec)
+			b.WriteByte('\n')
+			if status, _ := out["status"].(string); status != "accepted" {
+				return b.String(), fmt.Errorf("oracle batched move %s -> %s: %v", bc.pkg, bc.toPkg, out)
+			}
+		}
 		deferred := 0
 		for len(queue) > 0 {
 			m := queue[0]
 			queue = queue[1:]
-			// create_pkg unconditionally: the oracle replays ground truth, and
-			// the commit either created the target package or it already
-			// existed (the flag is a no-op then).
 			ops := []map[string]any{
 				{"op": "move_decl", "sym": m.Sym, "to_pkg": m.ToPkg, "create_pkg": true}}
 			env, _ := json.Marshal(map[string]any{"pkg": m.Pkg, "ops": ops})

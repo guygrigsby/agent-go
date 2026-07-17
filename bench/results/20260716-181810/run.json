@@ -1,0 +1,24 @@
+{
+ "ago_rev": "2b8cc2148669215ec438d808315b4c9c78bfab8f",
+ "cap": "12m0s",
+ "endpoint": "https://llama.lab.aeryx.ai/v1",
+ "model": "ggml-org/gpt-oss-20b-GGUF:MXFP4",
+ "profiles": [
+  {
+   "name": "gpt-oss-20b-medium",
+   "endpoint": "https://llama.lab.aeryx.ai/v1",
+   "model": "ggml-org/gpt-oss-20b-GGUF:MXFP4",
+   "sampler": {
+    "repeat_penalty": 1,
+    "temperature": 1,
+    "top_p": 1
+   },
+   "thinking": "medium",
+   "quant": "MXFP4",
+   "notes": "reasoning_effort=medium is a SERVER-LAUNCH knob (llama-server --chat-template-kwargs '{\"reasoning_effort\":\"medium\"}'); template default is medium when unset. Relaunch per effort cell and verify via /props before a round. temp 1.0 top_p 1.0 per OpenAI; no repetition penalties; harmony - no grammar constraints."
+  }
+ ],
+ "raw_prompt_tokens": 129,
+ "semantic_prompt_tokens": 138,
+ "started": "2026-07-16T18:18:11-06:00"
+}

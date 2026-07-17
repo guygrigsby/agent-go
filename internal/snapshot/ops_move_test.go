@@ -280,6 +280,39 @@ func TestMoveDeclTypeWithMethods(t *testing.T) {
 	}
 }
 
+// Several declarations move as one set: syms batches them into a single
+// op, intra-set references are legal (the constructor uses the type, the
+// test uses both), tests land in a _test.go, and everything validates as
+// one atomic patch (boundary 687dd1bd moves a type, its constructor, and
+// its tests together).
+func TestMoveDeclBatchedSet(t *testing.T) {
+	s := demo(t)
+	res, err := s.Patch([]byte(`{"pkg":"demo/sig","ops":[
+		{"op":"move_decl","syms":["Counter","NewCounter","TestCounter"],"to_pkg":"demo/lib"}]}`))
+	if err != nil {
+		t.Fatalf("rejected: %v", err)
+	}
+	if res["status"] != "accepted" {
+		t.Fatalf("got %v", res)
+	}
+	for _, sym := range []string{"Counter", "Counter.Total", "NewCounter"} {
+		if _, err := s.inspect("demo/lib", sym); err != nil {
+			t.Fatalf("%s not in target: %v", sym, err)
+		}
+	}
+	if _, err := s.inspect("demo/sig", "Counter"); err == nil {
+		t.Fatal("Counter still in source")
+	}
+	b, _ := os.ReadFile(filepath.Join(s.dir, "lib", "agent_test.go"))
+	if !strings.Contains(string(b), "func TestCounter") {
+		t.Fatalf("test mover not in a _test.go:\n%s", b)
+	}
+	lib, _ := os.ReadFile(filepath.Join(s.dir, "lib", "lib.go"))
+	if !strings.Contains(string(lib), "func NewCounter") {
+		t.Fatalf("constructor not in non-test file:\n%s", lib)
+	}
+}
+
 // A method leaning on a package-local symbol outside the closure still
 // rejects, dependency named.
 func TestMoveDeclTypeWithMethodsDepsReject(t *testing.T) {
