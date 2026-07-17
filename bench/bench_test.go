@@ -457,32 +457,27 @@ func runOracle(c config, wt string, t Manifest) (string, error) {
 			return map[string]any{"op": "move_decl", "pkg": bc.pkg, "syms": syms,
 				"to_pkg": bc.toPkg, "create_pkg": true}
 		}
-		for i, bc := range cells {
-			out := submit(map[string]any{"pkg": bc.pkg, "ops": []map[string]any{moveOp(bc)}})
-			if status, _ := out["status"].(string); status == "accepted" {
-				continue
-			} else if len(queue) > 0 {
-				// v1 ceiling: reconcile and compound (renamed) movers do not
-				// mix; the rename would fight the post-state upserts.
-				return b.String(), fmt.Errorf("oracle batched move %s -> %s: %v", bc.pkg, bc.toPkg, out)
-			}
-			// The pure move rejected, so the commit authored more than a
-			// relocation (a dropped parameter, a new helper, an import the
-			// target may not hold). Retry as ONE atomic patch: any leading
-			// file deletes, the remaining batched moves (minus movers those
-			// deletes excised — their rewritten post-state upserts instead),
-			// then the commit's decl-level rewrites; the end-of-list
-			// typecheck is the arbiter. Cells accepted before this one keep
-			// their plain moves; the plan only shapes what is still pending.
-			plan, rerr := reconcileOps(filepath.Join(c.scratch, t.Repo), t.SHA, moduleOf(wt), t.Moves)
+		// applied tracks movers earlier accepted patches relocated, so a
+		// later reconcile never emits a source delete for a decl the live
+		// workspace no longer holds.
+		applied := map[string]bool{}
+		// reconcileFallback expresses everything still pending as ONE
+		// atomic patch: any leading file deletes, the surviving batched
+		// moves from pending cells (minus movers the plan dropped — their
+		// rewritten or renamed post-state upserts instead), then the
+		// commit's decl-level rewrites. The end-of-list typecheck is the
+		// arbiter. Compound movers are always dropped by the plan, so a
+		// successful fallback covers the queue too.
+		reconcileFallback := func(pending []cell) error {
+			plan, rerr := reconcileOps(filepath.Join(c.scratch, t.Repo), t.SHA, moduleOf(wt), t.Moves, applied)
 			if rerr != nil {
-				return b.String(), fmt.Errorf("oracle reconcile %s: %w", t.SHA[:8], rerr)
+				return fmt.Errorf("oracle reconcile %s: %w", t.SHA[:8], rerr)
 			}
 			for _, n := range plan.notes {
 				fmt.Fprintf(&b, `{"reconcile_note":%q}`+"\n", n)
 			}
 			ops := append([]map[string]any{}, plan.preOps...)
-			for _, rc := range cells[i:] {
+			for _, rc := range pending {
 				syms := make([]string, 0, len(batches[rc]))
 				for _, sym := range batches[rc] {
 					if !plan.dropMovers[rc.pkg+"|"+sym] {
@@ -497,14 +492,32 @@ func runOracle(c config, wt string, t Manifest) (string, error) {
 					"syms": syms, "to_pkg": rc.toPkg, "create_pkg": true})
 			}
 			ops = append(ops, plan.ops...)
-			out = submit(map[string]any{"pkg": bc.pkg, "ops": ops})
+			out := submit(map[string]any{"pkg": t.Moves[0].Pkg, "ops": ops})
 			if status, _ := out["status"].(string); status != "accepted" {
-				return b.String(), fmt.Errorf("oracle move+reconcile %s -> %s: %v", bc.pkg, bc.toPkg, out)
+				return fmt.Errorf("oracle move+reconcile %s: %v", t.SHA[:8], out)
 			}
+			return nil
+		}
+		reconciled := false
+		for i, bc := range cells {
+			out := submit(map[string]any{"pkg": bc.pkg, "ops": []map[string]any{moveOp(bc)}})
+			if status, _ := out["status"].(string); status == "accepted" {
+				for _, sym := range batches[bc] {
+					applied[bc.pkg+"|"+sym] = true
+				}
+				continue
+			}
+			// The pure move rejected, so the commit authored more than a
+			// relocation (a dropped parameter, a new helper, an import the
+			// target may not hold).
+			if err := reconcileFallback(cells[i:]); err != nil {
+				return b.String(), err
+			}
+			reconciled = true
 			break
 		}
 		deferred := 0
-		for len(queue) > 0 {
+		for !reconciled && len(queue) > 0 {
 			m := queue[0]
 			queue = queue[1:]
 			ops := []map[string]any{
@@ -521,7 +534,14 @@ func runOracle(c config, wt string, t Manifest) (string, error) {
 					deferred++
 					continue
 				}
-				return b.String(), fmt.Errorf("oracle move %s.%s: %v", m.Pkg, m.Sym, out)
+				// The relocation itself is inexpressible one at a time (an
+				// unexported name the rename would have fixed, a reference
+				// the commit rewrote): the same reconcile patch covers the
+				// rest of the queue.
+				if err := reconcileFallback(nil); err != nil {
+					return b.String(), err
+				}
+				break
 			}
 			deferred = 0
 			if m.ToName != "" {
@@ -539,6 +559,7 @@ func runOracle(c config, wt string, t Manifest) (string, error) {
 					return b.String(), fmt.Errorf("oracle move rename %s -> %s: %v", m.Sym, m.ToName, rout)
 				}
 			}
+			applied[m.Pkg+"|"+m.Sym] = true
 		}
 	default:
 		return "", fmt.Errorf("oracle has no replay for kind %q", t.Kind)

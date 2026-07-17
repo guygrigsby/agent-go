@@ -54,7 +54,12 @@ type fileState struct {
 // blocks (upsert_decl replaces single decls), external test packages
 // (package foo_test addresses a different import path), and anonymous
 // declarations (var _ = ...).
-func reconcileOps(gitDir, sha, modPath string, moves []MoveSpec) (*reconcilePlan, error) {
+// applied names movers ("pkg|sym") earlier patches already relocated:
+// their source declarations are gone from the live workspace, so the
+// git-derived delete would reject on "symbol not found"; their target
+// upserts still run (a compound mover's post-state can differ beyond the
+// name).
+func reconcileOps(gitDir, sha, modPath string, moves []MoveSpec, applied map[string]bool) (*reconcilePlan, error) {
 	statusOut, err := exec.Command("git", "-C", gitDir, "show", "--no-renames", "--name-status", "--format=", sha).Output()
 	if err != nil {
 		return nil, fmt.Errorf("git show --name-status %s: %w", sha[:8], err)
@@ -113,6 +118,13 @@ func reconcileOps(gitDir, sha, modPath string, moves []MoveSpec) (*reconcilePlan
 	// receiver type's verdict via the base-name check in the delete pass.
 	moverInBatch := map[string]bool{}
 	for _, m := range moves {
+		if m.ToName != "" {
+			// A rename changes the text by definition; the new name upserts,
+			// the old one deletes.
+			plan.dropMovers[m.Pkg+"|"+m.Sym] = true
+			*notes = append(*notes, "compound mover "+m.Sym+" -> "+m.ToName+": rename travels as delete+upsert")
+			continue
+		}
 		pre, okPre := preByPkg[m.Pkg][m.Sym]
 		post, okPost := postByPkg[m.ToPkg][m.Sym]
 		if okPre && okPost && pre.text == post.text {
@@ -173,8 +185,9 @@ func reconcileOps(gitDir, sha, modPath string, moves []MoveSpec) (*reconcilePlan
 				continue
 			}
 			base := baseOf(k)
-			if moverInBatch[ps.pkg+"|"+k] || moverInBatch[ps.pkg+"|"+base] {
-				continue // move_decl excises it
+			if moverInBatch[ps.pkg+"|"+k] || moverInBatch[ps.pkg+"|"+base] ||
+				applied[ps.pkg+"|"+k] || applied[ps.pkg+"|"+base] {
+				continue // move_decl excises (or already excised) it
 			}
 			if ps.decls.decls[k].grouped {
 				*notes = append(*notes, "skip "+ps.file+" "+k+": grouped multi-spec decl")

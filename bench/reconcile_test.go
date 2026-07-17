@@ -128,7 +128,7 @@ func Fresh() error { return stde.New("x") }
 		{Pkg: "mod/a", Sym: "Stay", ToPkg: "mod/b"},
 		{Pkg: "mod/a", Sym: "TestMoved", ToPkg: "mod/b"},
 	}
-	plan, err := reconcileOps(dir, sha, "mod", moves)
+	plan, err := reconcileOps(dir, sha, "mod", moves, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -213,5 +213,59 @@ func Fresh() error { return stde.New("x") }
 	}
 	if o := find("upsert_decl", "Moved() != 2"); o == nil {
 		t.Error("no post-state upsert for the dropped test mover")
+	}
+}
+
+// A compound (renamed) mover can never travel by move_decl batch — the
+// rename changes its text — so the plan always drops it: the source decl
+// deletes and the post-state upserts under the new name (vault 7ec1fe75:
+// clusterListenerAcceptDeadline -> cluster.ListenerAcceptDeadline).
+func TestReconcileOpsCompoundMover(t *testing.T) {
+	pre := map[string]string{
+		"go.mod": "module mod\n\ngo 1.24\n",
+		"a/a.go": `package a
+
+func hidden() int { return 1 }
+
+func Use() int { return hidden() }
+`,
+	}
+	post := map[string]string{
+		"a/a.go": `package a
+
+import "mod/b"
+
+func Use() int { return b.Shown() }
+`,
+		"b/b.go": `package b
+
+func Shown() int { return 1 }
+`,
+	}
+	dir, sha := gitFixture(t, pre, post)
+	moves := []MoveSpec{{Pkg: "mod/a", Sym: "hidden", ToPkg: "mod/b", ToName: "Shown"}}
+	plan, err := reconcileOps(dir, sha, "mod", moves, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !plan.dropMovers["mod/a|hidden"] {
+		t.Fatalf("compound mover not dropped: %v", plan.dropMovers)
+	}
+	var sawUpsert, sawDelete bool
+	for _, o := range plan.ops {
+		if text, _ := o["text"].(string); o["op"] == "upsert_decl" && strings.Contains(text, "func Shown") {
+			sawUpsert = o["pkg"] == "mod/b"
+		}
+		if o["op"] == "delete_decl" && o["pkg"] == "mod/a" {
+			if syms, _ := o["syms"].([]string); len(syms) == 1 && syms[0] == "hidden" {
+				sawDelete = true
+			}
+		}
+	}
+	if !sawUpsert {
+		t.Errorf("no upsert of the renamed mover in the target: %v", plan.ops)
+	}
+	if !sawDelete {
+		t.Errorf("no source delete of the old name: %v", plan.ops)
 	}
 }

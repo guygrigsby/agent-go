@@ -1,0 +1,8 @@
+{"ms":2590,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-17T10:48:12.651956Z"}
+{"ms":8,"op":"patch","outcome":"rejected","pkg":"github.com/hashicorp/vault/command/agent/cache","reason":"package exists but did not load","repairs":0,"req_sha":"e53841a77b032d84","ts":"2026-07-17T10:48:15.255008Z"}
+{"ms":8632,"op":"patch","outcome":"rejected","pkg":"github.com/hashicorp/vault/command/agent/cache","reason":"declaration does not typecheck","repairs":1,"req_sha":"29d389deb3a2bcdf","ts":"2026-07-17T10:48:15.607135Z"}
+{"ms":4,"op":"inspect","outcome":"rejected","pkg":"github.com/hashicorp/vault/api","reason":"package not found","repairs":1,"req_sha":"89c07b95e688b812","sym":"MergeReplicationStates","ts":"2026-07-17T10:48:24.26873Z"}
+{"ms":4,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/vault/command/agent/cache","req_sha":"ad59debc3cfe3043","sym":"mergeStates","ts":"2026-07-17T10:48:24.296808Z"}
+{"ms":4,"op":"inspect","outcome":"rejected","pkg":"github.com/hashicorp/vault/api","reason":"package not found","repairs":1,"req_sha":"559b28df0688a0ed","sym":"TestMergeReplicationStates","ts":"2026-07-17T10:48:24.327402Z"}
+{"ms":4,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/vault/command/agent/cache","req_sha":"68b1438cadc586ef","sym":"TestMergeStates","ts":"2026-07-17T10:48:24.339464Z"}
+{"ms":36,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-17T10:48:24.351492Z"}
