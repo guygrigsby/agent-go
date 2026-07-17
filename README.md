@@ -30,7 +30,11 @@ go install github.com/guygrigsby/agent-go/cmd/ago@latest
 
 Windows: grab the zip from the releases page. Every channel ships the
 agent skill in the binary; `ago skill install` drops it into
-~/.claude/skills for shell-capable coding agents.
+~/.claude/skills for shell-capable coding agents. In an existing repo,
+`ago init` wires the agent files without touching the module: AGENTS.md
+(read natively by Codex, Copilot, Cursor, Windsurf, Zed, Claude Code,
+and the rest of the AGENTS.md ecosystem), MCP wiring, and a GEMINI.md
+pointer for the one holdout.
 
 Or from a clone:
 

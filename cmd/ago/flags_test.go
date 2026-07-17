@@ -171,3 +171,44 @@ func TestSkillInstall(t *testing.T) {
 		t.Fatalf("installed skill missing frontmatter:\n%.200s", b)
 	}
 }
+
+// ago init in an existing module wires the agent files without touching
+// the module: adoption happens in repos that already exist.
+func TestInitWiresExistingModule(t *testing.T) {
+	dir := t.TempDir()
+	if err := os.WriteFile(filepath.Join(dir, "go.mod"), []byte("module example.com/x\n\ngo 1.24\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, "main.go"), []byte("package main\n\nfunc main() {}\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if err := runInit(dir, ""); err != nil {
+		t.Fatal(err)
+	}
+	for _, f := range []string{"AGENTS.md", ".mcp.json", "opencode.json", "GEMINI.md"} {
+		if _, err := os.Stat(filepath.Join(dir, f)); err != nil {
+			t.Errorf("wire-only init missing %s", f)
+		}
+	}
+	b, _ := os.ReadFile(filepath.Join(dir, "main.go"))
+	if !strings.Contains(string(b), "func main() {}") {
+		t.Error("existing main.go was overwritten")
+	}
+	if _, err := os.Stat(filepath.Join(dir, "AGENTS.md")); err != nil {
+		t.Fatal(err)
+	}
+}
+
+// Wire-only init never clobbers an existing AGENTS.md.
+func TestInitRefusesExistingAgentsMd(t *testing.T) {
+	dir := t.TempDir()
+	os.WriteFile(filepath.Join(dir, "go.mod"), []byte("module x\n"), 0o644)
+	os.WriteFile(filepath.Join(dir, "AGENTS.md"), []byte("mine\n"), 0o644)
+	if err := runInit(dir, ""); err == nil {
+		t.Fatal("want error on existing AGENTS.md")
+	}
+	b, _ := os.ReadFile(filepath.Join(dir, "AGENTS.md"))
+	if string(b) != "mine\n" {
+		t.Error("existing AGENTS.md clobbered")
+	}
+}

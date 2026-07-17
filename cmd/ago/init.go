@@ -18,13 +18,18 @@ func runInit(dir, module string) error {
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		return err
 	}
+	// An existing module gets wire-only init: the agent instruction and MCP
+	// files land, the module and its code are untouched. Adoption happens
+	// in repos that already exist.
+	wireOnly := false
 	if _, err := os.Stat(filepath.Join(dir, "go.mod")); err == nil {
-		return fmt.Errorf("go.mod already exists in %s", dir)
-	}
-	cmd := exec.Command("go", "mod", "init", module)
-	cmd.Dir = dir
-	if out, err := cmd.CombinedOutput(); err != nil {
-		return fmt.Errorf("go mod init: %v\n%s", err, out)
+		wireOnly = true
+	} else {
+		cmd := exec.Command("go", "mod", "init", module)
+		cmd.Dir = dir
+		if out, err := cmd.CombinedOutput(); err != nil {
+			return fmt.Errorf("go mod init: %v\n%s", err, out)
+		}
 	}
 
 	files := map[string]string{
@@ -37,6 +42,13 @@ import "fmt"
 func main() {
 	fmt.Println("hello from ` + module + `")
 }
+`,
+		// Gemini CLI still keys on GEMINI.md by default; everything else
+		// (Codex, Copilot, Cursor, Windsurf, Zed, Claude Code, ...) reads
+		// AGENTS.md natively.
+		"GEMINI.md": `Read AGENTS.md: this project is edited through the ago semantic
+protocol, not raw file edits. (Or set context.fileName to AGENTS.md in
+.gemini/settings.json.)
 `,
 		".mcp.json": `{
   "mcpServers": {
@@ -148,10 +160,22 @@ CLI equivalents exist for humans: ago status | help | query | view | patch
 down the workspace daemon.
 `,
 	}
+	if wireOnly {
+		delete(files, "main.go")
+	}
+	for name := range files {
+		if _, err := os.Stat(filepath.Join(dir, name)); err == nil {
+			return fmt.Errorf("%s already exists in %s; remove it first or merge by hand", name, dir)
+		}
+	}
 	for name, content := range files {
 		if err := os.WriteFile(filepath.Join(dir, name), []byte(content), 0o644); err != nil {
 			return err
 		}
+	}
+	if wireOnly {
+		fmt.Printf("wired %s for agents (module untouched)\n", dir)
+		return nil
 	}
 	fmt.Printf("initialized %s (module %s)\n", dir, module)
 	return nil
