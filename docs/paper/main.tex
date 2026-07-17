@@ -20,27 +20,28 @@
 \maketitle
 
 \begin{abstract}
-Coding agents overwhelmingly edit source code as text, and small locally
-runnable models fail at it: diff formats break, identifiers are guessed,
-and errors surface only after files change. We present \textbf{ago}, a
-semantic edit protocol for Go in which an agent queries a typechecked
-workspace and submits mutations from a versioned operation catalog; every
-mutation is validated by the compiler against an in-memory snapshot
-before any file is written, applied as an atomic generation-checked
-transaction, or rejected. Rejections are designed as conversation:
-each carries typed diagnostics and \emph{paste-ready repairs} --- the
-corrected call, verbatim --- and exact resends escalate. We introduce an
-\emph{oracle} methodology that replays ground-truth commits through the
-protocol to certify every benchmark task solvable before any model time
-is spent, and mine tasks from real commit histories of traefik, vault,
-boundary, and cobra. Across \EpisodeCount{} recorded episodes with a
-quantized 30B-class local model, the semantic mode passes
-\SemanticPassRate{} of episodes versus \RawPassRate{} for raw file
-editing under identical prompts and budgets, with lower median
-time-to-green on nearly every task; a 9B-class model completes
-repository-scale refactoring tasks through the protocol on first
-contact. All code, per-episode evidence (transcripts, request logs,
-serving configurations), and analysis tooling are released.
+Coding agents edit source code as text, and small locally runnable
+models fail at it: diff formats break, identifiers get guessed, and
+errors surface only after files change. ago is a semantic edit protocol
+for Go. The agent queries a typechecked workspace and submits mutations
+from a versioned operation catalog; the compiler validates every
+mutation against an in-memory snapshot before anything reaches disk.
+Edits apply as atomic, generation-checked transactions or not at all,
+so an edit that does not typecheck is unrepresentable, not merely
+checked. Rejections are the conversation: each carries typed
+diagnostics and paste-ready repairs (the corrected call, verbatim), and
+resending a rejected call unchanged escalates. An oracle replays each
+task's ground-truth commit through the protocol before any model
+attempts it, so a task enters the benchmark only once it is proven
+solvable; tasks are mined from real commits in traefik, vault,
+boundary, and cobra. Across \EpisodeCount{} recorded episodes, the
+semantic mode passes \SemanticPassRate{} versus \RawPassRate{} for raw
+file editing under identical prompts and budgets, and the gap widens as
+models shrink: a quantized 9B model passes 75\% of episodes through the
+protocol against 45\% raw, with raw at zero on five of eleven tasks the
+protocol completes. All code, per-episode evidence (transcripts,
+request logs, serving configurations), and analysis tooling are
+released.
 \end{abstract}
 
 \section{Introduction}
@@ -54,53 +55,63 @@ TODO(guy): expand from idea.md.
 \section{Related Work}
 % From the 2026-07-16 landscape survey; expand with proper citations.
 Symbol-level agent tooling over LSP (Serena; gopls's experimental MCP
-server) navigates semantically but edits textually or exposes a single
-mutation. CODESTRUCT frames agents over structured action spaces with
-syntax-validated edits and reports token and accuracy gains; our
+server) navigates semantically but still edits text, or exposes a
+single mutation. The compiler diagnostics sit right there in those
+stacks; the difference here is that validation is not advisory.
+CODESTRUCT frames agents over structured action spaces with
+syntax-validated edits and reports token and accuracy gains; ago's
 mutations are type-checked, transactional, and carry repairs.
 Editing-format benchmarks (EDIT-Bench, RES-Q, FEA-Bench) measure text
-formats and find strict formats \emph{hurt} current models --- the
-failure mode our repair channel converts. Compiler-guided patch
-generation (Repilot) and typed-hole context (Hazel) share the
-validation-during-generation stance at expression granularity.
+formats and find that strict formats hurt current models. That is the
+failure mode the repair channel converts: the format stays strict and
+the rejection hands back the corrected call. Compiler-guided patch
+generation (Repilot) and typed-hole context (Hazel) take the same
+validate-during-generation stance at expression granularity.
 TODO: full citations.
 
 \section{The ago Protocol}
 \subsection{Surface}
-Ten tools; a versioned catalog of 33 operations across declaration,
-statement, test, and project families; seven query kinds with
-deterministic, paged responses. Handles address statements inside declarations;
-generations make staleness explicit.
+Ten tools carry a versioned catalog of 33 operations across
+declaration, statement, test, and project families, plus seven query
+kinds with deterministic, paged responses. Node handles address
+statements inside declarations; generation counters make staleness
+explicit instead of silent.
 \subsection{Transactions}
-An ordered op list validates as one unit against an in-memory snapshot:
-ops apply to a copy, the dirty set re-typechecks once (in parallel,
+An ordered op list validates as one unit against an in-memory snapshot.
+Ops apply to a copy, the dirty set re-typechecks once (in parallel,
 scheduled over post-edit import edges), resolution proofs run (rename
-rejects reference capture the compiler would accept), then all files
-write together --- or nothing does. Pre-existing diagnostics are
-baselined and tolerated; only new ones reject.
+rejects reference capture the compiler would happily accept), then all
+files write together or nothing does. Pre-existing issues in the
+affected packages are baselined and tolerated; real codebases carry
+history, and only new diagnostics reject.
 \subsection{Rejection as conversation}
-Every rejection answers ``what is the correct next call'': typed
-diagnostics, candidate lists, and \texttt{possible\_repairs} --- complete
-calls the agent resends verbatim. Repairs are tested by execution: a
-repair that would itself reject is never offered. Exact resends of a
-rejected call escalate. Accepted mutations embed the fresh view of the
-touched declaration, closing the edit-view loop without a round trip.
+Every rejection answers one question: what is the correct next call.
+It carries typed diagnostics, candidate lists, and
+\texttt{possible\_repairs}, complete calls the agent resends verbatim.
+Repairs are tested by execution before they are offered; a repair that
+would itself reject is worse than none. Resending a rejected call
+unchanged escalates. Accepted mutations embed the fresh view of the
+touched declaration, so back-to-back edits skip the read round trip.
 
 \section{Oracle Methodology}
-Ground-truth changes mined from real commits are replayed through the
-protocol itself. A task enters the benchmark only when the oracle
-completes it; oracle rejections are findings (engine bugs, extractor
-errors, or named protocol ceilings), and oracle transcripts are a
-training corpus. This separates ``the model failed'' from ``the task was
-impossible'' by construction.
+Every benchmark task comes from a real commit, so the correct answer is
+already known. Before any model attempts a task, the oracle submits
+that known answer through the protocol itself. If the right answer
+cannot get through, the model never had a chance: the problem is ours
+(an engine bug, an extractor error, or a named protocol ceiling), and
+the task stays out of the roster until it is fixed. This separates
+``the model failed'' from ``the task was impossible'' by construction,
+and the oracle transcripts double as a training corpus.
 
 \section{Benchmark}
-Same model, same harness, same prompts (token-parity enforced by test),
-same time cap; one arm edits files with shell tools, the other sees only
-the protocol. Scoring is goal predicate + typecheck + scoped tests, the
-test gate voided where a pristine worktree also fails it. Serving
-configurations are pinned per run; every episode records transcript,
-diff, score, token usage, failure kind, and the daemon's request log.
+Same model, same harness, same prompts (token parity is enforced by
+test), same time cap. One arm edits files with shell tools; the other
+sees only the protocol. Scoring is a goal predicate plus a clean
+typecheck plus scoped tests, and the test gate is voided where a
+pristine worktree also fails it. Serving configurations are pinned per
+run. Every episode records its transcript, diff, score, token usage,
+failure kind, and the daemon's request log; the evidence is the
+contribution as much as the numbers.
 
 \section{Results}
 \begin{table}[h]
@@ -110,14 +121,19 @@ diff, score, token usage, failure kind, and the daemon's request log.
 evidence; pass@k over k episodes, median time-to-green over passing
 episodes.}
 \end{table}
-Semantic \SemanticPassCount{} vs raw \RawPassCount{} episodes passed.
-TODO: repair-uptake analysis, ablation arm, floor-model section, the
-cfff8d42 case study (discovery-primitive gap found and fixed).
+Semantic passed \SemanticPassCount{} episodes; raw passed
+\RawPassCount{}. The per-task table tells the sharper story: raw wins
+only where grep suffices, and goes to zero on the tasks that need
+whole-workspace consistency.
+TODO: repair-uptake analysis (the 9B model recovers through rejections
+it is offered no repairs for; the 30B-class model ignores repairs it
+is offered), ablation arm, floor-model section, the cfff8d42 case
+study (discovery-primitive gap found and fixed).
 
 \section{Limitations}
-Single language; contamination held constant across arms but absolute
-rates inflated; one serving stack per model; k small; author-run
-infrastructure. TODO: expand honestly.
+One language. Contamination is held constant across arms but inflates
+absolute rates. One serving stack per model, small k, and the
+infrastructure is author-run. TODO: expand honestly.
 
 \section{Availability}
 Code (MIT), all episode evidence, and analysis tooling:
