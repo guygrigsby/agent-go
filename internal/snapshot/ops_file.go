@@ -101,7 +101,7 @@ func fileExternalRefs(s *Snapshot, owner *packages.Package, abs string, size int
 		if obj == nil || s.fset.Position(obj.Pos()).Filename != abs {
 			continue
 		}
-		refs = append(refs, referencePositions(s, obj, abs, 0, size)...)
+		refs = append(refs, referencePositions(s, obj, abs, 0, size, nil)...)
 		if len(refs) >= 10 {
 			return refs[:10]
 		}

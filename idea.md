@@ -182,30 +182,11 @@ ready to carry a project like this. Choosing it would mean living the same
 lesson zero is working through: pick an interesting language, then
 discover the semantic tooling is itself a research project.
 
-## How they stacked up
-
-For a useful local-agent coding environment:
-
-1. Go
-2. C#
-3. Rust
-4. Swift
-5. C++
-6. Zig
-
-For the fastest semantic-editing prototype:
-
-1. C# / Roslyn
-2. Go
-3. Clang
-4. Rust
-5. Swift
-6. Zig
-
 ## What we built
 
-Go for the target language, Go for the control plane, sitting directly on
-`go/packages`, `go/types`, `go/ssa`, and selected gopls machinery.
+Ultimately, we chose Go for 
+the target language and Go for the control plane, sitting directly 
+on `go/packages`, `go/types`, `go/ssa`, and selected gopls machinery.
 
 ```
 agent → semantic protocol → Go workspace model
@@ -215,13 +196,13 @@ agent → semantic protocol → Go workspace model
                  gofmt → go vet → go test → commit
 ```
 
-The first five operations:
+The first operations:
 
-1. inspect_symbol
-2. find_references
-3. rename_symbol
-4. change_signature
-5. implement_interface
+- `inspect_symbol`
+- `find_references`
+- `rename_symbol`
+- `change_signature`
+- `implement_interface` 
 
 Then the same local model runs in two modes, raw shell and source editing
 against semantic operations only, on deliberately repository-wide tasks.
