@@ -109,14 +109,29 @@ func (upsertDeclOp) apply(ctx *patchCtx, raw json.RawMessage) *Reject {
 		src := "package " + filepath.Base(rel) + "\n\n" + importBlock + strings.TrimSpace(a.Text) + "\n"
 		return createFileInPatch(ctx, pkg, file, src, sym)
 	}
-	file, start, end, _, needsCreate, rej := upsertDeclEdit(ctx.s, pkg, name, sym, testFuncDecl(a.Text))
+	testDecl := testFuncDecl(a.Text)
+	file, start, end, _, needsCreate, rej := upsertDeclEdit(ctx.s, pkg, name, sym, testDecl)
 	if rej != nil {
 		return rej
 	}
 	if needsCreate {
-		p := ctx.s.primary(pkg)
-		src := "package " + p.Types.Name() + "\n\n" + importBlock + strings.TrimSpace(a.Text) + "\n"
-		return createFileInPatch(ctx, pkg, file, src, sym)
+		// Prefer appending to an existing file of the right kind (the same
+		// landing move_decl uses): the edit stays in the ledger, so the
+		// end-of-list typecheck lets the decl reference other in-flight ops
+		// (a constructor the same patch moves in). Creating a file validates
+		// against a mid-patch disk reload that cannot see the ledger, so it
+		// remains only for a package with no such file at all.
+		if lf, _ := landingFile(ctx.s, pkg, testDecl); lf != "" {
+			b, err := os.ReadFile(lf)
+			if err != nil {
+				return &Reject{Reason: "file not found", Detail: lf}
+			}
+			file, start, end = lf, len(b), len(b)
+		} else {
+			p := ctx.s.primary(pkg)
+			src := "package " + p.Types.Name() + "\n\n" + importBlock + strings.TrimSpace(a.Text) + "\n"
+			return createFileInPatch(ctx, pkg, file, src, sym)
+		}
 	}
 	ctx.addBaseline(preflightBaseline(ctx.s, file, pkg))
 	prefix := ""
@@ -229,14 +244,19 @@ func preflightBaseline(s *Snapshot, file, pkgPath string) map[string]bool {
 // anywhere else, so it must not block deleting that declaration. Pass
 // declFile == "" to skip this second filter (remove_field's field-level
 // deletes: a field spec doesn't self-reference the way a whole decl can).
-// An empty result means genuinely unreferenced.
-func referencePositions(s *Snapshot, obj types.Object, declFile string, declStart, declEnd int) []Diagnostic {
+// An empty result means genuinely unreferenced. A non-nil rewritten
+// predicate additionally discounts references inside spans the patch
+// ledger already replaced: they no longer exist in the final state.
+func referencePositions(s *Snapshot, obj types.Object, declFile string, declStart, declEnd int, rewritten func(file string, off int) bool) []Diagnostic {
 	var refs []Diagnostic
 	for _, r := range s.references(obj) {
 		if r.def {
 			continue
 		}
 		if declFile != "" && r.pos.Filename == declFile && r.pos.Offset >= declStart && r.pos.Offset < declEnd {
+			continue
+		}
+		if rewritten != nil && rewritten(r.pos.Filename, r.pos.Offset) {
 			continue
 		}
 		refs = append(refs, Diagnostic{Pos: r.pos.String()})
@@ -247,28 +267,53 @@ func referencePositions(s *Snapshot, obj types.Object, declFile string, declStar
 	return refs
 }
 
-// deleteDeclEdit computes delete_decl's edit: the symbol's whole
+// deleteDeclEdits computes delete_decl's edits: each symbol's whole
 // declaration range (including its doc comment, via findDeclNode) replaced
-// with nothing. Rejects while any non-declaring reference remains.
-func deleteDeclEdit(s *Snapshot, pkgPath, sym string) (e edit, rej *Reject) {
-	p, obj, rej0 := s.findObject(pkgPath, sym)
-	if rej0 != nil {
-		return edit{}, rej0
+// with nothing. Rejects while any non-declaring reference remains, except
+// references sitting inside spans the patch ledger already replaced
+// (rewritten is non-nil in the composable op) or inside another batch
+// member's own declaration: like move_decl's batch, symbols that reference
+// each other delete together, and the end-of-list typecheck is the arbiter
+// of what remains.
+func deleteDeclEdits(s *Snapshot, pkgPath string, syms []string, rewritten func(file string, off int) bool) ([]edit, *Reject) {
+	type span struct {
+		obj        types.Object
+		file       string
+		start, end int
 	}
-	filename, decl, doc := s.findDeclNode(p, obj.Name(), sym)
-	if filename == "" {
-		return edit{}, &Reject{Reason: "declaration not found", Detail: pkgPath + "." + sym}
+	spans := make([]span, 0, len(syms))
+	for _, sym := range syms {
+		p, obj, rej0 := s.findObject(pkgPath, sym)
+		if rej0 != nil {
+			return nil, rej0
+		}
+		filename, decl, doc := s.findDeclNode(p, obj.Name(), sym)
+		if filename == "" {
+			return nil, &Reject{Reason: "declaration not found", Detail: pkgPath + "." + sym}
+		}
+		start := decl.Pos()
+		if doc != nil {
+			start = doc.Pos()
+		}
+		spans = append(spans, span{obj, filename,
+			s.fset.Position(start).Offset, s.fset.Position(decl.End()).Offset})
 	}
-	start := decl.Pos()
-	if doc != nil {
-		start = doc.Pos()
+	dead := func(file string, off int) bool {
+		for _, sp := range spans {
+			if sp.file == file && off >= sp.start && off < sp.end {
+				return true
+			}
+		}
+		return rewritten != nil && rewritten(file, off)
 	}
-	startOff := s.fset.Position(start).Offset
-	endOff := s.fset.Position(decl.End()).Offset
-	if refs := referencePositions(s, obj, filename, startOff, endOff); len(refs) > 0 {
-		return edit{}, &Reject{Reason: "symbol is still referenced", Diagnostics: refs}
+	var edits []edit
+	for _, sp := range spans {
+		if refs := referencePositions(s, sp.obj, sp.file, sp.start, sp.end, dead); len(refs) > 0 {
+			return nil, &Reject{Reason: "symbol is still referenced", Diagnostics: refs}
+		}
+		edits = append(edits, edit{sp.file, sp.start, sp.end - sp.start, ""})
 	}
-	return edit{filename, startOff, endOff - startOff, ""}, nil
+	return edits, nil
 }
 
 // deleteDeclOp removes a top-level declaration entirely. Deleting is an API
@@ -282,24 +327,32 @@ func (deleteDeclOp) name() string { return "delete_decl" }
 
 func (deleteDeclOp) apply(ctx *patchCtx, raw json.RawMessage) *Reject {
 	var a struct {
-		Pkg string `json:"pkg"`
-		Sym string `json:"sym"`
+		Pkg  string   `json:"pkg"`
+		Sym  string   `json:"sym"`
+		Syms []string `json:"syms"`
 	}
 	if rej := decodeOpArgs(raw, &a); rej != nil {
 		return rej
 	}
 	pkg := orDefault(a.Pkg, ctx.pkg)
-	sym := orDefault(a.Sym, ctx.sym)
-	e, rej := deleteDeclEdit(ctx.s, pkg, sym)
+	syms := a.Syms
+	if len(syms) == 0 {
+		syms = []string{orDefault(a.Sym, ctx.sym)}
+	}
+	edits, rej := deleteDeclEdits(ctx.s, pkg, syms, ctx.rewrittenByLedger)
 	if rej != nil {
 		return rej
 	}
-	ctx.addBaseline(preflightBaseline(ctx.s, e.file, pkg))
-	if rej := ctx.applyDeclEdits([]edit{e}); rej != nil {
+	for _, e := range edits {
+		ctx.addBaseline(preflightBaseline(ctx.s, e.file, pkg))
+	}
+	if rej := ctx.applyDeclEdits(edits); rej != nil {
 		return rej
 	}
 	ctx.addAffected(pkg)
-	ctx.noteTouched(pkg, sym, true)
+	for _, sym := range syms {
+		ctx.noteTouched(pkg, sym, true)
+	}
 	return nil
 }
 
@@ -467,7 +520,7 @@ func removeFieldEdit(s *Snapshot, pkgPath, sym string) (e edit, rej *Reject) {
 	if !ok || !v.IsField() {
 		return edit{}, &Reject{Reason: "symbol is not a field", Detail: objKind(obj)}
 	}
-	if refs := referencePositions(s, obj, "", 0, 0); len(refs) > 0 {
+	if refs := referencePositions(s, obj, "", 0, 0, nil); len(refs) > 0 {
 		return edit{}, &Reject{Reason: "field is still referenced", Diagnostics: refs}
 	}
 	recv, fname, _ := strings.Cut(sym, ".")

@@ -482,6 +482,20 @@ func (s *Snapshot) patchComposable(env patchEnvelope, names []string) (map[strin
 // that pristine baseline — each decl op computes its own edits from the
 // live, pre-patch snapshot, so this always holds regardless of how many
 // other decl ops have already touched the same file.
+// rewrittenByLedger reports whether the byte at off in file falls inside a
+// span an earlier decl op in this patch already replaced: a reference
+// there no longer exists in the final state, so guards that walk the
+// pre-patch snapshot (delete_decl's still-referenced check) discount it
+// and leave the verdict to the end-of-list typecheck.
+func (ctx *patchCtx) rewrittenByLedger(file string, off int) bool {
+	for _, e := range ctx.declEdits[file] {
+		if off >= e.offset && off < e.offset+e.length {
+			return true
+		}
+	}
+	return false
+}
+
 func (ctx *patchCtx) applyDeclEdits(edits []edit) *Reject {
 	if len(edits) == 0 {
 		return nil
@@ -530,9 +544,31 @@ func (ctx *patchCtx) applyDeclEdits(edits []edit) *Reject {
 				ctx.declOrig[file] = b
 			}
 		}
-		ctx.declEdits[file] = append(ctx.declEdits[file], byFile[file]...)
+		// Merge with superseding: a new edit whose span contains earlier
+		// edits rewrites that whole region, so the contained ones drop
+		// (delete_decl over a helper the move just requalified inside —
+		// replaying both cuts mid-token: 687dd1bd's "found rn"). Partial
+		// overlap, or a new edit inside an already-replaced span, has no
+		// coherent replay; reject rather than corrupt.
+		merged := ctx.declEdits[file]
+		for _, ne := range byFile[file] {
+			kept := merged[:0]
+			for _, oe := range merged {
+				switch {
+				case ne.length > 0 && oe.offset >= ne.offset && oe.offset+oe.length <= ne.offset+ne.length:
+					continue // superseded by ne
+				case oe.offset+oe.length <= ne.offset || ne.offset+ne.length <= oe.offset:
+					kept = append(kept, oe)
+				default:
+					return &Reject{Reason: "conflicting edits",
+						Detail: fmt.Sprintf("%s: op %d edits a span op %d already changed", file, ctx.opIndex, ctx.fileLastOp[file])}
+				}
+			}
+			merged = append(kept, ne)
+		}
+		ctx.declEdits[file] = merged
 		all := append([]edit(nil), ctx.declEdits[file]...)
-		sort.Slice(all, func(i, j int) bool { return all[i].offset > all[j].offset })
+		sort.SliceStable(all, func(i, j int) bool { return all[i].offset > all[j].offset })
 		out := append([]byte(nil), ctx.declOrig[file]...)
 		for _, e := range all {
 			if e.offset < 0 || e.offset+e.length > len(out) {

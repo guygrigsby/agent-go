@@ -6,7 +6,7 @@ import "encoding/json"
 // whenever an op is added, removed, or its argument shape changes, so a
 // caller can detect a stale cached copy instead of guessing from the op
 // list's length.
-const catalogVersion = "v8"
+const catalogVersion = "v9"
 
 // helpArg documents one op argument's wire shape.
 type helpArg struct {
@@ -106,16 +106,17 @@ var opCatalog = []helpOp{
 			{"imports", "[]{path,name}", false, "imports the declaration needs that goimports cannot infer: an aliased import or an ambiguous package name; name is the alias, empty for the default"},
 		},
 		Example: json.RawMessage(`[{"op":"upsert_decl","pkg":"demo/lib","text":"// Double doubles v.\nfunc Double(v int) int {\n\treturn v + v\n}"}]`),
-		Notes:   "add or replace a whole top-level declaration; goimports runs in the loop. Replacement finds declarations in _test.go files too, and a new Test/Benchmark/Example/Fuzz func lands in agent_test.go so it actually runs. Other new declarations land in agent.go, created on demand — including a brand-new file or package mid-patch, so one atomic patch can create a package and move declarations into it",
+		Notes:   "add or replace a whole top-level declaration; goimports runs in the loop. Replacement finds declarations in _test.go files too. New declarations append to an existing package file (test funcs to a _test.go file, so they actually run) and may reference symbols other ops in the same patch introduce; a package with no such file gets agent.go / agent_test.go created on demand — including a brand-new package mid-patch, so one atomic patch can create a package and move declarations into it",
 	},
 	{
 		Op: "delete_decl",
 		Args: []helpArg{
 			{"pkg", "string", false, "package import path; defaults to the envelope's pkg"},
 			{"sym", "string", false, "symbol: Name or Type.Member; defaults to the envelope's sym"},
+			{"syms", "[]string", false, "batch form: several symbols delete together, so intra-set references (a helper and the test that used it) do not block"},
 		},
 		Example: json.RawMessage(`[{"op":"delete_decl","sym":"Unused"}]`),
-		Notes:   "rejected while any non-declaring reference remains outside the declaration itself (a recursive self-call does not count); the diagnostics list where",
+		Notes:   "rejected while any non-declaring reference remains outside the declaration itself (a recursive self-call does not count), outside the batch, and outside spans earlier ops in the same patch rewrote; the diagnostics list where",
 	},
 	{
 		Op: "set_doc",
@@ -178,7 +179,7 @@ var opCatalog = []helpOp{
 		Args: []helpArg{
 			{"path", "string", true, "file path relative to the module root (or absolute)"},
 		},
-		Example: json.RawMessage(`[{"op":"upsert_decl","pkg":"demo/lib","text":"func Tmp() int {\n\treturn 0\n}"},{"op":"delete_file","path":"lib/agent.go"}]`),
+		Example: json.RawMessage(`[{"op":"upsert_decl","pkg":"demo/scratch","text":"func Tmp() int {\n\treturn 0\n}"},{"op":"delete_file","path":"scratch/agent.go"}]`),
 		Notes:   "removes one file; rejected while any package-level symbol it declares is referenced from outside it (the rejection lists the reference positions). Deleting a package's last file removes the package",
 	},
 	{

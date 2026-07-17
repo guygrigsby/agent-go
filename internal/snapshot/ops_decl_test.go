@@ -231,12 +231,12 @@ func TestPatchUpsertDeclAppendsToExistingFile(t *testing.T) {
 	}
 }
 
-// Creating a brand-new agent.go mid-patch mirrors add_test's new-file path:
-// write and reload immediately, register in createdFiles so every failure
-// path cleans up. Later ops in the same patch compose against the reloaded
-// snapshot (the second upsert_decl below appends to the just-created file
-// through the ledger).
-func TestPatchUpsertDeclCreatesNewFile(t *testing.T) {
+// New decls in an existing package append to an existing file through the
+// ledger (the landing move_decl uses), never a mid-patch created agent.go:
+// ledger edits validate at end-of-list, so a new decl can reference other
+// in-flight ops; a created file validates against a disk reload that
+// cannot see the ledger.
+func TestPatchUpsertDeclAppendsToExistingPackageFile(t *testing.T) {
 	s := demo(t)
 	res, err := s.Patch([]byte(`{"pkg":"demo/lib",
 		"ops":[{"op":"upsert_decl","text":"func Triple(v int) int {\n\treturn v * 3\n}"},
@@ -247,16 +247,15 @@ func TestPatchUpsertDeclCreatesNewFile(t *testing.T) {
 	if res["status"] != "accepted" {
 		t.Fatalf("got %v", res)
 	}
-	b, err := os.ReadFile(filepath.Join(s.dir, "lib", "agent.go"))
-	if err != nil || !strings.Contains(string(b), "Triple") || !strings.Contains(string(b), "Nonuple") {
-		t.Fatalf("agent.go missing decls: %v\n%s", err, b)
+	if _, serr := os.Stat(filepath.Join(s.dir, "lib", "agent.go")); serr == nil {
+		t.Fatal("mid-patch upsert created agent.go in a package with files")
 	}
 	if _, err := s.inspect("demo/lib", "Nonuple"); err != nil {
 		t.Errorf("new decl not queryable: %v", err)
 	}
 }
 
-// A later op's rejection must not leave the created file behind.
+// A later op's rejection must roll the appended decls back.
 func TestPatchUpsertDeclNewFileRejectionCleansUp(t *testing.T) {
 	s := demo(t)
 	_, err := s.Patch([]byte(`{"pkg":"demo/lib",
@@ -267,6 +266,9 @@ func TestPatchUpsertDeclNewFileRejectionCleansUp(t *testing.T) {
 	}
 	if _, serr := os.Stat(filepath.Join(s.dir, "lib", "agent.go")); serr == nil {
 		t.Fatal("agent.go survived a rejected patch")
+	}
+	if b, _ := os.ReadFile(filepath.Join(s.dir, "lib", "lib.go")); strings.Contains(string(b), "Triple") {
+		t.Fatal("rejected patch left Triple behind")
 	}
 	if _, err := s.inspect("demo/lib", "Double"); err != nil {
 		t.Errorf("snapshot broken after cleanup: %v", err)
@@ -581,5 +583,70 @@ func TestPatchUpsertDeclCarriesImports(t *testing.T) {
 	}
 	if !strings.Contains(string(landed), `stde "errors"`) {
 		t.Errorf("aliased import not carried:\n%s", landed)
+	}
+}
+
+// delete_decl composes with an earlier op that removes the last reference:
+// the still-referenced guard must not count references inside spans the
+// patch ledger already replaced (687dd1bd: registerJobs rewritten away from
+// the helper, then the helper deleted, one atomic patch).
+func TestPatchDeleteDeclAfterReferenceRewritten(t *testing.T) {
+	s := demo(t)
+	res, err := s.Patch([]byte(`{"pkg":"demo/sig","ops":[
+		{"op":"set_body","sym":"UseFetch","body":"return 1"},
+		{"op":"set_body","sym":"SpreadFetch","body":"return len(nums)"},
+		{"op":"delete_decl","sym":"Fetch"}]}`))
+	if err != nil {
+		t.Fatalf("rejected: %v", err)
+	}
+	if res["status"] != "accepted" {
+		t.Fatalf("got %v", res)
+	}
+	if _, err := s.inspect("demo/sig", "Fetch"); err == nil {
+		t.Error("Fetch still present")
+	}
+}
+
+// delete_decl batches like move_decl: symbols that reference each other
+// delete together where one-at-a-time would reject on the intra-set
+// reference (687dd1bd deletes an option func and the test that used it).
+func TestPatchDeleteDeclBatchIntraSetReference(t *testing.T) {
+	s := demo(t)
+	res, err := s.Patch([]byte(`{"pkg":"demo/sig","ops":[
+		{"op":"set_body","sym":"UseFetch","body":"return 1"},
+		{"op":"delete_decl","syms":["Fetch","SpreadFetch"]}]}`))
+	if err != nil {
+		t.Fatalf("rejected: %v", err)
+	}
+	if res["status"] != "accepted" {
+		t.Fatalf("got %v", res)
+	}
+	for _, sym := range []string{"Fetch", "SpreadFetch"} {
+		if _, err := s.inspect("demo/sig", sym); err == nil {
+			t.Errorf("%s still present", sym)
+		}
+	}
+}
+
+// A delete_decl whose span contains an earlier op's smaller edit (the move
+// requalified a reference inside the soon-deleted helper) supersedes it:
+// replaying both corrupts the splice (687dd1bd: "expected declaration,
+// found rn" from a mid-token cut).
+func TestPatchDeleteDeclSupersedesContainedEdits(t *testing.T) {
+	s := demo(t)
+	res, err := s.Patch([]byte(`{"pkg":"demo/sig","ops":[
+		{"op":"move_decl","sym":"Fetch","to_pkg":"demo/lib"},
+		{"op":"delete_decl","sym":"SpreadFetch"}]}`))
+	if err != nil {
+		t.Fatalf("rejected: %v", err)
+	}
+	if res["status"] != "accepted" {
+		t.Fatalf("got %v", res)
+	}
+	if _, err := s.inspect("demo/sig", "SpreadFetch"); err == nil {
+		t.Error("SpreadFetch still present")
+	}
+	if _, err := s.inspect("demo/lib", "Fetch"); err != nil {
+		t.Errorf("Fetch not moved: %v", err)
 	}
 }

@@ -59,6 +59,23 @@ func upsertDeclEdit(s *Snapshot, pkgPath, name, sym string, testDecl bool) (file
 	return agentFile, len(b), len(b), "added", false, nil
 }
 
+// landingFile returns an existing file of pkgPath matching the wanted
+// test-ness and the variant that compiles it — the same landing choice
+// move_decl makes — or "" when the package holds no such file.
+func landingFile(s *Snapshot, pkgPath string, test bool) (string, *packages.Package) {
+	for _, p := range s.pkgs {
+		if p.PkgPath != pkgPath || strings.HasSuffix(p.ID, ".test") {
+			continue
+		}
+		for _, f := range p.CompiledGoFiles {
+			if strings.HasSuffix(f, "_test.go") == test {
+				return f, p
+			}
+		}
+	}
+	return "", nil
+}
+
 // testFuncDecl reports whether text declares a func the go test runner
 // owns (Test/Benchmark/Example/Fuzz), which must live in a _test.go file
 // to actually execute.
