@@ -59,5 +59,17 @@
     "thinking": "high",
     "quant": "MXFP4, 11.28 GiB weights before KV",
     "notes": "reasoning_effort=high is a SERVER-LAUNCH knob (llama-server --chat-template-kwargs '{\"reasoning_effort\":\"high\"}'); template default is medium when unset. Relaunch per effort cell and verify via /props before a round. temp 1.0 top_p 1.0 per OpenAI; no repetition penalties; harmony - no grammar constraints."
+  },
+  "qwen3.5-9b-udq4": {
+    "endpoint": "https://qwen.lab.aeryx.ai/v1",
+    "model": "/home/guygrigsby/models/qwen3.5-9b/Qwen3.5-9B-Q4_K_M.gguf",
+    "sampler": {
+      "temperature": 0.7,
+      "top_p": 0.8,
+      "top_k": 20,
+      "repeat_penalty": 1.0
+    },
+    "quant": "UD-Q4_K_XL",
+    "notes": "The freeze-grid qwen profile: embed server evicted from the 3070 Ti so the larger UD quant fits. Same endpoint and sampler as qwen3.5-9b; a distinct profile name keeps the two quants apart in every run record."
   }
 }
