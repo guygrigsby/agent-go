@@ -644,6 +644,12 @@ func (s *Snapshot) retypecheck(dirty []*packages.Package, baseline map[string]bo
 	s.impMu.Lock()
 	for _, p := range order {
 		delete(s.importCache, p.PkgPath)
+		// Fork-keyed entries ("[root.test]|path") go stale the same way.
+		for key := range s.importCache {
+			if strings.HasSuffix(key, "|"+p.PkgPath) {
+				delete(s.importCache, key)
+			}
+		}
 	}
 	s.impMu.Unlock()
 
@@ -868,10 +874,51 @@ func (s *Snapshot) parsePkg(p *packages.Package) ([]*ast.File, bool, []Diagnosti
 func importerFor(s *Snapshot, p *packages.Package) types.Importer {
 	return importerFunc(func(path string) (*types.Package, error) {
 		if imp, ok := p.Imports[path]; ok && imp.Types != nil {
+			debugImports("graph %s <- %s -> %p", p.ID, path, imp.Types)
 			return imp.Types, nil
 		}
-		return s.importFallback(path)
+		tp, err := s.importFallbackFor(p, path)
+		if err == nil {
+			debugImports("fallback %s <- %s -> %p", p.ID, path, tp)
+		}
+		return tp, err
 	})
+}
+
+// importFallbackFor resolves a fallback import within the importing
+// package's build universe: a test-variant fork ("x [root.test]") must see
+// the fork of path from the same universe when one exists — its graph
+// siblings resolved their scheduler through fork nodes, and mixing in the
+// primary instance splits the type universe ("cannot use c.scheduler
+// (*scheduler.Scheduler) as *scheduler.Scheduler"). The cache key carries
+// the universe for the same reason.
+func (s *Snapshot) importFallbackFor(p *packages.Package, path string) (*types.Package, error) {
+	fork := ""
+	if i := strings.Index(p.ID, " ["); i >= 0 {
+		fork = p.ID[i:]
+	}
+	if fork != "" {
+		wantID := path + fork
+		s.impMu.Lock()
+		if pkg, ok := s.importCache[fork+"|"+path]; ok {
+			s.impMu.Unlock()
+			return pkg, nil
+		}
+		// Forks are not Load roots; only the Visit closure holds them.
+		for _, q := range s.workspacePackages() {
+			if q.ID == wantID && q.Types != nil {
+				if s.importCache == nil {
+					s.importCache = map[string]*types.Package{}
+				}
+				s.importCache[fork+"|"+path] = q.Types
+				s.impMu.Unlock()
+				debugImports("fork %s <- %s -> %p", p.ID, path, q.Types)
+				return q.Types, nil
+			}
+		}
+		s.impMu.Unlock()
+	}
+	return s.importFallback(path)
 }
 
 // importFallback resolves an import path the dirty package's own pre-edit
@@ -895,12 +942,21 @@ func (s *Snapshot) importFallback(path string) (*types.Package, error) {
 	}
 	// Identity matters: the returned package must be the same object the
 	// loader gave every workspace root, or cross-package uses mismatch.
-	// Dependencies are not source-loaded (no NeedDeps); a root's DIRECT
-	// imports were read from their own export files and are complete, but
-	// anything deeper is a shallow stub holding only the names the export
-	// data happened to reference — unusable as an importer result.
+	// The primary variant specifically — a test-variant fork carries its
+	// own recompiled *types.Package, and serving it to a non-test importer
+	// splits the type universe ("cannot use X (*T) as *T"). Dependencies
+	// are not source-loaded (no NeedDeps); a root's DIRECT imports were
+	// read from their own export files and are complete, but anything
+	// deeper is a shallow stub holding only the names the export data
+	// happened to reference — unusable as an importer result.
 	var found *types.Package
+	if p := s.primary(path); p != nil && p.Types != nil {
+		found = p.Types
+	}
 	for _, p := range s.pkgs {
+		if found != nil {
+			break
+		}
 		if p.Types == nil {
 			continue
 		}

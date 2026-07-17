@@ -6,6 +6,8 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"golang.org/x/tools/go/packages"
 )
 
 // demo copies the fixture module to a temp dir; SetBody writes to disk.
@@ -293,5 +295,89 @@ func TestExternalEditInvalidates(t *testing.T) {
 	}
 	if _, err := s.inspect("demo/lib", "Twice"); err != nil {
 		t.Fatalf("snapshot did not pick up external edit: %v", err)
+	}
+}
+
+// importFallback must return the primary variant's types: a test-variant
+// fork carries its own recompiled *types.Package, and serving it to a
+// non-test importer splits the type universe ("cannot use c.scheduler
+// (*scheduler.Scheduler) as *scheduler.Scheduler", boundary 687dd1bd).
+// The scan order of s.pkgs must not decide identity.
+func TestImportFallbackPrefersPrimaryVariant(t *testing.T) {
+	s := demo(t)
+	if _, err := s.inspect("demo/sig", "Fetch"); err != nil {
+		t.Fatal(err)
+	}
+	// Force the test-variant fork of demo/sig ahead of the primary.
+	var reordered []*packages.Package
+	for _, p := range s.pkgs {
+		if p.PkgPath == "demo/sig" && p.ID != p.PkgPath {
+			reordered = append([]*packages.Package{p}, reordered...)
+		} else {
+			reordered = append(reordered, p)
+		}
+	}
+	s.pkgs = reordered
+	got, err := s.importFallback("demo/sig")
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := s.primary("demo/sig")
+	if got != want.Types {
+		t.Fatalf("importFallback returned a non-primary instance: %p vs primary %p", got, want.Types)
+	}
+}
+
+// A fallback import from inside a test-variant fork must resolve to the
+// fork of that path in the same build universe, never the primary: the
+// fork's graph siblings carry fork instances, and mixing in the primary
+// splits the type universe (687dd1bd: "cannot use c.scheduler
+// (*scheduler.Scheduler) as *scheduler.Scheduler" inside [servers.test]).
+func TestImportFallbackStaysInForkUniverse(t *testing.T) {
+	dir := t.TempDir()
+	write := func(rel, src string) {
+		t.Helper()
+		p := filepath.Join(dir, rel)
+		if err := os.MkdirAll(filepath.Dir(p), 0o755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(p, []byte(src), 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	write("go.mod", "module fk\n\ngo 1.24\n")
+	write("a/a.go", "package a\n\ntype T int\n")
+	write("a/a_int_test.go", "package a\n\nimport \"testing\"\n\nfunc TestInt(t *testing.T) {}\n")
+	write("a/a_ext_test.go", "package a_test\n\nimport (\n\t\"testing\"\n\n\t\"fk/a\"\n\t\"fk/b\"\n)\n\nfunc TestT(t *testing.T) {\n\tvar v a.T = b.Give()\n\t_ = v\n}\n")
+	write("b/b.go", "package b\n\nimport \"fk/a\"\n\nfunc Give() a.T { return 1 }\n")
+	s := New(dir)
+	if _, err := s.inspect("fk/b", "Give"); err != nil {
+		t.Fatal(err)
+	}
+	var fork *packages.Package
+	for _, p := range s.workspacePackages() {
+		if p.PkgPath == "fk/b" && strings.Contains(p.ID, " [") {
+			fork = p
+		}
+	}
+	if fork == nil {
+		t.Skip("loader produced no fork of fk/b; fixture shape no longer forks")
+	}
+	got, err := s.importFallbackFor(fork, "fk/a")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var wantFork *packages.Package
+	for _, p := range s.workspacePackages() {
+		if p.PkgPath == "fk/a" && strings.Contains(p.ID, " [") {
+			wantFork = p
+		}
+	}
+	if wantFork == nil {
+		t.Skip("no fork of fk/a present")
+	}
+	if got != wantFork.Types {
+		t.Fatalf("fallback left the fork universe: got %p, fork %p, primary %p",
+			got, wantFork.Types, s.primary("fk/a").Types)
 	}
 }
