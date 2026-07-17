@@ -1,0 +1,17 @@
+{"ms":17,"op":"refs","outcome":"rejected","reason":"package not found","repairs":1,"req_sha":"ef3b44d6002a79fd","sym":"Command.IsHelpCommand","ts":"2026-07-17T03:45:06.193406Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-17T03:45:06.215887Z"}
+{"ms":33,"op":"query","outcome":"ok","req_sha":"e724b3c860add371","sym":"IsHelpCommand","ts":"2026-07-17T03:45:23.64042Z"}
+{"ms":0,"op":"query","outcome":"ok","req_sha":"73178407ee0cbe40","sym":"HelpCommand","ts":"2026-07-17T03:45:24.605906Z"}
+{"ms":0,"op":"query","outcome":"ok","req_sha":"8cddbccd581f3bac","sym":"IsHelp","ts":"2026-07-17T03:45:25.537073Z"}
+{"ms":0,"op":"query","outcome":"ok","req_sha":"f3689874363572b7","sym":"helpCommand","ts":"2026-07-17T03:45:26.924416Z"}
+{"ms":0,"op":"query","outcome":"ok","req_sha":"9b685eb9f786bb3b","sym":"AdditionalHelpTopic","ts":"2026-07-17T03:45:27.933098Z"}
+{"ms":0,"op":"query","outcome":"ok","req_sha":"1a9de5e7426023a5","sym":"isHelpCommand","ts":"2026-07-17T03:45:29.567633Z"}
+{"ms":0,"op":"query","outcome":"ok","req_sha":"b86c4d29848b728e","sym":"help cmd","ts":"2026-07-17T03:45:30.739733Z"}
+{"ms":0,"op":"query","outcome":"ok","req_sha":"5ecde7f292500195","sym":"help","ts":"2026-07-17T03:45:31.567802Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-17T03:45:32.344544Z"}
+{"ms":0,"op":"rename","outcome":"rejected","reason":"package not found","repairs":1,"req_sha":"5b6ffc58eed3a856","sym":"IsHelpCommand","ts":"2026-07-17T03:45:34.361117Z"}
+{"ms":0,"op":"query","outcome":"ok","req_sha":"0ede44b3e46b3731","sym":"\\.go$","ts":"2026-07-17T03:45:36.180186Z"}
+{"ms":0,"op":"query","outcome":"ok","pkg":".","req_sha":"1c44783cc4ee08ce","sym":"IsHelpCommand","ts":"2026-07-17T03:45:41.855381Z"}
+{"ms":0,"op":"refs","outcome":"rejected","reason":"package not found","repairs":1,"req_sha":"ef3b44d6002a79fd","sym":"Command.IsHelpCommand","ts":"2026-07-17T03:45:46.460901Z"}
+{"ms":0,"op":"refs","outcome":"rejected","reason":"package not found","repairs":1,"req_sha":"f56d81dee418f382","sym":"Command.IsAdditionalHelpTopicCommand","ts":"2026-07-17T03:45:46.464391Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-17T03:45:46.467721Z"}

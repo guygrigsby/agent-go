@@ -1,0 +1,13 @@
+diff --git a/command.go b/command.go
+index 9d48270..92ce35b 100644
+--- a/command.go
++++ b/command.go
+@@ -1021,7 +1021,7 @@ func (c *Command) IsAvailableCommand() bool {
+ 	return false
+ }
+ 
+-// IsHelpCommand determines if a command is a 'help' command; a help command is
++// IsAdditionalHelpTopicCommand determines if a command is a 'help' command; a help command is
+ // determined by the fact that it is NOT runnable/hidden/deprecated, and has no
+ // sub commands that are runnable/hidden/deprecated.
+ func (c *Command) IsHelpCommand() bool {

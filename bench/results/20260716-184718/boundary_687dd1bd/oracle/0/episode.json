@@ -1,0 +1,69 @@
+{
+ "agent_done": "2026-07-17T00:47:28.196969166Z",
+ "agent_started": "2026-07-17T00:47:27.13337Z",
+ "cache_read": 0,
+ "cache_write": 0,
+ "capped": false,
+ "failure_kind": "oracle_reject",
+ "iter": 0,
+ "kind": "move",
+ "mode": "oracle",
+ "new_errors": null,
+ "op_mix": {
+  "patch": {
+   "ok": 0,
+   "rejected": 1
+  }
+ },
+ "oracle_error": "oracle batched move github.com/hashicorp/boundary/internal/servers/controller -\u003e github.com/hashicorp/boundary/internal/session: map[detail: diagnostics:[map[msg:op 1: cannot use (func() (*ConnectionRepository, error) literal) (value of type func() (*ConnectionRepository, error)) as \"github.com/hashicorp/boundary/internal/servers/controller/common\".ConnectionRepoFactory value in argument to newSessionConnectionCleanupJob pos:/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/TestOracleSweepboundary_687dd1bd2739822878/001/boundary/internal/session/connection_closed_with_test.go:160:3] map[msg:op 1: cannot use (func() (*ConnectionRepository, error) literal) (value of type func() (*ConnectionRepository, error)) as \"github.com/hashicorp/boundary/internal/servers/controller/common\".ConnectionRepoFactory value in argument to newSessionConnectionCleanupJob pos:/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/TestOracleSweepboundary_687dd1bd2739822878/001/boundary/internal/session/connection_closed_with_test.go:218:44] map[msg:op 1: name newSessionConnectionCleanupJob not exported by package session pos:/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/TestOracleSweepboundary_687dd1bd2739822878/001/boundary/internal/servers/controller/controller.go:371:46] map[msg:op 1: cannot use c.ConnectionRepoFn (variable of func type \"github.com/hashicorp/boundary/internal/servers/controller/common\".ConnectionRepoFactory) as \"github.com/hashicorp/boundary/internal/servers/controller/common\".ConnectionRepoFactory value in argument to session.newSessionConnectionCleanupJob pos:/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/TestOracleSweepboundary_687dd1bd2739822878/001/boundary/internal/servers/controller/controller.go:371:77] map[msg:op 1: undefined: session pos:/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/TestOracleSweepboundary_687dd1bd2739822878/001/boundary/internal/servers/controller/session_cleanup_job_test.go:8:27] map[msg:op 1: name newSessionConnectionCleanupJob not exported by package session pos:/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/TestOracleSweepboundary_687dd1bd2739822878/001/boundary/internal/servers/controller/controller.go:371:46] map[msg:op 1: cannot use c.ConnectionRepoFn (variable of func type \"github.com/hashicorp/boundary/internal/servers/controller/common\".ConnectionRepoFactory) as \"github.com/hashicorp/boundary/internal/servers/controller/common\".ConnectionRepoFactory value in argument to session.newSessionConnectionCleanupJob pos:/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/TestOracleSweepboundary_687dd1bd2739822878/001/boundary/internal/servers/controller/controller.go:371:77] map[msg:op 1: name newSessionConnectionCleanupJob not exported by package session pos:/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/TestOracleSweepboundary_687dd1bd2739822878/001/boundary/internal/servers/controller/controller.go:371:46] map[msg:op 1: cannot use c.ConnectionRepoFn (variable of func type \"github.com/hashicorp/boundary/internal/servers/controller/common\".ConnectionRepoFactory) as \"github.com/hashicorp/boundary/internal/servers/controller/common\".ConnectionRepoFactory value in argument to session.newSessionConnectionCleanupJob pos:/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/TestOracleSweepboundary_687dd1bd2739822878/001/boundary/internal/servers/controller/controller.go:371:77] map[msg:op 1: name newSessionConnectionCleanupJob not exported by package session pos:/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/TestOracleSweepboundary_687dd1bd2739822878/001/boundary/internal/servers/controller/controller.go:371:46] map[msg:op 1: cannot use c.ConnectionRepoFn (variable of func type \"github.com/hashicorp/boundary/internal/servers/controller/common\".ConnectionRepoFactory) as \"github.com/hashicorp/boundary/internal/servers/controller/common\".ConnectionRepoFactory value in argument to session.newSessionConnectionCleanupJob pos:/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/TestOracleSweepboundary_687dd1bd2739822878/001/boundary/internal/servers/controller/controller.go:371:77] map[msg:op 1: name newSessionConnectionCleanupJob not exported by package session pos:/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/TestOracleSweepboundary_687dd1bd2739822878/001/boundary/internal/servers/controller/controller.go:371:46] map[msg:op 1: cannot use c.ConnectionRepoFn (variable of func type \"github.com/hashicorp/boundary/internal/servers/controller/common\".ConnectionRepoFactory) as \"github.com/hashicorp/boundary/internal/servers/controller/common\".ConnectionRepoFactory value in argument to session.newSessionConnectionCleanupJob pos:/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/TestOracleSweepboundary_687dd1bd2739822878/001/boundary/internal/servers/controller/controller.go:371:77] map[msg:op 1: cannot use sessionConnectionCleanupJob (variable of type *session.sessionConnectionCleanupJob) as scheduler.Job value in argument to c.scheduler.RegisterJob: *session.sessionConnectionCleanupJob does not implement scheduler.Job (wrong type for method Status) pos:/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/TestOracleSweepboundary_687dd1bd2739822878/001/boundary/internal/servers/controller/controller.go:375:50] map[msg:op 1: name newSessionConnectionCleanupJob not exported by package session pos:/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/TestOracleSweepboundary_687dd1bd2739822878/001/boundary/internal/servers/controller/controller.go:371:46] map[msg:op 1: cannot use c.ConnectionRepoFn (variable of func type \"github.com/hashicorp/boundary/internal/servers/controller/common\".ConnectionRepoFactory) as \"github.com/hashicorp/boundary/internal/servers/controller/common\".ConnectionRepoFactory value in argument to session.newSessionConnectionCleanupJob pos:/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/TestOracleSweepboundary_687dd1bd2739822878/001/boundary/internal/servers/controller/controller.go:371:77]] did_you_mean:\u003cnil\u003e possible_repairs:[map[call:map[args:map[kind:search q:session] tool:query] why:search locates session]] reason:patch does not typecheck status:rejected]",
+ "pass": false,
+ "predicate": false,
+ "profile": "adhoc",
+ "prompt": "Move the session cleanup job logic into the session package.\n\nSpecifically: move TestSessionConnectionCleanupJob from github.com/hashicorp/boundary/internal/servers/controller to github.com/hashicorp/boundary/internal/session; move TestSessionConnectionCleanupJobNewJobErr from github.com/hashicorp/boundary/internal/servers/controller to github.com/hashicorp/boundary/internal/session; move newSessionConnectionCleanupJob from github.com/hashicorp/boundary/internal/servers/controller to github.com/hashicorp/boundary/internal/session; move sessionConnectionCleanupJob from github.com/hashicorp/boundary/internal/servers/controller to github.com/hashicorp/boundary/internal/session",
+ "rejects_total": 1,
+ "repairs_offered": 1,
+ "resends": 0,
+ "specs": [
+  {
+   "in_target": false,
+   "ok": false,
+   "still_in_source": true,
+   "sym": "github.com/hashicorp/boundary/internal/servers/controller.TestSessionConnectionCleanupJob",
+   "to_name": "",
+   "to_pkg": "github.com/hashicorp/boundary/internal/session"
+  },
+  {
+   "in_target": false,
+   "ok": false,
+   "still_in_source": true,
+   "sym": "github.com/hashicorp/boundary/internal/servers/controller.TestSessionConnectionCleanupJobNewJobErr",
+   "to_name": "",
+   "to_pkg": "github.com/hashicorp/boundary/internal/session"
+  },
+  {
+   "in_target": false,
+   "ok": false,
+   "still_in_source": true,
+   "sym": "github.com/hashicorp/boundary/internal/servers/controller.newSessionConnectionCleanupJob",
+   "to_name": "",
+   "to_pkg": "github.com/hashicorp/boundary/internal/session"
+  },
+  {
+   "in_target": false,
+   "ok": false,
+   "still_in_source": true,
+   "sym": "github.com/hashicorp/boundary/internal/servers/controller.sessionConnectionCleanupJob",
+   "to_name": "",
+   "to_pkg": "github.com/hashicorp/boundary/internal/session"
+  }
+ ],
+ "steps": 0,
+ "task": "boundary_687dd1bd",
+ "tests": false,
+ "tests_baseline": true,
+ "tokens_in": 0,
+ "tokens_out": 0,
+ "tokens_reasoning": 0,
+ "typecheck": true,
+ "wall_s": 1.063599166
+}

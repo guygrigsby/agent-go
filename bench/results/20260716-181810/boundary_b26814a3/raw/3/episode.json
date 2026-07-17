@@ -1,0 +1,60 @@
+{
+ "agent_done": "2026-07-17T03:31:01.783535875Z",
+ "agent_started": "2026-07-17T03:29:33.947274Z",
+ "cache_read": 483453,
+ "cache_write": 0,
+ "capped": false,
+ "failure_kind": "scored_fail",
+ "iter": 3,
+ "kind": "move",
+ "mode": "raw",
+ "new_errors": [
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenamegpt-oss-20b-mediumboundary_b26814a3raw4075043782/004/boundary/internal/perms/acl.go:252:16|undefined: RecoveryUserId",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenamegpt-oss-20b-mediumboundary_b26814a3raw4075043782/004/boundary/internal/iam/repository_scope.go:91:19|undefined: perms.RecoveryUserId",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenamegpt-oss-20b-mediumboundary_b26814a3raw4075043782/004/boundary/internal/iam/repository_scope.go:341:22|undefined: perms.AnyAuthenticatedUserId",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenamegpt-oss-20b-mediumboundary_b26814a3raw4075043782/004/boundary/internal/daemon/controller/handlers/groups/group_service.go:737:18|undefined: perms.RecoveryUserId",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenamegpt-oss-20b-mediumboundary_b26814a3raw4075043782/004/boundary/internal/perms/acl_test.go:726:18|undefined: RecoveryUserId",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenamegpt-oss-20b-mediumboundary_b26814a3raw4075043782/004/boundary/internal/iam/repository_scope.go:90:19|undefined: perms.AnyAuthenticatedUserId",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenamegpt-oss-20b-mediumboundary_b26814a3raw4075043782/004/boundary/internal/daemon/controller/auth/auth.go:858:44|undefined: perms.RecoveryUserId",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenamegpt-oss-20b-mediumboundary_b26814a3raw4075043782/004/boundary/internal/daemon/controller/auth/testing.go:24:34|undefined: perms.AnyAuthenticatedUserId",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenamegpt-oss-20b-mediumboundary_b26814a3raw4075043782/004/boundary/internal/daemon/controller/handlers/groups/group_service.go:713:18|undefined: perms.RecoveryUserId",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenamegpt-oss-20b-mediumboundary_b26814a3raw4075043782/004/boundary/internal/daemon/controller/handlers/roles/role_service.go:978:18|undefined: perms.RecoveryUserId",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenamegpt-oss-20b-mediumboundary_b26814a3raw4075043782/004/boundary/internal/daemon/controller/handlers/roles/role_service.go:1004:18|undefined: perms.RecoveryUserId",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenamegpt-oss-20b-mediumboundary_b26814a3raw4075043782/004/boundary/internal/perms/acl_test.go:751:18|undefined: RecoveryUserId"
+ ],
+ "op_mix": {},
+ "pass": false,
+ "predicate": false,
+ "profile": "gpt-oss-20b-medium",
+ "prompt": "move user variables into globals\n\nSpecifically: move AnyAuthenticatedUserId from github.com/hashicorp/boundary/internal/perms to github.com/hashicorp/boundary/globals; move RecoveryUserId from github.com/hashicorp/boundary/internal/perms to github.com/hashicorp/boundary/globals",
+ "rejects_total": 0,
+ "repairs_offered": 0,
+ "resends": 0,
+ "specs": [
+  {
+   "in_target": false,
+   "ok": false,
+   "still_in_source": false,
+   "sym": "github.com/hashicorp/boundary/internal/perms.AnyAuthenticatedUserId",
+   "to_name": "",
+   "to_pkg": "github.com/hashicorp/boundary/globals"
+  },
+  {
+   "in_target": false,
+   "ok": false,
+   "still_in_source": false,
+   "sym": "github.com/hashicorp/boundary/internal/perms.RecoveryUserId",
+   "to_name": "",
+   "to_pkg": "github.com/hashicorp/boundary/globals"
+  }
+ ],
+ "steps": 26,
+ "task": "boundary_b26814a3",
+ "tests": false,
+ "tests_baseline": true,
+ "tokens_in": 26286,
+ "tokens_out": 2311,
+ "tokens_reasoning": 0,
+ "typecheck": false,
+ "wall_s": 87.836261875
+}

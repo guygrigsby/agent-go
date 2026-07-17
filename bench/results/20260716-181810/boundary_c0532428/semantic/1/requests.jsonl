@@ -1,0 +1,49 @@
+{"ms":1119,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/cmd/commands/dev","req_sha":"5c4f4cfbb23e8fee","sym":"Command.flagPassthroughDirectory","ts":"2026-07-17T04:41:57.377718Z"}
+{"ms":14,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/servers/controller","req_sha":"c07055e73cac992c","sym":"devPassthroughHandler","ts":"2026-07-17T04:41:58.50228Z"}
+{"ms":14,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/cmd/config","req_sha":"578686e47b141b78","sym":"Config.PassthroughDirectory","ts":"2026-07-17T04:41:58.520983Z"}
+{"ms":3,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-17T04:41:58.539064Z"}
+{"ms":1315,"op":"query","outcome":"ok","req_sha":"48ab9bb8d3427374","sym":"flagPassthroughDirectory","ts":"2026-07-17T04:42:14.518628Z"}
+{"ms":21,"op":"query","outcome":"ok","req_sha":"f45bf4204e1620c0","sym":"devPassthroughHandler","ts":"2026-07-17T04:42:17.054934Z"}
+{"ms":18,"op":"query","outcome":"ok","req_sha":"0a7e0c378cfcbb65","sym":"PassthroughDirectory","ts":"2026-07-17T04:42:18.076362Z"}
+{"ms":19,"op":"query","outcome":"ok","req_sha":"0a7e0c378cfcbb65","sym":"PassthroughDirectory","ts":"2026-07-17T04:42:20.237056Z"}
+{"ms":5,"op":"view","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/cmd/commands/dev","reason":"fields are not independently viewable; view the containing type","repairs":1,"req_sha":"5f3763be35c9b171","sym":"Command.flagPassthroughDirectory","ts":"2026-07-17T04:42:21.786128Z"}
+{"ms":6,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/cmd/commands/dev","req_sha":"6e88070787836b79","sym":"Command","ts":"2026-07-17T04:42:22.920577Z"}
+{"ms":5,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/servers/controller","req_sha":"de67acbbd595b4ba","sym":"devPassthroughHandler","ts":"2026-07-17T04:42:24.592574Z"}
+{"ms":6,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/cmd/config","req_sha":"b8ba632f840426da","sym":"Config","ts":"2026-07-17T04:42:25.934432Z"}
+{"ms":20,"op":"query","outcome":"ok","req_sha":"0a7e0c378cfcbb65","sym":"PassthroughDirectory","ts":"2026-07-17T04:42:27.583461Z"}
+{"ms":19,"op":"query","outcome":"ok","req_sha":"1f5033dd525681e6","sym":".PassthroughDirectory","ts":"2026-07-17T04:42:29.000316Z"}
+{"ms":20,"op":"query","outcome":"ok","req_sha":"f45bf4204e1620c0","sym":"devPassthroughHandler","ts":"2026-07-17T04:42:30.313844Z"}
+{"ms":20,"op":"query","outcome":"ok","req_sha":"5d59609650034da1","sym":"devPassthroughHandler(","ts":"2026-07-17T04:42:31.487025Z"}
+{"ms":6,"op":"view","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/servers/controller","reason":"receiver type not found","repairs":1,"req_sha":"afb189478cf7b93d","sym":"handler_noui.go","ts":"2026-07-17T04:42:32.576382Z"}
+{"ms":19,"op":"query","outcome":"ok","req_sha":"11108c4147a931d9","sym":"handler_noui","ts":"2026-07-17T04:42:33.752176Z"}
+{"ms":6,"op":"view","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/servers/controller","reason":"receiver type not found","repairs":1,"req_sha":"afb189478cf7b93d","sym":"handler_noui.go","ts":"2026-07-17T04:42:34.804138Z"}
+{"ms":5,"op":"view","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/servers/controller","reason":"symbol not found","repairs":3,"req_sha":"aa59933fc6d6bb85","ts":"2026-07-17T04:42:36.374305Z"}
+{"ms":19,"op":"query","outcome":"ok","req_sha":"cf656684f7d8000f","sym":"handleUi","ts":"2026-07-17T04:42:38.208434Z"}
+{"ms":5,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/servers/controller","req_sha":"2220d1f693ee3824","sym":"handleUi","ts":"2026-07-17T04:42:39.308589Z"}
+{"ms":19,"op":"query","outcome":"ok","req_sha":"48ab9bb8d3427374","sym":"flagPassthroughDirectory","ts":"2026-07-17T04:42:41.122764Z"}
+{"ms":19,"op":"query","outcome":"ok","req_sha":"189c3654834c12a6","sym":".flagPassthroughDirectory","ts":"2026-07-17T04:42:42.25527Z"}
+{"ms":18,"op":"query","outcome":"ok","req_sha":"0a7e0c378cfcbb65","sym":"PassthroughDirectory","ts":"2026-07-17T04:42:43.359892Z"}
+{"ms":17,"op":"query","outcome":"ok","req_sha":"0a7e0c378cfcbb65","sym":"PassthroughDirectory","ts":"2026-07-17T04:42:44.984071Z"}
+{"ms":18,"op":"query","outcome":"ok","req_sha":"0a7e0c378cfcbb65","sym":"PassthroughDirectory","ts":"2026-07-17T04:42:46.930517Z"}
+{"ms":6,"op":"view","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/cmd/commands/dev","reason":"receiver type not found","repairs":1,"req_sha":"6b6e2b3f1adb1e19","sym":"dev.go","ts":"2026-07-17T04:42:48.908447Z"}
+{"ms":19,"op":"query","outcome":"ok","req_sha":"48ab9bb8d3427374","sym":"flagPassthroughDirectory","ts":"2026-07-17T04:42:50.324111Z"}
+{"ms":19,"op":"query","outcome":"ok","req_sha":"1f5033dd525681e6","sym":".PassthroughDirectory","ts":"2026-07-17T04:42:51.845893Z"}
+{"ms":11,"op":"query","outcome":"ok","req_sha":"4371a45770adbc83","sym":"flagPassthrough","ts":"2026-07-17T04:42:52.964649Z"}
+{"ms":19,"op":"query","outcome":"ok","req_sha":"f45bf4204e1620c0","sym":"devPassthroughHandler","ts":"2026-07-17T04:42:55.594044Z"}
+{"ms":18,"op":"query","outcome":"ok","req_sha":"2c2b142fbff560e5","sym":"c.flagPassthroughDirectory","ts":"2026-07-17T04:42:58.282951Z"}
+{"ms":8,"op":"query","outcome":"ok","req_sha":"0a7e0c378cfcbb65","sym":"PassthroughDirectory","ts":"2026-07-17T04:43:00.4842Z"}
+{"ms":57,"op":"rename","outcome":"accepted","pkg":"github.com/hashicorp/boundary/internal/cmd/commands/dev","req_sha":"fabe6f58d396455a","sym":"Command.flagPassthroughDirectory","ts":"2026-07-17T04:43:02.915116Z"}
+{"ms":56,"op":"rename","outcome":"accepted","pkg":"github.com/hashicorp/boundary/internal/cmd/config","req_sha":"be0b42e59b9ccbf5","sym":"Config.PassthroughDirectory","ts":"2026-07-17T04:43:04.403523Z"}
+{"ms":55,"op":"rename","outcome":"accepted","pkg":"github.com/hashicorp/boundary/internal/servers/controller","req_sha":"d2c1f7659cf0b703","sym":"devPassthroughHandler","ts":"2026-07-17T04:43:06.180374Z"}
+{"ms":6,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/servers/controller","req_sha":"2220d1f693ee3824","sym":"handleUi","ts":"2026-07-17T04:43:08.113453Z"}
+{"ms":5,"op":"set-body","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/servers/controller","reason":"symbol is not a function","repairs":0,"req_sha":"03b706ede9561fac","sym":"handleUi","ts":"2026-07-17T04:43:13.833423Z"}
+{"ms":1276,"op":"upsert","outcome":"accepted","pkg":"github.com/hashicorp/boundary/internal/servers/controller","req_sha":"fc1ea16f1a1f64f8","ts":"2026-07-17T04:43:20.650578Z"}
+{"ms":19,"op":"query","outcome":"ok","req_sha":"ed84762473166fca","sym":".RawConfig.PassthroughDirectory","ts":"2026-07-17T04:43:24.431035Z"}
+{"ms":28796,"op":"test","outcome":"ok","req_sha":"12ef5d31bdb89522","ts":"2026-07-17T04:43:25.880064Z"}
+{"ms":977,"op":"refs","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/cmd/commands/dev","reason":"method or field not found","repairs":3,"req_sha":"5c4f4cfbb23e8fee","sym":"Command.flagPassthroughDirectory","ts":"2026-07-17T04:44:30.994434Z"}
+{"ms":14,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/cmd/commands/dev","req_sha":"edb99cc331a37496","sym":"Command.flagUiPassthroughDir","ts":"2026-07-17T04:44:31.976003Z"}
+{"ms":14,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/servers/controller","req_sha":"c07055e73cac992c","sym":"devPassthroughHandler","ts":"2026-07-17T04:44:31.99486Z"}
+{"ms":14,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/servers/controller","req_sha":"1fe4a266709d6382","sym":"devUiPassthroughHandler","ts":"2026-07-17T04:44:32.013251Z"}
+{"ms":2,"op":"refs","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/cmd/config","reason":"method or field not found","repairs":1,"req_sha":"578686e47b141b78","sym":"Config.PassthroughDirectory","ts":"2026-07-17T04:44:32.031327Z"}
+{"ms":13,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/cmd/config","req_sha":"616a87311c5ac43a","sym":"Config.DevUiPassthroughDir","ts":"2026-07-17T04:44:32.036741Z"}
+{"ms":2,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-17T04:44:32.053975Z"}

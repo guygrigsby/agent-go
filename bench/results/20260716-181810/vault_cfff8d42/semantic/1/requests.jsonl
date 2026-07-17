@@ -1,0 +1,23 @@
+{"ms":2362,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-17T02:27:23.180678Z"}
+{"ms":2402,"op":"query","outcome":"ok","req_sha":"8e0cdb1c7f82b5d5","sym":"instanceIamRoleARN","ts":"2026-07-17T02:27:43.619416Z"}
+{"ms":8,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/vault/builtin/credential/aws","req_sha":"49ef9825b7a8a2f6","sym":"backend.instanceIamRoleARN","ts":"2026-07-17T02:27:47.134438Z"}
+{"ms":5,"op":"query","outcome":"rejected","reason":"package not found","repairs":1,"req_sha":"53c385a3d035bcc7","sym":"backend.instanceIamRoleARN","ts":"2026-07-17T02:27:49.776281Z"}
+{"ms":31,"op":"query","outcome":"ok","req_sha":"29457368c01fc4fa","sym":"instanceIamRoleARN(","ts":"2026-07-17T02:27:50.924679Z"}
+{"ms":27,"op":"query","outcome":"ok","req_sha":"8e0cdb1c7f82b5d5","sym":"instanceIamRoleARN","ts":"2026-07-17T02:27:52.049987Z"}
+{"ms":7,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/vault/builtin/credential/aws","req_sha":"2f4d1a003704c1bd","sym":"backend","ts":"2026-07-17T02:27:53.259281Z"}
+{"ms":30,"op":"query","outcome":"ok","req_sha":"f637f8591e401241","sym":"GetInstanceProfile","ts":"2026-07-17T02:27:56.005881Z"}
+{"ms":7,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/vault/builtin/credential/aws","req_sha":"49ef9825b7a8a2f6","sym":"backend.instanceIamRoleARN","ts":"2026-07-17T02:27:58.247275Z"}
+{"ms":27,"op":"query","outcome":"ok","req_sha":"5f8ff05658e93b2f","sym":"GetInstanceProfile(","ts":"2026-07-17T02:28:00.129155Z"}
+{"ms":29,"op":"query","outcome":"ok","req_sha":"8e0cdb1c7f82b5d5","sym":"instanceIamRoleARN","ts":"2026-07-17T02:28:01.090655Z"}
+{"ms":9,"op":"view","outcome":"rejected","pkg":"github.com/hashicorp/vault/builtin/credential/aws","reason":"receiver type not found","repairs":1,"req_sha":"761bc7557e651e3f","sym":"path_login.go","ts":"2026-07-17T02:28:04.196824Z"}
+{"ms":9,"op":"view","outcome":"rejected","pkg":"github.com/hashicorp/vault/builtin/credential/aws","reason":"receiver type not found","repairs":1,"req_sha":"761bc7557e651e3f","sym":"path_login.go","ts":"2026-07-17T02:28:05.425538Z"}
+{"ms":29,"op":"query","outcome":"ok","req_sha":"bafb14dfadb30601","sym":"builtin/credential/aws/path_login.go","ts":"2026-07-17T02:28:08.149843Z"}
+{"ms":29,"op":"query","outcome":"ok","req_sha":"e929ec5e7216aae3","sym":"context","ts":"2026-07-17T02:28:13.190224Z"}
+{"ms":96,"op":"query","outcome":"ok","req_sha":"da64baee47b44e44","sym":"login.go","ts":"2026-07-17T02:28:25.763573Z"}
+{"ms":15,"op":"query","outcome":"ok","req_sha":"ba447dbb8d21b612","sym":"path_login.go","ts":"2026-07-17T02:28:27.089869Z"}
+{"ms":7,"op":"add-param","outcome":"rejected","pkg":"github.com/hashicorp/vault/builtin/credential/aws","reason":"parameter name is not a valid identifier","repairs":0,"req_sha":"6da37d86d9099dd1","sym":"backend.instanceIamRoleARN","ts":"2026-07-17T02:28:31.154158Z"}
+{"ms":475,"op":"add-param","outcome":"accepted","pkg":"github.com/hashicorp/vault/builtin/credential/aws","req_sha":"72093262ce4a893a","sym":"backend.instanceIamRoleARN","ts":"2026-07-17T02:28:32.924344Z"}
+{"ms":42,"op":"set-body","outcome":"accepted","pkg":"github.com/hashicorp/vault/builtin/credential/aws","req_sha":"10b4c451d3d51819","sym":"backend.instanceIamRoleARN","ts":"2026-07-17T02:28:42.364735Z"}
+{"ms":2218,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/vault/builtin/credential/aws","req_sha":"60337aa18f3ae54e","sym":"backend.instanceIamRoleARN","ts":"2026-07-17T02:31:52.297186Z"}
+{"ms":5,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-17T02:31:54.520538Z"}
+{"ms":23540,"op":"test","outcome":"ok","pkg":"github.com/hashicorp/vault/builtin/credential/aws","req_sha":"7863bdd798d5785d","ts":"2026-07-17T02:31:50.423122Z"}

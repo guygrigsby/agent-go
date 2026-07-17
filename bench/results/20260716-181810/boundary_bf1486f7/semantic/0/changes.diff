@@ -1,0 +1,768 @@
+diff --git a/internal/auth/oidc/service_callback_test.go b/internal/auth/oidc/service_callback_test.go
+index cd84e1d9a..52a98c0f2 100644
+--- a/internal/auth/oidc/service_callback_test.go
++++ b/internal/auth/oidc/service_callback_test.go
+@@ -46,7 +46,7 @@ func Test_Callback(t *testing.T) {
+ 		return NewRepository(ctx, rw, rw, kmsCache)
+ 	}
+ 	atRepoFn := func() (*authtoken.Repository, error) {
+-		return authtoken.NewRepository(rw, rw, kmsCache)
++		return authtoken.NewRepository(rw, rw, kmsCache, context.Background())
+ 	}
+ 	atRepo, err := atRepoFn()
+ 	require.NoError(t, err)
+@@ -518,7 +518,7 @@ func Test_StartAuth_to_Callback(t *testing.T) {
+ 			return NewRepository(ctx, rw, rw, kmsCache)
+ 		}
+ 		atRepoFn := func() (*authtoken.Repository, error) {
+-			return authtoken.NewRepository(rw, rw, kmsCache)
++			return authtoken.NewRepository(rw, rw, kmsCache, context.Background())
+ 		}
+ 		atRepo, err := atRepoFn()
+ 		require.NoError(err)
+@@ -622,7 +622,7 @@ func Test_ManagedGroupFiltering(t *testing.T) {
+ 		return NewRepository(ctx, rw, rw, kmsCache)
+ 	}
+ 	atRepoFn := func() (*authtoken.Repository, error) {
+-		return authtoken.NewRepository(rw, rw, kmsCache)
++		return authtoken.NewRepository(rw, rw, kmsCache, context.Background())
+ 	}
+ 
+ 	iamRepo := iam.TestRepo(t, conn, rootWrapper)
+diff --git a/internal/auth/oidc/service_token_request_test.go b/internal/auth/oidc/service_token_request_test.go
+index a59381abb..ab5ad520b 100644
+--- a/internal/auth/oidc/service_token_request_test.go
++++ b/internal/auth/oidc/service_token_request_test.go
+@@ -35,11 +35,11 @@ func Test_TokenRequest(t *testing.T) {
+ 	require.NoError(t, err)
+ 
+ 	atRepoFn := func() (*authtoken.Repository, error) {
+-		r, err := authtoken.NewRepository(rw, rw, kmsCache)
++		r, err := authtoken.NewRepository(rw, rw, kmsCache, context.Background())
+ 		require.NoError(t, err)
+ 		return r, nil
+ 	}
+-	testAtRepo, err := authtoken.NewRepository(rw, rw, kmsCache)
++	testAtRepo, err := authtoken.NewRepository(rw, rw, kmsCache, context.Background())
+ 	require.NoError(t, err)
+ 
+ 	// a reusable test authmethod for the unit tests
+diff --git a/internal/authtoken/repository.go b/internal/authtoken/repository.go
+index 6f59dd416..0a7fd52db 100644
+--- a/internal/authtoken/repository.go
++++ b/internal/authtoken/repository.go
+@@ -31,7 +31,7 @@ type Repository struct {
+ 
+ // NewRepository creates a new Repository. The returned repository is not safe for concurrent go
+ // routines to access it.
+-func NewRepository(r db.Reader, w db.Writer, kms *kms.Kms, opt ...Option) (*Repository, error) {
++func NewRepository(r db.Reader, w db.Writer, kms *kms.Kms, ctx context.Context, opt ...Option) (*Repository, error) {
+ 	const op = "authtoken.NewRepository"
+ 	switch {
+ 	case r == nil:
+diff --git a/internal/authtoken/repository_test.go b/internal/authtoken/repository_test.go
+index 9cba05337..aca0541fc 100644
+--- a/internal/authtoken/repository_test.go
++++ b/internal/authtoken/repository_test.go
+@@ -166,7 +166,7 @@ func TestRepository_New(t *testing.T) {
+ 		tt := tt
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			assert := assert.New(t)
+-			got, err := NewRepository(tt.args.r, tt.args.w, tt.args.kms, tt.args.opts...)
++			got, err := NewRepository(tt.args.r, tt.args.w, tt.args.kms, context.Background(), tt.args.opts...)
+ 			if tt.wantIsErr != 0 {
+ 				assert.Truef(errors.Match(errors.T(tt.wantIsErr), err), "Unexpected error %s", err)
+ 				assert.Equal(tt.wantErrMsg, err.Error())
+@@ -262,7 +262,7 @@ func TestRepository_CreateAuthToken(t *testing.T) {
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			assert, require := assert.New(t), require.New(t)
+-			repo, err := NewRepository(rw, rw, kms)
++			repo, err := NewRepository(rw, rw, kms, context.Background())
+ 			require.NoError(err)
+ 			require.NotNil(repo)
+ 			got, err := repo.CreateAuthToken(context.Background(), tt.iamUser, tt.authAcctId, tt.opt...)
+@@ -338,7 +338,7 @@ func TestRepository_LookupAuthToken(t *testing.T) {
+ 		tt := tt
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			assert, require := assert.New(t), require.New(t)
+-			repo, err := NewRepository(rw, rw, kms)
++			repo, err := NewRepository(rw, rw, kms, context.Background())
+ 			require.NoError(err)
+ 			require.NotNil(repo)
+ 
+@@ -379,7 +379,7 @@ func TestRepository_ValidateToken(t *testing.T) {
+ 	wrapper := db.TestWrapper(t)
+ 	kms := kms.TestKms(t, conn, wrapper)
+ 	iamRepo := iam.TestRepo(t, conn, wrapper)
+-	repo, err := NewRepository(rw, rw, kms)
++	repo, err := NewRepository(rw, rw, kms, context.Background())
+ 
+ 	require.NoError(t, err)
+ 	require.NotNil(t, repo)
+@@ -543,7 +543,7 @@ func TestRepository_ValidateToken_expired(t *testing.T) {
+ 			timeSkew = 20 * time.Millisecond
+ 
+ 			repo, err := NewRepository(rw, rw, kms,
+-				WithTokenTimeToLiveDuration(tt.expirationDuration),
++				context.Background(), WithTokenTimeToLiveDuration(tt.expirationDuration),
+ 				WithTokenTimeToStaleDuration(tt.staleDuration))
+ 			require.NoError(err)
+ 			require.NotNil(repo)
+@@ -608,7 +608,7 @@ func TestRepository_DeleteAuthToken(t *testing.T) {
+ 		tt := tt
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			assert, require := assert.New(t), require.New(t)
+-			repo, err := NewRepository(rw, rw, kms)
++			repo, err := NewRepository(rw, rw, kms, context.Background())
+ 			require.NoError(err)
+ 			require.NotNil(repo)
+ 
+@@ -673,7 +673,7 @@ func TestRepository_ListAuthTokens(t *testing.T) {
+ 		tt := tt
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			assert, require := assert.New(t), require.New(t)
+-			repo, err := NewRepository(rw, rw, kms)
++			repo, err := NewRepository(rw, rw, kms, context.Background())
+ 			require.NoError(err)
+ 			require.NotNil(repo)
+ 			got, err := repo.ListAuthTokens(context.Background(), []string{tt.orgId})
+@@ -691,7 +691,7 @@ func TestRepository_ListAuthTokens_Multiple_Scopes(t *testing.T) {
+ 	rw := db.New(conn)
+ 	wrapper := db.TestWrapper(t)
+ 	kms := kms.TestKms(t, conn, wrapper)
+-	repo, err := NewRepository(rw, rw, kms)
++	repo, err := NewRepository(rw, rw, kms, context.Background())
+ 	require.NoError(t, err)
+ 	iamRepo := iam.TestRepo(t, conn, wrapper)
+ 	org, proj := iam.TestScopes(t, iamRepo)
+@@ -717,7 +717,7 @@ func Test_IssuePendingToken(t *testing.T) {
+ 	rw := db.New(conn)
+ 	rootWrapper := db.TestWrapper(t)
+ 	kmsCache := kms.TestKms(t, conn, rootWrapper)
+-	repo, err := NewRepository(rw, rw, kmsCache)
++	repo, err := NewRepository(rw, rw, kmsCache, context.Background())
+ 	require.NoError(t, err)
+ 
+ 	org, _ := iam.TestScopes(t, iam.TestRepo(t, conn, rootWrapper))
+@@ -784,7 +784,7 @@ func Test_CloseExpiredPendingTokens(t *testing.T) {
+ 	rw := db.New(conn)
+ 	rootWrapper := db.TestWrapper(t)
+ 	kmsCache := kms.TestKms(t, conn, rootWrapper)
+-	repo, err := NewRepository(rw, rw, kmsCache)
++	repo, err := NewRepository(rw, rw, kmsCache, context.Background())
+ 	require.NoError(t, err)
+ 
+ 	org, _ := iam.TestScopes(t, iam.TestRepo(t, conn, rootWrapper))
+diff --git a/internal/authtoken/testing.go b/internal/authtoken/testing.go
+index 86d0d7825..4ffc87c22 100644
+--- a/internal/authtoken/testing.go
++++ b/internal/authtoken/testing.go
+@@ -25,7 +25,7 @@ func TestAuthToken(t testing.TB, conn *db.DB, kms *kms.Kms, scopeId string, opt
+ 
+ 	u := iam.TestUser(t, iamRepo, scopeId, iam.WithAccountIds(acct.PublicId))
+ 
+-	repo, err := NewRepository(rw, rw, kms)
++	repo, err := NewRepository(rw, rw, kms, context.Background())
+ 	require.NoError(t, err)
+ 
+ 	at, err := repo.CreateAuthToken(ctx, u, acct.GetPublicId(), opt...)
+diff --git a/internal/daemon/controller/auth/auth_test.go b/internal/daemon/controller/auth/auth_test.go
+index 97c8b995a..6b59f5ac7 100644
+--- a/internal/daemon/controller/auth/auth_test.go
++++ b/internal/daemon/controller/auth/auth_test.go
+@@ -29,7 +29,7 @@ func TestAuthTokenAuthenticator(t *testing.T) {
+ 	rw := db.New(conn)
+ 	wrapper := db.TestWrapper(t)
+ 	kms := kms.TestKms(t, conn, wrapper)
+-	tokenRepo, err := authtoken.NewRepository(rw, rw, kms)
++	tokenRepo, err := authtoken.NewRepository(rw, rw, kms, context.Background())
+ 	require.NoError(t, err)
+ 	iamRepo := iam.TestRepo(t, conn, wrapper)
+ 	tokenRepoFn := func() (*authtoken.Repository, error) {
+@@ -152,7 +152,7 @@ func TestVerify_AuditEvent(t *testing.T) {
+ 	rw := db.New(conn)
+ 	wrapper := db.TestWrapper(t)
+ 	testKms := kms.TestKms(t, conn, wrapper)
+-	tokenRepo, err := authtoken.NewRepository(rw, rw, testKms)
++	tokenRepo, err := authtoken.NewRepository(rw, rw, testKms, context.Background())
+ 	require.NoError(t, err)
+ 	iamRepo := iam.TestRepo(t, conn, wrapper)
+ 	tokenRepoFn := func() (*authtoken.Repository, error) {
+diff --git a/internal/daemon/controller/common/scopeids/scope_ids_test.go b/internal/daemon/controller/common/scopeids/scope_ids_test.go
+index 5c424e8df..5b126edc8 100644
+--- a/internal/daemon/controller/common/scopeids/scope_ids_test.go
++++ b/internal/daemon/controller/common/scopeids/scope_ids_test.go
+@@ -36,7 +36,7 @@ func TestListingScopeIds(t *testing.T) {
+ 		return iamRepo, nil
+ 	}
+ 	authTokenRepoFn := func() (*authtoken.Repository, error) {
+-		return authtoken.NewRepository(rw, rw, kms)
++		return authtoken.NewRepository(rw, rw, kms, context.Background())
+ 	}
+ 	serversRepoFn := func() (*server.Repository, error) {
+ 		return server.NewRepository(rw, rw, kms)
+diff --git a/internal/daemon/controller/controller.go b/internal/daemon/controller/controller.go
+index b4427bcb8..c08c0097e 100644
+--- a/internal/daemon/controller/controller.go
++++ b/internal/daemon/controller/controller.go
+@@ -315,7 +315,7 @@ func New(ctx context.Context, conf *Config) (*Controller, error) {
+ 	}
+ 	c.AuthTokenRepoFn = func() (*authtoken.Repository, error) {
+ 		return authtoken.NewRepository(dbase, dbase, c.kms,
+-			authtoken.WithTokenTimeToLiveDuration(c.conf.RawConfig.Controller.AuthTokenTimeToLiveDuration),
++			context.Background(), authtoken.WithTokenTimeToLiveDuration(c.conf.RawConfig.Controller.AuthTokenTimeToLiveDuration),
+ 			authtoken.WithTokenTimeToStaleDuration(c.conf.RawConfig.Controller.AuthTokenTimeToStaleDuration))
+ 	}
+ 	c.VaultCredentialRepoFn = func() (*vault.Repository, error) {
+diff --git a/internal/daemon/controller/handlers/authmethods/authmethod_service_test.go b/internal/daemon/controller/handlers/authmethods/authmethod_service_test.go
+index 97963eb2c..743349280 100644
+--- a/internal/daemon/controller/handlers/authmethods/authmethod_service_test.go
++++ b/internal/daemon/controller/handlers/authmethods/authmethod_service_test.go
+@@ -87,7 +87,7 @@ func TestGet(t *testing.T) {
+ 		return password.NewRepository(rw, rw, kmsCache)
+ 	}
+ 	atRepoFn := func() (*authtoken.Repository, error) {
+-		return authtoken.NewRepository(rw, rw, kmsCache)
++		return authtoken.NewRepository(rw, rw, kmsCache, context.Background())
+ 	}
+ 	iamRepo := iam.TestRepo(t, conn, wrapper)
+ 
+@@ -228,7 +228,7 @@ func TestList(t *testing.T) {
+ 		return password.NewRepository(rw, rw, kmsCache)
+ 	}
+ 	atRepoFn := func() (*authtoken.Repository, error) {
+-		return authtoken.NewRepository(rw, rw, kmsCache)
++		return authtoken.NewRepository(rw, rw, kmsCache, context.Background())
+ 	}
+ 	iamRepo := iam.TestRepo(t, conn, wrapper)
+ 
+@@ -414,7 +414,7 @@ func TestDelete(t *testing.T) {
+ 		return password.NewRepository(rw, rw, kmsCache)
+ 	}
+ 	atRepoFn := func() (*authtoken.Repository, error) {
+-		return authtoken.NewRepository(rw, rw, kmsCache)
++		return authtoken.NewRepository(rw, rw, kmsCache, context.Background())
+ 	}
+ 	iamRepo := iam.TestRepo(t, conn, wrapper)
+ 
+@@ -494,7 +494,7 @@ func TestDelete_twice(t *testing.T) {
+ 		return password.NewRepository(rw, rw, kms)
+ 	}
+ 	atRepoFn := func() (*authtoken.Repository, error) {
+-		return authtoken.NewRepository(rw, rw, kms)
++		return authtoken.NewRepository(rw, rw, kms, context.Background())
+ 	}
+ 	iamRepo := iam.TestRepo(t, conn, wrapper)
+ 
+@@ -530,7 +530,7 @@ func TestCreate(t *testing.T) {
+ 		return oidc.NewRepository(ctx, rw, rw, kms)
+ 	}
+ 	atRepoFn := func() (*authtoken.Repository, error) {
+-		return authtoken.NewRepository(rw, rw, kms)
++		return authtoken.NewRepository(rw, rw, kms, context.Background())
+ 	}
+ 	iamRepo := iam.TestRepo(t, conn, wrapper)
+ 
+diff --git a/internal/daemon/controller/handlers/authmethods/oidc_test.go b/internal/daemon/controller/handlers/authmethods/oidc_test.go
+index f9c7fa79f..4714739d7 100644
+--- a/internal/daemon/controller/handlers/authmethods/oidc_test.go
++++ b/internal/daemon/controller/handlers/authmethods/oidc_test.go
+@@ -92,7 +92,7 @@ func getSetup(t *testing.T) setup {
+ 		return password.NewRepository(ret.rw, ret.rw, ret.kmsCache)
+ 	}
+ 	ret.atRepoFn = func() (*authtoken.Repository, error) {
+-		return authtoken.NewRepository(ret.rw, ret.rw, ret.kmsCache)
++		return authtoken.NewRepository(ret.rw, ret.rw, ret.kmsCache, context.Background())
+ 	}
+ 
+ 	ret.org, ret.proj = iam.TestScopes(t, ret.iamRepo)
+@@ -149,7 +149,7 @@ func TestList_FilterNonPublic(t *testing.T) {
+ 		return password.NewRepository(rw, rw, kmsCache)
+ 	}
+ 	atRepoFn := func() (*authtoken.Repository, error) {
+-		return authtoken.NewRepository(rw, rw, kmsCache)
++		return authtoken.NewRepository(rw, rw, kmsCache, context.Background())
+ 	}
+ 	serversRepoFn := func() (*server.Repository, error) {
+ 		return server.NewRepository(rw, rw, kmsCache)
+@@ -251,7 +251,7 @@ func TestUpdate_OIDC(t *testing.T) {
+ 		return password.NewRepository(rw, rw, kms)
+ 	}
+ 	atRepoFn := func() (*authtoken.Repository, error) {
+-		return authtoken.NewRepository(rw, rw, kms)
++		return authtoken.NewRepository(rw, rw, kms, context.Background())
+ 	}
+ 	iamRepo := iam.TestRepo(t, conn, wrapper)
+ 
+@@ -1059,7 +1059,7 @@ func TestUpdate_OIDCDryRun(t *testing.T) {
+ 		return password.NewRepository(rw, rw, kmsCache)
+ 	}
+ 	atRepoFn := func() (*authtoken.Repository, error) {
+-		return authtoken.NewRepository(rw, rw, kmsCache)
++		return authtoken.NewRepository(rw, rw, kmsCache, context.Background())
+ 	}
+ 	iamRepo := iam.TestRepo(t, conn, wrapper)
+ 
+@@ -1235,7 +1235,7 @@ func TestChangeState_OIDC(t *testing.T) {
+ 		return password.NewRepository(rw, rw, kmsCache)
+ 	}
+ 	atRepoFn := func() (*authtoken.Repository, error) {
+-		return authtoken.NewRepository(rw, rw, kmsCache)
++		return authtoken.NewRepository(rw, rw, kmsCache, context.Background())
+ 	}
+ 	iamRepo := iam.TestRepo(t, conn, wrapper)
+ 
+@@ -1571,7 +1571,7 @@ func TestAuthenticate_OIDC_Start(t *testing.T) {
+ 
+ func TestAuthenticate_OIDC_Token(t *testing.T) {
+ 	s := getSetup(t)
+-	testAtRepo, err := authtoken.NewRepository(s.rw, s.rw, s.kmsCache)
++	testAtRepo, err := authtoken.NewRepository(s.rw, s.rw, s.kmsCache, context.Background())
+ 	require.NoError(t, err)
+ 
+ 	// a reusable test authmethod for the unit tests
+diff --git a/internal/daemon/controller/handlers/authmethods/password_test.go b/internal/daemon/controller/handlers/authmethods/password_test.go
+index 3f1688fb4..131eb0a5f 100644
+--- a/internal/daemon/controller/handlers/authmethods/password_test.go
++++ b/internal/daemon/controller/handlers/authmethods/password_test.go
+@@ -45,7 +45,7 @@ func TestUpdate_Password(t *testing.T) {
+ 		return password.NewRepository(rw, rw, kms)
+ 	}
+ 	atRepoFn := func() (*authtoken.Repository, error) {
+-		return authtoken.NewRepository(rw, rw, kms)
++		return authtoken.NewRepository(rw, rw, kms, context.Background())
+ 	}
+ 	iamRepo := iam.TestRepo(t, conn, wrapper)
+ 
+@@ -482,7 +482,7 @@ func TestAuthenticate_Password(t *testing.T) {
+ 		return password.NewRepository(rw, rw, kms)
+ 	}
+ 	atRepoFn := func() (*authtoken.Repository, error) {
+-		return authtoken.NewRepository(rw, rw, kms)
++		return authtoken.NewRepository(rw, rw, kms, context.Background())
+ 	}
+ 	am := password.TestAuthMethods(t, conn, o.GetPublicId(), 1)[0]
+ 
+@@ -660,7 +660,7 @@ func TestAuthenticate_AuthAccountConnectedToIamUser_Password(t *testing.T) {
+ 		return password.NewRepository(rw, rw, kms)
+ 	}
+ 	atRepoFn := func() (*authtoken.Repository, error) {
+-		return authtoken.NewRepository(rw, rw, kms)
++		return authtoken.NewRepository(rw, rw, kms, context.Background())
+ 	}
+ 
+ 	am := password.TestAuthMethods(t, conn, o.GetPublicId(), 1)[0]
+diff --git a/internal/daemon/controller/handlers/authtokens/authtoken_service_test.go b/internal/daemon/controller/handlers/authtokens/authtoken_service_test.go
+index 505360540..35c191141 100644
+--- a/internal/daemon/controller/handlers/authtokens/authtoken_service_test.go
++++ b/internal/daemon/controller/handlers/authtokens/authtoken_service_test.go
+@@ -41,7 +41,7 @@ func TestGetSelf(t *testing.T) {
+ 		return iam.TestRepo(t, conn, wrap), nil
+ 	}
+ 	tokenRepoFn := func() (*authtoken.Repository, error) {
+-		return authtoken.NewRepository(rw, rw, kms)
++		return authtoken.NewRepository(rw, rw, kms, context.Background())
+ 	}
+ 	serversRepoFn := func() (*server.Repository, error) {
+ 		return server.NewRepository(rw, rw, kms)
+@@ -122,7 +122,7 @@ func TestGet(t *testing.T) {
+ 		return iam.TestRepo(t, conn, wrap), nil
+ 	}
+ 	repoFn := func() (*authtoken.Repository, error) {
+-		return authtoken.NewRepository(rw, rw, kms)
++		return authtoken.NewRepository(rw, rw, kms, context.Background())
+ 	}
+ 
+ 	s, err := authtokens.NewService(repoFn, iamRepoFn)
+@@ -200,7 +200,7 @@ func TestList_Self(t *testing.T) {
+ 		return iamRepo, nil
+ 	}
+ 	tokenRepoFn := func() (*authtoken.Repository, error) {
+-		return authtoken.NewRepository(rw, rw, kms)
++		return authtoken.NewRepository(rw, rw, kms, context.Background())
+ 	}
+ 	serversRepoFn := func() (*server.Repository, error) {
+ 		return server.NewRepository(rw, rw, kms)
+@@ -265,7 +265,7 @@ func TestList(t *testing.T) {
+ 		return iam.TestRepo(t, conn, wrap), nil
+ 	}
+ 	repoFn := func() (*authtoken.Repository, error) {
+-		return authtoken.NewRepository(rw, rw, kms)
++		return authtoken.NewRepository(rw, rw, kms, context.Background())
+ 	}
+ 	iamRepo := iam.TestRepo(t, conn, wrap)
+ 
+@@ -424,7 +424,7 @@ func TestDeleteSelf(t *testing.T) {
+ 		return iamRepo, nil
+ 	}
+ 	tokenRepoFn := func() (*authtoken.Repository, error) {
+-		return authtoken.NewRepository(rw, rw, kms)
++		return authtoken.NewRepository(rw, rw, kms, context.Background())
+ 	}
+ 	serversRepoFn := func() (*server.Repository, error) {
+ 		return server.NewRepository(rw, rw, kms)
+@@ -512,7 +512,7 @@ func TestDelete(t *testing.T) {
+ 		return iam.TestRepo(t, conn, wrap), nil
+ 	}
+ 	repoFn := func() (*authtoken.Repository, error) {
+-		return authtoken.NewRepository(rw, rw, kms)
++		return authtoken.NewRepository(rw, rw, kms, context.Background())
+ 	}
+ 	iamRepo := iam.TestRepo(t, conn, wrap)
+ 
+@@ -576,7 +576,7 @@ func TestDelete_twice(t *testing.T) {
+ 		return iam.TestRepo(t, conn, wrap), nil
+ 	}
+ 	repoFn := func() (*authtoken.Repository, error) {
+-		return authtoken.NewRepository(rw, rw, kms)
++		return authtoken.NewRepository(rw, rw, kms, context.Background())
+ 	}
+ 	iamRepo := iam.TestRepo(t, conn, wrap)
+ 
+diff --git a/internal/daemon/controller/handlers/sessions/session_list_benchmarks_test.go b/internal/daemon/controller/handlers/sessions/session_list_benchmarks_test.go
+index 81c079f25..4504f2423 100644
+--- a/internal/daemon/controller/handlers/sessions/session_list_benchmarks_test.go
++++ b/internal/daemon/controller/handlers/sessions/session_list_benchmarks_test.go
+@@ -84,7 +84,7 @@ func BenchmarkSessionList(b *testing.B) {
+ 			iamRepo, err := iam.NewRepository(rw, rw, kmsThing)
+ 			require.NoError(b, err)
+ 
+-			authTokenRepo, err := authtoken.NewRepository(rw, rw, kmsThing)
++			authTokenRepo, err := authtoken.NewRepository(rw, rw, kmsThing, context.Background())
+ 			require.NoError(b, err)
+ 
+ 			pwRepo, err := password.NewRepository(rw, rw, kmsThing)
+diff --git a/internal/daemon/controller/handlers/sessions/session_service_test.go b/internal/daemon/controller/handlers/sessions/session_service_test.go
+index 5034d6b43..d13cb341c 100644
+--- a/internal/daemon/controller/handlers/sessions/session_service_test.go
++++ b/internal/daemon/controller/handlers/sessions/session_service_test.go
+@@ -52,7 +52,7 @@ func TestGetSession(t *testing.T) {
+ 		return session.NewRepository(ctx, rw, rw, kms, opt...)
+ 	}
+ 	tokenRepoFn := func() (*authtoken.Repository, error) {
+-		return authtoken.NewRepository(rw, rw, kms)
++		return authtoken.NewRepository(rw, rw, kms, context.Background())
+ 	}
+ 	serversRepoFn := func() (*server.Repository, error) {
+ 		return server.NewRepository(rw, rw, kms)
+@@ -175,7 +175,7 @@ func TestList_Self(t *testing.T) {
+ 		return session.NewRepository(ctx, rw, rw, kms, opt...)
+ 	}
+ 	tokenRepoFn := func() (*authtoken.Repository, error) {
+-		return authtoken.NewRepository(rw, rw, kms)
++		return authtoken.NewRepository(rw, rw, kms, context.Background())
+ 	}
+ 	serversRepoFn := func() (*server.Repository, error) {
+ 		return server.NewRepository(rw, rw, kms)
+@@ -262,7 +262,7 @@ func TestList(t *testing.T) {
+ 		return session.NewRepository(ctx, rw, rw, kms, opt...)
+ 	}
+ 	tokenRepoFn := func() (*authtoken.Repository, error) {
+-		return authtoken.NewRepository(rw, rw, kms)
++		return authtoken.NewRepository(rw, rw, kms, context.Background())
+ 	}
+ 	serversRepoFn := func() (*server.Repository, error) {
+ 		return server.NewRepository(rw, rw, kms)
+@@ -560,7 +560,7 @@ func TestCancel(t *testing.T) {
+ 		return session.NewRepository(ctx, rw, rw, kms, opt...)
+ 	}
+ 	tokenRepoFn := func() (*authtoken.Repository, error) {
+-		return authtoken.NewRepository(rw, rw, kms)
++		return authtoken.NewRepository(rw, rw, kms, context.Background())
+ 	}
+ 	serversRepoFn := func() (*server.Repository, error) {
+ 		return server.NewRepository(rw, rw, kms)
+diff --git a/internal/daemon/controller/handlers/targets/tcp/target_service_test.go b/internal/daemon/controller/handlers/targets/tcp/target_service_test.go
+index 98b5c50c5..908e9d132 100644
+--- a/internal/daemon/controller/handlers/targets/tcp/target_service_test.go
++++ b/internal/daemon/controller/handlers/targets/tcp/target_service_test.go
+@@ -116,7 +116,7 @@ func TestGet(t *testing.T) {
+ 		return iamRepo, nil
+ 	}
+ 	tokenRepoFn := func() (*authtoken.Repository, error) {
+-		return authtoken.NewRepository(rw, rw, kms)
++		return authtoken.NewRepository(rw, rw, kms, context.Background())
+ 	}
+ 	serversRepoFn := func() (*server.Repository, error) {
+ 		return server.NewRepository(rw, rw, kms)
+@@ -224,7 +224,7 @@ func TestList(t *testing.T) {
+ 		return iamRepo, nil
+ 	}
+ 	tokenRepoFn := func() (*authtoken.Repository, error) {
+-		return authtoken.NewRepository(rw, rw, kms)
++		return authtoken.NewRepository(rw, rw, kms, context.Background())
+ 	}
+ 	serversRepoFn := func() (*server.Repository, error) {
+ 		return server.NewRepository(rw, rw, kms)
+@@ -389,7 +389,7 @@ func TestDelete(t *testing.T) {
+ 		return iamRepo, nil
+ 	}
+ 	tokenRepoFn := func() (*authtoken.Repository, error) {
+-		return authtoken.NewRepository(rw, rw, kms)
++		return authtoken.NewRepository(rw, rw, kms, context.Background())
+ 	}
+ 	serversRepoFn := func() (*server.Repository, error) {
+ 		return server.NewRepository(rw, rw, kms)
+@@ -473,7 +473,7 @@ func TestDelete_twice(t *testing.T) {
+ 		return iamRepo, nil
+ 	}
+ 	tokenRepoFn := func() (*authtoken.Repository, error) {
+-		return authtoken.NewRepository(rw, rw, kms)
++		return authtoken.NewRepository(rw, rw, kms, context.Background())
+ 	}
+ 	serversRepoFn := func() (*server.Repository, error) {
+ 		return server.NewRepository(rw, rw, kms)
+@@ -519,7 +519,7 @@ func TestCreate(t *testing.T) {
+ 		return iamRepo, nil
+ 	}
+ 	tokenRepoFn := func() (*authtoken.Repository, error) {
+-		return authtoken.NewRepository(rw, rw, kms)
++		return authtoken.NewRepository(rw, rw, kms, context.Background())
+ 	}
+ 	serversRepoFn := func() (*server.Repository, error) {
+ 		return server.NewRepository(rw, rw, kms)
+@@ -698,7 +698,7 @@ func TestUpdate(t *testing.T) {
+ 		return iamRepo, nil
+ 	}
+ 	tokenRepoFn := func() (*authtoken.Repository, error) {
+-		return authtoken.NewRepository(rw, rw, kms)
++		return authtoken.NewRepository(rw, rw, kms, context.Background())
+ 	}
+ 	serversRepoFn := func() (*server.Repository, error) {
+ 		return server.NewRepository(rw, rw, kms)
+@@ -1122,7 +1122,7 @@ func TestUpdate_BadVersion(t *testing.T) {
+ 		return iamRepo, nil
+ 	}
+ 	tokenRepoFn := func() (*authtoken.Repository, error) {
+-		return authtoken.NewRepository(rw, rw, kms)
++		return authtoken.NewRepository(rw, rw, kms, context.Background())
+ 	}
+ 	serversRepoFn := func() (*server.Repository, error) {
+ 		return server.NewRepository(rw, rw, kms)
+@@ -1184,7 +1184,7 @@ func TestAddTargetHostSets(t *testing.T) {
+ 		return iamRepo, nil
+ 	}
+ 	tokenRepoFn := func() (*authtoken.Repository, error) {
+-		return authtoken.NewRepository(rw, rw, kms)
++		return authtoken.NewRepository(rw, rw, kms, context.Background())
+ 	}
+ 	serversRepoFn := func() (*server.Repository, error) {
+ 		return server.NewRepository(rw, rw, kms)
+@@ -1346,7 +1346,7 @@ func TestSetTargetHostSets(t *testing.T) {
+ 		return iamRepo, nil
+ 	}
+ 	tokenRepoFn := func() (*authtoken.Repository, error) {
+-		return authtoken.NewRepository(rw, rw, kms)
++		return authtoken.NewRepository(rw, rw, kms, context.Background())
+ 	}
+ 	serversRepoFn := func() (*server.Repository, error) {
+ 		return server.NewRepository(rw, rw, kms)
+@@ -1502,7 +1502,7 @@ func TestRemoveTargetHostSets(t *testing.T) {
+ 		return iamRepo, nil
+ 	}
+ 	tokenRepoFn := func() (*authtoken.Repository, error) {
+-		return authtoken.NewRepository(rw, rw, kms)
++		return authtoken.NewRepository(rw, rw, kms, context.Background())
+ 	}
+ 	serversRepoFn := func() (*server.Repository, error) {
+ 		return server.NewRepository(rw, rw, kms)
+@@ -1670,7 +1670,7 @@ func TestAddTargetHostSources(t *testing.T) {
+ 		return iamRepo, nil
+ 	}
+ 	tokenRepoFn := func() (*authtoken.Repository, error) {
+-		return authtoken.NewRepository(rw, rw, kms)
++		return authtoken.NewRepository(rw, rw, kms, context.Background())
+ 	}
+ 	serversRepoFn := func() (*server.Repository, error) {
+ 		return server.NewRepository(rw, rw, kms)
+@@ -1832,7 +1832,7 @@ func TestSetTargetHostSources(t *testing.T) {
+ 		return iamRepo, nil
+ 	}
+ 	tokenRepoFn := func() (*authtoken.Repository, error) {
+-		return authtoken.NewRepository(rw, rw, kms)
++		return authtoken.NewRepository(rw, rw, kms, context.Background())
+ 	}
+ 	serversRepoFn := func() (*server.Repository, error) {
+ 		return server.NewRepository(rw, rw, kms)
+@@ -1982,7 +1982,7 @@ func TestRemoveTargetHostSources(t *testing.T) {
+ 		return iamRepo, nil
+ 	}
+ 	tokenRepoFn := func() (*authtoken.Repository, error) {
+-		return authtoken.NewRepository(rw, rw, kms)
++		return authtoken.NewRepository(rw, rw, kms, context.Background())
+ 	}
+ 	serversRepoFn := func() (*server.Repository, error) {
+ 		return server.NewRepository(rw, rw, kms)
+@@ -2149,7 +2149,7 @@ func TestAddTargetCredentialSources(t *testing.T) {
+ 		return iamRepo, nil
+ 	}
+ 	tokenRepoFn := func() (*authtoken.Repository, error) {
+-		return authtoken.NewRepository(rw, rw, kms)
++		return authtoken.NewRepository(rw, rw, kms, context.Background())
+ 	}
+ 	serversRepoFn := func() (*server.Repository, error) {
+ 		return server.NewRepository(rw, rw, kms)
+@@ -2331,7 +2331,7 @@ func TestSetTargetCredentialSources(t *testing.T) {
+ 		return iamRepo, nil
+ 	}
+ 	tokenRepoFn := func() (*authtoken.Repository, error) {
+-		return authtoken.NewRepository(rw, rw, kms)
++		return authtoken.NewRepository(rw, rw, kms, context.Background())
+ 	}
+ 	serversRepoFn := func() (*server.Repository, error) {
+ 		return server.NewRepository(rw, rw, kms)
+@@ -2507,7 +2507,7 @@ func TestRemoveTargetCredentialSources(t *testing.T) {
+ 		return iamRepo, nil
+ 	}
+ 	tokenRepoFn := func() (*authtoken.Repository, error) {
+-		return authtoken.NewRepository(rw, rw, kms)
++		return authtoken.NewRepository(rw, rw, kms, context.Background())
+ 	}
+ 	serversRepoFn := func() (*server.Repository, error) {
+ 		return server.NewRepository(rw, rw, kms)
+@@ -2764,7 +2764,7 @@ func TestAuthorizeSession(t *testing.T) {
+ 		return credstatic.NewRepository(ctx, rw, rw, kms)
+ 	}
+ 	atRepoFn := func() (*authtoken.Repository, error) {
+-		return authtoken.NewRepository(rw, rw, kms)
++		return authtoken.NewRepository(rw, rw, kms, context.Background())
+ 	}
+ 
+ 	plg := host.TestPlugin(t, conn, "test")
+@@ -3022,7 +3022,7 @@ func TestAuthorizeSessionTypedCredentials(t *testing.T) {
+ 		return credstatic.NewRepository(ctx, rw, rw, kms)
+ 	}
+ 	atRepoFn := func() (*authtoken.Repository, error) {
+-		return authtoken.NewRepository(rw, rw, kms)
++		return authtoken.NewRepository(rw, rw, kms, context.Background())
+ 	}
+ 	pluginHostRepoFn := func() (*plugin.Repository, error) {
+ 		return plugin.NewRepository(rw, rw, kms, sche, map[string]plgpb.HostPluginServiceClient{})
+@@ -3604,7 +3604,7 @@ func TestAuthorizeSession_Errors(t *testing.T) {
+ 		return credstatic.NewRepository(ctx, rw, rw, kms)
+ 	}
+ 	atRepoFn := func() (*authtoken.Repository, error) {
+-		return authtoken.NewRepository(rw, rw, kms)
++		return authtoken.NewRepository(rw, rw, kms, context.Background())
+ 	}
+ 	org, proj := iam.TestScopes(t, iamRepo)
+ 
+@@ -3842,7 +3842,7 @@ func TestAddTargetCredentialLibraryPerms(t *testing.T) {
+ 	kms := kms.TestKms(t, conn, wrapper)
+ 
+ 	atRepoFn := func() (*authtoken.Repository, error) {
+-		return authtoken.NewRepository(rw, rw, kms)
++		return authtoken.NewRepository(rw, rw, kms, context.Background())
+ 	}
+ 	iamRepoFn := func() (*iam.Repository, error) {
+ 		return iam.TestRepo(t, conn, wrapper), nil
+@@ -3928,7 +3928,7 @@ func TestSetTargetCredentialLibraryPerms(t *testing.T) {
+ 	kms := kms.TestKms(t, conn, wrapper)
+ 
+ 	atRepoFn := func() (*authtoken.Repository, error) {
+-		return authtoken.NewRepository(rw, rw, kms)
++		return authtoken.NewRepository(rw, rw, kms, context.Background())
+ 	}
+ 	iamRepoFn := func() (*iam.Repository, error) {
+ 		return iam.TestRepo(t, conn, wrapper), nil
+@@ -4014,7 +4014,7 @@ func TestRemoveTargetCredentialLibraryPerms(t *testing.T) {
+ 	kms := kms.TestKms(t, conn, wrapper)
+ 
+ 	atRepoFn := func() (*authtoken.Repository, error) {
+-		return authtoken.NewRepository(rw, rw, kms)
++		return authtoken.NewRepository(rw, rw, kms, context.Background())
+ 	}
+ 	iamRepoFn := func() (*iam.Repository, error) {
+ 		return iam.TestRepo(t, conn, wrapper), nil
+diff --git a/internal/daemon/controller/interceptor_test.go b/internal/daemon/controller/interceptor_test.go
+index e6a5039a7..aaec7bd8e 100644
+--- a/internal/daemon/controller/interceptor_test.go
++++ b/internal/daemon/controller/interceptor_test.go
+@@ -43,7 +43,7 @@ func Test_requestCtxInterceptor(t *testing.T) {
+ 		return iamRepo, nil
+ 	}
+ 	atRepoFn := func() (*authtoken.Repository, error) {
+-		return authtoken.NewRepository(rw, rw, kmsCache)
++		return authtoken.NewRepository(rw, rw, kmsCache, context.Background())
+ 	}
+ 	serversRepoFn := func() (*server.Repository, error) {
+ 		return server.NewRepository(rw, rw, kmsCache)
+diff --git a/internal/session/repository_session_test.go b/internal/session/repository_session_test.go
+index 79103dcda..126efd68c 100644
+--- a/internal/session/repository_session_test.go
++++ b/internal/session/repository_session_test.go
+@@ -972,7 +972,7 @@ func TestRepository_CancelSession(t *testing.T) {
+ 				acct := password.TestAccount(t, conn, authMethod.GetPublicId(), "name1")
+ 				user := iam.TestUser(t, iamRepo, org.PublicId, iam.WithAccountIds(acct.PublicId))
+ 
+-				authTokenRepo, err := authtoken.NewRepository(rw, rw, testKms)
++				authTokenRepo, err := authtoken.NewRepository(rw, rw, testKms, context.Background())
+ 				require.NoError(t, err)
+ 				at, err := authTokenRepo.CreateAuthToken(ctx, user, acct.GetPublicId())
+ 				require.NoError(t, err)
+diff --git a/internal/session/service_authorize_connection_test.go b/internal/session/service_authorize_connection_test.go
+index 0f254e3e6..9b2bf8f93 100644
+--- a/internal/session/service_authorize_connection_test.go
++++ b/internal/session/service_authorize_connection_test.go
+@@ -99,7 +99,7 @@ func TestService_AuthorizeConnection(t *testing.T) {
+ 				acct := password.TestAccount(t, conn, authMethod.GetPublicId(), "name1")
+ 				user := iam.TestUser(t, iamRepo, org.PublicId, iam.WithAccountIds(acct.PublicId))
+ 
+-				authTokenRepo, err := authtoken.NewRepository(rw, rw, testKms)
++				authTokenRepo, err := authtoken.NewRepository(rw, rw, testKms, context.Background())
+ 				require.NoError(t, err)
+ 				at, err := authTokenRepo.CreateAuthToken(ctx, user, acct.GetPublicId())
+ 				require.NoError(t, err)
+diff --git a/internal/session/service_close_connections_test.go b/internal/session/service_close_connections_test.go
+index 5e378c2a2..47effd625 100644
+--- a/internal/session/service_close_connections_test.go
++++ b/internal/session/service_close_connections_test.go
+@@ -60,7 +60,7 @@ func TestServiceCloseConnections(t *testing.T) {
+ 		acct := password.TestAccount(t, conn, authMethod.GetPublicId(), "name1")
+ 		user := iam.TestUser(t, iamRepo, org.PublicId, iam.WithAccountIds(acct.PublicId))
+ 
+-		authTokenRepo, err := authtoken.NewRepository(rw, rw, testKms)
++		authTokenRepo, err := authtoken.NewRepository(rw, rw, testKms, context.Background())
+ 		require.NoError(t, err)
+ 		at, err := authTokenRepo.CreateAuthToken(ctx, user, acct.GetPublicId())
+ 		require.NoError(t, err)
+diff --git a/internal/session/testing.go b/internal/session/testing.go
+index 65b4dc3a2..ad36593e2 100644
+--- a/internal/session/testing.go
++++ b/internal/session/testing.go
+@@ -153,7 +153,7 @@ func TestSessionParams(t testing.TB, conn *db.DB, wrapper wrapping.Wrapper, iamR
+ 	acct := password.TestAccount(t, conn, authMethod.GetPublicId(), "name1")
+ 	user := iam.TestUser(t, iamRepo, org.PublicId, iam.WithAccountIds(acct.PublicId))
+ 
+-	authTokenRepo, err := authtoken.NewRepository(rw, rw, kms)
++	authTokenRepo, err := authtoken.NewRepository(rw, rw, kms, context.Background())
+ 	require.NoError(err)
+ 	at, err := authTokenRepo.CreateAuthToken(ctx, user, acct.GetPublicId())
+ 	require.NoError(err)
+diff --git a/internal/target/repository.go b/internal/target/repository.go
+index 7ec5d1b2d..5cc000f7a 100644
+--- a/internal/target/repository.go
++++ b/internal/target/repository.go
+@@ -18,8 +18,6 @@ import (
+ 	"github.com/hashicorp/go-dbw"
+ )
+ 
+-// RepositoryFactory enables `target.Repository` object instantiation,
+-// and is used by the various service packages/controller object to do so.
+ type RepositoryFactory func(...Option) (*Repository, error)
+ 
+ // Cloneable provides a cloning interface
+diff --git a/testing/dbtest/session_list_benchmarks_dump_generation_test.go b/testing/dbtest/session_list_benchmarks_dump_generation_test.go
+index 60c6aa2d7..495faf032 100644
+--- a/testing/dbtest/session_list_benchmarks_dump_generation_test.go
++++ b/testing/dbtest/session_list_benchmarks_dump_generation_test.go
+@@ -122,7 +122,7 @@ func TestGenerateSessionBenchmarkTemplateDumps(t *testing.T) {
+ 			kms := kms.TestKms(t, conn, wrap)
+ 
+ 			iamRepo := iam.TestRepo(t, conn, wrap)
+-			authTokenRepo, err := authtoken.NewRepository(rw, rw, kms)
++			authTokenRepo, err := authtoken.NewRepository(rw, rw, kms, context.Background())
+ 			require.NoError(err)
+ 			pwRepo, err := password.NewRepository(rw, rw, kms)
+ 			require.NoError(err)

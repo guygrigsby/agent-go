@@ -1,0 +1,29 @@
+{"ms":2563,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-17T02:59:36.687831Z"}
+{"ms":2584,"op":"query","outcome":"ok","req_sha":"682514744cbeb1ab","sym":"Audit","ts":"2026-07-17T02:59:57.950145Z"}
+{"ms":8,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/vault/helper/testhelpers/corehelpers","req_sha":"58561cb701d75e92","sym":"NoopAuditFactory","ts":"2026-07-17T03:00:13.011209Z"}
+{"ms":8,"op":"query","outcome":"rejected","reason":"package not found","repairs":1,"req_sha":"a4e86f7000401d22","sym":"NoopAuditFactory","ts":"2026-07-17T03:00:14.447218Z"}
+{"ms":36,"op":"query","outcome":"ok","req_sha":"5ceb6fe56ca899b9","sym":"AuditFactory","ts":"2026-07-17T03:00:15.532422Z"}
+{"ms":33,"op":"query","outcome":"ok","req_sha":"338e6ed1f731f53d","sym":"audit.Factory","ts":"2026-07-17T03:00:16.777841Z"}
+{"ms":29,"op":"query","outcome":"ok","req_sha":"9fe86457d985a541","sym":"type Factory","ts":"2026-07-17T03:00:17.660033Z"}
+{"ms":30,"op":"query","outcome":"ok","req_sha":"3ae754ea5df493bd","sym":"useEventLogger","ts":"2026-07-17T03:00:18.735621Z"}
+{"ms":34,"op":"query","outcome":"ok","req_sha":"8089a952a43d5789","sym":"NewAudit","ts":"2026-07-17T03:00:19.885487Z"}
+{"ms":22,"op":"query","outcome":"ok","req_sha":"9ac2fc910a735f2d","sym":"(*audit.Backend, error)","ts":"2026-07-17T03:00:25.475393Z"}
+{"ms":31,"op":"query","outcome":"ok","req_sha":"dfe96aab16068888","sym":"NoopAuditFactory(","ts":"2026-07-17T03:00:26.652414Z"}
+{"ms":30,"op":"query","outcome":"ok","req_sha":"338e6ed1f731f53d","sym":"audit.Factory","ts":"2026-07-17T03:00:27.761207Z"}
+{"ms":32,"op":"query","outcome":"ok","req_sha":"9fe86457d985a541","sym":"type Factory","ts":"2026-07-17T03:00:28.696932Z"}
+{"ms":33,"op":"query","outcome":"ok","req_sha":"9fe86457d985a541","sym":"type Factory","ts":"2026-07-17T03:00:29.58082Z"}
+{"ms":32,"op":"query","outcome":"ok","req_sha":"dce39d99e932dfb7","sym":"NoopAuditFactory","ts":"2026-07-17T03:00:31.972361Z"}
+{"ms":27,"op":"query","outcome":"ok","req_sha":"8b2785f8434f18e6","sym":"NewNoopAudit","ts":"2026-07-17T03:00:33.348552Z"}
+{"ms":8,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/vault/helper/testhelpers/corehelpers","req_sha":"58561cb701d75e92","sym":"NoopAuditFactory","ts":"2026-07-17T03:00:34.746605Z"}
+{"ms":9,"op":"query","outcome":"rejected","reason":"package not found","repairs":1,"req_sha":"c0493d0071b58394","sym":"NewNoopAudit","ts":"2026-07-17T03:00:37.200657Z"}
+{"ms":33,"op":"query","outcome":"ok","req_sha":"a47f8fde5592b8f0","sym":"type NoopAudit","ts":"2026-07-17T03:00:38.335515Z"}
+{"ms":8,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/vault/helper/testhelpers/corehelpers","req_sha":"1a188c3cd71417ec","sym":"NoopAudit","ts":"2026-07-17T03:00:39.431806Z"}
+{"ms":16,"op":"query","outcome":"ok","req_sha":"9fe86457d985a541","sym":"type Factory","ts":"2026-07-17T03:00:41.739767Z"}
+{"ms":34,"op":"query","outcome":"ok","req_sha":"dfe96aab16068888","sym":"NoopAuditFactory(","ts":"2026-07-17T03:00:44.974119Z"}
+{"ms":32,"op":"query","outcome":"ok","req_sha":"dce39d99e932dfb7","sym":"NoopAuditFactory","ts":"2026-07-17T03:00:47.382414Z"}
+{"ms":1305,"op":"add-param","outcome":"accepted","pkg":"github.com/hashicorp/vault/helper/testhelpers/corehelpers","req_sha":"02ee87b188be860d","sym":"NoopAuditFactory","ts":"2026-07-17T03:00:50.863167Z"}
+{"ms":2357,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/vault/builtin/audit/file","req_sha":"4c3540a12b62c322","sym":"Factory","ts":"2026-07-17T03:04:02.908355Z"}
+{"ms":4,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/vault/builtin/audit/socket","req_sha":"a0e3f335d0446612","sym":"Factory","ts":"2026-07-17T03:04:05.272171Z"}
+{"ms":4,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/vault/builtin/audit/syslog","req_sha":"14a613cd501bbcea","sym":"Factory","ts":"2026-07-17T03:04:05.282704Z"}
+{"ms":6,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-17T03:04:05.293125Z"}
+{"ms":6974,"op":"test","outcome":"rejected","pkg":"github.com/hashicorp/vault/vault","reason":"tests could not run","repairs":0,"req_sha":"965b106c23326aca","ts":"2026-07-17T03:04:01.048396Z"}

@@ -1,0 +1,52 @@
+diff --git a/pkg/provider/docker/config.go b/pkg/provider/docker/config.go
+index d69fbbe81..b9247830c 100644
+--- a/pkg/provider/docker/config.go
++++ b/pkg/provider/docker/config.go
+@@ -358,7 +358,7 @@ func (p *DynConfBuilder) getIPAddress(ctx context.Context, container dockerData)
+ 		// Check connected container for traefik.docker.network,
+ 		// falling back to the network specified on the current container.
+ 		containerParsed := parseContainer(containerInspected)
+-		extraConf, err := p.extractLabels(containerParsed)
++		extraConf, err := p.extractSwarmLabels(containerParsed)
+ 		if err != nil {
+ 			logger.Warn().Err(err).Msgf("Unable to get IP address for container %s : failed to get extra configuration for container %s", container.Name, containerInspected.Name)
+ 			return ""
+diff --git a/pkg/provider/docker/pdocker.go b/pkg/provider/docker/pdocker.go
+index 9b7506711..0fd2be7ad 100644
+--- a/pkg/provider/docker/pdocker.go
++++ b/pkg/provider/docker/pdocker.go
+@@ -179,7 +179,7 @@ func (p *Provider) listContainers(ctx context.Context, dockerClient client.Conta
+ 			continue
+ 		}
+ 
+-		extraConf, err := p.extractLabels(dData)
++		extraConf, err := p.extractSwarmLabels(dData)
+ 		if err != nil {
+ 			log.Ctx(ctx).Error().Err(err).Msgf("Skip container %s", getServiceName(dData))
+ 			continue
+diff --git a/pkg/provider/docker/pswarm.go b/pkg/provider/docker/pswarm.go
+index 07f5dbd0b..d4b42c984 100644
+--- a/pkg/provider/docker/pswarm.go
++++ b/pkg/provider/docker/pswarm.go
+@@ -229,7 +229,7 @@ func (p *SwarmProvider) parseService(ctx context.Context, service swarmtypes.Ser
+ 		NetworkSettings: networkSettings{},
+ 	}
+ 
+-	extraConf, err := p.extractLabels(dData)
++	extraConf, err := p.extractSwarmLabels(dData)
+ 	if err != nil {
+ 		return dockerData{}, err
+ 	}
+diff --git a/pkg/provider/docker/shared_labels.go b/pkg/provider/docker/shared_labels.go
+index f17e51508..7272eb0d9 100644
+--- a/pkg/provider/docker/shared_labels.go
++++ b/pkg/provider/docker/shared_labels.go
+@@ -23,7 +23,7 @@ type specificConfiguration struct {
+ 	LBSwarm bool
+ }
+ 
+-func (p *Shared) extractLabels(container dockerData) (configuration, error) {
++func (p *Shared) extractSwarmLabels(container dockerData) (configuration, error) {
+ 	conf := configuration{
+ 		Enable: p.ExposedByDefault,
+ 		Docker: specificConfiguration{

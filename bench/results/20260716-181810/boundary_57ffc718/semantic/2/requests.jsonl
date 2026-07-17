@@ -1,0 +1,73 @@
+{"ms":1279,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-17T01:01:19.432306Z"}
+{"ms":1450,"op":"query","outcome":"ok","req_sha":"b4840f92bb0d54d2","sym":"CreateNewAccountCli","ts":"2026-07-17T01:01:37.243495Z"}
+{"ms":3,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/boundary/testing/internal/e2e/boundary","req_sha":"e5f2adb0977e230c","sym":"CreateNewAccountCli","ts":"2026-07-17T01:01:39.98148Z"}
+{"ms":5,"op":"query","outcome":"rejected","reason":"package not found","repairs":1,"req_sha":"8cee1c81f1a6f765","sym":"CreateNewAccountCli","ts":"2026-07-17T01:01:42.569846Z"}
+{"ms":4,"op":"query","outcome":"rejected","reason":"package not found","repairs":1,"req_sha":"8cee1c81f1a6f765","sym":"CreateNewAccountCli","ts":"2026-07-17T01:01:43.968167Z"}
+{"ms":28,"op":"query","outcome":"ok","pkg":"github.com/hashicorp/boundary/testing/internal/e2e/boundary","req_sha":"eb245e4c517acae6","sym":"CreateNewAccountCli","ts":"2026-07-17T01:01:45.307616Z"}
+{"ms":4,"op":"view","outcome":"rejected","pkg":"github.com/hashicorp/boundary/testing/internal/e2e/host/static_test","reason":"symbol not found","repairs":1,"req_sha":"92e87ac1b9913037","sym":"TODO","ts":"2026-07-17T01:01:46.669539Z"}
+{"ms":2,"op":"view","outcome":"rejected","pkg":"github.com/hashicorp/boundary/testing/internal/e2e/host/static_test","reason":"symbol not found","repairs":3,"req_sha":"32be918cf9064b4c","ts":"2026-07-17T01:01:47.769547Z"}
+{"ms":4,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/boundary/testing/internal/e2e/host/static_test","req_sha":"6c846246f923f864","sym":"TestConnectTargetCli","ts":"2026-07-17T01:01:49.349122Z"}
+{"ms":16,"op":"query","outcome":"ok","req_sha":"f0d3925b3073d4fd","sym":"AuthenticateAdminCli","ts":"2026-07-17T01:01:51.730733Z"}
+{"ms":3,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/boundary/testing/internal/e2e/boundary","req_sha":"4f9c1b39d70fd45e","sym":"AuthenticateAdminCli","ts":"2026-07-17T01:01:52.857929Z"}
+{"ms":17,"op":"query","outcome":"ok","req_sha":"5fa3e6b6df9e92a6","sym":"AuthenticateCli","ts":"2026-07-17T01:01:53.700526Z"}
+{"ms":2,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/boundary/testing/internal/e2e/boundary","req_sha":"84d2f46693846981","sym":"AuthenticateCli","ts":"2026-07-17T01:01:54.804532Z"}
+{"ms":18,"op":"query","outcome":"ok","req_sha":"b52a0130c49c3a21","sym":"CreateNewCredentialStoreStaticCli","ts":"2026-07-17T01:01:57.125946Z"}
+{"ms":6,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/boundary/testing/internal/e2e/boundary","req_sha":"e1ccab767e62ff55","sym":"CreateNewCredentialStoreStaticCli","ts":"2026-07-17T01:01:58.313742Z"}
+{"ms":16,"op":"query","outcome":"ok","req_sha":"f5158da1b2fbbcd1","sym":"CreateNewHostCli","ts":"2026-07-17T01:01:59.622956Z"}
+{"ms":5,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/boundary/testing/internal/e2e/boundary","req_sha":"067ea71b3e66615a","sym":"CreateNewHostCli","ts":"2026-07-17T01:02:00.80281Z"}
+{"ms":20,"op":"query","outcome":"ok","req_sha":"cbc2e48a56a833ef","sym":"AddHostToHostSetCli","ts":"2026-07-17T01:02:02.154101Z"}
+{"ms":6,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/boundary/testing/internal/e2e/boundary","req_sha":"20778206c0bb6b35","sym":"AddHostToHostSetCli","ts":"2026-07-17T01:02:03.398106Z"}
+{"ms":10,"op":"query","outcome":"ok","req_sha":"b045349eff83de39","sym":"CreateNewHostCatalogCli","ts":"2026-07-17T01:02:04.444125Z"}
+{"ms":3,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/boundary/testing/internal/e2e/boundary","req_sha":"0125a687f52bebe6","sym":"CreateNewHostCatalogCli","ts":"2026-07-17T01:02:05.63538Z"}
+{"ms":18,"op":"query","outcome":"ok","req_sha":"0bf7f95bc59456f9","sym":"CreateNewHostSetCli","ts":"2026-07-17T01:02:06.961124Z"}
+{"ms":4,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/boundary/testing/internal/e2e/boundary","req_sha":"01259780aea9f342","sym":"CreateNewHostSetCli","ts":"2026-07-17T01:02:08.181219Z"}
+{"ms":17,"op":"query","outcome":"ok","req_sha":"0d151ffe4aca42a8","sym":"CreateNewOrgCli","ts":"2026-07-17T01:02:09.478633Z"}
+{"ms":4,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/boundary/testing/internal/e2e/boundary","req_sha":"93b98af442900b2e","sym":"CreateNewOrgCli","ts":"2026-07-17T01:02:10.687618Z"}
+{"ms":15,"op":"query","outcome":"ok","req_sha":"aff4dc9b5bc49dde","sym":"CreateNewProjectCli","ts":"2026-07-17T01:02:12.191399Z"}
+{"ms":7,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/boundary/testing/internal/e2e/boundary","req_sha":"b3eae21bec856666","sym":"CreateNewProjectCli","ts":"2026-07-17T01:02:13.403546Z"}
+{"ms":23,"op":"query","outcome":"ok","req_sha":"e39decdb0d2fe567","sym":"CreateNewTargetCli","ts":"2026-07-17T01:02:14.722576Z"}
+{"ms":7,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/boundary/testing/internal/e2e/boundary","req_sha":"5f328d7260218ced","sym":"CreateNewTargetCli","ts":"2026-07-17T01:02:15.947411Z"}
+{"ms":20,"op":"query","outcome":"ok","req_sha":"a711f4b7c3a6a94e","sym":"AddHostSourceToTargetCli","ts":"2026-07-17T01:02:17.327246Z"}
+{"ms":3,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/boundary/testing/internal/e2e/boundary","req_sha":"ebb85983fcb6dd82","sym":"AddHostSourceToTargetCli","ts":"2026-07-17T01:02:18.602795Z"}
+{"ms":12,"op":"query","outcome":"ok","req_sha":"71dfcee65ea75d11","sym":"CreateNewUserCli","ts":"2026-07-17T01:02:19.61258Z"}
+{"ms":2,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/boundary/testing/internal/e2e/boundary","req_sha":"fa6bb7c2c3022f18","sym":"CreateNewUserCli","ts":"2026-07-17T01:02:20.844653Z"}
+{"ms":11,"op":"query","outcome":"ok","req_sha":"4e7cb6bca7880668","sym":"SetAccountToUserCli","ts":"2026-07-17T01:02:22.473853Z"}
+{"ms":2,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/boundary/testing/internal/e2e/boundary","req_sha":"167a06646e18022e","sym":"SetAccountToUserCli","ts":"2026-07-17T01:02:24.036035Z"}
+{"ms":22,"op":"query","outcome":"ok","pkg":"github.com/hashicorp/boundary/testing/internal/e2e/boundary","req_sha":"eb245e4c517acae6","sym":"CreateNewAccountCli","ts":"2026-07-17T01:02:25.55286Z"}
+{"ms":5,"op":"view","outcome":"rejected","pkg":"github.com/hashicorp/boundary/testing/internal/e2e/host/static_test","reason":"symbol not found","repairs":1,"req_sha":"92e87ac1b9913037","sym":"TODO","ts":"2026-07-17T01:02:27.093612Z"}
+{"ms":5,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/boundary/testing/internal/e2e/host/static_test","req_sha":"6c846246f923f864","sym":"TestConnectTargetCli","ts":"2026-07-17T01:02:28.47829Z"}
+{"ms":24,"op":"query","outcome":"ok","req_sha":"0e3ca3142f158822","sym":"CreateNewAccountCli(","ts":"2026-07-17T01:02:33.580076Z"}
+{"ms":26,"op":"query","outcome":"ok","req_sha":"b4840f92bb0d54d2","sym":"CreateNewAccountCli","ts":"2026-07-17T01:02:34.606971Z"}
+{"ms":22,"op":"query","outcome":"ok","req_sha":"020000e1f9dd8fb6","sym":"CreateNewAccountCli(t","ts":"2026-07-17T01:02:36.226692Z"}
+{"ms":23,"op":"query","outcome":"ok","req_sha":"0e3ca3142f158822","sym":"CreateNewAccountCli(","ts":"2026-07-17T01:02:37.530125Z"}
+{"ms":8,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/boundary/testing/internal/e2e/host/static_test","req_sha":"6c846246f923f864","sym":"TestConnectTargetCli","ts":"2026-07-17T01:02:38.840172Z"}
+{"ms":24,"op":"query","outcome":"ok","req_sha":"b4840f92bb0d54d2","sym":"CreateNewAccountCli","ts":"2026-07-17T01:02:46.149436Z"}
+{"ms":7,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/boundary/testing/internal/e2e/host/static_test","req_sha":"6c846246f923f864","sym":"TestConnectTargetCli","ts":"2026-07-17T01:02:47.90656Z"}
+{"ms":25,"op":"query","outcome":"ok","pkg":"github.com/hashicorp/boundary/testing/internal/e2e/boundary","req_sha":"d36d79658940cc26","sym":"CreateNewOrgCli","ts":"2026-07-17T01:02:50.692744Z"}
+{"ms":334,"op":"add-param","outcome":"accepted","pkg":"github.com/hashicorp/boundary/testing/internal/e2e/boundary","req_sha":"8f010230fbb731b8","sym":"CreateNewAccountCli","ts":"2026-07-17T01:02:56.722611Z"}
+{"ms":80,"op":"set-body","outcome":"rejected","pkg":"github.com/hashicorp/boundary/testing/internal/e2e/boundary","reason":"new body does not parse","repairs":0,"req_sha":"e4ac82d05cbb6526","sym":"CreateNewAccountCli","ts":"2026-07-17T01:03:10.401517Z"}
+{"ms":11,"op":"set-body","outcome":"rejected","pkg":"github.com/hashicorp/boundary/testing/internal/e2e/boundary","reason":"new body does not parse","repairs":0,"req_sha":"f38d16b358376171","sym":"CreateNewAccountCli","ts":"2026-07-17T01:03:19.060469Z"}
+{"ms":6,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/boundary/testing/internal/e2e/boundary","req_sha":"e5f2adb0977e230c","sym":"CreateNewAccountCli","ts":"2026-07-17T01:03:22.21504Z"}
+{"ms":5,"op":"view","outcome":"rejected","pkg":"github.com/hashicorp/boundary/testing/internal/e2e/boundary","reason":"symbol not found","repairs":1,"req_sha":"265203d3ae24dd85","sym":"TODO","ts":"2026-07-17T01:03:25.32018Z"}
+{"ms":6,"op":"view","outcome":"rejected","pkg":"github.com/hashicorp/boundary/testing/internal/e2e/boundary","reason":"receiver type not found","repairs":1,"req_sha":"e63bf459f58c9934","sym":"account.go","ts":"2026-07-17T01:03:26.717013Z"}
+{"ms":6,"op":"view","outcome":"rejected","pkg":"github.com/hashicorp/boundary/testing/internal/e2e/boundary","reason":"symbol not found","repairs":3,"req_sha":"69c580a3887a7769","ts":"2026-07-17T01:03:28.492407Z"}
+{"ms":5,"op":"view","outcome":"rejected","pkg":"github.com/hashicorp/boundary/testing/internal/e2e/boundary","reason":"receiver type not found","repairs":1,"req_sha":"e63bf459f58c9934","sym":"account.go","ts":"2026-07-17T01:03:35.453518Z"}
+{"ms":63,"op":"set-body","outcome":"rejected","pkg":"github.com/hashicorp/boundary/testing/internal/e2e/boundary","reason":"new body does not parse","repairs":0,"req_sha":"f38d16b358376171","sym":"CreateNewAccountCli","ts":"2026-07-17T01:03:43.555365Z"}
+{"ms":11,"op":"set-body","outcome":"rejected","pkg":"github.com/hashicorp/boundary/testing/internal/e2e/boundary","reason":"edit does not typecheck","repairs":1,"req_sha":"7e17e61ea8932ca9","sym":"CreateNewAccountCli","ts":"2026-07-17T01:03:53.769324Z"}
+{"ms":9,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/boundary/testing/internal/e2e/boundary","req_sha":"e5f2adb0977e230c","sym":"CreateNewAccountCli","ts":"2026-07-17T01:03:58.866251Z"}
+{"ms":168,"op":"upsert","outcome":"rejected","pkg":"github.com/hashicorp/boundary/testing/internal/e2e/boundary","reason":"declaration does not typecheck","repairs":0,"req_sha":"56de711eae39376a","ts":"2026-07-17T01:04:08.538274Z"}
+{"ms":1331,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/boundary/testing/internal/e2e/boundary","req_sha":"1bb4a01f38362eff","sym":"CreateNewAccountCli","ts":"2026-07-17T01:04:13.857795Z"}
+{"ms":3,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/boundary/testing/internal/e2e/boundary","req_sha":"30959a7ed6d9d9b6","sym":"AuthenticateCli","ts":"2026-07-17T01:04:15.204864Z"}
+{"ms":3,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/boundary/testing/internal/e2e/boundary","req_sha":"35f54590e04586b2","sym":"AuthenticateAdminCli","ts":"2026-07-17T01:04:15.214014Z"}
+{"ms":4,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/boundary/testing/internal/e2e/boundary","req_sha":"b569bf1940ca3710","sym":"CreateNewCredentialStoreStaticCli","ts":"2026-07-17T01:04:15.223394Z"}
+{"ms":3,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/boundary/testing/internal/e2e/boundary","req_sha":"cb480a6dd2ce18a9","sym":"CreateNewHostCli","ts":"2026-07-17T01:04:15.232088Z"}
+{"ms":3,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/boundary/testing/internal/e2e/boundary","req_sha":"127a33ea9b252422","sym":"AddHostToHostSetCli","ts":"2026-07-17T01:04:15.239417Z"}
+{"ms":2,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/boundary/testing/internal/e2e/boundary","req_sha":"5b5cc4b99638f705","sym":"CreateNewHostCatalogCli","ts":"2026-07-17T01:04:15.246537Z"}
+{"ms":3,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/boundary/testing/internal/e2e/boundary","req_sha":"7b02752698a04a96","sym":"CreateNewHostSetCli","ts":"2026-07-17T01:04:15.253933Z"}
+{"ms":3,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/boundary/testing/internal/e2e/boundary","req_sha":"b7942cdfc1bdf8df","sym":"CreateNewOrgCli","ts":"2026-07-17T01:04:15.261396Z"}
+{"ms":2,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/boundary/testing/internal/e2e/boundary","req_sha":"b21d604f88bac56c","sym":"CreateNewProjectCli","ts":"2026-07-17T01:04:15.268864Z"}
+{"ms":3,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/boundary/testing/internal/e2e/boundary","req_sha":"0709a1aedad6b69e","sym":"CreateNewTargetCli","ts":"2026-07-17T01:04:15.275224Z"}
+{"ms":2,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/boundary/testing/internal/e2e/boundary","req_sha":"a6484ee7357c1c2e","sym":"AddHostSourceToTargetCli","ts":"2026-07-17T01:04:15.282705Z"}
+{"ms":2,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/boundary/testing/internal/e2e/boundary","req_sha":"039528a0ef9c7247","sym":"CreateNewUserCli","ts":"2026-07-17T01:04:15.288941Z"}
+{"ms":2,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/boundary/testing/internal/e2e/boundary","req_sha":"dc915d0c777b73c3","sym":"SetAccountToUserCli","ts":"2026-07-17T01:04:15.294679Z"}
+{"ms":3,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-17T01:04:15.300532Z"}

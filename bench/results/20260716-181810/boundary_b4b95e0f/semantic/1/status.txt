@@ -1,0 +1,15 @@
+ M internal/credential/vault/credential_store.go
+ M internal/credential/vault/jobs.go
+ M internal/credential/vault/jobs_test.go
+ M internal/credential/vault/private_credential.go
+ M internal/credential/vault/private_library.go
+ M internal/credential/vault/private_store.go
+ M internal/credential/vault/repository_credential_store.go
+ M internal/credential/vault/testing.go
+ M internal/credential/vault/testing_test.go
+ M internal/credential/vault/vault.go
+ M internal/credential/vault/vault_test.go
+ M internal/daemon/controller/handler.go
+ M internal/daemon/controller/handlers/credentialstores/credentialstore_service.go
+ M internal/daemon/controller/handlers/credentialstores/credentialstore_service_test.go
+?? opencode.json

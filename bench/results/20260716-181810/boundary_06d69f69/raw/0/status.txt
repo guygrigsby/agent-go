@@ -1,0 +1,5 @@
+ M testing/internal/e2e/boundary/credential.go
+ M testing/internal/e2e/tests/base/target_tcp_connect_redis_test.go
+ M testing/internal/e2e/tests/base_plus/target_tcp_connect_postgres_test.go
+ M testing/internal/e2e/tests/database/migration_test.go
+?? opencode.json

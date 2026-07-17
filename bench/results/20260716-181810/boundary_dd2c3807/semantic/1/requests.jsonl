@@ -1,0 +1,49 @@
+{"ms":1158,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-17T03:13:35.893955Z"}
+{"ms":1274,"op":"query","outcome":"ok","req_sha":"b9ca9d68cf1c150c","sym":"NewDerivedReader","ts":"2026-07-17T03:13:53.698743Z"}
+{"ms":15,"op":"query","outcome":"ok","req_sha":"df4b3b4fe4d81d05","sym":"internal/libs/crypto","ts":"2026-07-17T03:13:56.529101Z"}
+{"ms":27,"op":"query","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/kms","req_sha":"3dc7f2a79271cd69","sym":"NewDerivedReader","ts":"2026-07-17T03:13:57.690258Z"}
+{"ms":5,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/kms","req_sha":"0c4665e48e7cc461","sym":"TestNewDerivedReader","ts":"2026-07-17T03:14:00.339035Z"}
+{"ms":5,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/kms","req_sha":"87a5693b2f7bdc60","sym":"NewDerivedReader","ts":"2026-07-17T03:14:04.082626Z"}
+{"ms":7,"op":"view","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/kms","reason":"receiver type not found","repairs":1,"req_sha":"813b982cedfd0d2d","sym":"kms.go","ts":"2026-07-17T03:14:06.015327Z"}
+{"ms":19,"op":"query","outcome":"ok","req_sha":"63cb29408b303631","sym":"aead.Wrapper","ts":"2026-07-17T03:14:08.133549Z"}
+{"ms":19,"op":"query","outcome":"ok","req_sha":"63cb29408b303631","sym":"aead.Wrapper","ts":"2026-07-17T03:14:08.998892Z"}
+{"ms":19,"op":"query","outcome":"ok","req_sha":"6795775d4ee92d45","sym":"aead.","ts":"2026-07-17T03:14:09.835373Z"}
+{"ms":17,"op":"query","outcome":"ok","req_sha":"c61e12d88cc81adc","sym":"wrapping/aead","ts":"2026-07-17T03:14:10.723241Z"}
+{"ms":11,"op":"query","outcome":"ok","req_sha":"e66e7ff621bdaafa","sym":"multiwrapper","ts":"2026-07-17T03:14:11.533604Z"}
+{"ms":15,"op":"query","outcome":"ok","req_sha":"e66e7ff621bdaafa","sym":"multiwrapper","ts":"2026-07-17T03:14:12.437838Z"}
+{"ms":18,"op":"query","outcome":"ok","req_sha":"0c37ac5f093341f8","sym":"WrapperForKeyID","ts":"2026-07-17T03:14:13.354677Z"}
+{"ms":19,"op":"query","outcome":"ok","req_sha":"be2cecf1458c0546","sym":"wrapping","ts":"2026-07-17T03:14:14.548187Z"}
+{"ms":17,"op":"query","outcome":"ok","req_sha":"9087436f8158cf21","sym":"MultiWrapper","ts":"2026-07-17T03:14:17.436412Z"}
+{"ms":16,"op":"query","outcome":"ok","req_sha":"332a03dc763eef71","sym":"wrapping/","ts":"2026-07-17T03:14:18.346572Z"}
+{"ms":17,"op":"query","outcome":"ok","req_sha":"9062aa2c0c93207b","sym":"type Wrapper","ts":"2026-07-17T03:14:20.020759Z"}
+{"ms":18,"op":"query","outcome":"ok","req_sha":"9ce123c7621121c8","sym":"aead","ts":"2026-07-17T03:14:21.465255Z"}
+{"ms":17,"op":"query","outcome":"ok","req_sha":"af4c9968df8cf0ba","sym":"aead.go","ts":"2026-07-17T03:14:22.558191Z"}
+{"ms":17,"op":"query","outcome":"ok","req_sha":"4e2823cd49e6e790","sym":"internal/wrapping","ts":"2026-07-17T03:14:23.823435Z"}
+{"ms":17,"op":"query","outcome":"ok","req_sha":"da6568598be45280","sym":"wrapping \"github.com/hashicorp","ts":"2026-07-17T03:14:24.872914Z"}
+{"ms":18,"op":"query","outcome":"ok","req_sha":"e66e7ff621bdaafa","sym":"multiwrapper","ts":"2026-07-17T03:14:26.421997Z"}
+{"ms":18,"op":"query","outcome":"ok","req_sha":"332a03dc763eef71","sym":"wrapping/","ts":"2026-07-17T03:14:27.594754Z"}
+{"ms":17,"op":"query","outcome":"ok","req_sha":"87b7637e1af40fdd","sym":"package wrapping","ts":"2026-07-17T03:14:28.662601Z"}
+{"ms":17,"op":"query","outcome":"ok","req_sha":"f60692da8cd9d72a","sym":"NewDeprecated","ts":"2026-07-17T03:14:31.22511Z"}
+{"ms":19,"op":"query","outcome":"ok","req_sha":"0344534390c302e7","sym":"import (","ts":"2026-07-17T03:14:33.087145Z"}
+{"ms":17,"op":"query","outcome":"ok","req_sha":"7888bb8db802787e","sym":"wrapping\"","ts":"2026-07-17T03:14:35.842484Z"}
+{"ms":18,"op":"query","outcome":"ok","req_sha":"6baea7c4b6bc5df0","sym":"\"wrapping\"","ts":"2026-07-17T03:14:36.843788Z"}
+{"ms":10,"op":"query","outcome":"ok","req_sha":"5db31b1b20edaf49","sym":"github.com/hashicorp/boundary/internal/wrapping","ts":"2026-07-17T03:14:38.127844Z"}
+{"ms":19,"op":"query","outcome":"ok","req_sha":"4fc486bc9c00007b","sym":"GetKeyBytes(","ts":"2026-07-17T03:14:40.144474Z"}
+{"ms":7,"op":"view","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/auth/oidc","reason":"receiver type not found","repairs":1,"req_sha":"24e66c3a3fa7a750","sym":"auth_method.go","ts":"2026-07-17T03:14:45.323278Z"}
+{"ms":6,"op":"view","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/auth/oidc","reason":"receiver type not found","repairs":1,"req_sha":"c6378e779ead168c","sym":"service.go","ts":"2026-07-17T03:14:47.635458Z"}
+{"ms":17,"op":"query","outcome":"ok","req_sha":"035058f4e863824c","sym":"\"github.com/hashicorp/boundary/internal/kms\"","ts":"2026-07-17T03:14:55.66572Z"}
+{"ms":19,"op":"query","outcome":"ok","req_sha":"b9ca9d68cf1c150c","sym":"NewDerivedReader","ts":"2026-07-17T03:14:57.137548Z"}
+{"ms":35,"op":"patch","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/kms","reason":"symbol is still referenced","repairs":0,"req_sha":"c56a2f5315169ac0","ts":"2026-07-17T03:15:03.803765Z"}
+{"ms":6,"op":"view","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/kms","reason":"receiver type not found","repairs":1,"req_sha":"b47f91b5362cee7a","sym":"kms_test.go","ts":"2026-07-17T03:15:08.244237Z"}
+{"ms":3,"op":"patch","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/libs/crypto","reason":"declaration does not parse","repairs":0,"req_sha":"c60092a57cc973df","ts":"2026-07-17T03:15:17.54409Z"}
+{"ms":2344,"op":"patch","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/libs/crypto","reason":"declaration does not typecheck","repairs":0,"req_sha":"4bcac8d9e16083ea","ts":"2026-07-17T03:15:29.323239Z"}
+{"ms":16,"op":"query","outcome":"ok","req_sha":"1d70c2bcd9035e6d","sym":"go-kms-wrapping","ts":"2026-07-17T03:15:35.600585Z"}
+{"ms":18,"op":"query","outcome":"ok","req_sha":"0abd1972c428dfae","sym":"go-kms-wrapping/v2","ts":"2026-07-17T03:15:36.943212Z"}
+{"ms":17,"op":"query","outcome":"ok","req_sha":"87b7637e1af40fdd","sym":"package wrapping","ts":"2026-07-17T03:15:39.031956Z"}
+{"ms":6,"op":"patch","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/libs/crypto","reason":"declaration does not parse","repairs":0,"req_sha":"98c1ca5ec7acef2b","ts":"2026-07-17T03:16:01.056311Z"}
+{"ms":1735,"op":"patch","outcome":"accepted","pkg":"github.com/hashicorp/boundary/internal/libs/crypto","req_sha":"5bc635484d6539c8","ts":"2026-07-17T03:16:27.753666Z"}
+{"ms":2,"op":"inspect","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/libs/crypto","reason":"package not found","repairs":1,"req_sha":"4735785bc98b9d6e","sym":"NewDerivedReader","ts":"2026-07-17T03:16:43.904824Z"}
+{"ms":2,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/kms","req_sha":"06b3709f94d43a41","sym":"NewDerivedReader","ts":"2026-07-17T03:16:43.911522Z"}
+{"ms":2,"op":"inspect","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/libs/crypto","reason":"package not found","repairs":1,"req_sha":"4d400ef2f960ae93","sym":"TestNewDerivedReader","ts":"2026-07-17T03:16:43.917752Z"}
+{"ms":2,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/kms","req_sha":"45003c1614a7068f","sym":"TestNewDerivedReader","ts":"2026-07-17T03:16:43.923744Z"}
+{"ms":3,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-17T03:16:43.929722Z"}

@@ -1,0 +1,2 @@
+ M command.go
+?? opencode.json

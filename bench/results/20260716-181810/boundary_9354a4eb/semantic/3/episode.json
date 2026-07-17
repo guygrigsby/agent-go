@@ -1,0 +1,154 @@
+{
+ "agent_done": "2026-07-17T02:08:57.246085209Z",
+ "agent_started": "2026-07-17T02:04:47.016423Z",
+ "cache_read": 2075086,
+ "cache_write": 0,
+ "capped": false,
+ "failure_kind": "scored_fail",
+ "iter": 3,
+ "kind": "add-param",
+ "mode": "semantic",
+ "new_errors": null,
+ "op_mix": {
+  "query": {
+   "ok": 68,
+   "rejected": 0
+  },
+  "view": {
+   "ok": 8,
+   "rejected": 7
+  }
+ },
+ "pass": false,
+ "predicate": false,
+ "profile": "gpt-oss-20b-medium",
+ "prompt": "refactor(scheduler): Add statusThreshold parameter to job.Run\n\nSpecifically: add parameter _ time.Duration to censusJob.Run; add parameter _ time.Duration to TokenRevocationJob.Run; add parameter _ time.Duration to CredentialRenewalJob.Run; add parameter _ time.Duration to TokenRenewalJob.Run; add parameter _ time.Duration to CredentialCleanupJob.Run; add parameter _ time.Duration to CredentialRevocationJob.Run; add parameter _ time.Duration to CredentialStoreCleanupJob.Run; add parameter _ time.Duration to OrphanedHostCleanupJob.Run; add parameter _ time.Duration to SetSyncJob.Run; add parameter _ time.Duration to dataKeyVersionDestructionMonitorJob.Run; add parameter _ time.Duration to tableRewrappingJob.Run; add parameter _ time.Duration to purgeJob.Run; add parameter _ time.Duration to cleanerJob.Run; add parameter statusThreshold time.Duration to testJob.Run; add parameter _ time.Duration to rotateRootsJob.Run; add parameter ctx context.Context to upsertWorkerStorageBucketJob.Run; add parameter _ time.Duration to deleteTerminatedJob.Run; add parameter _ time.Duration to sessionConnectionCleanupJob.Run; add parameter _ time.Duration to snapshotJob.Run",
+ "rejects_total": 7,
+ "repairs_offered": 9,
+ "resends": 2,
+ "specs": [
+  {
+   "ok": false,
+   "param": "_ time.Duration",
+   "signature": "func(ctx context.Context) error",
+   "sym": "github.com/hashicorp/boundary/internal/census.censusJob.Run"
+  },
+  {
+   "ok": false,
+   "param": "_ time.Duration",
+   "signature": "func(ctx context.Context) error",
+   "sym": "github.com/hashicorp/boundary/internal/credential/vault.TokenRevocationJob.Run"
+  },
+  {
+   "ok": false,
+   "param": "_ time.Duration",
+   "signature": "func(ctx context.Context) error",
+   "sym": "github.com/hashicorp/boundary/internal/credential/vault.CredentialRenewalJob.Run"
+  },
+  {
+   "ok": false,
+   "param": "_ time.Duration",
+   "signature": "func(ctx context.Context) error",
+   "sym": "github.com/hashicorp/boundary/internal/credential/vault.TokenRenewalJob.Run"
+  },
+  {
+   "ok": false,
+   "param": "_ time.Duration",
+   "signature": "func(ctx context.Context) error",
+   "sym": "github.com/hashicorp/boundary/internal/credential/vault.CredentialCleanupJob.Run"
+  },
+  {
+   "ok": false,
+   "param": "_ time.Duration",
+   "signature": "func(ctx context.Context) error",
+   "sym": "github.com/hashicorp/boundary/internal/credential/vault.CredentialRevocationJob.Run"
+  },
+  {
+   "ok": false,
+   "param": "_ time.Duration",
+   "signature": "func(ctx context.Context) error",
+   "sym": "github.com/hashicorp/boundary/internal/credential/vault.CredentialStoreCleanupJob.Run"
+  },
+  {
+   "ok": false,
+   "param": "_ time.Duration",
+   "signature": "func(ctx context.Context) error",
+   "sym": "github.com/hashicorp/boundary/internal/host/plugin.OrphanedHostCleanupJob.Run"
+  },
+  {
+   "ok": false,
+   "param": "_ time.Duration",
+   "signature": "func(ctx context.Context) error",
+   "sym": "github.com/hashicorp/boundary/internal/host/plugin.SetSyncJob.Run"
+  },
+  {
+   "ok": false,
+   "param": "_ time.Duration",
+   "signature": "func(ctx context.Context) error",
+   "sym": "github.com/hashicorp/boundary/internal/kms/job.dataKeyVersionDestructionMonitorJob.Run"
+  },
+  {
+   "ok": false,
+   "param": "_ time.Duration",
+   "signature": "func(ctx context.Context) error",
+   "sym": "github.com/hashicorp/boundary/internal/kms/job.tableRewrappingJob.Run"
+  },
+  {
+   "ok": false,
+   "param": "_ time.Duration",
+   "signature": "func(ctx context.Context) error",
+   "sym": "github.com/hashicorp/boundary/internal/pagination/purge.purgeJob.Run"
+  },
+  {
+   "ok": false,
+   "param": "_ time.Duration",
+   "signature": "func(ctx context.Context) error",
+   "sym": "github.com/hashicorp/boundary/internal/scheduler/cleaner.cleanerJob.Run"
+  },
+  {
+   "ok": false,
+   "param": "statusThreshold time.Duration",
+   "signature": "func(ctx context.Context) error",
+   "sym": "github.com/hashicorp/boundary/internal/scheduler.testJob.Run"
+  },
+  {
+   "ok": false,
+   "param": "_ time.Duration",
+   "signature": "func(ctx context.Context) error",
+   "sym": "github.com/hashicorp/boundary/internal/server/job.rotateRootsJob.Run"
+  },
+  {
+   "ok": false,
+   "param": "ctx context.Context",
+   "signature": "func(_ context.Context) error",
+   "sym": "github.com/hashicorp/boundary/internal/server/job.upsertWorkerStorageBucketJob.Run"
+  },
+  {
+   "ok": false,
+   "param": "_ time.Duration",
+   "signature": "func(ctx context.Context) error",
+   "sym": "github.com/hashicorp/boundary/internal/session.deleteTerminatedJob.Run"
+  },
+  {
+   "ok": false,
+   "param": "_ time.Duration",
+   "signature": "func(ctx context.Context) error",
+   "sym": "github.com/hashicorp/boundary/internal/session.sessionConnectionCleanupJob.Run"
+  },
+  {
+   "ok": false,
+   "param": "_ time.Duration",
+   "signature": "func(ctx context.Context) error",
+   "sym": "github.com/hashicorp/boundary/internal/snapshot.snapshotJob.Run"
+  }
+ ],
+ "steps": 83,
+ "task": "boundary_9354a4eb",
+ "tests": false,
+ "tests_baseline": true,
+ "tokens_in": 55362,
+ "tokens_out": 9085,
+ "tokens_reasoning": 0,
+ "typecheck": true,
+ "wall_s": 250.229662209
+}

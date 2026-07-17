@@ -1,0 +1,73 @@
+{
+ "agent_done": "2026-07-17T03:24:25.398068125Z",
+ "agent_started": "2026-07-17T03:20:27.244749Z",
+ "cache_read": 741984,
+ "cache_write": 0,
+ "capped": false,
+ "failure_kind": "scored_fail",
+ "iter": 3,
+ "kind": "move",
+ "mode": "semantic",
+ "new_errors": null,
+ "op_mix": {
+  "help": {
+   "ok": 1,
+   "rejected": 0
+  },
+  "inspect": {
+   "ok": 0,
+   "rejected": 1
+  },
+  "patch": {
+   "ok": 1,
+   "rejected": 8
+  },
+  "query": {
+   "ok": 7,
+   "rejected": 4
+  },
+  "status": {
+   "ok": 1,
+   "rejected": 0
+  },
+  "view": {
+   "ok": 10,
+   "rejected": 0
+  }
+ },
+ "pass": false,
+ "predicate": false,
+ "profile": "gpt-oss-20b-medium",
+ "prompt": "refactor: Move functions from kms pkg to new libs/crypto pkg\n\nSpecifically: move NewDerivedReader from github.com/hashicorp/boundary/internal/kms to github.com/hashicorp/boundary/internal/libs/crypto; move TestNewDerivedReader from github.com/hashicorp/boundary/internal/kms to github.com/hashicorp/boundary/internal/libs/crypto",
+ "rejects_total": 13,
+ "repairs_offered": 6,
+ "resends": 3,
+ "specs": [
+  {
+   "in_target": false,
+   "ok": false,
+   "still_in_source": true,
+   "sym": "github.com/hashicorp/boundary/internal/kms.NewDerivedReader",
+   "to_name": "",
+   "to_pkg": "github.com/hashicorp/boundary/internal/libs/crypto"
+  },
+  {
+   "in_target": false,
+   "ok": false,
+   "still_in_source": false,
+   "sym": "github.com/hashicorp/boundary/internal/kms.TestNewDerivedReader",
+   "to_name": "",
+   "to_pkg": "github.com/hashicorp/boundary/internal/libs/crypto"
+  }
+ ],
+ "steps": 32,
+ "task": "boundary_dd2c3807",
+ "tests": false,
+ "tests_baseline": true,
+ "time_to_first_mutation_s": 230.785161,
+ "tokens_in": 52777,
+ "tokens_out": 13553,
+ "tokens_reasoning": 0,
+ "typecheck": true,
+ "wall_s": 238.153319125
+}

@@ -1,0 +1,46 @@
+{
+ "agent_done": "2026-07-17T01:15:16.196760291Z",
+ "agent_started": "2026-07-17T01:13:53.933031Z",
+ "cache_read": 282017,
+ "cache_write": 0,
+ "capped": false,
+ "failure_kind": "scored_fail",
+ "iter": 1,
+ "kind": "add-param",
+ "mode": "semantic",
+ "new_errors": null,
+ "op_mix": {
+  "query": {
+   "ok": 11,
+   "rejected": 2
+  },
+  "view": {
+   "ok": 5,
+   "rejected": 4
+  }
+ },
+ "pass": false,
+ "predicate": false,
+ "profile": "gpt-oss-20b-medium",
+ "prompt": "refact(target): Add context to RepositoryFactory constructor\n\nSpecifically: add parameter ctx context.Context to NewRepository",
+ "rejects_total": 6,
+ "repairs_offered": 9,
+ "resends": 2,
+ "specs": [
+  {
+   "ok": false,
+   "param": "ctx context.Context",
+   "signature": "func(r github.com/hashicorp/boundary/internal/db.Reader, w github.com/hashicorp/boundary/internal/db.Writer, kms *github.com/hashicorp/boundary/internal/kms.Kms, opt ...Option) (*Repository, error)",
+   "sym": "github.com/hashicorp/boundary/internal/target.NewRepository"
+  }
+ ],
+ "steps": 23,
+ "task": "boundary_bf1486f7",
+ "tests": false,
+ "tests_baseline": true,
+ "tokens_in": 20767,
+ "tokens_out": 3334,
+ "tokens_reasoning": 0,
+ "typecheck": true,
+ "wall_s": 82.263729291
+}

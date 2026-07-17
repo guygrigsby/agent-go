@@ -1,0 +1,25 @@
+{"ms":14,"op":"refs","outcome":"rejected","reason":"package not found","repairs":1,"req_sha":"ef3b44d6002a79fd","sym":"Command.IsHelpCommand","ts":"2026-07-17T03:42:07.50914Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-17T03:42:07.528205Z"}
+{"ms":41,"op":"query","outcome":"ok","req_sha":"e724b3c860add371","sym":"IsHelpCommand","ts":"2026-07-17T03:42:21.97768Z"}
+{"ms":0,"op":"query","outcome":"ok","req_sha":"8cddbccd581f3bac","sym":"IsHelp","ts":"2026-07-17T03:42:23.151331Z"}
+{"ms":0,"op":"query","outcome":"ok","req_sha":"73178407ee0cbe40","sym":"HelpCommand","ts":"2026-07-17T03:42:24.256907Z"}
+{"ms":0,"op":"query","outcome":"ok","req_sha":"328db0a2b4a4778d","sym":"HelpTopic","ts":"2026-07-17T03:42:25.308828Z"}
+{"ms":0,"op":"query","outcome":"ok","req_sha":"904bf7d3e644ecaf","sym":"IsHelpCommand(","ts":"2026-07-17T03:42:26.518328Z"}
+{"ms":0,"op":"query","outcome":"ok","req_sha":"1a9de5e7426023a5","sym":"isHelpCommand","ts":"2026-07-17T03:42:27.874884Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-17T03:42:28.717492Z"}
+{"ms":0,"op":"view","outcome":"rejected","reason":"package not found","repairs":1,"req_sha":"039f8798716b68c0","sym":"go.mod","ts":"2026-07-17T03:42:29.896987Z"}
+{"ms":0,"op":"query","outcome":"rejected","reason":"empty query","repairs":0,"req_sha":"428322c895a77852","ts":"2026-07-17T03:42:31.586962Z"}
+{"ms":0,"op":"view","outcome":"rejected","reason":"package not found","repairs":1,"req_sha":"b1040a3dcaca1c90","sym":"cobra/go.mod","ts":"2026-07-17T03:42:32.89408Z"}
+{"ms":0,"op":"view","outcome":"rejected","reason":"package not found","repairs":1,"req_sha":"a8097d755d0bc3b5","sym":"go.work","ts":"2026-07-17T03:42:34.328215Z"}
+{"ms":0,"op":"query","outcome":"ok","req_sha":"82d9523fb708957b","sym":"help.go","ts":"2026-07-17T03:42:37.969483Z"}
+{"ms":0,"op":"view","outcome":"rejected","reason":"package not found","repairs":1,"req_sha":"039f8798716b68c0","sym":"go.mod","ts":"2026-07-17T03:42:39.09727Z"}
+{"ms":0,"op":"query","outcome":"ok","req_sha":"d7f16e57bc59fc7b","sym":"go.mod","ts":"2026-07-17T03:42:40.047962Z"}
+{"ms":0,"op":"view","outcome":"rejected","reason":"package not found","repairs":1,"req_sha":"0caf7118dcb2f80a","sym":"cobra/cmd_help.go","ts":"2026-07-17T03:42:45.045191Z"}
+{"ms":0,"op":"query","outcome":"ok","req_sha":"8a88bb969f4e0d68","sym":"github.com/spf13/cobra","ts":"2026-07-17T03:42:46.555895Z"}
+{"ms":0,"op":"query","outcome":"ok","req_sha":"e724b3c860add371","sym":"IsHelpCommand","ts":"2026-07-17T03:42:47.711819Z"}
+{"ms":0,"op":"query","outcome":"ok","req_sha":"7e3e4685d99ffc22","sym":"AdditionalHelpTopicCommand","ts":"2026-07-17T03:42:48.83548Z"}
+{"ms":16,"op":"test","outcome":"rejected","reason":"tests could not run","repairs":0,"req_sha":"12ef5d31bdb89522","ts":"2026-07-17T03:42:51.224681Z"}
+{"ms":0,"op":"query","outcome":"ok","req_sha":"abd6e34042149d1b","sym":"module","ts":"2026-07-17T03:42:53.846748Z"}
+{"ms":0,"op":"refs","outcome":"rejected","reason":"package not found","repairs":1,"req_sha":"ef3b44d6002a79fd","sym":"Command.IsHelpCommand","ts":"2026-07-17T03:42:56.562993Z"}
+{"ms":0,"op":"refs","outcome":"rejected","reason":"package not found","repairs":1,"req_sha":"f56d81dee418f382","sym":"Command.IsAdditionalHelpTopicCommand","ts":"2026-07-17T03:42:56.56655Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-17T03:42:56.570005Z"}

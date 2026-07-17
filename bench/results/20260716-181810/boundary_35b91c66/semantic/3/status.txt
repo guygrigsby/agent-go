@@ -1,0 +1,11 @@
+ M internal/cmd/config/config.go
+ M internal/cmd/config/config_load_test.go
+ M internal/cmd/config/config_test.go
+ M internal/daemon/controller/rate_limiter.go
+ M internal/daemon/controller/rate_limiter_test.go
+ M internal/daemon/controller/testing.go
+ M internal/ratelimit/config.go
+ M internal/ratelimit/config_test.go
+?? internal/auth/oidc/tmp-all-events-Test_StartAuth_to_Callback2759171333
+?? internal/auth/oidc/tmp-errors-Test_StartAuth_to_Callback4232479967
+?? opencode.json

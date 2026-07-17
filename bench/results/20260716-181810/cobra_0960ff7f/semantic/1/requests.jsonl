@@ -1,0 +1,35 @@
+{"ms":56,"op":"refs","outcome":"rejected","reason":"package not found","repairs":1,"req_sha":"ef3b44d6002a79fd","sym":"Command.IsHelpCommand","ts":"2026-07-17T03:42:57.077803Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-17T03:42:57.138358Z"}
+{"ms":30,"op":"query","outcome":"ok","req_sha":"e724b3c860add371","sym":"IsHelpCommand","ts":"2026-07-17T03:43:11.26594Z"}
+{"ms":0,"op":"query","outcome":"ok","req_sha":"e724b3c860add371","sym":"IsHelpCommand","ts":"2026-07-17T03:43:12.334663Z"}
+{"ms":0,"op":"query","outcome":"ok","req_sha":"73178407ee0cbe40","sym":"HelpCommand","ts":"2026-07-17T03:43:13.320458Z"}
+{"ms":0,"op":"query","outcome":"ok","req_sha":"328db0a2b4a4778d","sym":"HelpTopic","ts":"2026-07-17T03:43:14.315949Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-17T03:43:15.113473Z"}
+{"ms":16,"op":"test","outcome":"rejected","reason":"tests could not run","repairs":0,"req_sha":"12ef5d31bdb89522","ts":"2026-07-17T03:43:16.179826Z"}
+{"ms":0,"op":"view","outcome":"rejected","reason":"package not found","repairs":0,"req_sha":"b8300cf0225124cd","ts":"2026-07-17T03:43:17.247473Z"}
+{"ms":0,"op":"query","outcome":"ok","req_sha":"7ebe37ddd501b418","sym":".","ts":"2026-07-17T03:43:18.048613Z"}
+{"ms":0,"op":"query","outcome":"ok","req_sha":"f3689874363572b7","sym":"helpCommand","ts":"2026-07-17T03:43:21.024628Z"}
+{"ms":0,"op":"query","outcome":"ok","req_sha":"c764b326155e99b0","sym":"helpTopic","ts":"2026-07-17T03:43:22.182262Z"}
+{"ms":0,"op":"query","outcome":"ok","req_sha":"96dee7e54ff88064","sym":"cobra","ts":"2026-07-17T03:43:24.107436Z"}
+{"ms":0,"op":"query","outcome":"rejected","pkg":".","reason":"package not found","repairs":0,"req_sha":"b2aea22f1491adf8","ts":"2026-07-17T03:43:25.137789Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"github.com/guygrigsby/cobra","reason":"package not found","repairs":1,"req_sha":"8bc00f26e4aec6a0","ts":"2026-07-17T03:43:26.20606Z"}
+{"ms":0,"op":"view","outcome":"rejected","pkg":"github.com/guygrigsby/cobra/cmd","reason":"package not found","repairs":1,"req_sha":"503c2736a7471633","ts":"2026-07-17T03:43:27.970743Z"}
+{"ms":0,"op":"query","outcome":"ok","req_sha":"abd6e34042149d1b","sym":"module","ts":"2026-07-17T03:43:29.783572Z"}
+{"ms":16,"op":"test","outcome":"rejected","pkg":".","reason":"tests could not run","repairs":0,"req_sha":"8385de0810029d03","ts":"2026-07-17T03:43:30.891283Z"}
+{"ms":0,"op":"query","outcome":"ok","req_sha":"c9346e382639e997","sym":"cobra.IsHelpCommand","ts":"2026-07-17T03:43:34.009832Z"}
+{"ms":0,"op":"query","outcome":"ok","req_sha":"c9346e382639e997","sym":"cobra.IsHelpCommand","ts":"2026-07-17T03:43:34.858614Z"}
+{"ms":0,"op":"query","outcome":"ok","req_sha":"dc273b597cb4c1c5","sym":"func IsHelpCommand","ts":"2026-07-17T03:43:35.875192Z"}
+{"ms":16,"op":"test","outcome":"rejected","pkg":"../","reason":"tests could not run","repairs":0,"req_sha":"d6f714eee1eec9dc","ts":"2026-07-17T03:43:40.273653Z"}
+{"ms":0,"op":"rename","outcome":"rejected","reason":"package not found","repairs":1,"req_sha":"5b6ffc58eed3a856","sym":"IsHelpCommand","ts":"2026-07-17T03:43:42.942269Z"}
+{"ms":0,"op":"rename","outcome":"rejected","pkg":".","reason":"package not found","repairs":1,"req_sha":"cec6f33c399d2941","sym":"IsHelpCommand","ts":"2026-07-17T03:43:44.095106Z"}
+{"ms":0,"op":"rename","outcome":"rejected","pkg":"github.com/guygrigsby/cobra","reason":"package not found","repairs":1,"req_sha":"34bb6e6df83adfbf","sym":"IsHelpCommand","ts":"2026-07-17T03:43:52.393993Z"}
+{"ms":0,"op":"rename","outcome":"rejected","pkg":"cobra","reason":"package not found","repairs":1,"req_sha":"81a8de7b6bf5c688","sym":"IsHelpCommand","ts":"2026-07-17T03:43:53.726679Z"}
+{"ms":0,"op":"query","outcome":"ok","req_sha":"a4459b323909ba80","sym":"func main","ts":"2026-07-17T03:43:54.765446Z"}
+{"ms":0,"op":"query","outcome":"ok","req_sha":"1a9de5e7426023a5","sym":"isHelpCommand","ts":"2026-07-17T03:43:59.60139Z"}
+{"ms":0,"op":"query","outcome":"ok","pkg":"internal","req_sha":"3446e2b84c078b57","sym":"IsHelpCommand","ts":"2026-07-17T03:44:03.240333Z"}
+{"ms":0,"op":"query","outcome":"ok","pkg":"internal","req_sha":"2bf282a68ef04e15","sym":"HelpCommand","ts":"2026-07-17T03:44:04.131028Z"}
+{"ms":0,"op":"query","outcome":"ok","pkg":"cmd","req_sha":"576526aa2cc778e2","sym":"IsHelpCommand","ts":"2026-07-17T03:44:05.127653Z"}
+{"ms":0,"op":"upsert","outcome":"rejected","reason":"declaration does not parse","repairs":0,"req_sha":"cf6a01b37d635669","ts":"2026-07-17T03:44:08.11341Z"}
+{"ms":0,"op":"refs","outcome":"rejected","reason":"package not found","repairs":1,"req_sha":"ef3b44d6002a79fd","sym":"Command.IsHelpCommand","ts":"2026-07-17T03:44:10.499697Z"}
+{"ms":0,"op":"refs","outcome":"rejected","reason":"package not found","repairs":1,"req_sha":"f56d81dee418f382","sym":"Command.IsAdditionalHelpTopicCommand","ts":"2026-07-17T03:44:10.50315Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-17T03:44:10.506504Z"}

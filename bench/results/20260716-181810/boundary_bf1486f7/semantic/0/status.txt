@@ -1,0 +1,23 @@
+ M internal/auth/oidc/service_callback_test.go
+ M internal/auth/oidc/service_token_request_test.go
+ M internal/authtoken/repository.go
+ M internal/authtoken/repository_test.go
+ M internal/authtoken/testing.go
+ M internal/daemon/controller/auth/auth_test.go
+ M internal/daemon/controller/common/scopeids/scope_ids_test.go
+ M internal/daemon/controller/controller.go
+ M internal/daemon/controller/handlers/authmethods/authmethod_service_test.go
+ M internal/daemon/controller/handlers/authmethods/oidc_test.go
+ M internal/daemon/controller/handlers/authmethods/password_test.go
+ M internal/daemon/controller/handlers/authtokens/authtoken_service_test.go
+ M internal/daemon/controller/handlers/sessions/session_list_benchmarks_test.go
+ M internal/daemon/controller/handlers/sessions/session_service_test.go
+ M internal/daemon/controller/handlers/targets/tcp/target_service_test.go
+ M internal/daemon/controller/interceptor_test.go
+ M internal/session/repository_session_test.go
+ M internal/session/service_authorize_connection_test.go
+ M internal/session/service_close_connections_test.go
+ M internal/session/testing.go
+ M internal/target/repository.go
+ M testing/dbtest/session_list_benchmarks_dump_generation_test.go
+?? opencode.json

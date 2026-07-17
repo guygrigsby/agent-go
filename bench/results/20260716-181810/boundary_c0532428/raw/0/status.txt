@@ -1,0 +1,3 @@
+ M internal/cmd/commands/dev/dev.go
+ M internal/cmd/config/config.go
+?? opencode.json
