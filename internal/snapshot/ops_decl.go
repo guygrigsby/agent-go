@@ -56,8 +56,12 @@ func (upsertDeclOp) name() string { return "upsert_decl" }
 
 func (upsertDeclOp) apply(ctx *patchCtx, raw json.RawMessage) *Reject {
 	var a struct {
-		Pkg  string `json:"pkg"`
-		Text string `json:"text"`
+		Pkg     string `json:"pkg"`
+		Text    string `json:"text"`
+		Imports []struct {
+			Path string `json:"path"`
+			Name string `json:"name"`
+		} `json:"imports"`
 	}
 	if rej := decodeOpArgs(raw, &a); rej != nil {
 		return rej
@@ -66,6 +70,23 @@ func (upsertDeclOp) apply(ctx *patchCtx, raw json.RawMessage) *Reject {
 	name, sym, rej := parseDeclText(a.Text)
 	if rej != nil {
 		return rej
+	}
+	// A declared import block covers what goimports cannot infer (an
+	// aliased import, an ambiguous package name); on the new-file paths it
+	// rides in the source, on the edit path it becomes import edits.
+	importBlock := ""
+	if len(a.Imports) > 0 {
+		var b strings.Builder
+		b.WriteString("import (\n")
+		for _, imp := range a.Imports {
+			b.WriteString("\t")
+			if imp.Name != "" {
+				b.WriteString(imp.Name + " ")
+			}
+			b.WriteString("\"" + imp.Path + "\"\n")
+		}
+		b.WriteString(")\n\n")
+		importBlock = b.String()
 	}
 	if ctx.s.primary(pkg) == nil {
 		// Brand-new package: mirror upsertNewPackage (upsert.go) inside the
@@ -85,16 +106,16 @@ func (upsertDeclOp) apply(ctx *patchCtx, raw json.RawMessage) *Reject {
 		if _, err := os.Stat(file); err == nil {
 			return &Reject{Reason: "package exists but did not load", Detail: pkg}
 		}
-		src := "package " + filepath.Base(rel) + "\n\n" + strings.TrimSpace(a.Text) + "\n"
+		src := "package " + filepath.Base(rel) + "\n\n" + importBlock + strings.TrimSpace(a.Text) + "\n"
 		return createFileInPatch(ctx, pkg, file, src, sym)
 	}
-	file, start, end, _, needsCreate, rej := upsertDeclEdit(ctx.s, pkg, name, sym)
+	file, start, end, _, needsCreate, rej := upsertDeclEdit(ctx.s, pkg, name, sym, testFuncDecl(a.Text))
 	if rej != nil {
 		return rej
 	}
 	if needsCreate {
 		p := ctx.s.primary(pkg)
-		src := "package " + p.Types.Name() + "\n\n" + strings.TrimSpace(a.Text) + "\n"
+		src := "package " + p.Types.Name() + "\n\n" + importBlock + strings.TrimSpace(a.Text) + "\n"
 		return createFileInPatch(ctx, pkg, file, src, sym)
 	}
 	ctx.addBaseline(preflightBaseline(ctx.s, file, pkg))
@@ -103,7 +124,26 @@ func (upsertDeclOp) apply(ctx *patchCtx, raw json.RawMessage) *Reject {
 		prefix = "\n"
 	}
 	text := prefix + strings.TrimSpace(a.Text) + "\n"
-	if rej := ctx.applyDeclEdits([]edit{{file, start, end - start, text}}); rej != nil {
+	edits := []edit{{file, start, end - start, text}}
+	if len(a.Imports) > 0 {
+		owner := ctx.s.primary(pkg)
+		for _, v := range ctx.s.pkgs {
+			if v.PkgPath != pkg || v.Types == nil || strings.HasSuffix(v.ID, ".test") {
+				continue
+			}
+			for _, f := range v.Syntax {
+				if ctx.s.fset.Position(f.Pos()).Filename == file {
+					owner = v
+				}
+			}
+		}
+		for _, imp := range a.Imports {
+			if e := importEdit(ctx.s, owner, file, imp.Path, imp.Name); e != nil {
+				edits = append(edits, *e)
+			}
+		}
+	}
+	if rej := ctx.applyDeclEdits(edits); rej != nil {
 		return rej
 	}
 	ctx.addAffected(pkg)

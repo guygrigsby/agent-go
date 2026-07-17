@@ -6,7 +6,7 @@ import "encoding/json"
 // whenever an op is added, removed, or its argument shape changes, so a
 // caller can detect a stale cached copy instead of guessing from the op
 // list's length.
-const catalogVersion = "v7"
+const catalogVersion = "v8"
 
 // helpArg documents one op argument's wire shape.
 type helpArg struct {
@@ -103,9 +103,10 @@ var opCatalog = []helpOp{
 		Args: []helpArg{
 			{"pkg", "string", false, "package import path; defaults to the envelope's pkg"},
 			{"text", "string", true, "complete declaration source, including doc comment if any; the symbol name is parsed from it"},
+			{"imports", "[]{path,name}", false, "imports the declaration needs that goimports cannot infer: an aliased import or an ambiguous package name; name is the alias, empty for the default"},
 		},
 		Example: json.RawMessage(`[{"op":"upsert_decl","pkg":"demo/lib","text":"// Double doubles v.\nfunc Double(v int) int {\n\treturn v + v\n}"}]`),
-		Notes:   "add or replace a whole top-level declaration; goimports runs in the loop. New declarations land in agent.go, created on demand — including a brand-new file or package mid-patch, so one atomic patch can create a package and move declarations into it",
+		Notes:   "add or replace a whole top-level declaration; goimports runs in the loop. Replacement finds declarations in _test.go files too, and a new Test/Benchmark/Example/Fuzz func lands in agent_test.go so it actually runs. Other new declarations land in agent.go, created on demand — including a brand-new file or package mid-patch, so one atomic patch can create a package and move declarations into it",
 	},
 	{
 		Op: "delete_decl",

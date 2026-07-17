@@ -95,7 +95,7 @@ op instead of at the top level.
 
 | op | args | notes |
 |---|---|---|
-| `upsert_decl` | pkg, text | add or replace a whole declaration; goimports in the loop; creates packages under the module on demand |
+| `upsert_decl` | pkg, text, imports? | add or replace a whole declaration; goimports in the loop, `imports` names what it cannot infer (aliases, ambiguous names); replaces into _test.go files, new test funcs land in one; creates packages under the module on demand |
 | `delete_decl` | pkg, sym | rejected while references remain (listed) |
 | `move_decl` | pkg, sym, to_pkg, create_pkg? | rewrites references and imports, requalifying call sites; the declaration's own imports travel with it, aliases included; test decls land in a `_test.go`, created on demand. `create_pkg` creates a missing module-local target (opt in; a bare miss rejects and offers the flag as a repair). a type moves with its whole method set; one spec of a grouped block extracts standalone. v1 ceilings: the declaration must be self-contained (no uses of its old package's other top-level symbols); grouped specs may not lean on iota or inherited values; each rejects naming the blocker |
 | `rename` | pkg, sym, to | proves post-splice resolution; rejects capture and collision |

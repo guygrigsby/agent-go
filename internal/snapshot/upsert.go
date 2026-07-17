@@ -25,21 +25,58 @@ import (
 // fallback mid-patch. The direct UpsertDecl method still handles it, same
 // as it always has; needsCreate is a documented v1 ceiling for the
 // composable op only.
-func upsertDeclEdit(s *Snapshot, pkgPath, name, sym string) (file string, start, end int, action string, needsCreate bool, rej *Reject) {
+func upsertDeclEdit(s *Snapshot, pkgPath, name, sym string, testDecl bool) (file string, start, end int, action string, needsCreate bool, rej *Reject) {
 	p := s.primary(pkgPath)
 	if p == nil {
 		return "", 0, 0, "", false, &Reject{Reason: "package not found", Detail: pkgPath,
 			DidYouMean: s.suggestPackages(pkgPath)}
 	}
+	// Primary first so non-test decls resolve to their primary file, then
+	// every other variant: a decl living in a _test.go file is only in the
+	// test variant's syntax, and missing it would append a duplicate.
 	if file, start, end := s.findDeclRange(p, name, sym); file != "" {
 		return file, start, end, "replaced", false, nil
 	}
-	agentFile := filepath.Join(filepath.Dir(p.Fset.Position(p.Syntax[0].Pos()).Filename), "agent.go")
+	for _, v := range s.pkgs {
+		if v == p || v.PkgPath != pkgPath || v.Types == nil || strings.HasSuffix(v.ID, ".test") {
+			continue
+		}
+		if file, start, end := s.findDeclRange(v, name, sym); file != "" {
+			return file, start, end, "replaced", false, nil
+		}
+	}
+	// A new test func lands in a _test.go file, mirroring move_decl's
+	// landing rule: a Test func in a non-test file compiles but never runs.
+	base := "agent.go"
+	if testDecl {
+		base = "agent_test.go"
+	}
+	agentFile := filepath.Join(filepath.Dir(p.Fset.Position(p.Syntax[0].Pos()).Filename), base)
 	b, err := os.ReadFile(agentFile)
 	if err != nil {
 		return agentFile, 0, 0, "added", true, nil
 	}
 	return agentFile, len(b), len(b), "added", false, nil
+}
+
+// testFuncDecl reports whether text declares a func the go test runner
+// owns (Test/Benchmark/Example/Fuzz), which must live in a _test.go file
+// to actually execute.
+func testFuncDecl(text string) bool {
+	f, err := parser.ParseFile(token.NewFileSet(), "decl.go", "package _p\n\n"+text, parser.SkipObjectResolution)
+	if err != nil || len(f.Decls) != 1 {
+		return false
+	}
+	d, ok := f.Decls[0].(*ast.FuncDecl)
+	if !ok || d.Recv != nil {
+		return false
+	}
+	for _, prefix := range []string{"Test", "Benchmark", "Example", "Fuzz"} {
+		if strings.HasPrefix(d.Name.Name, prefix) {
+			return true
+		}
+	}
+	return false
 }
 
 // UpsertDecl adds or replaces one top-level declaration from source text.
@@ -68,7 +105,7 @@ func (s *Snapshot) UpsertDecl(pkgPath, text string) (map[string]any, error) {
 		return s.upsertNewPackage(pkgPath, text, sym, ms)
 	}
 
-	file, start, end, action, needsCreate, rej := upsertDeclEdit(s, pkgPath, name, sym)
+	file, start, end, action, needsCreate, rej := upsertDeclEdit(s, pkgPath, name, sym, testFuncDecl(text))
 	if rej != nil {
 		return nil, rej
 	}

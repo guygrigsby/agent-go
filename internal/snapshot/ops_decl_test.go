@@ -502,3 +502,84 @@ func TestRemoveFieldRejectsNonField(t *testing.T) {
 		t.Fatalf("got %v", err)
 	}
 }
+
+// upsert_decl must find and replace a declaration living in a _test.go
+// file: moved test funcs land in test files, and a recipe upserting their
+// rewritten bodies would otherwise append a duplicate to agent.go.
+func TestPatchUpsertDeclReplacesTestFileDecl(t *testing.T) {
+	s := demo(t)
+	res, err := s.Patch([]byte(`{"pkg":"demo/sig",
+		"ops":[{"op":"upsert_decl","text":"func TestSelfContained(t *testing.T) {\n\tif 2+2 != 4 {\n\t\tt.Fatal(\"arithmetic broke harder\")\n\t}\n}"}]}`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if res["status"] != "accepted" {
+		t.Fatalf("got %v", res)
+	}
+	b, _ := os.ReadFile(filepath.Join(s.dir, "sig", "sig_test.go"))
+	if !strings.Contains(string(b), "arithmetic broke harder") {
+		t.Errorf("test-file decl not replaced in place:\n%s", b)
+	}
+	if strings.Contains(string(b), "if 1+1 != 2") {
+		t.Errorf("old body still present:\n%s", b)
+	}
+	if b, err := os.ReadFile(filepath.Join(s.dir, "sig", "agent.go")); err == nil && strings.Contains(string(b), "TestSelfContained") {
+		t.Errorf("duplicate appended to agent.go:\n%s", b)
+	}
+}
+
+// A brand-new Test func lands in a _test.go file, mirroring move_decl's
+// landing rule: a test in a non-test file compiles but never runs, which
+// reads as green while executing nothing.
+func TestPatchUpsertDeclNewTestFuncLandsInTestFile(t *testing.T) {
+	s := demo(t)
+	res, err := s.Patch([]byte(`{"pkg":"demo/sig",
+		"ops":[{"op":"upsert_decl","text":"func TestShoutUpper(t *testing.T) {\n\tif Shout(\"a\") != \"A\" {\n\t\tt.Fatal(\"not shouted\")\n\t}\n}"}]}`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if res["status"] != "accepted" {
+		t.Fatalf("got %v", res)
+	}
+	found := false
+	for _, f := range []string{"sig_test.go", "agent_test.go"} {
+		if b, err := os.ReadFile(filepath.Join(s.dir, "sig", f)); err == nil && strings.Contains(string(b), "TestShoutUpper") {
+			found = true
+		}
+	}
+	if !found {
+		t.Error("new test func not in a _test.go file")
+	}
+	if b, err := os.ReadFile(filepath.Join(s.dir, "sig", "agent.go")); err == nil && strings.Contains(string(b), "TestShoutUpper") {
+		t.Errorf("test func landed in non-test agent.go:\n%s", b)
+	}
+}
+
+// upsert_decl carries explicitly named imports into the landing file:
+// goimports cannot infer an aliased import (stderrors "errors"), and no
+// other op expresses one (boundary 687dd1bd's rewritten Run body).
+func TestPatchUpsertDeclCarriesImports(t *testing.T) {
+	s := demo(t)
+	res, err := s.Patch([]byte(`{"pkg":"demo/sig",
+		"ops":[{"op":"upsert_decl","text":"func WrapEOF() error {\n\treturn stde.New(\"eof\")\n}",
+		        "imports":[{"path":"errors","name":"stde"}]}]}`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if res["status"] != "accepted" {
+		t.Fatalf("got %v", res)
+	}
+	var landed []byte
+	for _, f := range []string{"agent.go", "sig.go", "imports.go", "consts.go"} {
+		if b, err := os.ReadFile(filepath.Join(s.dir, "sig", f)); err == nil && strings.Contains(string(b), "WrapEOF") {
+			landed = b
+			break
+		}
+	}
+	if landed == nil {
+		t.Fatal("WrapEOF landed nowhere")
+	}
+	if !strings.Contains(string(landed), `stde "errors"`) {
+		t.Errorf("aliased import not carried:\n%s", landed)
+	}
+}
