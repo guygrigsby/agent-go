@@ -1,5 +1,5 @@
 #!/bin/sh
-# ago installer: curl -fsSL https://raw.githubusercontent.com/guygrigsby/agent-go/main/install.sh | sh
+# ago installer: curl -fsSL https://ago.aeryx.ai/install.sh | sh
 # Downloads the latest release binary for this OS/arch, installs it to
 # ~/.local/bin (or $AGO_INSTALL_DIR), and installs the agent skill.
 set -eu
