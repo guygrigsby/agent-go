@@ -433,20 +433,75 @@ func runOracle(c config, wt string, t Manifest) (string, error) {
 				queue = append(queue, m)
 			}
 		}
-		for bc, syms := range batches {
+		cells := make([]cell, 0, len(batches))
+		for bc := range batches {
+			cells = append(cells, bc)
+		}
+		sort.Slice(cells, func(i, j int) bool {
+			return cells[i].pkg+cells[i].toPkg < cells[j].pkg+cells[j].toPkg
+		})
+		submit := func(env map[string]any) map[string]any {
+			body, _ := json.Marshal(env)
+			out := agoJSONStdin(c, wt, string(body), "patch", "--body-file", "-")
+			rec, _ := json.Marshal(map[string]any{"call": []string{"patch", string(body)}, "res": out})
+			b.Write(rec)
+			b.WriteByte('\n')
+			return out
+		}
+		moveOp := func(bc cell) map[string]any {
 			// create_pkg unconditionally: the oracle replays ground truth,
 			// and the commit either created the target package or it
 			// already existed (the flag is a no-op then).
+			syms := batches[bc]
 			sort.Strings(syms)
-			env, _ := json.Marshal(map[string]any{"pkg": bc.pkg, "ops": []map[string]any{
-				{"op": "move_decl", "syms": syms, "to_pkg": bc.toPkg, "create_pkg": true}}})
-			out := agoJSONStdin(c, wt, string(env), "patch", "--body-file", "-")
-			rec, _ := json.Marshal(map[string]any{"call": []string{"patch", string(env)}, "res": out})
-			b.Write(rec)
-			b.WriteByte('\n')
-			if status, _ := out["status"].(string); status != "accepted" {
+			return map[string]any{"op": "move_decl", "pkg": bc.pkg, "syms": syms,
+				"to_pkg": bc.toPkg, "create_pkg": true}
+		}
+		for i, bc := range cells {
+			out := submit(map[string]any{"pkg": bc.pkg, "ops": []map[string]any{moveOp(bc)}})
+			if status, _ := out["status"].(string); status == "accepted" {
+				continue
+			} else if len(queue) > 0 {
+				// v1 ceiling: reconcile and compound (renamed) movers do not
+				// mix; the rename would fight the post-state upserts.
 				return b.String(), fmt.Errorf("oracle batched move %s -> %s: %v", bc.pkg, bc.toPkg, out)
 			}
+			// The pure move rejected, so the commit authored more than a
+			// relocation (a dropped parameter, a new helper, an import the
+			// target may not hold). Retry as ONE atomic patch: any leading
+			// file deletes, the remaining batched moves (minus movers those
+			// deletes excised — their rewritten post-state upserts instead),
+			// then the commit's decl-level rewrites; the end-of-list
+			// typecheck is the arbiter. Cells accepted before this one keep
+			// their plain moves; the plan only shapes what is still pending.
+			plan, rerr := reconcileOps(filepath.Join(c.scratch, t.Repo), t.SHA, moduleOf(wt), t.Moves)
+			if rerr != nil {
+				return b.String(), fmt.Errorf("oracle reconcile %s: %w", t.SHA[:8], rerr)
+			}
+			for _, n := range plan.notes {
+				fmt.Fprintf(&b, `{"reconcile_note":%q}`+"\n", n)
+			}
+			ops := append([]map[string]any{}, plan.preOps...)
+			for _, rc := range cells[i:] {
+				syms := make([]string, 0, len(batches[rc]))
+				for _, sym := range batches[rc] {
+					if !plan.dropMovers[rc.pkg+"|"+sym] {
+						syms = append(syms, sym)
+					}
+				}
+				if len(syms) == 0 {
+					continue
+				}
+				sort.Strings(syms)
+				ops = append(ops, map[string]any{"op": "move_decl", "pkg": rc.pkg,
+					"syms": syms, "to_pkg": rc.toPkg, "create_pkg": true})
+			}
+			ops = append(ops, plan.ops...)
+			out = submit(map[string]any{"pkg": bc.pkg, "ops": ops})
+			if status, _ := out["status"].(string); status != "accepted" {
+				return b.String(), fmt.Errorf("oracle move+reconcile %s -> %s: %v", bc.pkg, bc.toPkg, out)
+			}
+			break
 		}
 		deferred := 0
 		for len(queue) > 0 {
