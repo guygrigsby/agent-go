@@ -1,274 +1,276 @@
 [
- {
-  "repo": "traefik",
-  "sha": "b966215e6c65d36d4a568c78981ef24a90918c43",
-  "kind": "move",
-  "prompt": "Move origin fields capture to service level",
-  "go_files": 5,
-  "needs_review": "no declaration changed packages in the diff"
- },
- {
-  "repo": "traefik",
-  "sha": "5026ca97d0266e2ad260947cfb22c3f5453fa673",
-  "kind": "move",
-  "prompt": "Move snicheck to ctx instead of simulated routing",
-  "go_files": 18,
-  "needs_review": "no declaration changed packages in the diff"
- },
- {
-  "repo": "boundary",
-  "sha": "224f8d2d4ece315b14845518355c5fb8f474566a",
-  "kind": "move",
-  "prompt": "refact(controller): Move Target Repository Factory to the target package",
-  "go_files": 4,
-  "needs_review": "no declaration changed packages in the diff"
- },
- {
-  "repo": "boundary",
-  "sha": "051d337b2183d66e004a33945bf0923b519980a3",
-  "kind": "move",
-  "prompt": "refact(e2e): Move logging to helper function",
-  "go_files": 5,
-  "needs_review": "no declaration changed packages in the diff"
- },
- {
-  "repo": "boundary",
-  "sha": "bf9dbd818eaf1b70757781becb575e21b15482e7",
-  "kind": "move",
-  "prompt": "chore(cmd): Remove IntVar and move to Int64Var",
-  "go_files": 6,
-  "needs_review": "no declaration changed packages in the diff"
- },
- {
-  "repo": "boundary",
-  "sha": "3482f91a179fb4f6ff1fd1a41be0228bc169763f",
-  "kind": "move",
-  "prompt": "refactor(connections): Move connect connect to the Connection repo",
-  "go_files": 6,
-  "needs_review": "no declaration changed packages in the diff"
- },
- {
-  "repo": "boundary",
-  "sha": "185d8b392d65f35062b150123c0df30983758003",
-  "kind": "move",
-  "prompt": "refact(auth): Move subtype registration into global registry",
-  "go_files": 7,
-  "needs_review": "no declaration changed packages in the diff"
- },
- {
-  "repo": "boundary",
-  "sha": "687dd1bda62ae18f9d3c6d97f04bfed9af4aae16",
-  "kind": "move",
-  "prompt": "Move the session cleanup job logic into the session package.\n\nSpecifically: move TestSessionConnectionCleanupJob from github.com/hashicorp/boundary/internal/servers/controller to github.com/hashicorp/boundary/internal/session; move TestSessionConnectionCleanupJobNewJobErr from github.com/hashicorp/boundary/internal/servers/controller to github.com/hashicorp/boundary/internal/session; move newSessionConnectionCleanupJob from github.com/hashicorp/boundary/internal/servers/controller to github.com/hashicorp/boundary/internal/session; move sessionConnectionCleanupJob from github.com/hashicorp/boundary/internal/servers/controller to github.com/hashicorp/boundary/internal/session",
-  "go_files": 8,
-  "moves": [
-   {
-    "pkg": "github.com/hashicorp/boundary/internal/servers/controller",
-    "sym": "TestSessionConnectionCleanupJob",
-    "to_pkg": "github.com/hashicorp/boundary/internal/session"
-   },
-   {
-    "pkg": "github.com/hashicorp/boundary/internal/servers/controller",
-    "sym": "TestSessionConnectionCleanupJobNewJobErr",
-    "to_pkg": "github.com/hashicorp/boundary/internal/session"
-   },
-   {
-    "pkg": "github.com/hashicorp/boundary/internal/servers/controller",
-    "sym": "newSessionConnectionCleanupJob",
-    "to_pkg": "github.com/hashicorp/boundary/internal/session"
-   },
-   {
-    "pkg": "github.com/hashicorp/boundary/internal/servers/controller",
-    "sym": "sessionConnectionCleanupJob",
-    "to_pkg": "github.com/hashicorp/boundary/internal/session"
-   }
-  ]
- },
- {
-  "repo": "boundary",
-  "sha": "79670180a7af00d4e602727adf43f093c6feee36",
-  "kind": "move",
-  "prompt": "refact(session): Move domain logic of Worker Status into domain service",
-  "go_files": 8,
-  "needs_review": "no declaration changed packages in the diff"
- },
- {
-  "repo": "boundary",
-  "sha": "1c62470ba6ee3eb54fb4309dc73f34e8eb7190c0",
-  "kind": "move",
-  "prompt": "chore(cmd): Move FlagClientAgentPort and flagTargetDefaultPort to uint16",
-  "go_files": 9,
-  "needs_review": "no declaration changed packages in the diff"
- },
- {
-  "repo": "boundary",
-  "sha": "3195dcba4ec65099a7aaf8246198e82be258a9c4",
-  "kind": "move",
-  "prompt": "chore(cmd): Remove UintVar and move to Uint64Var",
-  "go_files": 9,
-  "needs_review": "no declaration changed packages in the diff"
- },
- {
-  "repo": "boundary",
-  "sha": "dd2c3807cde9f8fc541986191fbeffa64238bcee",
-  "kind": "move",
-  "prompt": "refactor: Move functions from kms pkg to new libs/crypto pkg\n\nSpecifically: move NewDerivedReader from github.com/hashicorp/boundary/internal/kms to github.com/hashicorp/boundary/internal/libs/crypto; move TestNewDerivedReader from github.com/hashicorp/boundary/internal/kms to github.com/hashicorp/boundary/internal/libs/crypto",
-  "go_files": 16,
-  "moves": [
-   {
-    "pkg": "github.com/hashicorp/boundary/internal/kms",
-    "sym": "NewDerivedReader",
-    "to_pkg": "github.com/hashicorp/boundary/internal/libs/crypto"
-   },
-   {
-    "pkg": "github.com/hashicorp/boundary/internal/kms",
-    "sym": "TestNewDerivedReader",
-    "to_pkg": "github.com/hashicorp/boundary/internal/libs/crypto"
-   }
-  ]
- },
- {
-  "repo": "boundary",
-  "sha": "a16033b73a96a9655ab63f8b51c147b7f301a09e",
-  "kind": "move",
-  "prompt": "fix (kms): move oplog DEK into its own internal kms",
-  "go_files": 24,
-  "needs_review": "no declaration changed packages in the diff"
- },
- {
-  "repo": "boundary",
-  "sha": "b26814a3cc02d131e76b31fb17232743e57ba1d5",
-  "kind": "move",
-  "prompt": "move user variables into globals\n\nSpecifically: move AnyAuthenticatedUserId from github.com/hashicorp/boundary/internal/perms to github.com/hashicorp/boundary/globals; move RecoveryUserId from github.com/hashicorp/boundary/internal/perms to github.com/hashicorp/boundary/globals",
-  "go_files": 39,
-  "moves": [
-   {
-    "pkg": "github.com/hashicorp/boundary/internal/perms",
-    "sym": "AnyAuthenticatedUserId",
-    "to_pkg": "github.com/hashicorp/boundary/globals"
-   },
-   {
-    "pkg": "github.com/hashicorp/boundary/internal/perms",
-    "sym": "RecoveryUserId",
-    "to_pkg": "github.com/hashicorp/boundary/globals"
-   }
-  ]
- },
- {
-  "repo": "boundary",
-  "sha": "9733a250fa26209b953146f7c0bd27b67cd50716",
-  "kind": "move",
-  "prompt": "refact(event): move observability/event to event",
-  "go_files": 118,
-  "needs_review": "whole package or directory move (270 declarations relocated); out of task scope"
- },
- {
-  "repo": "boundary",
-  "sha": "b58dada40d81084b4291d87e79e1f14a0364b6d4",
-  "kind": "move",
-  "prompt": "Move the server daemons into their own package",
-  "go_files": 176,
-  "needs_review": "whole package or directory move (549 declarations relocated); out of task scope"
- },
- {
-  "repo": "vault",
-  "sha": "cf48236a3c864d4b3cccd3ef7de21594f76a1a53",
-  "kind": "move",
-  "prompt": "Move database connections map out to separate package",
-  "go_files": 5,
-  "needs_review": "no declaration changed packages in the diff"
- },
- {
-  "repo": "vault",
-  "sha": "45b0179aa56b667c849ca95360ec48adbe08637b",
-  "kind": "move",
-  "prompt": "[VAULT-3157] Move `mergeStates` utils from Agent to api module\n\nSpecifically: move TestMergeStates from github.com/hashicorp/vault/command/agent/cache to github.com/hashicorp/vault/api renaming it to TestMergeReplicationStates",
-  "go_files": 5,
-  "moves": [
-   {
-    "pkg": "github.com/hashicorp/vault/command/agent/cache",
-    "sym": "mergeStates",
-    "to_pkg": "github.com/hashicorp/vault/api",
-    "to_name": "MergeReplicationStates"
-   },
-   {
-    "pkg": "github.com/hashicorp/vault/command/agent/cache",
-    "sym": "TestMergeStates",
-    "to_pkg": "github.com/hashicorp/vault/api",
-    "to_name": "TestMergeReplicationStates"
-   }
-  ]
- },
- {
-  "repo": "vault",
-  "sha": "bcd89f875d88e0a01f2e6f9220f6d72afb5661b2",
-  "kind": "move",
-  "prompt": "move system view interface, grpc server, and client to stubs_oss files",
-  "go_files": 7,
-  "needs_review": "no declaration changed packages in the diff"
- },
- {
-  "repo": "vault",
-  "sha": "7ec1fe75a98eae3655c32415d03cf4b5372f158b",
-  "kind": "move",
-  "prompt": "Move cluster logic out of vault package\n\nSpecifically: move HeartbeatInterval from github.com/hashicorp/vault/vault to github.com/hashicorp/vault/vault/cluster; move clusterListenerAcceptDeadline from github.com/hashicorp/vault/vault to github.com/hashicorp/vault/vault/cluster renaming it to ListenerAcceptDeadline; move ClusterClient from github.com/hashicorp/vault/vault to github.com/hashicorp/vault/vault/cluster renaming it to Client; move ClusterHandler from github.com/hashicorp/vault/vault to github.com/hashicorp/vault/vault/cluster renaming it to Handler",
-  "go_files": 8,
-  "moves": [
-   {
-    "pkg": "github.com/hashicorp/vault/vault",
-    "sym": "HeartbeatInterval",
-    "to_pkg": "github.com/hashicorp/vault/vault/cluster"
-   },
-   {
-    "pkg": "github.com/hashicorp/vault/vault",
-    "sym": "clusterListenerAcceptDeadline",
-    "to_pkg": "github.com/hashicorp/vault/vault/cluster",
-    "to_name": "ListenerAcceptDeadline"
-   },
-   {
-    "pkg": "github.com/hashicorp/vault/vault",
-    "sym": "ClusterClient",
-    "to_pkg": "github.com/hashicorp/vault/vault/cluster",
-    "to_name": "Client"
-   },
-   {
-    "pkg": "github.com/hashicorp/vault/vault",
-    "sym": "ClusterHandler",
-    "to_pkg": "github.com/hashicorp/vault/vault/cluster",
-    "to_name": "Handler"
-   }
-  ]
- },
- {
-  "repo": "vault",
-  "sha": "91aa12ac195c088cd68eb879dea51eda03839a7b",
-  "kind": "move",
-  "prompt": "VAULT-42658 Move Agent Registry to main (#12443)",
-  "go_files": 11,
-  "needs_review": "no declaration changed packages in the diff"
- },
- {
-  "repo": "vault",
-  "sha": "3e022a3910acc64ab610013fe8fb7715ac8d6bea",
-  "kind": "move",
-  "prompt": "Move all ACME wrappers into a dedicated go file",
-  "go_files": 13,
-  "needs_review": "no declaration changed packages in the diff"
- },
- {
-  "repo": "vault",
-  "sha": "047a9ff03ae88f7d3a19d3620c89ac36bff20de8",
-  "kind": "move",
-  "prompt": "Move pki docker tests to pkiext",
-  "go_files": 14,
-  "needs_review": "whole package or directory move (12 declarations relocated); out of task scope"
- },
- {
-  "repo": "vault",
-  "sha": "86c1cdf9e61897dee14203c51d6ad3d971cfda1a",
-  "kind": "move",
-  "prompt": "Move awsutil over to the go-secure-stdlib version",
-  "go_files": 18,
-  "needs_review": "no declaration changed packages in the diff"
- }
+  {
+    "repo": "traefik",
+    "sha": "b966215e6c65d36d4a568c78981ef24a90918c43",
+    "kind": "move",
+    "prompt": "Move origin fields capture to service level",
+    "go_files": 5,
+    "needs_review": "no declaration changed packages in the diff"
+  },
+  {
+    "repo": "traefik",
+    "sha": "5026ca97d0266e2ad260947cfb22c3f5453fa673",
+    "kind": "move",
+    "prompt": "Move snicheck to ctx instead of simulated routing",
+    "go_files": 18,
+    "needs_review": "no declaration changed packages in the diff"
+  },
+  {
+    "repo": "boundary",
+    "sha": "224f8d2d4ece315b14845518355c5fb8f474566a",
+    "kind": "move",
+    "prompt": "refact(controller): Move Target Repository Factory to the target package",
+    "go_files": 4,
+    "needs_review": "no declaration changed packages in the diff"
+  },
+  {
+    "repo": "boundary",
+    "sha": "051d337b2183d66e004a33945bf0923b519980a3",
+    "kind": "move",
+    "prompt": "refact(e2e): Move logging to helper function",
+    "go_files": 5,
+    "needs_review": "no declaration changed packages in the diff"
+  },
+  {
+    "repo": "boundary",
+    "sha": "bf9dbd818eaf1b70757781becb575e21b15482e7",
+    "kind": "move",
+    "prompt": "chore(cmd): Remove IntVar and move to Int64Var",
+    "go_files": 6,
+    "needs_review": "no declaration changed packages in the diff"
+  },
+  {
+    "repo": "boundary",
+    "sha": "3482f91a179fb4f6ff1fd1a41be0228bc169763f",
+    "kind": "move",
+    "prompt": "refactor(connections): Move connect connect to the Connection repo",
+    "go_files": 6,
+    "needs_review": "no declaration changed packages in the diff"
+  },
+  {
+    "repo": "boundary",
+    "sha": "185d8b392d65f35062b150123c0df30983758003",
+    "kind": "move",
+    "prompt": "refact(auth): Move subtype registration into global registry",
+    "go_files": 7,
+    "needs_review": "no declaration changed packages in the diff"
+  },
+  {
+    "repo": "boundary",
+    "sha": "687dd1bda62ae18f9d3c6d97f04bfed9af4aae16",
+    "kind": "move",
+    "prompt": "Move the session cleanup job logic into the session package.\n\nSpecifically: move TestSessionConnectionCleanupJob from github.com/hashicorp/boundary/internal/servers/controller to github.com/hashicorp/boundary/internal/session; move TestSessionConnectionCleanupJobNewJobErr from github.com/hashicorp/boundary/internal/servers/controller to github.com/hashicorp/boundary/internal/session; move newSessionConnectionCleanupJob from github.com/hashicorp/boundary/internal/servers/controller to github.com/hashicorp/boundary/internal/session; move sessionConnectionCleanupJob from github.com/hashicorp/boundary/internal/servers/controller to github.com/hashicorp/boundary/internal/session",
+    "go_files": 8,
+    "moves": [
+      {
+        "pkg": "github.com/hashicorp/boundary/internal/servers/controller",
+        "sym": "TestSessionConnectionCleanupJob",
+        "to_pkg": "github.com/hashicorp/boundary/internal/session"
+      },
+      {
+        "pkg": "github.com/hashicorp/boundary/internal/servers/controller",
+        "sym": "TestSessionConnectionCleanupJobNewJobErr",
+        "to_pkg": "github.com/hashicorp/boundary/internal/session"
+      },
+      {
+        "pkg": "github.com/hashicorp/boundary/internal/servers/controller",
+        "sym": "newSessionConnectionCleanupJob",
+        "to_pkg": "github.com/hashicorp/boundary/internal/session"
+      },
+      {
+        "pkg": "github.com/hashicorp/boundary/internal/servers/controller",
+        "sym": "sessionConnectionCleanupJob",
+        "to_pkg": "github.com/hashicorp/boundary/internal/session"
+      }
+    ]
+  },
+  {
+    "repo": "boundary",
+    "sha": "79670180a7af00d4e602727adf43f093c6feee36",
+    "kind": "move",
+    "prompt": "refact(session): Move domain logic of Worker Status into domain service",
+    "go_files": 8,
+    "needs_review": "no declaration changed packages in the diff"
+  },
+  {
+    "repo": "boundary",
+    "sha": "1c62470ba6ee3eb54fb4309dc73f34e8eb7190c0",
+    "kind": "move",
+    "prompt": "chore(cmd): Move FlagClientAgentPort and flagTargetDefaultPort to uint16",
+    "go_files": 9,
+    "needs_review": "no declaration changed packages in the diff"
+  },
+  {
+    "repo": "boundary",
+    "sha": "3195dcba4ec65099a7aaf8246198e82be258a9c4",
+    "kind": "move",
+    "prompt": "chore(cmd): Remove UintVar and move to Uint64Var",
+    "go_files": 9,
+    "needs_review": "no declaration changed packages in the diff"
+  },
+  {
+    "repo": "boundary",
+    "sha": "dd2c3807cde9f8fc541986191fbeffa64238bcee",
+    "kind": "move",
+    "prompt": "refactor: Move functions from kms pkg to new libs/crypto pkg\n\nSpecifically: move NewDerivedReader from github.com/hashicorp/boundary/internal/kms to github.com/hashicorp/boundary/internal/libs/crypto; move TestNewDerivedReader from github.com/hashicorp/boundary/internal/kms to github.com/hashicorp/boundary/internal/libs/crypto",
+    "go_files": 16,
+    "moves": [
+      {
+        "pkg": "github.com/hashicorp/boundary/internal/kms",
+        "sym": "NewDerivedReader",
+        "to_pkg": "github.com/hashicorp/boundary/internal/libs/crypto"
+      },
+      {
+        "pkg": "github.com/hashicorp/boundary/internal/kms",
+        "sym": "TestNewDerivedReader",
+        "to_pkg": "github.com/hashicorp/boundary/internal/libs/crypto"
+      }
+    ],
+    "certified": true
+  },
+  {
+    "repo": "boundary",
+    "sha": "a16033b73a96a9655ab63f8b51c147b7f301a09e",
+    "kind": "move",
+    "prompt": "fix (kms): move oplog DEK into its own internal kms",
+    "go_files": 24,
+    "needs_review": "no declaration changed packages in the diff"
+  },
+  {
+    "repo": "boundary",
+    "sha": "b26814a3cc02d131e76b31fb17232743e57ba1d5",
+    "kind": "move",
+    "prompt": "move user variables into globals\n\nSpecifically: move AnyAuthenticatedUserId from github.com/hashicorp/boundary/internal/perms to github.com/hashicorp/boundary/globals; move RecoveryUserId from github.com/hashicorp/boundary/internal/perms to github.com/hashicorp/boundary/globals",
+    "go_files": 39,
+    "moves": [
+      {
+        "pkg": "github.com/hashicorp/boundary/internal/perms",
+        "sym": "AnyAuthenticatedUserId",
+        "to_pkg": "github.com/hashicorp/boundary/globals"
+      },
+      {
+        "pkg": "github.com/hashicorp/boundary/internal/perms",
+        "sym": "RecoveryUserId",
+        "to_pkg": "github.com/hashicorp/boundary/globals"
+      }
+    ],
+    "certified": true
+  },
+  {
+    "repo": "boundary",
+    "sha": "9733a250fa26209b953146f7c0bd27b67cd50716",
+    "kind": "move",
+    "prompt": "refact(event): move observability/event to event",
+    "go_files": 118,
+    "needs_review": "whole package or directory move (270 declarations relocated); out of task scope"
+  },
+  {
+    "repo": "boundary",
+    "sha": "b58dada40d81084b4291d87e79e1f14a0364b6d4",
+    "kind": "move",
+    "prompt": "Move the server daemons into their own package",
+    "go_files": 176,
+    "needs_review": "whole package or directory move (549 declarations relocated); out of task scope"
+  },
+  {
+    "repo": "vault",
+    "sha": "cf48236a3c864d4b3cccd3ef7de21594f76a1a53",
+    "kind": "move",
+    "prompt": "Move database connections map out to separate package",
+    "go_files": 5,
+    "needs_review": "no declaration changed packages in the diff"
+  },
+  {
+    "repo": "vault",
+    "sha": "45b0179aa56b667c849ca95360ec48adbe08637b",
+    "kind": "move",
+    "prompt": "[VAULT-3157] Move `mergeStates` utils from Agent to api module\n\nSpecifically: move TestMergeStates from github.com/hashicorp/vault/command/agent/cache to github.com/hashicorp/vault/api renaming it to TestMergeReplicationStates",
+    "go_files": 5,
+    "moves": [
+      {
+        "pkg": "github.com/hashicorp/vault/command/agent/cache",
+        "sym": "mergeStates",
+        "to_pkg": "github.com/hashicorp/vault/api",
+        "to_name": "MergeReplicationStates"
+      },
+      {
+        "pkg": "github.com/hashicorp/vault/command/agent/cache",
+        "sym": "TestMergeStates",
+        "to_pkg": "github.com/hashicorp/vault/api",
+        "to_name": "TestMergeReplicationStates"
+      }
+    ]
+  },
+  {
+    "repo": "vault",
+    "sha": "bcd89f875d88e0a01f2e6f9220f6d72afb5661b2",
+    "kind": "move",
+    "prompt": "move system view interface, grpc server, and client to stubs_oss files",
+    "go_files": 7,
+    "needs_review": "no declaration changed packages in the diff"
+  },
+  {
+    "repo": "vault",
+    "sha": "7ec1fe75a98eae3655c32415d03cf4b5372f158b",
+    "kind": "move",
+    "prompt": "Move cluster logic out of vault package\n\nSpecifically: move HeartbeatInterval from github.com/hashicorp/vault/vault to github.com/hashicorp/vault/vault/cluster; move clusterListenerAcceptDeadline from github.com/hashicorp/vault/vault to github.com/hashicorp/vault/vault/cluster renaming it to ListenerAcceptDeadline; move ClusterClient from github.com/hashicorp/vault/vault to github.com/hashicorp/vault/vault/cluster renaming it to Client; move ClusterHandler from github.com/hashicorp/vault/vault to github.com/hashicorp/vault/vault/cluster renaming it to Handler",
+    "go_files": 8,
+    "moves": [
+      {
+        "pkg": "github.com/hashicorp/vault/vault",
+        "sym": "HeartbeatInterval",
+        "to_pkg": "github.com/hashicorp/vault/vault/cluster"
+      },
+      {
+        "pkg": "github.com/hashicorp/vault/vault",
+        "sym": "clusterListenerAcceptDeadline",
+        "to_pkg": "github.com/hashicorp/vault/vault/cluster",
+        "to_name": "ListenerAcceptDeadline"
+      },
+      {
+        "pkg": "github.com/hashicorp/vault/vault",
+        "sym": "ClusterClient",
+        "to_pkg": "github.com/hashicorp/vault/vault/cluster",
+        "to_name": "Client"
+      },
+      {
+        "pkg": "github.com/hashicorp/vault/vault",
+        "sym": "ClusterHandler",
+        "to_pkg": "github.com/hashicorp/vault/vault/cluster",
+        "to_name": "Handler"
+      }
+    ]
+  },
+  {
+    "repo": "vault",
+    "sha": "91aa12ac195c088cd68eb879dea51eda03839a7b",
+    "kind": "move",
+    "prompt": "VAULT-42658 Move Agent Registry to main (#12443)",
+    "go_files": 11,
+    "needs_review": "no declaration changed packages in the diff"
+  },
+  {
+    "repo": "vault",
+    "sha": "3e022a3910acc64ab610013fe8fb7715ac8d6bea",
+    "kind": "move",
+    "prompt": "Move all ACME wrappers into a dedicated go file",
+    "go_files": 13,
+    "needs_review": "no declaration changed packages in the diff"
+  },
+  {
+    "repo": "vault",
+    "sha": "047a9ff03ae88f7d3a19d3620c89ac36bff20de8",
+    "kind": "move",
+    "prompt": "Move pki docker tests to pkiext",
+    "go_files": 14,
+    "needs_review": "whole package or directory move (12 declarations relocated); out of task scope"
+  },
+  {
+    "repo": "vault",
+    "sha": "86c1cdf9e61897dee14203c51d6ad3d971cfda1a",
+    "kind": "move",
+    "prompt": "Move awsutil over to the go-secure-stdlib version",
+    "go_files": 18,
+    "needs_review": "no declaration changed packages in the diff"
+  }
 ]

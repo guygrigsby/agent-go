@@ -1,0 +1,1 @@
+{"call":["rename","-p","github.com/hashicorp/boundary/internal/cmd/config","-s","Controller.ApiRateLimiterMaxEntries","-to","ApiRateLimiterMaxQuotas"],"res":null}

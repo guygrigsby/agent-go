@@ -1,0 +1,1 @@
+{"call":["add-param","-p","github.com/hashicorp/vault/builtin/audit/file","-s","Factory","-name","useEventLogger","-type","bool","-default","false"],"res":null}

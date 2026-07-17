@@ -1,7 +1,7 @@
 {
- "agent_done": "2026-07-16T23:30:16.125587625Z",
- "agent_started": "2026-07-16T23:29:42.760153Z",
- "cache_read": 125406,
+ "agent_done": "2026-07-16T23:35:33.068837125Z",
+ "agent_started": "2026-07-16T23:30:39.503432Z",
+ "cache_read": 250524,
  "cache_write": 0,
  "capped": false,
  "failure_kind": "",
@@ -14,7 +14,7 @@
    "rejected": 0
   },
   "query": {
-   "ok": 3,
+   "ok": 6,
    "rejected": 0
   },
   "rename": {
@@ -59,14 +59,14 @@
    "to": "pkiFetchRolesList"
   }
  ],
- "steps": 9,
+ "steps": 15,
  "task": "vault_95b24f55",
  "tests": true,
  "tests_baseline": true,
- "time_to_first_mutation_s": 24.881745,
- "tokens_in": 18425,
- "tokens_out": 791,
+ "time_to_first_mutation_s": 32.802667,
+ "tokens_in": 20253,
+ "tokens_out": 1425,
  "tokens_reasoning": 0,
  "typecheck": true,
- "wall_s": 33.365434625
+ "wall_s": 293.565405125
 }

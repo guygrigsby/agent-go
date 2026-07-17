@@ -1,6 +1,11 @@
 package bench
 
-import "sort"
+import (
+	"encoding/json"
+	"os"
+	"path/filepath"
+	"sort"
+)
 
 // Manifest is one bench task, shared by the prep tool that writes it and
 // the runner that scores it. Kind selects the goal predicate; empty means
@@ -27,6 +32,25 @@ type Manifest struct {
 // EligibleForModel reports whether a model round may spend time on this
 // task: it must carry specs and be oracle certified.
 func (t Manifest) EligibleForModel() bool { return t.HasSpecs() && t.Certified }
+
+// resumeEpisode loads a completed episode's record when a run resumes, so
+// an interrupted round continues where it left off instead of burning
+// model time on finished cells. A corrupt or partial record does not
+// count; that cell re-runs.
+func resumeEpisode(epDir string) (map[string]any, bool) {
+	raw, err := os.ReadFile(filepath.Join(epDir, "episode.json"))
+	if err != nil {
+		return nil, false
+	}
+	var res map[string]any
+	if json.Unmarshal(raw, &res) != nil {
+		return nil, false
+	}
+	if _, ok := res["pass"]; !ok {
+		return nil, false
+	}
+	return res, true
+}
 
 // suiteTasks selects the run tier. "full" (or empty) passes everything
 // through; "smoke" picks one model-eligible task per kind, smallest repo

@@ -1,0 +1,163 @@
+{
+ "agent_done": "2026-07-17T00:08:26.94540825Z",
+ "agent_started": "2026-07-17T00:06:48.208352Z",
+ "cache_read": 0,
+ "cache_write": 0,
+ "capped": false,
+ "failure_kind": "",
+ "iter": 0,
+ "kind": "add-param",
+ "mode": "oracle",
+ "new_errors": null,
+ "op_mix": {
+  "add-param": {
+   "ok": 0,
+   "rejected": 1
+  },
+  "inspect": {
+   "ok": 44,
+   "rejected": 1
+  },
+  "patch": {
+   "ok": 2,
+   "rejected": 1
+  },
+  "query": {
+   "ok": 2,
+   "rejected": 0
+  }
+ },
+ "pass": true,
+ "predicate": true,
+ "profile": "adhoc",
+ "prompt": "refactor(scheduler): Add statusThreshold parameter to job.Run\n\nSpecifically: add parameter _ time.Duration to censusJob.Run; add parameter _ time.Duration to TokenRevocationJob.Run; add parameter _ time.Duration to CredentialRenewalJob.Run; add parameter _ time.Duration to TokenRenewalJob.Run; add parameter _ time.Duration to CredentialCleanupJob.Run; add parameter _ time.Duration to CredentialRevocationJob.Run; add parameter _ time.Duration to CredentialStoreCleanupJob.Run; add parameter _ time.Duration to OrphanedHostCleanupJob.Run; add parameter _ time.Duration to SetSyncJob.Run; add parameter _ time.Duration to dataKeyVersionDestructionMonitorJob.Run; add parameter _ time.Duration to tableRewrappingJob.Run; add parameter _ time.Duration to purgeJob.Run; add parameter _ time.Duration to cleanerJob.Run; add parameter statusThreshold time.Duration to testJob.Run; add parameter _ time.Duration to rotateRootsJob.Run; add parameter ctx context.Context to upsertWorkerStorageBucketJob.Run; add parameter _ time.Duration to deleteTerminatedJob.Run; add parameter _ time.Duration to sessionConnectionCleanupJob.Run; add parameter _ time.Duration to snapshotJob.Run",
+ "rejects_total": 3,
+ "repairs_offered": 2,
+ "resends": 0,
+ "specs": [
+  {
+   "ok": true,
+   "param": "_ time.Duration",
+   "signature": "func(ctx context.Context, _ time.Duration) error",
+   "sym": "github.com/hashicorp/boundary/internal/census.censusJob.Run"
+  },
+  {
+   "ok": true,
+   "param": "_ time.Duration",
+   "signature": "func(ctx context.Context, _ time.Duration) error",
+   "sym": "github.com/hashicorp/boundary/internal/credential/vault.TokenRevocationJob.Run"
+  },
+  {
+   "ok": true,
+   "param": "_ time.Duration",
+   "signature": "func(ctx context.Context, _ time.Duration) error",
+   "sym": "github.com/hashicorp/boundary/internal/credential/vault.CredentialRenewalJob.Run"
+  },
+  {
+   "ok": true,
+   "param": "_ time.Duration",
+   "signature": "func(ctx context.Context, _ time.Duration) error",
+   "sym": "github.com/hashicorp/boundary/internal/credential/vault.TokenRenewalJob.Run"
+  },
+  {
+   "ok": true,
+   "param": "_ time.Duration",
+   "signature": "func(ctx context.Context, _ time.Duration) error",
+   "sym": "github.com/hashicorp/boundary/internal/credential/vault.CredentialCleanupJob.Run"
+  },
+  {
+   "ok": true,
+   "param": "_ time.Duration",
+   "signature": "func(ctx context.Context, _ time.Duration) error",
+   "sym": "github.com/hashicorp/boundary/internal/credential/vault.CredentialRevocationJob.Run"
+  },
+  {
+   "ok": true,
+   "param": "_ time.Duration",
+   "signature": "func(ctx context.Context, _ time.Duration) error",
+   "sym": "github.com/hashicorp/boundary/internal/credential/vault.CredentialStoreCleanupJob.Run"
+  },
+  {
+   "ok": true,
+   "param": "_ time.Duration",
+   "signature": "func(ctx context.Context, _ time.Duration) error",
+   "sym": "github.com/hashicorp/boundary/internal/host/plugin.OrphanedHostCleanupJob.Run"
+  },
+  {
+   "ok": true,
+   "param": "_ time.Duration",
+   "signature": "func(ctx context.Context, _ time.Duration) error",
+   "sym": "github.com/hashicorp/boundary/internal/host/plugin.SetSyncJob.Run"
+  },
+  {
+   "ok": true,
+   "param": "_ time.Duration",
+   "signature": "func(ctx context.Context, _ time.Duration) error",
+   "sym": "github.com/hashicorp/boundary/internal/kms/job.dataKeyVersionDestructionMonitorJob.Run"
+  },
+  {
+   "ok": true,
+   "param": "_ time.Duration",
+   "signature": "func(ctx context.Context, _ time.Duration) error",
+   "sym": "github.com/hashicorp/boundary/internal/kms/job.tableRewrappingJob.Run"
+  },
+  {
+   "ok": true,
+   "param": "_ time.Duration",
+   "signature": "func(ctx context.Context, _ time.Duration) error",
+   "sym": "github.com/hashicorp/boundary/internal/pagination/purge.purgeJob.Run"
+  },
+  {
+   "ok": true,
+   "param": "_ time.Duration",
+   "signature": "func(ctx context.Context, _ time.Duration) error",
+   "sym": "github.com/hashicorp/boundary/internal/scheduler/cleaner.cleanerJob.Run"
+  },
+  {
+   "ok": true,
+   "param": "statusThreshold time.Duration",
+   "signature": "func(ctx context.Context, statusThreshold time.Duration) error",
+   "sym": "github.com/hashicorp/boundary/internal/scheduler.testJob.Run"
+  },
+  {
+   "ok": true,
+   "param": "_ time.Duration",
+   "signature": "func(ctx context.Context, _ time.Duration) error",
+   "sym": "github.com/hashicorp/boundary/internal/server/job.rotateRootsJob.Run"
+  },
+  {
+   "ok": true,
+   "param": "ctx context.Context",
+   "signature": "func(ctx context.Context, _ time.Duration) error",
+   "sym": "github.com/hashicorp/boundary/internal/server/job.upsertWorkerStorageBucketJob.Run"
+  },
+  {
+   "ok": true,
+   "param": "_ time.Duration",
+   "signature": "func(ctx context.Context, _ time.Duration) error",
+   "sym": "github.com/hashicorp/boundary/internal/session.deleteTerminatedJob.Run"
+  },
+  {
+   "ok": true,
+   "param": "_ time.Duration",
+   "signature": "func(ctx context.Context, _ time.Duration) error",
+   "sym": "github.com/hashicorp/boundary/internal/session.sessionConnectionCleanupJob.Run"
+  },
+  {
+   "ok": true,
+   "param": "_ time.Duration",
+   "signature": "func(ctx context.Context, _ time.Duration) error",
+   "sym": "github.com/hashicorp/boundary/internal/snapshot.snapshotJob.Run"
+  }
+ ],
+ "steps": 0,
+ "task": "boundary_9354a4eb",
+ "tests": false,
+ "tests_baseline": false,
+ "time_to_first_mutation_s": 31.366586,
+ "tokens_in": 0,
+ "tokens_out": 0,
+ "tokens_reasoning": 0,
+ "typecheck": true,
+ "wall_s": 98.73705625
+}

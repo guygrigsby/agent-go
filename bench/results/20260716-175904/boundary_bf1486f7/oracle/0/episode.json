@@ -1,0 +1,38 @@
+{
+ "agent_done": "2026-07-17T00:01:07.2854975Z",
+ "agent_started": "2026-07-17T00:01:07.27271Z",
+ "cache_read": 0,
+ "cache_write": 0,
+ "capped": false,
+ "failure_kind": "oracle_reject",
+ "iter": 0,
+ "kind": "add-param",
+ "mode": "oracle",
+ "new_errors": null,
+ "op_mix": {},
+ "oracle_error": "oracle add-param: no composition recipe for rejection map[]",
+ "pass": false,
+ "predicate": false,
+ "profile": "adhoc",
+ "prompt": "refact(target): Add context to RepositoryFactory constructor\n\nSpecifically: add parameter ctx context.Context to NewRepository",
+ "rejects_total": 0,
+ "repairs_offered": 0,
+ "resends": 0,
+ "specs": [
+  {
+   "ok": false,
+   "param": "ctx context.Context",
+   "signature": "func(r github.com/hashicorp/boundary/internal/db.Reader, w github.com/hashicorp/boundary/internal/db.Writer, kms *github.com/hashicorp/boundary/internal/kms.Kms, opt ...Option) (*Repository, error)",
+   "sym": "github.com/hashicorp/boundary/internal/target.NewRepository"
+  }
+ ],
+ "steps": 0,
+ "task": "boundary_bf1486f7",
+ "tests": false,
+ "tests_baseline": true,
+ "tokens_in": 0,
+ "tokens_out": 0,
+ "tokens_reasoning": 0,
+ "typecheck": true,
+ "wall_s": 0.0127875
+}

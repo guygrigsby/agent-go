@@ -136,3 +136,26 @@ func splitLines(raw []byte) [][]byte {
 	}
 	return out
 }
+
+// An interrupted round resumes: AGO_BENCH_RESUME reuses the run dir and
+// recorded episodes are skipped, not re-run. Model time is the expensive
+// resource; a thermal pause must not burn it twice.
+func TestResumeEpisodeSkipsRecorded(t *testing.T) {
+	dir := t.TempDir()
+	if _, ok := resumeEpisode(dir); ok {
+		t.Fatal("empty dir must not resume")
+	}
+	if err := os.WriteFile(filepath.Join(dir, "episode.json"), []byte(`{"pass":true,"task":"x"}`), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	res, ok := resumeEpisode(dir)
+	if !ok || res["pass"] != true {
+		t.Fatalf("recorded episode must resume: %v %v", res, ok)
+	}
+	if err := os.WriteFile(filepath.Join(dir, "episode.json"), []byte(`{"broken`), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if _, ok := resumeEpisode(dir); ok {
+		t.Fatal("corrupt episode must not resume (re-run it)")
+	}
+}

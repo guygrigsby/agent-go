@@ -1,0 +1,40 @@
+{
+ "agent_done": "2026-07-17T00:00:12.698256291Z",
+ "agent_started": "2026-07-17T00:00:12.581606Z",
+ "cache_read": 0,
+ "cache_write": 0,
+ "capped": false,
+ "failure_kind": "oracle_reject",
+ "iter": 0,
+ "kind": "rename",
+ "mode": "oracle",
+ "new_errors": null,
+ "op_mix": {},
+ "oracle_error": "oracle call [rename -p github.com/hashicorp/boundary/api/targets -s Client.Authorize -to AuthorizeSession]: map[]",
+ "pass": false,
+ "predicate": false,
+ "profile": "adhoc",
+ "prompt": "Rename authorize to authorize-session\n\nSpecifically, rename: Authorize -\u003e AuthorizeSession",
+ "rejects_total": 0,
+ "repairs_offered": 0,
+ "resends": 0,
+ "specs": [
+  {
+   "baseline_refs": 3,
+   "new_refs": 0,
+   "ok": false,
+   "old_refs_left": 3,
+   "sym": "github.com/hashicorp/boundary/api/targets.Client.Authorize",
+   "to": "AuthorizeSession"
+  }
+ ],
+ "steps": 0,
+ "task": "boundary_9237d6f7",
+ "tests": false,
+ "tests_baseline": true,
+ "tokens_in": 0,
+ "tokens_out": 0,
+ "tokens_reasoning": 0,
+ "typecheck": true,
+ "wall_s": 0.116650291
+}

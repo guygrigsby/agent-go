@@ -1,0 +1,1 @@
+{"call":["rename","-p","github.com/hashicorp/boundary/internal/bsr","-s","pubKeySelfSignatureFile","-to","pubKeySelfSignatureFileName"],"res":null}

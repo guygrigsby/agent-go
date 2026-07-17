@@ -113,8 +113,13 @@ func setup(b testing.TB) config {
 	}
 	// Everything about a run is recorded under results/<runID> and belongs
 	// in the repo: transcripts, configs, diffs, scores. Reproducibility is
-	// part of the result.
+	// part of the result. AGO_BENCH_RESUME=<runID> reuses an interrupted
+	// run's dir; recorded episodes are skipped (resumeEpisode), so a
+	// thermal pause costs nothing but the wall clock.
 	c.runID = time.Now().Format("20060102-150405")
+	if r := os.Getenv("AGO_BENCH_RESUME"); r != "" {
+		c.runID = r
+	}
 	if err := os.MkdirAll(filepath.Join(c.results, c.runID), 0o755); err != nil {
 		b.Fatal(err)
 	}
@@ -135,7 +140,14 @@ func setup(b testing.TB) config {
 	if os.Getenv("AGO_NO_REPAIRS") != "" {
 		meta["no_repairs"] = true
 	}
-	writeJSON(filepath.Join(c.results, c.runID, "run.json"), meta)
+	// A resumed run keeps its original run.json (its identity); the resume
+	// leg records itself alongside, rev and all, so a mid-round engine
+	// change is visible in the evidence.
+	if _, err := os.Stat(filepath.Join(c.results, c.runID, "run.json")); err == nil {
+		writeJSON(filepath.Join(c.results, c.runID, "run-resume-"+time.Now().Format("150405")+".json"), meta)
+	} else {
+		writeJSON(filepath.Join(c.results, c.runID, "run.json"), meta)
+	}
 	return c
 }
 
@@ -240,6 +252,13 @@ func episode(b testing.TB, c config, t Manifest, mode string, iter int) bool {
 		stopTimer, startTimer = bb.StopTimer, bb.StartTimer
 	}
 	stopTimer()
+	epDirEarly := filepath.Join(c.results, c.runID,
+		fmt.Sprintf("%s_%s", t.Repo, t.SHA[:8]), mode, fmt.Sprint(iter))
+	if res, ok := resumeEpisode(epDirEarly); ok {
+		b.Logf("resume: %s already recorded, skipping", epDirEarly)
+		startTimer()
+		return res["pass"] == true
+	}
 	wt := worktree(b, c, t)
 	defer teardown(c, t, wt)
 	epDir := filepath.Join(c.results, c.runID,

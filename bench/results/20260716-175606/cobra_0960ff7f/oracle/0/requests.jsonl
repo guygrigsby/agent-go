@@ -1,0 +1,5 @@
+{"ms":36,"op":"refs","outcome":"rejected","reason":"package not found","repairs":1,"req_sha":"ef3b44d6002a79fd","sym":"Command.IsHelpCommand","ts":"2026-07-16T23:56:07.136648Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T23:56:07.185234Z"}
+{"ms":0,"op":"refs","outcome":"rejected","reason":"package not found","repairs":1,"req_sha":"ef3b44d6002a79fd","sym":"Command.IsHelpCommand","ts":"2026-07-16T23:56:07.209002Z"}
+{"ms":0,"op":"refs","outcome":"rejected","reason":"package not found","repairs":1,"req_sha":"f56d81dee418f382","sym":"Command.IsAdditionalHelpTopicCommand","ts":"2026-07-16T23:56:07.221896Z"}
+{"ms":0,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-16T23:56:07.234042Z"}

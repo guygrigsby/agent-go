@@ -1,0 +1,1 @@
+{"call":["rename","-p","","-s","Command.IsHelpCommand","-to","IsAdditionalHelpTopicCommand"],"res":null}

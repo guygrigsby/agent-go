@@ -1,0 +1,1 @@
+{"call":["rename","-p","github.com/traefik/traefik/v3/pkg/provider/docker","-s","Shared.extractLabels","-to","extractSwarmLabels"],"res":null}
