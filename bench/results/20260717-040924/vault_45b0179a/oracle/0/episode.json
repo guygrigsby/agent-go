@@ -1,0 +1,53 @@
+{
+ "agent_done": "2026-07-17T10:10:33.523025042Z",
+ "agent_started": "2026-07-17T10:10:33.440909Z",
+ "cache_read": 0,
+ "cache_write": 0,
+ "capped": false,
+ "failure_kind": "oracle_reject",
+ "iter": 0,
+ "kind": "move",
+ "mode": "oracle",
+ "new_errors": null,
+ "op_mix": {
+  "patch": {
+   "ok": 0,
+   "rejected": 1
+  }
+ },
+ "oracle_error": "oracle move github.com/hashicorp/vault/command/agent/cache.mergeStates: map[detail:github.com/hashicorp/vault/api: its directory already holds files (a nested module or an excluded dir); move_decl cannot target packages outside the loaded workspace diagnostics:\u003cnil\u003e did_you_mean:\u003cnil\u003e possible_repairs:\u003cnil\u003e reason:package exists but did not load status:rejected]",
+ "pass": false,
+ "predicate": false,
+ "profile": "adhoc",
+ "prompt": "[VAULT-3157] Move `mergeStates` utils from Agent to api module\n\nSpecifically: move TestMergeStates from github.com/hashicorp/vault/command/agent/cache to github.com/hashicorp/vault/api renaming it to TestMergeReplicationStates",
+ "rejects_total": 1,
+ "repairs_offered": 0,
+ "resends": 0,
+ "specs": [
+  {
+   "in_target": false,
+   "ok": false,
+   "still_in_source": true,
+   "sym": "github.com/hashicorp/vault/command/agent/cache.mergeStates",
+   "to_name": "MergeReplicationStates",
+   "to_pkg": "github.com/hashicorp/vault/api"
+  },
+  {
+   "in_target": false,
+   "ok": false,
+   "still_in_source": true,
+   "sym": "github.com/hashicorp/vault/command/agent/cache.TestMergeStates",
+   "to_name": "TestMergeReplicationStates",
+   "to_pkg": "github.com/hashicorp/vault/api"
+  }
+ ],
+ "steps": 0,
+ "task": "vault_45b0179a",
+ "tests": false,
+ "tests_baseline": true,
+ "tokens_in": 0,
+ "tokens_out": 0,
+ "tokens_reasoning": 0,
+ "typecheck": true,
+ "wall_s": 0.082116042
+}

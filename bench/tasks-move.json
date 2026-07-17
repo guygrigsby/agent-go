@@ -82,7 +82,8 @@
         "sym": "sessionConnectionCleanupJob",
         "to_pkg": "github.com/hashicorp/boundary/internal/session"
       }
-    ]
+    ],
+    "certified": true
   },
   {
     "repo": "boundary",
