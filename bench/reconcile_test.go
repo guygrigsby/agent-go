@@ -73,6 +73,20 @@ func Stay() int { return 9 }
 
 var _ = Keep()
 `,
+		"a/group.go": `package a
+
+const (
+	GroupKeep = "k"
+	// GroupChange gets a new value.
+	GroupChange = "old"
+	GroupGone   = "g"
+)
+
+const (
+	PinA = iota
+	PinB
+)
+`,
 		"a/a_test.go": `package a
 
 import "testing"
@@ -96,6 +110,19 @@ func Change() int { return 2 }
 `,
 		"a/dead.go":   "",
 		"a/a_test.go": "",
+		"a/group.go": `package a
+
+const (
+	GroupKeep = "k"
+	// GroupChange gets a new value.
+	GroupChange = "new"
+)
+
+const (
+	PinA = iota
+	PinB
+)
+`,
 		"b/b_test.go": `package b
 
 import "testing"
@@ -213,6 +240,26 @@ func Fresh() error { return stde.New("x") }
 	}
 	if o := find("upsert_decl", "Moved() != 2"); o == nil {
 		t.Error("no post-state upsert for the dropped test mover")
+	}
+	// Grouped members: a changed member upserts as a standalone decl (doc
+	// kept, token first), a removed member deletes, unchanged and pinned
+	// (iota) members get no ops.
+	gc := find("upsert_decl", "GroupChange")
+	if gc == nil {
+		t.Fatal("no upsert for changed group member")
+	} else if text := gc["text"].(string); !strings.HasPrefix(text, "// GroupChange gets a new value.\nconst GroupChange") {
+		t.Errorf("group member text malformed: %q", text)
+	}
+	if o := find("delete_decl", "GroupGone"); o == nil {
+		t.Error("no delete for removed group member")
+	}
+	if o := find("upsert_decl", "GroupKeep"); o != nil {
+		t.Errorf("unchanged group member got an op: %v", o)
+	}
+	for _, o := range ops {
+		if text, _ := o["text"].(string); strings.Contains(text, "PinA") {
+			t.Errorf("iota member got an op: %v", o)
+		}
 	}
 }
 

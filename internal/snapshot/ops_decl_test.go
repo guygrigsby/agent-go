@@ -650,3 +650,127 @@ func TestPatchDeleteDeclSupersedesContainedEdits(t *testing.T) {
 		t.Errorf("Fetch not moved: %v", err)
 	}
 }
+
+// delete_decl excises one spec from a grouped const/var block, siblings
+// and group intact (7ec1fe75 deletes members of vault's const groups).
+func TestPatchDeleteDeclGroupedMember(t *testing.T) {
+	s := demo(t)
+	res, err := s.Patch([]byte(`{"pkg":"demo/sig","ops":[
+		{"op":"delete_decl","sym":"ModeSlow"}]}`))
+	if err != nil {
+		t.Fatalf("rejected: %v", err)
+	}
+	if res["status"] != "accepted" {
+		t.Fatalf("got %v", res)
+	}
+	b, _ := os.ReadFile(filepath.Join(s.dir, "sig", "consts.go"))
+	if strings.Contains(string(b), "ModeSlow") {
+		t.Errorf("ModeSlow not excised:\n%s", b)
+	}
+	if !strings.Contains(string(b), "ModeFast") {
+		t.Errorf("sibling lost:\n%s", b)
+	}
+	if _, err := s.inspect("demo/sig", "ModeFast"); err != nil {
+		t.Errorf("sibling not queryable: %v", err)
+	}
+}
+
+// A member of an iota group cannot be deleted: position defines siblings'
+// values. Reject with the blocker named, never a silent value shift.
+func TestPatchDeleteDeclIotaGroupRejects(t *testing.T) {
+	s := demo(t)
+	_, err := s.Patch([]byte(`{"pkg":"demo/sig","ops":[
+		{"op":"delete_decl","sym":"LevelA"}]}`))
+	rej, ok := err.(*Reject)
+	if !ok || !strings.Contains(rej.Reason+rej.Detail, "iota") {
+		t.Fatalf("want iota reject, got %v", err)
+	}
+}
+
+// upsert_decl replaces one spec inside a grouped block in place: the
+// incoming text is a standalone single decl, the landing keeps the group.
+func TestPatchUpsertDeclGroupedMember(t *testing.T) {
+	s := demo(t)
+	res, err := s.Patch([]byte(`{"pkg":"demo/sig","ops":[
+		{"op":"upsert_decl","text":"// ModeSlow is now leisurely.\nconst ModeSlow = \"leisurely\""}]}`))
+	if err != nil {
+		t.Fatalf("rejected: %v", err)
+	}
+	if res["status"] != "accepted" {
+		t.Fatalf("got %v", res)
+	}
+	b, _ := os.ReadFile(filepath.Join(s.dir, "sig", "consts.go"))
+	if !strings.Contains(string(b), `ModeSlow = "leisurely"`) {
+		t.Errorf("spec not replaced:\n%s", b)
+	}
+	if !strings.Contains(string(b), "now leisurely") {
+		t.Errorf("doc comment lost:\n%s", b)
+	}
+	if strings.Count(string(b), "ModeSlow") != 2 { // doc + spec
+		t.Errorf("duplicate or stray ModeSlow:\n%s", b)
+	}
+	if !strings.Contains(string(b), "ModeFast") {
+		t.Errorf("sibling lost:\n%s", b)
+	}
+}
+
+// Replacing a grouped member with a different token kind is incoherent
+// inside the group; reject with the mismatch named.
+func TestPatchUpsertDeclGroupedTokenMismatchRejects(t *testing.T) {
+	s := demo(t)
+	_, err := s.Patch([]byte(`{"pkg":"demo/sig","ops":[
+		{"op":"upsert_decl","text":"var ModeSlow = \"slow\""}]}`))
+	rej, ok := err.(*Reject)
+	if !ok || !(strings.Contains(rej.Reason+rej.Detail, "const") || strings.Contains(rej.Reason+rej.Detail, "group")) {
+		t.Fatalf("want token-mismatch reject, got %v", err)
+	}
+}
+
+// Replacing a grouped member whose FOLLOWING spec inherits its expression
+// would silently change the follower's value; reject with the dependency
+// named (a silent wrong answer is the bug).
+func TestPatchUpsertDeclGroupedInheritedFollowerRejects(t *testing.T) {
+	s := demo(t)
+	_, err := s.Patch([]byte(`{"pkg":"demo/sig","ops":[
+		{"op":"upsert_decl","text":"const SizeBig = 12"}]}`))
+	rej, ok := err.(*Reject)
+	if !ok || !strings.Contains(rej.Reason+rej.Detail, "SizeHuge") {
+		t.Fatalf("want inherited-follower reject naming SizeHuge, got %v", err)
+	}
+}
+
+// Deleting a type and its methods while a surviving caller's receiver
+// type is swapped in the same patch (7ec1fe75: ClusterListener ->
+// cluster.Listener under Core's field): the method's still-referenced
+// guard must not block on a reference the final state resolves to the
+// replacement type; the end-of-list typecheck is the arbiter.
+func TestPatchDeleteDeclTypeMigrationBatch(t *testing.T) {
+	s := demo(t)
+	for _, decl := range []string{
+		"type Old struct{}",
+		"func (Old) Ping() int { return 1 }",
+		"type Successor struct{}",
+		"func (Successor) Ping() int { return 2 }",
+		"type Box struct{ p Old }",
+		"func (b Box) Use() int { return b.p.Ping() }",
+	} {
+		if _, err := s.UpsertDecl("demo/lib", decl); err != nil {
+			t.Fatal(err)
+		}
+	}
+	res, err := s.Patch([]byte(`{"pkg":"demo/lib","ops":[
+		{"op":"upsert_decl","text":"type Box struct{ p Successor }"},
+		{"op":"delete_decl","syms":["Old","Old.Ping"]}]}`))
+	if err != nil {
+		t.Fatalf("rejected: %v", err)
+	}
+	if res["status"] != "accepted" {
+		t.Fatalf("got %v", res)
+	}
+	if _, err := s.inspect("demo/lib", "Old"); err == nil {
+		t.Error("Old still present")
+	}
+	if _, err := s.inspect("demo/lib", "Box.Use"); err != nil {
+		t.Errorf("surviving caller lost: %v", err)
+	}
+}

@@ -1,0 +1,147 @@
+diff --git a/helper/testhelpers/testhelpers.go b/helper/testhelpers/testhelpers.go
+index bb39906b54..8d26c5be0a 100644
+--- a/helper/testhelpers/testhelpers.go
++++ b/helper/testhelpers/testhelpers.go
+@@ -23,6 +23,7 @@ import (
+ 	"github.com/hashicorp/vault/sdk/physical"
+ 	"github.com/hashicorp/vault/sdk/physical/inmem"
+ 	"github.com/hashicorp/vault/vault"
++	"github.com/hashicorp/vault/vault/cluster"
+ 	testing "github.com/mitchellh/go-testing-interface"
+ )
+ 
+@@ -302,7 +303,7 @@ func GetPerfReplicatedClusters(t testing.T, conf *vault.CoreConfig, opts *vault.
+ 	}
+ 
+ 	// Set this lower so that state populates quickly to standby nodes
+-	vault.HeartbeatInterval = 2 * time.Second
++	cluster.HeartbeatInterval = 2 * time.Second
+ 
+ 	opts1 := *opts
+ 	opts1.Logger = logger.Named("perf-pri")
+@@ -325,7 +326,7 @@ func GetFourReplicatedClusters(t testing.T, handlerFunc func(*vault.HandlerPrope
+ 		Level: log.Trace,
+ 	})
+ 	// Set this lower so that state populates quickly to standby nodes
+-	vault.HeartbeatInterval = 2 * time.Second
++	cluster.HeartbeatInterval = 2 * time.Second
+ 
+ 	ret.PerfPrimaryCluster, _ = GetClusterAndCore(t, logger.Named("perf-pri"), handlerFunc)
+ 
+diff --git a/vault/cluster.go b/vault/cluster.go
+index 78f2daf3fa..d367682ec7 100644
+--- a/vault/cluster.go
++++ b/vault/cluster.go
+@@ -25,6 +25,7 @@ import (
+ 	uuid "github.com/hashicorp/go-uuid"
+ 	"github.com/hashicorp/vault/sdk/helper/jsonutil"
+ 	"github.com/hashicorp/vault/sdk/logical"
++	"github.com/hashicorp/vault/vault/cluster"
+ 	"golang.org/x/net/http2"
+ )
+ 
+@@ -596,7 +597,7 @@ func (c *Core) startClusterListener(ctx context.Context) error {
+ 	h2Server := &http2.Server{
+ 		// Our forwarding connections heartbeat regularly so anything else we
+ 		// want to go away/get cleaned up pretty rapidly
+-		IdleTimeout: 5 * HeartbeatInterval,
++		IdleTimeout: 5 * cluster.HeartbeatInterval,
+ 	}
+ 
+ 	c.clusterListener = &ClusterListener{
+diff --git a/vault/core.go b/vault/core.go
+index 042054c208..26a05a3260 100644
+--- a/vault/core.go
++++ b/vault/core.go
+@@ -38,6 +38,7 @@ import (
+ 	"github.com/hashicorp/vault/sdk/logical"
+ 	"github.com/hashicorp/vault/sdk/physical"
+ 	"github.com/hashicorp/vault/shamir"
++	"github.com/hashicorp/vault/vault/cluster"
+ 	"github.com/hashicorp/vault/vault/seal"
+ )
+ 
+@@ -592,7 +593,7 @@ func NewCore(conf *CoreConfig) (*Core, error) {
+ 		maxLeaseTTL:                  conf.MaxLeaseTTL,
+ 		cachingDisabled:              conf.DisableCache,
+ 		clusterName:                  conf.ClusterName,
+-		clusterPeerClusterAddrsCache: cache.New(3*HeartbeatInterval, time.Second),
++		clusterPeerClusterAddrsCache: cache.New(3*cluster.HeartbeatInterval, time.Second),
+ 		enableMlock:                  !conf.DisableMlock,
+ 		rawEnabled:                   conf.EnableRaw,
+ 		replicationState:             new(uint32),
+diff --git a/vault/core_util.go b/vault/core_util.go
+index 0ec09b5a31..2bec295b4e 100644
+--- a/vault/core_util.go
++++ b/vault/core_util.go
+@@ -1,3 +1,4 @@
++//go:build !enterprise
+ // +build !enterprise
+ 
+ package vault
+@@ -10,6 +11,7 @@ import (
+ 	"github.com/hashicorp/vault/sdk/helper/license"
+ 	"github.com/hashicorp/vault/sdk/logical"
+ 	"github.com/hashicorp/vault/sdk/physical"
++	"github.com/hashicorp/vault/vault/cluster"
+ 	"github.com/hashicorp/vault/vault/replication"
+ 	cache "github.com/patrickmn/go-cache"
+ )
+@@ -111,5 +113,5 @@ func (c *Core) invalidateSentinelPolicy(PolicyType, string) {}
+ func (c *Core) removePerfStandbySecondary(context.Context, string) {}
+ 
+ func (c *Core) perfStandbyClusterHandler() (*replication.Cluster, *cache.Cache, chan struct{}, error) {
+-	return nil, cache.New(2*HeartbeatInterval, 1*time.Second), make(chan struct{}), nil
++	return nil, cache.New(2*cluster.HeartbeatInterval, 1*time.Second), make(chan struct{}), nil
+ }
+diff --git a/vault/request_forwarding.go b/vault/request_forwarding.go
+index da743cf4d0..fe2710b2a1 100644
+--- a/vault/request_forwarding.go
++++ b/vault/request_forwarding.go
+@@ -16,6 +16,7 @@ import (
+ 
+ 	log "github.com/hashicorp/go-hclog"
+ 	"github.com/hashicorp/vault/helper/forwarding"
++	"github.com/hashicorp/vault/vault/cluster"
+ 	"github.com/hashicorp/vault/vault/replication"
+ 	cache "github.com/patrickmn/go-cache"
+ 	"golang.org/x/net/http2"
+@@ -39,11 +40,6 @@ const (
+ 	requestForwardingALPN = "req_fw_sb-act_v1"
+ )
+ 
+-var (
+-	// Making this a package var allows tests to modify
+-	HeartbeatInterval = 5 * time.Second
+-)
+-
+ type requestForwardingHandler struct {
+ 	fws         *http2.Server
+ 	fwRPCServer *grpc.Server
+@@ -65,7 +61,7 @@ func NewRequestForwardingHandler(c *Core, fws *http2.Server, perfStandbySlots ch
+ 
+ 	fwRPCServer := grpc.NewServer(
+ 		grpc.KeepaliveParams(keepalive.ServerParameters{
+-			Time: 2 * HeartbeatInterval,
++			Time: 2 * cluster.HeartbeatInterval,
+ 		}),
+ 		grpc.MaxRecvMsgSize(math.MaxInt32),
+ 		grpc.MaxSendMsgSize(math.MaxInt32),
+@@ -278,7 +274,7 @@ func (c *Core) refreshRequestForwardingConnection(ctx context.Context, clusterAd
+ 		grpc.WithDialer(c.getGRPCDialer(ctx, requestForwardingALPN, parsedCert.Subject.CommonName, parsedCert)),
+ 		grpc.WithInsecure(), // it's not, we handle it in the dialer
+ 		grpc.WithKeepaliveParams(keepalive.ClientParameters{
+-			Time: 2 * HeartbeatInterval,
++			Time: 2 * cluster.HeartbeatInterval,
+ 		}),
+ 		grpc.WithDefaultCallOptions(
+ 			grpc.MaxCallRecvMsgSize(math.MaxInt32),
+@@ -294,7 +290,7 @@ func (c *Core) refreshRequestForwardingConnection(ctx context.Context, clusterAd
+ 	c.rpcForwardingClient = &forwardingClient{
+ 		RequestForwardingClient: NewRequestForwardingClient(c.rpcClientConn),
+ 		core:                    c,
+-		echoTicker:              time.NewTicker(HeartbeatInterval),
++		echoTicker:              time.NewTicker(cluster.HeartbeatInterval),
+ 		echoContext:             dctx,
+ 	}
+ 	c.rpcForwardingClient.startHeartbeat()

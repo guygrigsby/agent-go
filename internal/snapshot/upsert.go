@@ -25,24 +25,48 @@ import (
 // fallback mid-patch. The direct UpsertDecl method still handles it, same
 // as it always has; needsCreate is a documented v1 ceiling for the
 // composable op only.
-func upsertDeclEdit(s *Snapshot, pkgPath, name, sym string, testDecl bool) (file string, start, end int, action string, needsCreate bool, rej *Reject) {
+func upsertDeclEdit(s *Snapshot, pkgPath, name, sym string, testDecl bool) (file string, start, end int, action string, needsCreate bool, groupTok string, rej *Reject) {
 	p := s.primary(pkgPath)
 	if p == nil {
-		return "", 0, 0, "", false, &Reject{Reason: "package not found", Detail: pkgPath,
+		return "", 0, 0, "", false, "", &Reject{Reason: "package not found", Detail: pkgPath,
 			DidYouMean: s.suggestPackages(pkgPath)}
 	}
 	// Primary first so non-test decls resolve to their primary file, then
 	// every other variant: a decl living in a _test.go file is only in the
 	// test variant's syntax, and missing it would append a duplicate.
 	if file, start, end := s.findDeclRange(p, name, sym); file != "" {
-		return file, start, end, "replaced", false, nil
+		return file, start, end, "replaced", false, "", nil
 	}
 	for _, v := range s.pkgs {
 		if v == p || v.PkgPath != pkgPath || v.Types == nil || strings.HasSuffix(v.ID, ".test") {
 			continue
 		}
 		if file, start, end := s.findDeclRange(v, name, sym); file != "" {
-			return file, start, end, "replaced", false, nil
+			return file, start, end, "replaced", false, "", nil
+		}
+	}
+	// One spec inside a grouped const/var/type block: the spec's own range
+	// replaces, the group and siblings stay put; groupTok tells the caller
+	// to slice spec text out of the incoming declaration.
+	for _, v := range append([]*packages.Package{p}, s.pkgs...) {
+		if v.PkgPath != pkgPath || v.Types == nil || strings.HasSuffix(v.ID, ".test") {
+			continue
+		}
+		if gfile, gd, gsp := s.findGroupedSpec(v, name); gfile != "" {
+			// A following bare spec repeats this spec's expression, so a
+			// replacement would silently change the follower's value.
+			for i, sp := range gd.Specs {
+				if sp != gsp || i+1 >= len(gd.Specs) {
+					continue
+				}
+				if vs, ok := gd.Specs[i+1].(*ast.ValueSpec); ok && len(vs.Values) == 0 && vs.Type == nil {
+					return "", 0, 0, "", false, "", &Reject{
+						Reason: "the following group member inherits this spec's expression",
+						Detail: fmt.Sprintf("%s repeats %s's value; replacing %s would silently change it, rewrite both members", vs.Names[0].Name, name, name)}
+				}
+			}
+			gs, ge := s.specRange(gsp)
+			return gfile, gs, ge, "replaced", false, gd.Tok.String(), nil
 		}
 	}
 	// A new test func lands in a _test.go file, mirroring move_decl's
@@ -54,9 +78,43 @@ func upsertDeclEdit(s *Snapshot, pkgPath, name, sym string, testDecl bool) (file
 	agentFile := filepath.Join(filepath.Dir(p.Fset.Position(p.Syntax[0].Pos()).Filename), base)
 	b, err := os.ReadFile(agentFile)
 	if err != nil {
-		return agentFile, 0, 0, "added", true, nil
+		return agentFile, 0, 0, "added", true, "", nil
 	}
-	return agentFile, len(b), len(b), "added", false, nil
+	return agentFile, len(b), len(b), "added", false, "", nil
+}
+
+// groupMemberText slices the spec (with its doc comment) out of a
+// standalone single-spec declaration so it can replace one member inside a
+// grouped block, and rejects a token mismatch (a var cannot land inside a
+// const group).
+func groupMemberText(text, groupTok string) (string, *Reject) {
+	fset := token.NewFileSet()
+	f, err := parser.ParseFile(fset, "decl.go", "package _p\n\n"+text, parser.ParseComments|parser.SkipObjectResolution)
+	if err != nil || len(f.Decls) != 1 {
+		return "", &Reject{Reason: "declaration does not parse", Detail: text}
+	}
+	gd, ok := f.Decls[0].(*ast.GenDecl)
+	if !ok {
+		return "", &Reject{Reason: "declaration replaces a grouped " + groupTok + " member",
+			Detail: "the existing symbol lives inside a " + groupTok + " (...) group; send a " + groupTok + " declaration"}
+	}
+	if gd.Tok.String() != groupTok {
+		return "", &Reject{Reason: "declaration token does not match the group",
+			Detail: "the existing symbol lives inside a " + groupTok + " (...) group; got " + gd.Tok.String()}
+	}
+	if len(gd.Specs) != 1 {
+		return "", &Reject{Reason: "expected exactly one declaration in the group",
+			Detail: fmt.Sprintf("got %d specs", len(gd.Specs))}
+	}
+	src := "package _p\n\n" + text
+	spec := src[fset.Position(gd.Specs[0].Pos()).Offset:fset.Position(gd.Specs[0].End()).Offset]
+	if gd.Doc != nil {
+		// Doc and spec are separated by the group token in the standalone
+		// form; rejoin them without it.
+		doc := src[fset.Position(gd.Doc.Pos()).Offset:fset.Position(gd.Doc.End()).Offset]
+		return doc + "\n" + spec, nil
+	}
+	return spec, nil
 }
 
 // landingFile returns an existing file of pkgPath matching the wanted
@@ -122,9 +180,16 @@ func (s *Snapshot) UpsertDecl(pkgPath, text string) (map[string]any, error) {
 		return s.upsertNewPackage(pkgPath, text, sym, ms)
 	}
 
-	file, start, end, action, needsCreate, rej := upsertDeclEdit(s, pkgPath, name, sym, testFuncDecl(text))
+	file, start, end, action, needsCreate, groupTok, rej := upsertDeclEdit(s, pkgPath, name, sym, testFuncDecl(text))
 	if rej != nil {
 		return nil, rej
+	}
+	if groupTok != "" {
+		member, rej := groupMemberText(text, groupTok)
+		if rej != nil {
+			return nil, rej
+		}
+		text = member
 	}
 	var src []byte
 	if needsCreate {

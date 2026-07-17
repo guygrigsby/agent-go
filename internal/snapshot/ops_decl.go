@@ -110,9 +110,16 @@ func (upsertDeclOp) apply(ctx *patchCtx, raw json.RawMessage) *Reject {
 		return createFileInPatch(ctx, pkg, file, src, sym)
 	}
 	testDecl := testFuncDecl(a.Text)
-	file, start, end, _, needsCreate, rej := upsertDeclEdit(ctx.s, pkg, name, sym, testDecl)
+	file, start, end, _, needsCreate, groupTok, rej := upsertDeclEdit(ctx.s, pkg, name, sym, testDecl)
 	if rej != nil {
 		return rej
+	}
+	if groupTok != "" {
+		member, rej := groupMemberText(a.Text, groupTok)
+		if rej != nil {
+			return rej
+		}
+		a.Text = member
 	}
 	if needsCreate {
 		// Prefer appending to an existing file of the right kind (the same
@@ -134,11 +141,15 @@ func (upsertDeclOp) apply(ctx *patchCtx, raw json.RawMessage) *Reject {
 		}
 	}
 	ctx.addBaseline(preflightBaseline(ctx.s, file, pkg))
-	prefix := ""
-	if start > 0 {
-		prefix = "\n"
+	text := "\n" + strings.TrimSpace(a.Text) + "\n"
+	if start == 0 {
+		text = strings.TrimSpace(a.Text) + "\n"
 	}
-	text := prefix + strings.TrimSpace(a.Text) + "\n"
+	if groupTok != "" {
+		// A spec replacement splices verbatim inside the group; added
+		// newlines would orphan the member's indentation.
+		text = a.Text
+	}
 	edits := []edit{{file, start, end - start, text}}
 	if len(a.Imports) > 0 {
 		owner := ctx.s.primary(pkg)
@@ -289,7 +300,20 @@ func deleteDeclEdits(s *Snapshot, pkgPath string, syms []string, rewritten func(
 		}
 		filename, decl, doc := s.findDeclNode(p, obj.Name(), sym)
 		if filename == "" {
-			return nil, &Reject{Reason: "declaration not found", Detail: pkgPath + "." + sym}
+			// One spec inside a grouped const/var/type block: the spec's own
+			// range excises, siblings and group stay. The movable guard
+			// rejects what cannot leave a group (iota position, inherited
+			// values, multi-name specs) with the blocker named.
+			gfile, _, gsp := s.findGroupedSpec(p, obj.Name())
+			if gfile == "" {
+				return nil, &Reject{Reason: "declaration not found", Detail: pkgPath + "." + sym}
+			}
+			if rej := groupedSpecMovable(gsp); rej != nil {
+				return nil, rej
+			}
+			gs, ge := s.specRange(gsp)
+			spans = append(spans, span{obj, gfile, gs, ge})
+			continue
 		}
 		start := decl.Pos()
 		if doc != nil {
@@ -306,10 +330,25 @@ func deleteDeclEdits(s *Snapshot, pkgPath string, syms []string, rewritten func(
 		}
 		return rewritten != nil && rewritten(file, off)
 	}
+	batchTypes := map[string]bool{}
+	for _, sym := range syms {
+		if !strings.Contains(sym, ".") {
+			batchTypes[sym] = true
+		}
+	}
 	var edits []edit
-	for _, sp := range spans {
+	for i, sp := range spans {
+		// A method whose receiver type deletes in the same batch shares the
+		// type's fate: a surviving call site may resolve to a replacement
+		// type in the final state (a field's type swapped in the same
+		// patch), which only the end-of-list typecheck can judge.
+		if recv, _, isMethod := strings.Cut(syms[i], "."); isMethod && batchTypes[recv] {
+			edits = append(edits, edit{sp.file, sp.start, sp.end - sp.start, ""})
+			continue
+		}
 		if refs := referencePositions(s, sp.obj, sp.file, sp.start, sp.end, dead); len(refs) > 0 {
-			return nil, &Reject{Reason: "symbol is still referenced", Diagnostics: refs}
+			return nil, &Reject{Reason: "symbol is still referenced",
+				Detail: pkgPath + "." + syms[i], Diagnostics: refs}
 		}
 		edits = append(edits, edit{sp.file, sp.start, sp.end - sp.start, ""})
 	}

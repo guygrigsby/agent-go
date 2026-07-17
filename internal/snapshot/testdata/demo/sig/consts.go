@@ -10,3 +10,8 @@ const (
 	LevelA = iota
 	LevelB
 )
+
+const (
+	SizeBig = 10
+	SizeHuge
+)

@@ -1,0 +1,7 @@
+{"ms":7477,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-17T19:36:15.232959Z"}
+{"ms":43503,"op":"patch","outcome":"accepted","pkg":"github.com/hashicorp/boundary/internal/kms","req_sha":"3973bc74d3546f30","ts":"2026-07-17T19:36:22.722967Z"}
+{"ms":4,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/libs/crypto","req_sha":"4735785bc98b9d6e","sym":"NewDerivedReader","ts":"2026-07-17T19:37:06.284018Z"}
+{"ms":5,"op":"inspect","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/kms","reason":"symbol not found","repairs":1,"req_sha":"06b3709f94d43a41","sym":"NewDerivedReader","ts":"2026-07-17T19:37:06.419425Z"}
+{"ms":6,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/libs/crypto","req_sha":"4d400ef2f960ae93","sym":"TestNewDerivedReader","ts":"2026-07-17T19:37:06.600916Z"}
+{"ms":5,"op":"inspect","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/kms","reason":"symbol not found","repairs":1,"req_sha":"45003c1614a7068f","sym":"TestNewDerivedReader","ts":"2026-07-17T19:37:06.740411Z"}
+{"ms":12,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-17T19:37:06.805895Z"}

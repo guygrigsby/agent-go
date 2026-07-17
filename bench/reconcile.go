@@ -79,6 +79,19 @@ func reconcileOps(gitDir, sha, modPath string, moves []MoveSpec, applied map[str
 			continue
 		}
 		status, file := parts[0], parts[1]
+		// Vendored copies and nested modules are not workspace members the
+		// ops can address: the vendor tree follows its module, and a nested
+		// module's packages resolve from the module cache. Skip with the
+		// blocker named; a main-module decl needing their new surface fails
+		// the end-of-list typecheck loudly, never silently.
+		if strings.HasPrefix(file, "vendor/") {
+			*notes = append(*notes, "skip "+file+": vendored copy of another module")
+			continue
+		}
+		if mod := nestedModuleOf(gitDir, sha, file); mod != "" {
+			*notes = append(*notes, "skip "+file+": inside nested module "+mod)
+			continue
+		}
 		pkgPath := modPath
 		if dir := path.Dir(file); dir != "." {
 			pkgPath = modPath + "/" + dir
@@ -144,6 +157,9 @@ func reconcileOps(gitDir, sha, modPath string, moves []MoveSpec, applied map[str
 	// for commit-deleted test files.
 	var upserts, deletes []map[string]any
 	deleteSyms := map[string][]string{}
+	// A file and its vendored copy diff to identical ops; emit each
+	// (pkg, decl) once.
+	seenUpsert, seenDelete := map[string]bool{}, map[string]bool{}
 	for _, ps := range posts {
 		var keys []string
 		for k := range ps.decls.decls {
@@ -153,7 +169,7 @@ func reconcileOps(gitDir, sha, modPath string, moves []MoveSpec, applied map[str
 		for _, k := range keys {
 			d := ps.decls.decls[k]
 			if d.grouped {
-				*notes = append(*notes, "skip "+ps.file+" "+k+": grouped multi-spec decl")
+				*notes = append(*notes, "skip "+ps.file+" "+k+": group semantics pin it (iota, inherited value, or multi-name spec)")
 				continue
 			}
 			if base := baseOf(k); moverInBatch[moverKeyFor(moves, ps.pkg, k)] || moverInBatch[moverKeyFor(moves, ps.pkg, base)] {
@@ -162,6 +178,10 @@ func reconcileOps(gitDir, sha, modPath string, moves []MoveSpec, applied map[str
 			if old, ok := preByPkg[ps.pkg][k]; ok && old.text == d.text {
 				continue
 			}
+			if seenUpsert[ps.pkg+"|"+k] {
+				continue
+			}
+			seenUpsert[ps.pkg+"|"+k] = true
 			op := map[string]any{"op": "upsert_decl", "pkg": ps.pkg, "text": d.text}
 			if imps := ps.decls.importsUsedBy(d); len(imps) > 0 {
 				op["imports"] = imps
@@ -190,9 +210,13 @@ func reconcileOps(gitDir, sha, modPath string, moves []MoveSpec, applied map[str
 				continue // move_decl excises (or already excised) it
 			}
 			if ps.decls.decls[k].grouped {
-				*notes = append(*notes, "skip "+ps.file+" "+k+": grouped multi-spec decl")
+				*notes = append(*notes, "skip "+ps.file+" "+k+": group semantics pin it (iota, inherited value, or multi-name spec)")
 				continue
 			}
+			if seenDelete[ps.pkg+"|"+k] {
+				continue
+			}
+			seenDelete[ps.pkg+"|"+k] = true
 			deleteSyms[ps.pkg] = append(deleteSyms[ps.pkg], k)
 		}
 		if deletedFiles[ps.file] {
@@ -211,6 +235,18 @@ func reconcileOps(gitDir, sha, modPath string, moves []MoveSpec, applied map[str
 	}
 	plan.ops = append(upserts, deletes...)
 	return plan, nil
+}
+
+// nestedModuleOf returns the nearest ancestor directory (not the repo
+// root) holding a go.mod at sha, or "" when the file belongs to the root
+// module.
+func nestedModuleOf(gitDir, sha, file string) string {
+	for dir := path.Dir(file); dir != "." && dir != "/"; dir = path.Dir(dir) {
+		if err := exec.Command("git", "-C", gitDir, "cat-file", "-e", sha+":"+dir+"/go.mod").Run(); err == nil {
+			return dir
+		}
+	}
+	return ""
 }
 
 // moverKeyFor maps a decl key in pkg to the mover key that owns it: for a
@@ -305,7 +341,33 @@ func gitFileDecls(gitDir, rev, file string) *fileDecls {
 				}
 				continue
 			}
-			grouped = len(d.Specs) != 1
+			if len(d.Specs) > 1 {
+				// Grouped block: index each member as its own standalone
+				// decl (the engine replaces or excises single specs in
+				// place). Members the group semantics pin stay grouped=true
+				// so the caller notes the skip: multi-name specs, iota
+				// anywhere in the group, and inherited or inherited-from
+				// expressions.
+				groupIota := groupUsesIota(d)
+				for i, sp := range d.Specs {
+					name, text, ok := memberDecl(fset, src, d, i)
+					if name == "" || name == "_" {
+						continue
+					}
+					pinned := !ok || groupIota || memberInherits(d, i) || followerInherits(d, i)
+					quals := map[string]bool{}
+					ast.Inspect(sp, func(n ast.Node) bool {
+						if sel, isSel := n.(*ast.SelectorExpr); isSel {
+							if id, isID := sel.X.(*ast.Ident); isID {
+								quals[id.Name] = true
+							}
+						}
+						return true
+					})
+					fd.decls[name] = declInfo{text: text, grouped: pinned, quals: quals}
+				}
+				continue
+			}
 			switch sp := d.Specs[0].(type) {
 			case *ast.TypeSpec:
 				key = sp.Name.Name
@@ -338,6 +400,63 @@ func gitFileDecls(gitDir, rev, file string) *fileDecls {
 		fd.decls[key] = declInfo{text: string(src[so:eo]), grouped: grouped, quals: quals}
 	}
 	return fd
+}
+
+// memberDecl renders group member i as a standalone declaration ("const
+// Name = ...", doc comment kept); ok is false for shapes the engine's
+// grouped ops cannot address (multi-name specs).
+func memberDecl(fset *token.FileSet, src []byte, d *ast.GenDecl, i int) (name, text string, ok bool) {
+	render := func(name string, specStart, specEnd token.Pos, doc *ast.CommentGroup) (string, string, bool) {
+		spec := string(src[fset.Position(specStart).Offset:fset.Position(specEnd).Offset])
+		text := d.Tok.String() + " " + spec
+		if doc != nil {
+			// Doc comment precedes the token in the standalone form.
+			text = string(src[fset.Position(doc.Pos()).Offset:fset.Position(doc.End()).Offset]) + "\n" + text
+		}
+		return name, text, true
+	}
+	switch sp := d.Specs[i].(type) {
+	case *ast.TypeSpec:
+		return render(sp.Name.Name, sp.Pos(), sp.End(), sp.Doc)
+	case *ast.ValueSpec:
+		if len(sp.Names) != 1 {
+			return sp.Names[0].Name, "", false
+		}
+		return render(sp.Names[0].Name, sp.Pos(), sp.End(), sp.Doc)
+	}
+	return "", "", false
+}
+
+// groupUsesIota reports whether any spec in the group references iota:
+// member positions then define values, and no single-spec op is safe.
+func groupUsesIota(d *ast.GenDecl) bool {
+	uses := false
+	for _, sp := range d.Specs {
+		vs, ok := sp.(*ast.ValueSpec)
+		if !ok {
+			continue
+		}
+		for _, v := range vs.Values {
+			ast.Inspect(v, func(n ast.Node) bool {
+				if id, ok := n.(*ast.Ident); ok && id.Name == "iota" {
+					uses = true
+				}
+				return true
+			})
+		}
+	}
+	return uses
+}
+
+// memberInherits reports whether spec i repeats the previous member's
+// expression (a bare const spec); followerInherits whether spec i+1 does.
+func memberInherits(d *ast.GenDecl, i int) bool {
+	vs, ok := d.Specs[i].(*ast.ValueSpec)
+	return ok && len(vs.Values) == 0 && vs.Type == nil
+}
+
+func followerInherits(d *ast.GenDecl, i int) bool {
+	return i+1 < len(d.Specs) && memberInherits(d, i+1)
 }
 
 func recvBase(t ast.Expr) string {

@@ -95,8 +95,8 @@ op instead of at the top level.
 
 | op | args | notes |
 |---|---|---|
-| `upsert_decl` | pkg, text, imports? | add or replace a whole declaration; goimports in the loop, `imports` names what it cannot infer (aliases, ambiguous names); replaces into _test.go files, new decls append to an existing package file (test funcs to a _test.go) and may reference other in-flight ops; creates packages under the module on demand |
-| `delete_decl` | pkg, sym or syms | rejected while references remain (listed); the syms batch tolerates intra-set references, and spans earlier ops in the patch rewrote do not count |
+| `upsert_decl` | pkg, text, imports? | add or replace a whole declaration; goimports in the loop, `imports` names what it cannot infer (aliases, ambiguous names); replaces into _test.go files and single members of grouped blocks in place (iota and inherited-value members reject, named), new decls append to an existing package file (test funcs to a _test.go) and may reference other in-flight ops; creates packages under the module on demand |
+| `delete_decl` | pkg, sym or syms | rejected while references remain (listed); the syms batch tolerates intra-set references, spans earlier ops rewrote do not count, grouped members excise in place (iota and inherited values reject), and methods deleting with their receiver type defer to the end-of-list typecheck |
 | `move_decl` | pkg, sym, to_pkg, create_pkg? | rewrites references and imports, requalifying call sites; the declaration's own imports travel with it, aliases included; test decls land in a `_test.go`, created on demand. `create_pkg` creates a missing module-local target (opt in; a bare miss rejects and offers the flag as a repair). a type moves with its whole method set; one spec of a grouped block extracts standalone. v1 ceilings: the declaration must be self-contained (no uses of its old package's other top-level symbols); grouped specs may not lean on iota or inherited values; each rejects naming the blocker |
 | `rename` | pkg, sym, to | proves post-splice resolution; rejects capture and collision |
 | `set_body` | pkg, sym, body | body as checked text; the coarse escape hatch |

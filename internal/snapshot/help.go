@@ -106,7 +106,7 @@ var opCatalog = []helpOp{
 			{"imports", "[]{path,name}", false, "imports the declaration needs that goimports cannot infer: an aliased import or an ambiguous package name; name is the alias, empty for the default"},
 		},
 		Example: json.RawMessage(`[{"op":"upsert_decl","pkg":"demo/lib","text":"// Double doubles v.\nfunc Double(v int) int {\n\treturn v + v\n}"}]`),
-		Notes:   "add or replace a whole top-level declaration; goimports runs in the loop. Replacement finds declarations in _test.go files too. New declarations append to an existing package file (test funcs to a _test.go file, so they actually run) and may reference symbols other ops in the same patch introduce; a package with no such file gets agent.go / agent_test.go created on demand — including a brand-new package mid-patch, so one atomic patch can create a package and move declarations into it",
+		Notes:   "add or replace a whole top-level declaration; goimports runs in the loop. Replacement finds declarations in _test.go files too, and replaces single members inside grouped const/var/type blocks in place (send the standalone form; iota groups and members a following bare spec inherits from reject with the blocker named). New declarations append to an existing package file (test funcs to a _test.go file, so they actually run) and may reference symbols other ops in the same patch introduce; a package with no such file gets agent.go / agent_test.go created on demand — including a brand-new package mid-patch, so one atomic patch can create a package and move declarations into it",
 	},
 	{
 		Op: "delete_decl",
@@ -116,7 +116,7 @@ var opCatalog = []helpOp{
 			{"syms", "[]string", false, "batch form: several symbols delete together, so intra-set references (a helper and the test that used it) do not block"},
 		},
 		Example: json.RawMessage(`[{"op":"delete_decl","sym":"Unused"}]`),
-		Notes:   "rejected while any non-declaring reference remains outside the declaration itself (a recursive self-call does not count), outside the batch, and outside spans earlier ops in the same patch rewrote; the diagnostics list where",
+		Notes:   "rejected while any non-declaring reference remains outside the declaration itself (a recursive self-call does not count), outside the batch, and outside spans earlier ops in the same patch rewrote; the diagnostics list where. A member of a grouped const/var/type block excises in place (iota and inherited-value members reject, position defines them); a method whose receiver type deletes in the same batch skips the reference guard, the end-of-list typecheck arbitrates",
 	},
 	{
 		Op: "set_doc",
