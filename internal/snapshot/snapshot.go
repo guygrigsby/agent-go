@@ -664,6 +664,7 @@ func (s *Snapshot) retypecheck(dirty []*packages.Package, baseline map[string]bo
 	}
 	depCount := make([]int, len(order))
 	dependents := make([][]int, len(order))
+	importsOf := make([][]int, len(order))
 	for i := range order {
 		seenDep := map[int]bool{}
 		for _, f := range filesBy[i] {
@@ -687,6 +688,7 @@ func (s *Snapshot) retypecheck(dirty []*packages.Package, baseline map[string]bo
 				seenDep[j] = true
 				depCount[i]++
 				dependents[j] = append(dependents[j], i)
+				importsOf[i] = append(importsOf[i], j)
 			}
 		}
 	}
@@ -708,7 +710,12 @@ func (s *Snapshot) retypecheck(dirty []*packages.Package, baseline map[string]bo
 		for _, d := range perr {
 			perrs = append(perrs, packages.Error{Pos: d.Pos, Msg: d.Msg, Kind: packages.TypeError})
 		}
+		// impMu serializes these writes against importFallback's workspace
+		// scan, which reads p.Types across ALL packages from concurrently
+		// checking workers (mu is not held there).
+		s.impMu.Lock()
 		p.Types, p.TypesInfo, p.Syntax, p.Errors = tpkg, info, filesBy[i], perrs
+		s.impMu.Unlock()
 		diagsBy[i] = perr
 		done[i] = true
 	}
@@ -739,8 +746,20 @@ func (s *Snapshot) retypecheck(dirty []*packages.Package, baseline map[string]bo
 	mu.Unlock()
 	wg.Wait()
 	// A post-edit import cycle leaves nodes unscheduled (their counters
-	// never reach zero). Check them serially in topo order; the checker
-	// itself reports the cycle as a diagnostic.
+	// never reach zero). The real build rejects that world, and checking
+	// the leftovers through the stale import fallback would typecheck it
+	// clean (boundary's session -> common -> session move landed exactly
+	// that way). Name the cycle and reject instead.
+	for i := range order {
+		if !done[i] {
+			if chain := cycleFrom(i, importsOf, done, order); chain != nil {
+				restore()
+				return []Diagnostic{{Msg: "import cycle: " + strings.Join(chain, " imports ")}}, len(order), nil
+			}
+		}
+	}
+	// Unscheduled but not on a cycle should be unreachable; keep the old
+	// serial sweep so a detection miss degrades to the previous behavior.
 	for i := range order {
 		if !done[i] {
 			tpkg, info, perr := s.checkOne(order[i], filesBy[i])
@@ -758,6 +777,39 @@ func (s *Snapshot) retypecheck(dirty []*packages.Package, baseline map[string]bo
 	}
 	s.bumpGenerations(order)
 	return nil, len(order), nil
+}
+
+// cycleFrom walks POST-edit import edges from an unscheduled node until a
+// node repeats; the walk stays inside the unscheduled set (a scheduled
+// node cannot sit on the cycle) and every unscheduled node has at least
+// one unscheduled import, so the walk always closes. The returned chain
+// starts and ends at the repeated package.
+func cycleFrom(start int, importsOf [][]int, done []bool, order []*packages.Package) []string {
+	at := make(map[int]int) // node -> position in path
+	var path []int
+	i := start
+	for {
+		if pos, seen := at[i]; seen {
+			var chain []string
+			for _, n := range path[pos:] {
+				chain = append(chain, order[n].PkgPath)
+			}
+			return append(chain, order[i].PkgPath)
+		}
+		at[i] = len(path)
+		path = append(path, i)
+		next := -1
+		for _, j := range importsOf[i] {
+			if !done[j] {
+				next = j
+				break
+			}
+		}
+		if next == -1 {
+			return nil
+		}
+		i = next
+	}
 }
 
 // checkOne typechecks one package's freshly parsed files. Safe to run
@@ -832,7 +884,9 @@ func importerFor(s *Snapshot, p *packages.Package) types.Importer {
 // same new import see one *types.Package. A third-party or module-local
 // package introduced this way is not covered — that needs a full workspace
 // reload to discover via the real module graph (as UpsertDecl already does
-// when it creates a new package). Caller holds mu.
+// when it creates a new package). impMu covers the cache AND the
+// workspace scan: retypecheck splices write p.Types concurrently under
+// the same lock.
 func (s *Snapshot) importFallback(path string) (*types.Package, error) {
 	s.impMu.Lock()
 	defer s.impMu.Unlock()

@@ -339,3 +339,52 @@ func TestMoveDeclLocalDepsReject(t *testing.T) {
 		t.Fatalf("reject must name the local dependency or fail typecheck: %v %v", rej.Reason, rej.Detail)
 	}
 }
+
+// Moving a declaration whose references pull in a package that itself
+// (transitively) imports the target is an import cycle in the real build;
+// the engine must reject with the cycle named, never typecheck a
+// stale-import world go build rejects. Boundary 687dd1bd is this shape:
+// newSessionConnectionCleanupJob(common.ConnectionRepoFactory) moved into
+// session while common imports session.
+func TestMoveDeclImportCycleRejectsNamed(t *testing.T) {
+	dir := t.TempDir()
+	write := func(rel, src string) {
+		t.Helper()
+		p := filepath.Join(dir, rel)
+		if err := os.MkdirAll(filepath.Dir(p), 0o755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(p, []byte(src), 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	write("go.mod", "module cyc\n\ngo 1.24\n")
+	write("target/target.go", "package target\n\ntype T int\n")
+	write("shared/shared.go", "package shared\n\nimport \"cyc/target\"\n\ntype F func() target.T\n")
+	write("source/source.go", `package source
+
+import "cyc/shared"
+
+func NewJob(f shared.F) int {
+	if f == nil {
+		return 0
+	}
+	return 1
+}
+`)
+	s := New(dir)
+	_, err := s.Patch([]byte(`{"pkg":"cyc/source","ops":[
+		{"op":"move_decl","sym":"NewJob","to_pkg":"cyc/target"}]}`))
+	rej, ok := err.(*Reject)
+	if !ok {
+		t.Fatalf("want Reject naming the import cycle, got %v", err)
+	}
+	all := rej.Reason + " " + rej.Detail
+	for _, d := range rej.Diagnostics {
+		all += " " + d.Msg
+	}
+	if !strings.Contains(all, "cycle") {
+		t.Fatalf("reject must name the import cycle, got reason=%q detail=%q diags=%v",
+			rej.Reason, rej.Detail, rej.Diagnostics)
+	}
+}
