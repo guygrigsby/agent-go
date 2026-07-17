@@ -81,7 +81,6 @@ lifecycle:
   daemon      run the workspace daemon in the foreground
   mcp         serve the MCP tools over stdio
   skill       install or print the embedded agent skill
-  stop        stop the workspace daemon
 
 Additional Commands:
   completion  Generate the autocompletion script for the specified shell

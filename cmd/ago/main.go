@@ -24,7 +24,7 @@ import (
 // localOps run in-process. Together they are the dispatch table main
 // builds cobra commands from, and the guard tests key on.
 var (
-	daemonOps = []string{"status", "help", "search", "inspect", "view", "refs", "query", "set-body", "upsert", "rename", "add-param", "patch", "test", "stop"}
+	daemonOps = []string{"status", "help", "search", "inspect", "view", "refs", "query", "set-body", "upsert", "rename", "add-param", "patch", "test"}
 	localOps  = []string{"init", "mcp", "daemon", "skill"}
 )
 
@@ -193,7 +193,7 @@ func newRoot() *cobra.Command {
 		"inspect": "reads", "view": "reads", "refs": "reads", "query": "reads",
 		"set-body": "mutations", "upsert": "mutations", "rename": "mutations",
 		"add-param": "mutations", "patch": "mutations", "test": "mutations",
-		"stop": "lifecycle", "mcp": "lifecycle", "daemon": "lifecycle",
+		"mcp": "lifecycle", "daemon": "lifecycle",
 	}
 
 	for _, op := range daemonOps {
@@ -277,7 +277,7 @@ func newRoot() *cobra.Command {
 			return runMCP(abs)
 		},
 	})
-	root.AddCommand(&cobra.Command{
+	daemonCmd := &cobra.Command{
 		Use: "daemon", Short: opHelp["daemon"], Long: opLong["daemon"],
 		GroupID: groupOf["daemon"], Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -287,7 +287,15 @@ func newRoot() *cobra.Command {
 			}
 			return daemon.Run(abs, 5*time.Minute, os.Getenv("AGO_LOG_REQUESTS"))
 		},
+	}
+	daemonCmd.AddCommand(&cobra.Command{
+		Use: "stop", Short: opHelp["stop"], Long: opLong["stop"],
+		Args: cobra.NoArgs,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return runDaemonOp("stop", f)
+		},
 	})
+	root.AddCommand(daemonCmd)
 	return root
 }
 

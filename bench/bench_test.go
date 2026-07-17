@@ -763,7 +763,7 @@ func teardown(c config, t Manifest, wt string) {
 }
 
 func agoStop(c config, wt string) {
-	cmd := exec.Command(c.agoBin, "stop", "-C", wt)
+	cmd := exec.Command(c.agoBin, "daemon", "stop", "-C", wt)
 	cmd.Env = agoEnv(c)
 	cmd.Run()
 }

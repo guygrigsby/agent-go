@@ -156,8 +156,8 @@ Both ops apply, retypecheck, and write as one unit, or neither does.
    not the same as correct.
 
 CLI equivalents exist for humans: ago status | help | query | view | patch
-| test | rename | set-body | add-param | upsert, plus ago stop to shut
-down the workspace daemon.
+| test | rename | set-body | add-param | upsert, plus ago daemon stop to
+shut down the workspace daemon.
 `,
 	}
 	if wireOnly {

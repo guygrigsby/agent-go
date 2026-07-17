@@ -98,7 +98,7 @@ func TestFlagPlumbing(t *testing.T) {
 				Ops: json.RawMessage(`[{"op":"rename","to":"Twice"}]`)}},
 		{"test", "test", []string{"-p", "demo/lib", "--run", "TestDouble"},
 			protocol.Request{Op: "test", Pkg: "demo/lib", Sym: "TestDouble"}},
-		{"stop", "stop", nil, protocol.Request{Op: "stop"}},
+		{"stop", "daemon", []string{"stop"}, protocol.Request{Op: "stop"}},
 	}
 
 	covered := map[string]bool{}
