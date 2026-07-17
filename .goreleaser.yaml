@@ -1,0 +1,30 @@
+# Release pipeline: tag v* -> binaries for the three OSes, a GitHub
+# release, and the brew formula pushed to guygrigsby/homebrew-tap.
+version: 2
+project_name: ago
+builds:
+  - main: ./cmd/ago
+    binary: ago
+    env: [CGO_ENABLED=0]
+    goos: [darwin, linux, windows]
+    goarch: [amd64, arm64]
+    ignore:
+      - goos: windows
+        goarch: arm64
+archives:
+  - name_template: "ago_{{ .Os }}_{{ .Arch }}"
+    formats: [tar.gz]
+    format_overrides:
+      - goos: windows
+        formats: [zip]
+brews:
+  - repository:
+      owner: guygrigsby
+      name: homebrew-tap
+      token: "{{ .Env.TAP_GITHUB_TOKEN }}"
+    homepage: https://github.com/guygrigsby/agent-go
+    description: "Semantic edit protocol for Go: compiler-checked mutations for coding agents"
+    license: MIT
+    caveats: "Teach your coding agent the workflow: ago skill install"
+checksum:
+  name_template: checksums.txt

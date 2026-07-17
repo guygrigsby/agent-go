@@ -362,14 +362,14 @@ func runOracle(c config, wt string, t Manifest) (string, error) {
 	switch t.Kind {
 	case "", "rename":
 		for _, r := range t.Renames {
-			if _, err := call("rename", "-p", r.Pkg, "-s", r.Sym, "-to", r.To); err != nil {
+			if _, err := call("rename", "-p", r.Pkg, "-s", r.Sym, "--to", r.To); err != nil {
 				return b.String(), err
 			}
 		}
 	case "add-param":
 		for _, a := range t.AddParams {
 			if out, err := call("add-param", "-p", a.Pkg, "-s", a.Sym,
-				"-name", a.Name, "-type", a.Type, "-default", zeroExpr(a.Type)); err != nil {
+				"--name", a.Name, "--type", a.Type, "--default", zeroExpr(a.Type)); err != nil {
 				// Sequential replay hit a shape one add_param cannot express
 				// (an interface widened with its implementors, or a function
 				// registered as a value). Fall back to composing the whole

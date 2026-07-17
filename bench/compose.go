@@ -120,7 +120,7 @@ func composeInterfaceAddParam(o composeEnv, t Manifest) error {
 		if !ok {
 			continue
 		}
-		impls := o.call("query", "-kind", "implementations", "-p", a.Pkg, "-s", recv)
+		impls := o.call("query", "--kind", "implementations", "-p", a.Pkg, "-s", recv)
 		if impls == nil || impls["status"] != "ok" {
 			continue
 		}
@@ -159,7 +159,7 @@ func composeInterfaceAddParam(o composeEnv, t Manifest) error {
 			targets = append(targets, target{pkg, sym})
 		}
 	}
-	impls := o.call("query", "-kind", "implementations", "-p", ifacePkg, "-s", ifaceSym)
+	impls := o.call("query", "--kind", "implementations", "-p", ifacePkg, "-s", ifaceSym)
 	if impls != nil {
 		hits, _ := impls["types"].([]any)
 		for _, raw := range hits {

@@ -17,7 +17,12 @@ func TestNoSidecarScripts(t *testing.T) {
 	if err != nil {
 		t.Skipf("git ls-files: %v", err)
 	}
+	// install.sh is the one named exception: a bootstrap installer cannot
+	// be a subcommand of the binary it installs.
 	for _, f := range strings.Split(strings.TrimSpace(string(out)), "\n") {
+		if f == "install.sh" {
+			continue
+		}
 		for _, ext := range []string{".py", ".sh", ".rb", ".pl", ".js"} {
 			if strings.HasSuffix(f, ext) {
 				t.Errorf("committed script %s: port it to a Go subcommand (tenet 9)", f)

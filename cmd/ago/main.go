@@ -15,6 +15,7 @@ import (
 
 	"github.com/guygrigsby/agent-go/internal/daemon"
 	"github.com/guygrigsby/agent-go/internal/protocol"
+	"github.com/guygrigsby/agent-go/skills"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 )
@@ -24,7 +25,7 @@ import (
 // builds cobra commands from, and the guard tests key on.
 var (
 	daemonOps = []string{"status", "help", "search", "inspect", "view", "refs", "query", "set-body", "upsert", "rename", "add-param", "patch", "test", "stop"}
-	localOps  = []string{"init", "mcp", "daemon"}
+	localOps  = []string{"init", "mcp", "daemon", "skill"}
 )
 
 // opHelp is each op's one-line description, shown in the grouped root
@@ -47,6 +48,7 @@ var opHelp = map[string]string{
 	"stop":      "stop the workspace daemon",
 	"mcp":       "serve the MCP tools over stdio",
 	"daemon":    "run the workspace daemon in the foreground",
+	"skill":     "install or print the embedded agent skill",
 }
 
 // opLong is the per-command help body: what the op does on the wire and
@@ -69,6 +71,7 @@ var opLong = map[string]string{
 	"stop":      "Stops the workspace daemon. It respawns on the next op.",
 	"mcp":       "Serves the ago tools over MCP stdio for agent harnesses. Rejections come\nback as payloads, not tool errors.",
 	"daemon":    "Runs the workspace daemon in the foreground (normally auto-spawned).\nIt exits after five minutes idle.",
+	"skill":     "The agent skill teaches shell-capable coding agents the ago workflow\nin any Go repository. It ships embedded in this binary, so installing it\nneeds no checkout and no copy step.",
 }
 
 // opExample holds per-command examples, shown under Examples: in help.
@@ -225,6 +228,44 @@ func newRoot() *cobra.Command {
 			return runInit(abs, module)
 		},
 	})
+	skill := &cobra.Command{
+		Use:     "skill",
+		Short:   opHelp["skill"],
+		Long:    opLong["skill"],
+		GroupID: "lifecycle",
+	}
+	skill.AddCommand(&cobra.Command{
+		Use:   "install",
+		Short: "install the agent skill under ~/.claude/skills/ago",
+		Args:  cobra.NoArgs,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			home, err := os.UserHomeDir()
+			if err != nil {
+				return err
+			}
+			dir := filepath.Join(home, ".claude", "skills", "ago")
+			if err := os.MkdirAll(dir, 0o755); err != nil {
+				return err
+			}
+			dst := filepath.Join(dir, "SKILL.md")
+			if err := os.WriteFile(dst, skills.Ago, 0o644); err != nil {
+				return err
+			}
+			fmt.Printf("installed %s\n", dst)
+			return nil
+		},
+	})
+	skill.AddCommand(&cobra.Command{
+		Use:   "print",
+		Short: "print the embedded skill to stdout",
+		Args:  cobra.NoArgs,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			_, err := cmd.OutOrStdout().Write(skills.Ago)
+			return err
+		},
+	})
+	root.AddCommand(skill)
+
 	root.AddCommand(&cobra.Command{
 		Use: "mcp", Short: opHelp["mcp"], Long: opLong["mcp"],
 		GroupID: groupOf["mcp"], Args: cobra.NoArgs,

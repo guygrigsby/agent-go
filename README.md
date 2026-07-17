@@ -17,8 +17,20 @@ that, on tasks mined from real commits in traefik, vault, and boundary.
 ## Install
 
 ```
+brew install guygrigsby/tap/ago
+```
+
+```
+curl -fsSL https://raw.githubusercontent.com/guygrigsby/agent-go/main/install.sh | sh
+```
+
+```
 go install github.com/guygrigsby/agent-go/cmd/ago@latest
 ```
+
+Windows: grab the zip from the releases page. Every channel ships the
+agent skill in the binary; `ago skill install` drops it into
+~/.claude/skills for shell-capable coding agents.
 
 Or from a clone:
 
@@ -52,9 +64,9 @@ ago test -p <pkg>                 # go test, scoped, structured pass/fail
 ```
 
 Agents connect over MCP (`ago mcp`); `ago init` writes the wiring. For
-agents with a shell (Claude Code and kin), `skills/ago` teaches the CLI
-workflow in any Go repo with no per-repo setup:
-`cp -r skills/ago ~/.claude/skills/`. `patch`
+agents with a shell (Claude Code and kin), `ago skill install` teaches
+the CLI workflow in any Go repo with no per-repo setup; the skill ships
+embedded in the binary. `patch`
 is the full language: 14 statement ops, composable decl ops, table-driven
 test ops; `rename`/`set-body`/`add-param`/`upsert` are one-op sugar over
 it. Full catalog via `ago help`.

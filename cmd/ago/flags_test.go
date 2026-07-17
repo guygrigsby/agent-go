@@ -151,3 +151,23 @@ func TestUsageCoversEveryOp(t *testing.T) {
 		}
 	}
 }
+
+// ago skill install writes the embedded skill under the agent skills dir,
+// cross-platform via the home dir; --print emits it for inspection.
+func TestSkillInstall(t *testing.T) {
+	home := t.TempDir()
+	t.Setenv("HOME", home)
+	t.Setenv("USERPROFILE", home)
+	root := newRoot()
+	root.SetArgs([]string{"skill", "install"})
+	if err := root.Execute(); err != nil {
+		t.Fatal(err)
+	}
+	b, err := os.ReadFile(filepath.Join(home, ".claude", "skills", "ago", "SKILL.md"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(string(b), "name: ago") {
+		t.Fatalf("installed skill missing frontmatter:\n%.200s", b)
+	}
+}
