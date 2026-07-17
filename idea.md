@@ -1,18 +1,18 @@
-# Why Go for agents
+# Why we chose Go
 
 The thesis: weak local models become effective repo-scale editors when raw
 file editing is replaced by semantic queries and validated mutations with
-typed rejections. Picking the target language for that experiment comes down
-to two questions. Which language is easiest for a small model to reason
-about, and which toolchain exposes enough semantic machinery to build the
-protocol without writing a compiler?
+typed rejections. Picking the target language came down to two questions.
+Which language is easiest for a small model to reason about, and which
+toolchain exposes enough semantic machinery to build the protocol without
+writing a compiler?
 
-Go wins the first question. C# wins the second. Go is the pick because the
-agent's job has to be easy; mine only has to be possible.
+Go won the first question. C# won the second. Go got the nod because the
+agent's job has to be easy; ours only has to be possible.
 
-## Why Go fits weaker agents
+## Why Go
 
-Go already removes most of the ambiguity that trips up local models:
+Go removes most of the ambiguity that trips up local models:
 
 * small grammar
 * very little syntactic variation
@@ -45,13 +45,13 @@ gopls           references, rename, fixes and refactorings
 `go/packages` loads and type-checks complete programs. `go/ssa` provides an
 analysis-oriented intermediate representation. gopls already performs
 structured transformations: rename, extraction, inlining, code repair,
-formatting. Nobody has to invent the semantic substrate; the work is
+formatting. Nobody had to invent the semantic substrate; the work was
 putting a better agent protocol over it.
 
-## The shape
+## The shape we wanted
 
-Not an MCP server that exposes twenty vague tools. More like a small
-database language:
+Not an MCP server with twenty vague tools. More like a small database
+language:
 
 ```
 inspect symbol "github.com/acme/store.(*Store).Put"
@@ -87,16 +87,18 @@ Every mutation returns structured data:
 }
 ```
 
-That is where the smaller model wins. It chooses from bounded operations
+That is where a smaller model wins. It chooses from bounded operations
 instead of synthesizing arbitrary patches.
 
-## Why not Rust first
+## What we passed on
+
+### Rust
 
 rust-analyzer is an excellent semantic engine: query-driven incremental
 analysis, separate syntax and semantic representations. Philosophically it
-is close to what this needs.
+is close to what we wanted.
 
-Rust itself is the problem for a weak model:
+The language itself asks a lot of a weak model:
 
 * traits and associated types
 * lifetime relationships
@@ -107,17 +109,18 @@ Rust itself is the problem for a weak model:
 * complex generics
 * borrow-checker-driven repairs
 
-The compiler can tell the agent it is wrong, but choosing the right repair
-often takes substantially more reasoning than the equivalent Go.
+The compiler can tell an agent it is wrong, but choosing the right repair
+often takes more reasoning than the equivalent Go. Rust could be made very
+agent-friendly, and rust-analyzer is probably the right foundation for
+whoever takes that on. For a proof of concept, too much of our time would
+have gone to interfacing with compiler internals that were never designed
+as a public surface, and to interpreting diagnostics written for a human
+reader.
 
-Rust could eventually be made very agent-friendly. It is a harder proof of
-concept though; the risk is spending all the time wrapping unstable
-compiler machinery and interpreting complicated diagnostics.
+### C#
 
-## Why C# is the tooling winner
-
-Roslyn is almost comically well suited to this project. Its workspace model
-already exposes:
+Roslyn is almost comically well suited to this kind of project. Its
+workspace model already exposes:
 
 * complete solutions and projects
 * source text
@@ -129,16 +132,16 @@ already exposes:
 * code fixes
 * refactorings
 
-The API is designed for programmatic inspection and transformation across a
-whole solution. A convincing demo would probably land faster in C# than in
-any other mainstream language:
+The API is designed for programmatic inspection and transformation across
+a whole solution, and a convincing demo would probably have landed here
+fastest:
 
 ```csharp
 var symbol = semanticModel.GetDeclaredSymbol(node);
 var references = await SymbolFinder.FindReferencesAsync(symbol, solution);
 ```
 
-The downside is language size and historical baggage:
+The language is bigger though, with more history for a model to carry:
 
 * overload resolution
 * inheritance
@@ -150,29 +153,36 @@ The downside is language size and historical baggage:
 * source generators
 * multiple equivalent syntactic styles
 
-Roslyn makes it easiest for me. Go makes the resulting system easiest for
-the agent. Optimize for the agent.
+Roslyn optimizes for the builder. Go optimizes for the agent. We built for
+the agent.
 
-## C++ is the trap
+### C++
 
-Clang has maybe the richest low-level code-query and transformation
-tooling: LibTooling, AST matchers, refactoring APIs, compiler-grade
+Clang may have the richest low-level code-query and transformation tooling
+anywhere: LibTooling, AST matchers, refactoring APIs, compiler-grade
 semantic information.
 
-C++ is also close to the worst possible language for a weak agent:
+The language asks more of a small model than anything else we considered:
 
-* macros distort source identity
-* templates create enormous semantic complexity
-* overload resolution is difficult
+* macros obscure source identity
+* templates carry enormous semantic complexity
+* overload resolution is intricate
 * undefined behavior is invisible to structural checks
 * ownership is largely conventional
 * build configurations alter the visible program
-* small changes trigger bizarre distant failures
+* small changes can surface distant failures
 
-Building there proves the infrastructure is impressive, not that the
-approach makes local agents useful.
+Building here would have proven the infrastructure impressive without
+showing that the approach makes local agents useful.
 
-## Ranking
+### Zig
+
+Appealing because the language is explicit, but the compiler APIs are not
+ready to carry a project like this. Choosing it would mean living the same
+lesson zero is working through: pick an interesting language, then
+discover the semantic tooling is itself a research project.
+
+## How they stacked up
 
 For a useful local-agent coding environment:
 
@@ -192,14 +202,9 @@ For the fastest semantic-editing prototype:
 5. Swift
 6. Zig
 
-Zig is appealing because the language is explicit, but its compiler APIs
-are not mature enough. That road repeats zero's mistake: pick an
-interesting language, then discover the semantic tooling is itself the
-unfinished research project.
+## What we built
 
-## The strongest version
-
-Build for Go, write the control plane in Go, and sit directly on
+Go for the target language, Go for the control plane, sitting directly on
 `go/packages`, `go/types`, `go/ssa`, and selected gopls machinery.
 
 ```
@@ -210,7 +215,7 @@ agent → semantic protocol → Go workspace model
                  gofmt → go vet → go test → commit
 ```
 
-Start with five operations:
+The first five operations:
 
 1. inspect_symbol
 2. find_references
@@ -218,8 +223,8 @@ Start with five operations:
 4. change_signature
 5. implement_interface
 
-Then run the same local model in two modes: raw shell and source editing,
-and semantic operations only. Use deliberately repository-wide tasks.
-Expectation: the semantic version shows a large improvement in completion
-rate, particularly around missed callers, wrong symbols, imports, and
-compile-repair loops.
+Then the same local model runs in two modes, raw shell and source editing
+against semantic operations only, on deliberately repository-wide tasks.
+The bet: semantic mode shows a large improvement in completion rate,
+particularly around missed callers, wrong symbols, imports, and
+compile-repair loops. The bench in this repo measures exactly that.
