@@ -249,6 +249,49 @@ func TestMoveDeclGroupedInheritedRejects(t *testing.T) {
 	}
 }
 
+// A type with methods moves as a closure: the type declaration and every
+// method travel together (boundary 687dd1bd relocates a job type whose
+// whole method set moves with it). Closure-internal references (a method
+// calling a sibling method) are fine.
+func TestMoveDeclTypeWithMethods(t *testing.T) {
+	s := demo(t)
+	res, err := s.Patch([]byte(`{"pkg":"demo/sig","ops":[
+		{"op":"move_decl","sym":"Counter","to_pkg":"demo/lib"}]}`))
+	if err != nil {
+		t.Fatalf("rejected: %v", err)
+	}
+	if res["status"] != "accepted" {
+		t.Fatalf("got %v", res)
+	}
+	if _, err := s.inspect("demo/lib", "Counter"); err != nil {
+		t.Fatalf("type not in target: %v", err)
+	}
+	if _, err := s.inspect("demo/lib", "Counter.Total"); err != nil {
+		t.Fatalf("method not in target: %v", err)
+	}
+	if _, err := s.inspect("demo/sig", "Counter"); err == nil {
+		t.Fatal("type still in source")
+	}
+	b, _ := os.ReadFile(filepath.Join(s.dir, "lib", "lib.go"))
+	for _, want := range []string{"type Counter struct", "func (c *Counter) Add", "func (c *Counter) Total"} {
+		if !strings.Contains(string(b), want) {
+			t.Fatalf("closure incomplete, missing %q:\n%s", want, b)
+		}
+	}
+}
+
+// A method leaning on a package-local symbol outside the closure still
+// rejects, dependency named.
+func TestMoveDeclTypeWithMethodsDepsReject(t *testing.T) {
+	s := demo(t)
+	_, err := s.Patch([]byte(`{"pkg":"demo/sig","ops":[
+		{"op":"move_decl","sym":"Tainted","to_pkg":"demo/lib"}]}`))
+	rej, ok := err.(*Reject)
+	if !ok || !strings.Contains(rej.Reason+rej.Detail, "UseFetch") {
+		t.Fatalf("want dep reject naming UseFetch, got %v", err)
+	}
+}
+
 // A declaration that leans on package-local siblings is not self-contained;
 // v1 rejects it with the dependency named rather than emitting a broken move.
 func TestMoveDeclLocalDepsReject(t *testing.T) {

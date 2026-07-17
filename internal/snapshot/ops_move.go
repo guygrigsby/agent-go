@@ -36,14 +36,7 @@ func moveDeclEdits(s *Snapshot, pkgPath, sym, toPkg string) ([]edit, *Reject) {
 		return nil, &Reject{Reason: "target package not found", Detail: toPkg,
 			DidYouMean: s.suggestPackages(toPkg)}
 	}
-	if tn, ok := obj.(*types.TypeName); ok {
-		// ponytail: methods would have to move too; reject until the
-		// dependency-closure move exists.
-		if types.NewMethodSet(types.NewPointer(tn.Type())).Len() > 0 {
-			return nil, &Reject{Reason: "type has methods; move_decl v1 moves method-free declarations",
-				Detail: sym}
-		}
-	}
+
 	declFile, start, end := s.findDeclRange(p, obj.Name(), sym)
 	grouped := ""
 	if declFile == "" {
@@ -63,18 +56,51 @@ func moveDeclEdits(s *Snapshot, pkgPath, sym, toPkg string) ([]edit, *Reject) {
 		start, end = s.specRange(sp)
 		grouped = gd.Tok.String()
 	}
-	declSrc, err := os.ReadFile(declFile)
-	if err != nil {
-		return nil, &Reject{Reason: "file not found", Detail: declFile}
+	// The move is a span set: the declaration itself, plus the whole
+	// method set when it is a type with methods (the dependency-closure
+	// move; boundary 687dd1bd relocates a job type and its methods as one
+	// unit). Closure-internal references are legal by construction: method
+	// objects live outside the package scope, so the dependency scan below
+	// never flags a method calling its sibling or naming its receiver.
+	type span struct {
+		file       string
+		start, end int
 	}
-	declText := string(declSrc[start:end])
-	if grouped != "" {
-		declText = grouped + " " + declText
-		// Consume the spec's own line ending so the group doesn't keep a
-		// blank line where the spec was.
-		if end < len(declSrc) && declSrc[end] == '\n' {
-			end++
+	spans := []span{{declFile, start, end}}
+	if tn, ok := obj.(*types.TypeName); ok {
+		for _, f := range p.Syntax {
+			for _, d := range f.Decls {
+				fd, isFn := d.(*ast.FuncDecl)
+				if !isFn || fd.Recv == nil || recvTypeName(fd) != tn.Name() {
+					continue
+				}
+				st := fd.Pos()
+				if fd.Doc != nil {
+					st = fd.Doc.Pos()
+				}
+				spans = append(spans, span{s.fset.Position(fd.Pos()).Filename,
+					s.fset.Position(st).Offset, s.fset.Position(fd.End()).Offset})
+			}
 		}
+	}
+	srcByFile := map[string][]byte{}
+	for _, sp := range spans {
+		if srcByFile[sp.file] == nil {
+			b, err := os.ReadFile(sp.file)
+			if err != nil {
+				return nil, &Reject{Reason: "file not found", Detail: sp.file}
+			}
+			srcByFile[sp.file] = b
+		}
+	}
+	declSrc := srcByFile[declFile]
+	inSpans := func(file string, off int) bool {
+		for _, sp := range spans {
+			if sp.file == file && off >= sp.start && off < sp.end {
+				return true
+			}
+		}
+		return false
 	}
 
 	// Self-containedness: any use of another package-level symbol from the
@@ -86,9 +112,18 @@ func moveDeclEdits(s *Snapshot, pkgPath, sym, toPkg string) ([]edit, *Reject) {
 	var deps []string
 	depSeen := map[string]bool{}
 	carried := map[string]string{} // import path -> alias ("" when default)
-	var qualCuts []int             // decl-relative offsets of toPkg qualifiers to strip
+	qualCuts := map[int][]int{}    // span index -> span-relative qualifier offsets to strip
+	spanIdx := func(file string, off int) int {
+		for i, sp := range spans {
+			if sp.file == file && off >= sp.start && off < sp.end {
+				return i
+			}
+		}
+		return -1
+	}
 	for _, f := range p.Syntax {
-		if f.Pos() == 0 || s.fset.Position(f.Pos()).Filename != declFile {
+		fname := s.fset.Position(f.Pos()).Filename
+		if f.Pos() == 0 || srcByFile[fname] == nil {
 			continue
 		}
 		ast.Inspect(f, func(n ast.Node) bool {
@@ -97,7 +132,7 @@ func moveDeclEdits(s *Snapshot, pkgPath, sym, toPkg string) ([]edit, *Reject) {
 				return true
 			}
 			off := s.fset.Position(id.Pos()).Offset
-			if off < start || off >= end {
+			if !inSpans(fname, off) {
 				return true
 			}
 			o := p.TypesInfo.Uses[id]
@@ -117,7 +152,9 @@ func moveDeclEdits(s *Snapshot, pkgPath, sym, toPkg string) ([]edit, *Reject) {
 					// (and its dot) must go, or goimports resolves the
 					// dangling name to whatever same-named package the
 					// module cache offers.
-					qualCuts = append(qualCuts, off-start)
+					if i := spanIdx(fname, off); i >= 0 {
+						qualCuts[i] = append(qualCuts[i], off-spans[i].start)
+					}
 				}
 				return true
 			}
@@ -137,18 +174,32 @@ func moveDeclEdits(s *Snapshot, pkgPath, sym, toPkg string) ([]edit, *Reject) {
 			Detail: sym + " uses " + strings.Join(deps, ", ")}
 	}
 
-	if len(qualCuts) > 0 {
-		sort.Sort(sort.Reverse(sort.IntSlice(qualCuts)))
-		qualLen := 0
-		for _, c := range qualCuts {
-			// The qualifier ident plus its trailing dot; gofmt guarantees
-			// no space between them.
-			qualLen = strings.Index(declText[c:], ".") + 1
-			declText = declText[:c] + declText[c+qualLen:]
+	var declTexts []string
+	var edits []edit
+	for i, sp := range spans {
+		text := string(srcByFile[sp.file][sp.start:sp.end])
+		if cuts := qualCuts[i]; len(cuts) > 0 {
+			sort.Sort(sort.Reverse(sort.IntSlice(cuts)))
+			for _, c := range cuts {
+				// The qualifier ident plus its trailing dot; gofmt
+				// guarantees no space between them.
+				qualLen := strings.Index(text[c:], ".") + 1
+				text = text[:c] + text[c+qualLen:]
+			}
 		}
+		delEnd := sp.end
+		if i == 0 && grouped != "" {
+			text = grouped + " " + text
+			// Consume the spec's own line ending so the group doesn't
+			// keep a blank line where the spec was.
+			if delEnd < len(srcByFile[sp.file]) && srcByFile[sp.file][delEnd] == '\n' {
+				delEnd++
+			}
+		}
+		declTexts = append(declTexts, text)
+		edits = append(edits, edit{sp.file, sp.start, delEnd - sp.start, ""})
 	}
-
-	edits := []edit{{declFile, start, end - start, ""}}
+	declText := strings.Join(declTexts, "\n\n")
 
 	// Land in a target file of the same test-ness as the source: a decl
 	// from a _test.go must land in a _test.go (go test ignores it anywhere
@@ -229,7 +280,7 @@ func moveDeclEdits(s *Snapshot, pkgPath, sym, toPkg string) ([]edit, *Reject) {
 			}
 			seen[pos.String()] = true
 			off := pos.Offset
-			if pos.Filename == declFile && off >= start && off < end {
+			if inSpans(pos.Filename, off) {
 				continue // a self-reference moves with the text
 			}
 			from, length := off, len(obj.Name())

@@ -156,7 +156,7 @@ var opCatalog = []helpOp{
 			{"create_pkg", "boolean", false, "create a missing module-local target package as part of this patch; without it a missing target rejects (typo safety) and offers this flag as a repair"},
 		},
 		Example: json.RawMessage(`[{"op":"move_decl","pkg":"demo/sig","sym":"Fetch","to_pkg":"demo/lib"}]`),
-		Notes:   "relocates the whole declaration (doc comment included) and requalifies every reference, adding imports where needed. v1 ceilings: the declaration must be self-contained (no uses of its old package's other top-level symbols) and a moved type may not have methods; both reject with the blocking names",
+		Notes:   "relocates the whole declaration (doc comment included) and requalifies every reference, adding imports where needed; a type moves together with its whole method set, and one spec of a grouped const/var/type block extracts standalone. v1 ceilings: the declaration must be self-contained (no uses of its old package's other top-level symbols) and grouped specs may not lean on iota or an inherited value; each rejects with the blocking names",
 	},
 	{
 		Op: "set_signature",
