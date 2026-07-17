@@ -21,7 +21,7 @@ brew install guygrigsby/tap/ago
 ```
 
 ```
-curl -fsSL https://raw.githubusercontent.com/guygrigsby/agent-go/main/install.sh | sh
+curl -fsSL https://ago.aeryx.ai/install.sh | sh
 ```
 
 ```
