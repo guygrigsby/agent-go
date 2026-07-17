@@ -24,7 +24,7 @@ Coding agents overwhelmingly edit source code as text, and small locally
 runnable models fail at it: diff formats break, identifiers are guessed,
 and errors surface only after files change. We present \textbf{ago}, a
 semantic edit protocol for Go in which an agent queries a typechecked
-workspace and submits mutations from a fixed operation catalog; every
+workspace and submits mutations from a versioned operation catalog; every
 mutation is validated by the compiler against an in-memory snapshot
 before any file is written, applied as an atomic generation-checked
 transaction, or rejected. Rejections are designed as conversation:
@@ -67,9 +67,9 @@ TODO: full citations.
 
 \section{The ago Protocol}
 \subsection{Surface}
-Ten tools; a versioned catalog of 28 operations across declaration,
-statement, and test families; seven query kinds with deterministic,
-paged responses. Handles address statements inside declarations;
+Ten tools; a versioned catalog of 33 operations across declaration,
+statement, test, and project families; seven query kinds with
+deterministic, paged responses. Handles address statements inside declarations;
 generations make staleness explicit.
 \subsection{Transactions}
 An ordered op list validates as one unit against an in-memory snapshot:

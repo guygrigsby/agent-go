@@ -261,3 +261,19 @@ func TestLanguageSpecJSONBlocksValid(t *testing.T) {
 	}
 	_ = fmt.Sprintf // keep imports honest if assertions change
 }
+
+// The paper's op-count claim tracks the registry: an op added without
+// touching main.tex reads as a smaller language than shipped.
+func TestPaperOpCountCurrent(t *testing.T) {
+	tex, err := os.ReadFile("../../docs/paper/main.tex")
+	if err != nil {
+		t.Skip("paper not present")
+	}
+	m := regexp.MustCompile(`catalog of (\d+) operations`).FindStringSubmatch(string(tex))
+	if m == nil {
+		t.Fatal("main.tex no longer states the op count; update this guard's pattern")
+	}
+	if m[1] != fmt.Sprint(len(opRegistry)) {
+		t.Fatalf("main.tex claims %s operations, registry has %d; update the sentence", m[1], len(opRegistry))
+	}
+}
