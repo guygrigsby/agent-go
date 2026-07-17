@@ -38,8 +38,9 @@ func moveDeclEdits(s *Snapshot, pkgPath string, syms []string, toPkg string) ([]
 		grouped    string // group token when the span is one extracted spec
 	}
 	var spans []span
-	movers := map[types.Object]bool{}
-	var p *packages.Package
+	moverNames := map[string]bool{}
+	var moverPkgs []*packages.Package
+	seenPkg := map[*packages.Package]bool{}
 	var moverObjs []types.Object
 	for _, sym := range syms {
 		if strings.Contains(sym, ".") {
@@ -50,10 +51,11 @@ func moveDeclEdits(s *Snapshot, pkgPath string, syms []string, toPkg string) ([]
 		if rej != nil {
 			return nil, rej
 		}
-		if p == nil {
-			p = sp
+		if !seenPkg[sp] {
+			seenPkg[sp] = true
+			moverPkgs = append(moverPkgs, sp)
 		}
-		movers[obj] = true
+		moverNames[obj.Name()] = true
 		moverObjs = append(moverObjs, obj)
 		declFile, start, end := s.findDeclRange(sp, obj.Name(), sym)
 		grouped := ""
@@ -131,52 +133,57 @@ func moveDeclEdits(s *Snapshot, pkgPath string, syms []string, toPkg string) ([]
 		}
 		return -1
 	}
-	for _, f := range p.Syntax {
-		fname := s.fset.Position(f.Pos()).Filename
-		if f.Pos() == 0 || srcByFile[fname] == nil {
-			continue
-		}
-		ast.Inspect(f, func(n ast.Node) bool {
-			id, ok := n.(*ast.Ident)
-			if !ok {
-				return true
+	for _, mp := range moverPkgs {
+		for _, f := range mp.Syntax {
+			fname := s.fset.Position(f.Pos()).Filename
+			if f.Pos() == 0 || srcByFile[fname] == nil {
+				continue
 			}
-			off := s.fset.Position(id.Pos()).Offset
-			if !inSpans(fname, off) {
-				return true
-			}
-			o := p.TypesInfo.Uses[id]
-			if o == nil || movers[o] {
-				return true
-			}
-			if pn, isPkg := o.(*types.PkgName); isPkg {
-				path := pn.Imported().Path()
-				if path != toPkg {
-					alias := ""
-					if id.Name != pn.Imported().Name() {
-						alias = id.Name
+			ast.Inspect(f, func(n ast.Node) bool {
+				id, ok := n.(*ast.Ident)
+				if !ok {
+					return true
+				}
+				off := s.fset.Position(id.Pos()).Offset
+				if !inSpans(fname, off) {
+					return true
+				}
+				o := mp.TypesInfo.Uses[id]
+				// Intra-set references compare by name, not object
+				// identity: a test variant resolves a mover to its own
+				// object instance, distinct from the primary's.
+				if o == nil || moverNames[o.Name()] {
+					return true
+				}
+				if pn, isPkg := o.(*types.PkgName); isPkg {
+					path := pn.Imported().Path()
+					if path != toPkg {
+						alias := ""
+						if id.Name != pn.Imported().Name() {
+							alias = id.Name
+						}
+						carried[path] = alias
+					} else {
+						// The decl is moving INTO this package: the
+						// qualifier (and its dot) must go, or goimports
+						// resolves the dangling name to whatever
+						// same-named package the module cache offers.
+						if i := spanIdx(fname, off); i >= 0 {
+							qualCuts[i] = append(qualCuts[i], off-spans[i].start)
+						}
 					}
-					carried[path] = alias
-				} else {
-					// The decl is moving INTO this package: the qualifier
-					// (and its dot) must go, or goimports resolves the
-					// dangling name to whatever same-named package the
-					// module cache offers.
-					if i := spanIdx(fname, off); i >= 0 {
-						qualCuts[i] = append(qualCuts[i], off-spans[i].start)
-					}
+					return true
+				}
+				if o.Pkg() == nil || o.Pkg().Path() != pkgPath {
+					return true
+				}
+				if o.Parent() == o.Pkg().Scope() && !depSeen[o.Name()] {
+					depSeen[o.Name()] = true
+					deps = append(deps, o.Name())
 				}
 				return true
-			}
-			if o.Pkg() != p.Types {
-				return true
-			}
-			if o.Parent() == p.Types.Scope() && !depSeen[o.Name()] {
-				depSeen[o.Name()] = true
-				deps = append(deps, o.Name())
-			}
-			return true
-		})
+			})
+		}
 	}
 	if len(deps) > 0 {
 		sort.Strings(deps)
