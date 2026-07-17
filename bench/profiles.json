@@ -8,9 +8,9 @@
       "top_k": 40,
       "repeat_penalty": 1.0
     },
-    "quant": "UD-Q4_K_XL",
+    "quant": "UD-Q4_K_XL, ~20 GiB, q8_0 K/V cache at 128k context",
     "context": 65536,
-    "notes": "incumbent; llama-server on the rig. repeat_penalty 1.0 is deliberate: op JSON repeats keys and handles by design (glm4.7-flash.md)."
+    "notes": "incumbent; llama-server on the rig. repeat_penalty 1.0 is deliberate: op JSON repeats keys and handles by design (glm4.7-flash.md). MoE, served on the R9700 (:8080 default)."
   },
   "qwen3.5-9b": {
     "endpoint": "https://qwen.lab.aeryx.ai/v1",
@@ -21,8 +21,8 @@
       "top_k": 20,
       "repeat_penalty": 1.0
     },
-    "quant": "Q4_K_M",
-    "notes": "floor cell (roster: ~8-9B, any laptop). Raw mode expected near zero; scored separately per cross-model.md. repeat_penalty 1.0 deliberate."
+    "quant": "Q4_K_M, 5.28 GiB weights",
+    "notes": "floor cell (roster: ~8-9B, any laptop). Raw mode expected near zero; scored separately per cross-model.md. repeat_penalty 1.0 deliberate. Served on the 3070 Ti (:8082); Q4_K_M deliberately over UD-Q4_K_XL because the 8GB card also hosts the embed server."
   },
   "gpt-oss-20b-low": {
     "endpoint": "https://llama.lab.aeryx.ai/v1",
@@ -33,7 +33,7 @@
       "repeat_penalty": 1.0
     },
     "thinking": "low",
-    "quant": "MXFP4",
+    "quant": "MXFP4, 11.28 GiB weights before KV",
     "notes": "reasoning_effort=low is a SERVER-LAUNCH knob (llama-server --chat-template-kwargs '{\"reasoning_effort\":\"low\"}'); template default is medium when unset. Relaunch per effort cell and verify via /props before a round. temp 1.0 top_p 1.0 per OpenAI; no repetition penalties; harmony - no grammar constraints."
   },
   "gpt-oss-20b-medium": {
@@ -45,7 +45,7 @@
       "repeat_penalty": 1.0
     },
     "thinking": "medium",
-    "quant": "MXFP4",
+    "quant": "MXFP4, 11.28 GiB weights before KV",
     "notes": "reasoning_effort=medium is a SERVER-LAUNCH knob (llama-server --chat-template-kwargs '{\"reasoning_effort\":\"medium\"}'); template default is medium when unset. Relaunch per effort cell and verify via /props before a round. temp 1.0 top_p 1.0 per OpenAI; no repetition penalties; harmony - no grammar constraints."
   },
   "gpt-oss-20b-high": {
@@ -57,7 +57,7 @@
       "repeat_penalty": 1.0
     },
     "thinking": "high",
-    "quant": "MXFP4",
+    "quant": "MXFP4, 11.28 GiB weights before KV",
     "notes": "reasoning_effort=high is a SERVER-LAUNCH knob (llama-server --chat-template-kwargs '{\"reasoning_effort\":\"high\"}'); template default is medium when unset. Relaunch per effort cell and verify via /props before a round. temp 1.0 top_p 1.0 per OpenAI; no repetition penalties; harmony - no grammar constraints."
   }
 }

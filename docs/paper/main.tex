@@ -109,7 +109,12 @@ test), same time cap. One arm edits files with shell tools; the other
 sees only the protocol. Scoring is a goal predicate plus a clean
 typecheck plus scoped tests, and the test gate is voided where a
 pristine worktree also fails it. Serving configurations are pinned per
-run. Every episode records its transcript, diff, score, token usage,
+run: GLM-4.7-Flash (MoE) at UD-Q4\_K\_XL, roughly 20 GiB with a q8\_0
+K/V cache at 128k context; gpt-oss-20b at MXFP4, 11.28 GiB of weights
+before KV; Qwen3.5-9B at Q4\_K\_M, 5.28 GiB, deliberately not the
+larger UD quant because its 8 GB card also hosts an embedding server.
+Local serving is part of the experiment, constraints included.
+Every episode records its transcript, diff, score, token usage,
 failure kind, and the daemon's request log; the evidence is the
 contribution as much as the numbers.
 
