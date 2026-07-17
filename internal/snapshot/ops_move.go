@@ -133,12 +133,14 @@ func moveDeclEdits(s *Snapshot, pkgPath string, syms []string, toPkg string) ([]
 		}
 		return -1
 	}
+	scanned := map[string]bool{}
 	for _, mp := range moverPkgs {
 		for _, f := range mp.Syntax {
 			fname := s.fset.Position(f.Pos()).Filename
-			if f.Pos() == 0 || srcByFile[fname] == nil {
+			if f.Pos() == 0 || srcByFile[fname] == nil || scanned[fname] {
 				continue
 			}
+			scanned[fname] = true
 			ast.Inspect(f, func(n ast.Node) bool {
 				id, ok := n.(*ast.Ident)
 				if !ok {
