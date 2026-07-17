@@ -51,20 +51,59 @@ or configure.
 One binary, three fronts over a per-workspace daemon (auto-spawned on first
 use, unix socket, idle exit):
 
+<!-- ago-help:begin (generated; see TestReadmeHelpBlockCurrent) -->
 ```
-ago init myproject          # scaffold: module, MCP wiring, AGENTS.md
-ago status                  # load the snapshot: packages, files, errors
-ago help                    # versioned op catalog: args, one example, notes per op
-ago search -s MaxEntries    # name fragment -> exact symbol addresses
-ago refs -p <pkg> -s <sym>  # every reference, tests included
-ago query -k implementations -p <pkg> -s <iface>  # interface -> implementing types
-ago view -p <pkg> -s <sym>  # declaration as annotated text: node handles + generation
+$ ago --help
+semantic edit protocol for Go: query the typechecked workspace, submit compiler-checked mutations
+
+Usage:
+  ago [command]
+
+reads and setup:
+  help        the versioned op catalog: args, examples, ceilings
+  init        scaffold an agent-first module: MCP wiring, AGENTS.md
+  inspect     kind, signature, position, doc for one symbol
+  query       semantic questions by --kind (callers, implementations, ...)
+  refs        every reference, tests included
+  search      name fragment to exact symbol addresses
+  status      load or refresh the snapshot: packages, files, errors
+  view        declaration as annotated text with node handles
+
+mutations (validated before anything touches disk):
+  add-param   add a parameter, call sites updated with --default
+  patch       ordered multi-op edit, atomic and generation-checked
+  rename      rename a symbol, every reference proven to resolve
+  set-body    replace a function body, typechecked first
+  test        go test, scoped, structured pass/fail
+  upsert      add or replace a whole declaration
+
+lifecycle:
+  daemon      run the workspace daemon in the foreground
+  mcp         serve the MCP tools over stdio
+  skill       install or print the embedded agent skill
+  stop        stop the workspace daemon
+
+Additional Commands:
+  completion  Generate the autocompletion script for the specified shell
+  help        Help about any command
+
+Flags:
+  -C, --dir string   workspace directory (default ".")
+  -h, --help         help for ago
+
+Use "ago [command] --help" for more information about a command.
+```
+<!-- ago-help:end -->
+
+A few invocations:
+
+```
+ago search -s MaxEntries
+ago refs -p <pkg> -s <sym>
+ago query -k implementations -p <pkg> -s <iface>
 ago rename -p <pkg> -s DefaultLimiterMaxEntries --to DefaultLimiterMaxQuotas
 echo 'return v << 1' | ago set-body -p <pkg> -s Double --body-file -
-ago add-param -p <pkg> -s NewLimiter --name ctx --type context.Context --default 'context.Background()'
-ago upsert -p <pkg> --body-file decl.go   # add/replace a whole declaration
-ago patch --body-file patch.json   # ordered, atomic, generation-checked multi-op edit
-ago test -p <pkg>                 # go test, scoped, structured pass/fail
+ago patch --body-file patch.json
 ```
 
 Agents connect over MCP (`ago mcp`); `ago init` writes the wiring. For

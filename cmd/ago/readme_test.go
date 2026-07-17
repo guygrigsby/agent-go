@@ -68,6 +68,9 @@ var (
 // returned strings are everything after "ago ", trailing # comment
 // stripped.
 func agoCommands(md string) []string {
+	// The generated help block is cobra output, not invocations; the
+	// help-block guard owns its accuracy.
+	md = regexp.MustCompile(`(?s)<!-- ago-help:begin[^>]*-->.*?<!-- ago-help:end -->`).ReplaceAllString(md, "")
 	var cmds []string
 	for _, b := range fencedBlocks(md) {
 		for _, line := range strings.Split(b.body, "\n") {
@@ -257,4 +260,41 @@ func TestReadmeBenchPattern(t *testing.T) {
 			t.Errorf("README -bench %s matches no Benchmark func in bench/", m[1])
 		}
 	}
+}
+
+// The README's "How it works" help block is the real root help output,
+// byte for byte between the ago-help markers. When this fails, run:
+//
+//	AGO_UPDATE_README=1 go test ./cmd/ago -run TestReadmeHelpBlockCurrent
+func TestReadmeHelpBlockCurrent(t *testing.T) {
+	path := filepath.Join("..", "..", "README.md")
+	md, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	root := newRoot()
+	var buf strings.Builder
+	root.SetOut(&buf)
+	root.SetArgs([]string{"--help"})
+	if err := root.Execute(); err != nil {
+		t.Fatal(err)
+	}
+	want := "<!-- ago-help:begin (generated; see TestReadmeHelpBlockCurrent) -->\n```\n$ ago --help\n" +
+		buf.String() + "```\n<!-- ago-help:end -->"
+	re := regexp.MustCompile(`(?s)<!-- ago-help:begin[^>]*-->.*?<!-- ago-help:end -->`)
+	cur := re.Find(md)
+	if cur == nil {
+		t.Fatal("README has no ago-help markers")
+	}
+	if string(cur) == want {
+		return
+	}
+	if os.Getenv("AGO_UPDATE_README") != "" {
+		if err := os.WriteFile(path, re.ReplaceAll(md, []byte(want)), 0o644); err != nil {
+			t.Fatal(err)
+		}
+		t.Log("README help block updated")
+		return
+	}
+	t.Fatalf("README help block is stale.\nRun: AGO_UPDATE_README=1 go test ./cmd/ago -run TestReadmeHelpBlockCurrent")
 }
