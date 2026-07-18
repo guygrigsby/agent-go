@@ -1,0 +1,254 @@
+[
+ {
+  "repo": "caddy",
+  "sha": "6f6771aa1deecd39405991d9ae4e69d4d93b1e5f",
+  "subject": "rewrite: skip query rename when source key is absent (#7599)",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "caddy",
+  "sha": "49dac61b078a704b3e98566134c108d6def19450",
+  "subject": "bcrypt: add cost parameter to hash-password (#7149)",
+  "kinds": [
+   "add-param"
+  ],
+  "go_files": 4
+ },
+ {
+  "repo": "caddy",
+  "sha": "5a6b2f8d1d4633622b551357f3cc9d27ec669d02",
+  "subject": "events: Refactor; move Event into core, so core can emit events (#6930)",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 8
+ },
+ {
+  "repo": "caddy",
+  "sha": "0182fb87fa7276463086c2360431a1c0dc797edf",
+  "subject": "core: addresses.go funcs renames (#6622)",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 3
+ },
+ {
+  "repo": "caddy",
+  "sha": "f9e11158bc139294804cba99e9fea408f1fb00d6",
+  "subject": "caddyauth: Rename `basicauth` to `basic_auth` (#6092)",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 3
+ },
+ {
+  "repo": "caddy",
+  "sha": "4181c79a8130a59c40c76437e15265452422ccb1",
+  "subject": "httpcaddyfile: Add optional status code argument to `handle_errors` directive (#5965)",
+  "kinds": [
+   "add-param"
+  ],
+  "go_files": 3
+ },
+ {
+  "repo": "caddy",
+  "sha": "f6bab8ba85b231ea0930282e684c0040001059e6",
+  "subject": "context: Rename func to `AppIfConfigured` (#5397)",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "caddy",
+  "sha": "aaf6794b31ca790ecc501edf983ebf95a45b3897",
+  "subject": "reverseproxy: Add renegotiation param in TLS client (#4784)",
+  "kinds": [
+   "add-param"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "caddy",
+  "sha": "186fdba916a128fc2a837852d2ab04ac2efba413",
+  "subject": "caddyhttp: Move HTTP redirect listener to an optional module (#4585)",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "caddy",
+  "sha": "7ca5921a87c819f9848ccd7ec786aab0f896be72",
+  "subject": "move common metrics-related funcs to internal package",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 5
+ },
+ {
+  "repo": "caddy",
+  "sha": "e81369e2208e47d9650f9699ad8bc7692640b275",
+  "subject": "fileserver: Move default browse template into a separate file (#4417)",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "caddy",
+  "sha": "c48fadc4a7655008d13076c7f757c36368e2ca13",
+  "subject": "Move from deprecated ioutil to os and io packages (#4364)",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 25
+ },
+ {
+  "repo": "caddy",
+  "sha": "d4f249741efa0fe300a197e27370a28d8748628f",
+  "subject": "browse: align template to struct field renames from 4940325 (#3706)",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "caddy",
+  "sha": "2c71fb116bc7311898bf87577c3db1215eb0fef9",
+  "subject": "chore: Rename file to be consistent",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "caddy",
+  "sha": "ffc125d6f5606ab4370ea244e66dfb05cd78eb28",
+  "subject": "caddyfile: Move NewTestDispenser into non-test file (#3439)",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "caddy",
+  "sha": "8b2dbc52ec6bc0359b4b8c47a3f9835e9460649e",
+  "subject": "core: Rename ParsedAddress -\u003e NetworkAddress",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 6
+ },
+ {
+  "repo": "caddy",
+  "sha": "ac65f690ae9dee3ab6d3c634cffd0b41252cb343",
+  "subject": "caddyhttp: Rename MatchNegate type to MatchNot type",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "caddy",
+  "sha": "2105d59936039f6ddbe3214711d160e1804523a0",
+  "subject": "httpcaddyfile: Rename 'headers' directive to 'header'",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "caddy",
+  "sha": "2bfaf8e89678fc1117984658f31f43fe90266763",
+  "subject": "reverse_proxy: CB docs; rename type -\u003e factor (#2986)",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "caddy",
+  "sha": "d418e319ab626e4b7dab676a7db3405d24a4b58c",
+  "subject": "rewrite: Rename parameters; implement custom query string parser",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 3
+ },
+ {
+  "repo": "caddy",
+  "sha": "78e98c40d35c0b3bc933886ce11cbf2d0cf44c99",
+  "subject": "basicauth: Accept placeholders; move base64 decoding to provision",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "caddy",
+  "sha": "6011ce120a4b2df9314a800fc93a61f852b766c1",
+  "subject": "cmd: Move module imports into standard packages",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 3
+ },
+ {
+  "repo": "caddy",
+  "sha": "5b36424cf056cc2063c708f0b68ba7cd68d23ac8",
+  "subject": "cmd: Add validate subcommand; list-modules --versions; some renaming",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "caddy",
+  "sha": "63674ba081dcf0a1b0ba8d6966fa5874850e3ee3",
+  "subject": "Rename handler modules to use http.handlers namespace",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 7
+ },
+ {
+  "repo": "caddy",
+  "sha": "d25008d2c8e2eb5f96b2b37a1cca5b4e140cfe8d",
+  "subject": "Move listen address functions into caddy package; fix unix bug",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 5
+ },
+ {
+  "repo": "caddy",
+  "sha": "a9698728506c580bc38db2e122a5e6ef07f85ce6",
+  "subject": "Default error handler; rename StaticFiles -\u003e FileServer",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 15
+ },
+ {
+  "repo": "caddy",
+  "sha": "043eb1d9e5db456b9b78c0423cb44716fc81a932",
+  "subject": "move internal packages to pkg folder and update reverse proxy",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 14
+ },
+ {
+  "repo": "caddy",
+  "sha": "f9d93ead4ef6e099ba7e00318dce6509b0f1eda4",
+  "subject": "Rename and export some types, other minor changes",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 7
+ }
+]

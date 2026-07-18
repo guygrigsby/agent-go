@@ -1,0 +1,2900 @@
+[
+ {
+  "repo": "etcd",
+  "sha": "2214d9f136d9923bf131b431a532109799e2c10b",
+  "subject": "client/v3: move Event helper methods into pb package",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 4
+ },
+ {
+  "repo": "etcd",
+  "sha": "c20b9a47d2fea9c3069f6178a45a018d7d1939f7",
+  "subject": "move function CheckTxnAuth from package txn to apply",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 5
+ },
+ {
+  "repo": "etcd",
+  "sha": "6b049c3ec19c29c7a677ccfe20f7f8dbfb5a54d2",
+  "subject": "mvcc: rename RangeOptions.Count to CountOnly",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 4
+ },
+ {
+  "repo": "etcd",
+  "sha": "7dc707826eb4733daa9b274b89116c7432548b00",
+  "subject": "Move current read index tests to read package",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "etcd",
+  "sha": "cb58c7b14defc93634d61f872b4a8368ce8d928f",
+  "subject": "Move read into subpackage",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 10
+ },
+ {
+  "repo": "etcd",
+  "sha": "d766483feda0cec48fcf9c03828bf126371fc601",
+  "subject": "Rename ApplyWait to reflect that it waits for commited index",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "etcd",
+  "sha": "fd3f08d029b8884456217432982a9e0141c78a4c",
+  "subject": "Move read related methods to separate file",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "etcd",
+  "sha": "d3e3308cd0c72e26bc804735bb12ab931ccdc612",
+  "subject": "robustness: rename RunTrafficLoop and add RunWatchLoop method",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 4
+ },
+ {
+  "repo": "etcd",
+  "sha": "166463c668514e551624a9ba6214272c2a148e86",
+  "subject": "Client: Rename etcdClientDebugLevel function to the ClientLogLevel",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "etcd",
+  "sha": "48cb27522357f1ace27935a43f6240be5a85cb70",
+  "subject": "Rename putResponse to txnReponse as it doesn't specify put and is also used for delete",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 3
+ },
+ {
+  "repo": "etcd",
+  "sha": "1e665ed3a2d04aff358b26fe7a5afb5459b1c121",
+  "subject": "Move to using paths from environment variables",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 4
+ },
+ {
+  "repo": "etcd",
+  "sha": "42ba3043c2935a0f0bcebfcb2fc52d787a4477b9",
+  "subject": "Move v2 apply logic into apply directory",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 5
+ },
+ {
+  "repo": "etcd",
+  "sha": "3ef69e11ffe51b980e496cc546bf200096cbeb8a",
+  "subject": "Move trace analysis table sorting to a new file",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "etcd",
+  "sha": "a2e525957421d93e31f98908278b3ebca8b9790d",
+  "subject": "Move trace analysis pattern matching to a new file",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "etcd",
+  "sha": "09a384a724a2d53508644adc9a97c58ffab11cf4",
+  "subject": "cache: move batching to demux so that ringBuffer stores single item",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 3
+ },
+ {
+  "repo": "etcd",
+  "sha": "986b75cc8d10a096fd3ecfa6e2121c041561723f",
+  "subject": "Move span creation to capture more attributes of Watch",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "etcd",
+  "sha": "3f3448af2a531893ce54abd1076f110ac8062283",
+  "subject": "Move detailed trace analysis to helper structure",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 3
+ },
+ {
+  "repo": "etcd",
+  "sha": "b13121f1c969e5959f2b9ccd0e9d259b62dd5a52",
+  "subject": "cache: rename validateWatchRange as validateRequestRange",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "etcd",
+  "sha": "b5c6379579fd3ff5f8276bf65d23b83cf7385d95",
+  "subject": "cache: rename validateWatchRange as validateRequestRange",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "etcd",
+  "sha": "512c3f074dc5dfa0c56f9f6cd5c47c900ef8d2ee",
+  "subject": "cache: rename ErrUnsupportedWatch, add ErrKeyRangeInvalid",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "etcd",
+  "sha": "a110ee35b8c6972433ef3bfa61f1b1917af7badb",
+  "subject": "Move ensureTrace to traceutil package",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 6
+ },
+ {
+  "repo": "etcd",
+  "sha": "6c807b30f2ff463083ab4d7b73450060702965f7",
+  "subject": "Move parseArgs into e2e framework",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 5
+ },
+ {
+  "repo": "etcd",
+  "sha": "32c4fbfba7fe09cfd84622cc09f28ab7653cecff",
+  "subject": "Move validation to separate finally driver",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 4
+ },
+ {
+  "repo": "etcd",
+  "sha": "102efd7bd68bb42bf53d749da6ba9f206a041ff4",
+  "subject": "Move linearization timeout and other validations to separate assertions",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 7
+ },
+ {
+  "repo": "etcd",
+  "sha": "29419f7c3712f9cdcca928d4d722599962c90405",
+  "subject": "Rename delete_keys to robustness",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 4
+ },
+ {
+  "repo": "etcd",
+  "sha": "c3d7b2a316a53d6e0866efca5b8aa723a8db1dca",
+  "subject": "[Antithesis] Fix lint and rename Dockerfile",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "etcd",
+  "sha": "6f27da2aeeba91c8c435b8ba418109255cc01a2e",
+  "subject": "Move AlarmBackend interface to fix unexported-return",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "etcd",
+  "sha": "a908d3554483ecb95288c364223359068f71251d",
+  "subject": "Rename migrate_command_test.go to common_test.go",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "etcd",
+  "sha": "83749666fe10416d9c626a71a19a42898e19ca37",
+  "subject": "Move getLatestWALSnap into etcdutl/common.go",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "etcd",
+  "sha": "9d550444942c24c35d5dbc8781c578ffd2cb5cf4",
+  "subject": "Move updating snapshot index just after we safe snapshot to disk",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "etcd",
+  "sha": "8cf1121584041611651421223a821f00e4b14fd0",
+  "subject": "Move scenarios to subpackage",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 3
+ },
+ {
+  "repo": "etcd",
+  "sha": "279ffd57af42c5af0a536680e899b610f0560af6",
+  "subject": "Move watch util to client package.",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 4
+ },
+ {
+  "repo": "etcd",
+  "sha": "2c53be7c5d91e9b618342d63d2d06c3b265abee4",
+  "subject": "etcdserver: rename defaultCompactionSleepInterval var (#18495)",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "etcd",
+  "sha": "16fb3f6527a3359ce6de4f0f00a09d38377b973b",
+  "subject": "Create util for etcdctl, move helper of cobra from main package to etcdctl util, create normalizer of examples in util, add some more examples, change indent of etcdctl from \"\\t\" to \"  \"",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 3
+ },
+ {
+  "repo": "etcd",
+  "sha": "14523bdc21ef9f60f5f51153745e263bf9df629f",
+  "subject": "etcdserver: rename MemberId() to MemberID() to address var-naming",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 20
+ },
+ {
+  "repo": "etcd",
+  "sha": "452e8205165fea57c09add600984a5db72a3c241",
+  "subject": "Make the main_test the entrypoint and move senario generation to separate file",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 3
+ },
+ {
+  "repo": "etcd",
+  "sha": "d6e376b6c61d05ddff476490b1a8180fe02dbbfd",
+  "subject": "Move failpoints to separate package",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 3
+ },
+ {
+  "repo": "etcd",
+  "sha": "818561f43f5ae371a086927fb28fe6d3d104487b",
+  "subject": "test: move all auth related test cases into a separate test file",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "etcd",
+  "sha": "02c01f04d78f42d5a48e274dddb2eb99deb409a1",
+  "subject": "test: move all KV related RESTful APIs into a separate test file",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "etcd",
+  "sha": "f7831e260750effe17b0e8205adbb418453f3bf5",
+  "subject": "tests/robustness: Move key into dedicated options to allow to implement proper ranges",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 8
+ },
+ {
+  "repo": "etcd",
+  "sha": "974655e02cc61c34056f79693b6e0b7fd6c43923",
+  "subject": "tests/robustness: Rename operations const to separate from RequestType",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 8
+ },
+ {
+  "repo": "etcd",
+  "sha": "dd248518d10b6c62065218f0ffa5758b414095ec",
+  "subject": "tests/robustness: Move request progress field from traffic to watch config and pass testScenario to reduce number of arguments",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 5
+ },
+ {
+  "repo": "etcd",
+  "sha": "d475cf81a0d6a098655235110b5cd9d0e22e8f7f",
+  "subject": "tests: Rename linearizability tests to robustness",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 24
+ },
+ {
+  "repo": "etcd",
+  "sha": "d99b1dbdaf3435684ea8dc10912e7df007df32f4",
+  "subject": "tests: Move results reporting to top and add reporting watch histories",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "etcd",
+  "sha": "96e2a7fbd614db5be9129380bf08f69737ebf3fc",
+  "subject": "tests: Move linearizability model and identity to dedicated packages",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 14
+ },
+ {
+  "repo": "etcd",
+  "sha": "3711fde8224de18e723f743bc9295292fa374b09",
+  "subject": "raft: rename raftLog.nextEnts to raftLog.nextCommittedEnts",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 7
+ },
+ {
+  "repo": "etcd",
+  "sha": "1ea13494ebbf18c8f26656697dc641cdae69c6a2",
+  "subject": "raft/tracker: rename and comment MsgApp paused field",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 5
+ },
+ {
+  "repo": "etcd",
+  "sha": "de0efc9aa4cb5a5bbb55d0c251dd04b731c9de04",
+  "subject": "tests: Move global e2e configuration into one file",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "etcd",
+  "sha": "07ca384753fe86c766a6285c209c044df259c030",
+  "subject": "tests: Move MustAbsPath function to testutils",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 8
+ },
+ {
+  "repo": "etcd",
+  "sha": "894e5cb685465407f30bde4c723152b4d53c4456",
+  "subject": "move ctx param to the front",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "etcd",
+  "sha": "46fe4b8e1c49e0da4e7284c781d02466cde00d68",
+  "subject": "tests: Rename common client lease methods to match",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 4
+ },
+ {
+  "repo": "etcd",
+  "sha": "be58a2539cf07765becb565e7c35cd26f4118db9",
+  "subject": "Added client-auto-sync-interval argument to the grpc-proxy",
+  "kinds": [
+   "add-param"
+  ],
+  "go_files": 3
+ },
+ {
+  "repo": "etcd",
+  "sha": "264498258bf27600ef4e23065b6e7eccfd9cd946",
+  "subject": "tests: Move CorruptBBolt to testutil",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "etcd",
+  "sha": "e586dc19df2ad0e87952c158dc00be3b799e0480",
+  "subject": "lease: Rename `Poll` to `Peek` in the `LeaseExpiredNotifier`",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 3
+ },
+ {
+  "repo": "etcd",
+  "sha": "8f7b05348004bc87797cbcce25c44eeacbd9dbd9",
+  "subject": "server: Move adjusting revision to hasher",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 3
+ },
+ {
+  "repo": "etcd",
+  "sha": "fcaf76dbca737eae7e1804d84a7cf7437148ea2a",
+  "subject": "server: Move unsafeHashByRev to new hash.go file",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "etcd",
+  "sha": "6e9397d1714e6198ca2313cc1e9043f992bb023e",
+  "subject": "move lease related code into a separate file lease.go",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "etcd",
+  "sha": "85b18c9b3e2e63ee8fe7685e0c1b2c5e9abc47cc",
+  "subject": "Rename WrapApply to Apply.",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 6
+ },
+ {
+  "repo": "etcd",
+  "sha": "5097b33ab9161634a31483aac323ef1bb23d0761",
+  "subject": "Rename etcdserver/etcderrors package to etcdserver/errors.",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 18
+ },
+ {
+  "repo": "etcd",
+  "sha": "63b2f63cc1a2348409b7b6e11d2c5bfdadec69b6",
+  "subject": "Rename package alising \"apply2\" -\u003e apply.",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 5
+ },
+ {
+  "repo": "etcd",
+  "sha": "c62f01e5fe1328efe50c8ef4ca5d69de6f7eb59e",
+  "subject": "Move CheckTxnAuth to txn.",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 3
+ },
+ {
+  "repo": "etcd",
+  "sha": "47a771871b970fe074c6b88854a2e3ab8d0024c0",
+  "subject": "Move apply to its own package (no dependency on etcdserver).",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 14
+ },
+ {
+  "repo": "etcd",
+  "sha": "fc6a6c3c27cd82b8e3ae7db8fc0802e108a8b18b",
+  "subject": "Move etcdserver/errors.go to sepatate package to avoid cyclic dependencies.",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 18
+ },
+ {
+  "repo": "etcd",
+  "sha": "e2ae9b1d135ece9ef53a2c508ea94a54fdd410e0",
+  "subject": "Move server/etcdserver/txn.go to new package: server/etcdserver/txn",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 5
+ },
+ {
+  "repo": "etcd",
+  "sha": "651de5a057c00e204aa74407f93e8f2b5e9ebc00",
+  "subject": "Rename EtcdServer.Id with EtcdServer.MemberId.",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 17
+ },
+ {
+  "repo": "etcd",
+  "sha": "b5b466088d8858ab37493d1065aa60ae76d3c138",
+  "subject": "server: Move director interrupt handler to method",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "etcd",
+  "sha": "4033f5c2b9b57cd341d1b3522abb03bedbeb9a07",
+  "subject": "move the consistentIdx and consistentTerm from Etcdserver to cindex package",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 5
+ },
+ {
+  "repo": "etcd",
+  "sha": "e155e50886316b8ff6c0d3e6362406ca2fb11a7d",
+  "subject": "rename LockWithoutHook to LockOutsideApply and add LockInsideApply",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 25
+ },
+ {
+  "repo": "etcd",
+  "sha": "f978da4f4f33421c22ce0e3198370d709e9cdfa2",
+  "subject": "move the newClientCfg into clientv3 package so as to be reused by both etcdctl and v3discovery",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 5
+ },
+ {
+  "repo": "etcd",
+  "sha": "1a3822f2c3eaf81728bed567f2ac89dafa5aa215",
+  "subject": "Rename ClientConfig to ConfigSpec",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 5
+ },
+ {
+  "repo": "etcd",
+  "sha": "3dcbbf62d95764cf8a3de00dd12ea29df23f0b7f",
+  "subject": "Move clientconfig into clientv3 so that it can be reused by both etcdctl and v3 discovery",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 10
+ },
+ {
+  "repo": "etcd",
+  "sha": "65be41dd6e35b425971f866970d2c3806da8bcf6",
+  "subject": "tests: Rename framework to runner and document the runners",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 10
+ },
+ {
+  "repo": "etcd",
+  "sha": "2db4d355548049a82d1e42e9ad0786ffba7003a3",
+  "subject": "tests: Move etcdctl to e2e framework",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "etcd",
+  "sha": "8681888012997d46134e7478bd65fcfdda04a6fd",
+  "subject": "fix typo, renamed ErrGPRCNotSupportedForLearner to ErrGRPCNotSupportedForLearner",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 3
+ },
+ {
+  "repo": "etcd",
+  "sha": "5bcbf77980ec7eca73dabf6c7b7947c0dd2dca17",
+  "subject": "tests: Move client to member struct",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 12
+ },
+ {
+  "repo": "etcd",
+  "sha": "d039f016c5cecdf7e4d504e8a7dc54d6692022eb",
+  "subject": "server: Move Storage interface to storage package",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 4
+ },
+ {
+  "repo": "etcd",
+  "sha": "703df1c49102f1078c5fdef0139bb96347ec2181",
+  "subject": "server: Move wal versioning functions to wal package",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 6
+ },
+ {
+  "repo": "etcd",
+  "sha": "e47c3c22d20e64f139b267b289c21bf483688ab8",
+  "subject": "server: Move downgrade API logic into version package",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 10
+ },
+ {
+  "repo": "etcd",
+  "sha": "1e5e57f26898c02551d06a067edd48fe550bddf1",
+  "subject": "server: Move downgrade detection code to version package",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 17
+ },
+ {
+  "repo": "etcd",
+  "sha": "f2dd5d80a19dc5772b9c5ab84ca8b3d1dc75f67a",
+  "subject": "tests: Rename grpcAddr to grpcURL to imply that it includes schema",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 15
+ },
+ {
+  "repo": "etcd",
+  "sha": "39f92a32ca0f32be80bf9845637bf70d2529c015",
+  "subject": "server: Move member dir creation up and introduce Close method to bootstrap structs",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "etcd",
+  "sha": "a206ad2c9636fe850775c86bc6ef63e7fe845168",
+  "subject": "server: Rename GetIDs to GetEffectiveNodeIDsFromWalEntries",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 3
+ },
+ {
+  "repo": "etcd",
+  "sha": "4884e7d8cf92d8a6d42b94b20807907ace677738",
+  "subject": "server: Move wal bootstrap from cluster to storage",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "etcd",
+  "sha": "7c8f7166e738eac7e5f0a1003cc910f66ffe198a",
+  "subject": "server: Move bootstraping backend from snapshot to bootstrapBackend",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "etcd",
+  "sha": "83a325ac4687289180b3dcae6360d9df026fe840",
+  "subject": "server: Move all functions needed for storage bootstrap to storage package",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 17
+ },
+ {
+  "repo": "etcd",
+  "sha": "bc164619957281d7b0425a624c2149e37b62fbd5",
+  "subject": "server: Use zaptest in bucket tests and move backendMock to separate file",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 5
+ },
+ {
+  "repo": "etcd",
+  "sha": "6cd3633543e28c5dce22db5302a2429e8b303115",
+  "subject": "etcdserver: Rename membershipStore to membershipBackend",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 5
+ },
+ {
+  "repo": "etcd",
+  "sha": "f6534f1e9205e12f5b365de75feb35375fdf763f",
+  "subject": "server: Move setting storage version to schema",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 5
+ },
+ {
+  "repo": "etcd",
+  "sha": "ef6c276fae166b40df38a7a886168fa03d2cc80d",
+  "subject": "etcdserver: Move server bootstraping to one file",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 4
+ },
+ {
+  "repo": "etcd",
+  "sha": "e75dfde4cb3a6aeb6bef00b8d7f80c8ab66811de",
+  "subject": "etcdserver: Move raft node start to just before newRaftNode",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "etcd",
+  "sha": "bf3e7033e9300443bf78fc732f0be1ae2c553cb0",
+  "subject": "etcdserver: Move Read/Update methods on Meta bucket to one place",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 16
+ },
+ {
+  "repo": "etcd",
+  "sha": "e5a026822b91b8b232bfe499e53508bda42995df",
+  "subject": "etcdserver: Move put/read/delete on Alarm bucket to bucket package",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "etcd",
+  "sha": "9e511665c5cb5d6f9bfa1c957207857dc12e5d67",
+  "subject": "etcdserver: Move get/put/delete on Lease bucket to bucket package",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 3
+ },
+ {
+  "repo": "etcd",
+  "sha": "0c701fb9f3b3449192e8d9b4902d3ec3f6a3f976",
+  "subject": "etcdserver: Move all get/put/delete on AuthUsers and AuthRoles to buckets module",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 4
+ },
+ {
+  "repo": "etcd",
+  "sha": "b2e08fbfd4f01192348e14df1297f805234cb9a4",
+  "subject": "etcdserver: Move read/update methods on Auth bucket to one place",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 3
+ },
+ {
+  "repo": "etcd",
+  "sha": "f79d09d48b452f566ea442d2845ea311773afd18",
+  "subject": "etcdserver: Move all named keys to buckets module",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 8
+ },
+ {
+  "repo": "etcd",
+  "sha": "823f85dfc9ee14df3054cf40782d5d25015041b4",
+  "subject": "etcdserver: Move version monitor logic to separate module",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 6
+ },
+ {
+  "repo": "etcd",
+  "sha": "eebe67d87d7012a034f664f449e451cf736fa4cc",
+  "subject": "Rename seq to bucket2seq.",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 3
+ },
+ {
+  "repo": "etcd",
+  "sha": "a8e1cf0433fcacbdae7bfb794fd188974b17b1c4",
+  "subject": "client: rename \"master\" branch references to \"main\"",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "etcd",
+  "sha": "77c8033739af78ddccff3310fe3eaf15ca46161c",
+  "subject": "server: rename \"master\" branch references",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 3
+ },
+ {
+  "repo": "etcd",
+  "sha": "1189ee3f3dd90ffce8c4abfd52557ca156cbdd62",
+  "subject": "client: Add logger argument to NewCtxClient",
+  "kinds": [
+   "add-param"
+  ],
+  "go_files": 3
+ },
+ {
+  "repo": "etcd",
+  "sha": "2fb6f0a74bfb85a5b2699f566b1113842dfadff4",
+  "subject": "Simplify lease management after cindex update is moved to 'hooks'.",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 5
+ },
+ {
+  "repo": "etcd",
+  "sha": "6998c5641ccadca8e95ee2154cf8fdce85b4d306",
+  "subject": "client v2: rename error var for revive",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "etcd",
+  "sha": "c1c681adc3583d53a47c80b8c18e61a9e3d389c3",
+  "subject": "server: Added config parameter experimental-warning-apply-duration",
+  "kinds": [
+   "add-param"
+  ],
+  "go_files": 9
+ },
+ {
+  "repo": "etcd",
+  "sha": "45b007b8b4999edc8548bcc7cec89a20b93fedef",
+  "subject": "contrib,clientv3: Move contrib/recipies to clientv3/experimental/recipies/...",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 28
+ },
+ {
+  "repo": "etcd",
+  "sha": "09679d29ad0c1aab1365583af1aa7d6b116f7e44",
+  "subject": "etcdctl: Rename of imports after making etcdctl a module.",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 12
+ },
+ {
+  "repo": "etcd",
+  "sha": "1983c89e27692a81ebf15672099c59773f06b3ca",
+  "subject": "pkg/logutil, etcdserver: Move zap-raft logger to etcdserver.",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 5
+ },
+ {
+  "repo": "etcd",
+  "sha": "b27b17b44ca79494d1cf83ead224230de66f74fb",
+  "subject": "tests/functional: Mechanical rename of imports etcd/v3/integration/ -\u003e etcd/tests/v3/integration/...",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 29
+ },
+ {
+  "repo": "etcd",
+  "sha": "8907b146d449a5edd680d6388d7af409be5cd2c9",
+  "subject": "tests/functional: Mechanical rename of imports etcd/v3/functional/ -\u003e etcd/tests/v3/functional/...",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 27
+ },
+ {
+  "repo": "etcd",
+  "sha": "389642dd169b8865a9798dbeb043a2afcbd0ad31",
+  "subject": "client: Move client specific code (protos, version) to api/",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 30
+ },
+ {
+  "repo": "etcd",
+  "sha": "7c880e5263fb4b03014edaa836797b410e975b13",
+  "subject": "etcdctl: Rename Start / StartWithErrors to MustStart",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 3
+ },
+ {
+  "repo": "etcd",
+  "sha": "bc67babee876974510a36a4edfc69661c699bc4d",
+  "subject": "package adt: rename the filename to be consistent with the package name (#12170)",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "etcd",
+  "sha": "57aa68af5a871c9e7b4e287d0115d5fa67b88c25",
+  "subject": "etcdserver: trace compaction request; add return parameter 'trace' to applierV3.Compaction() mvcc: trace compaction request; add input parameter 'trace' to KV.Compact()",
+  "kinds": [
+   "add-param"
+  ],
+  "go_files": 13
+ },
+ {
+  "repo": "etcd",
+  "sha": "401df4bb8e80181f25a4e03a6770d8643ecd780a",
+  "subject": "etcdserver: add put request steps. mvcc: add put request steps; add trace to KV.Write() as input parameter.",
+  "kinds": [
+   "add-param"
+  ],
+  "go_files": 14
+ },
+ {
+  "repo": "etcd",
+  "sha": "3dc00ab61597bfa209d45957a009adc33c9a2a49",
+  "subject": "clientv3: move auth token credential to \"credentials\" package",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "etcd",
+  "sha": "5824421f8beac15b0fb3c176b6ab7fbe7986a7a6",
+  "subject": "etcdman, pkg: Rename new flags to 'hostname'",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 5
+ },
+ {
+  "repo": "etcd",
+  "sha": "0384c587eb96acaddcab38ed3ae17319994e68f0",
+  "subject": "raft: rename makeP{RS,rogressTracker}",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "etcd",
+  "sha": "5dd45011d67afab5a8b15ed0e19ac9308fb38e54",
+  "subject": "raft: rename prs to progressTracker",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "etcd",
+  "sha": "26eaadb1d176ba2a619e66b115adde527c024437",
+  "subject": "raft: move votes into prs",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 3
+ },
+ {
+  "repo": "etcd",
+  "sha": "1c19f126cbde0e5ff9cb626b83eb2cdc1f45c08b",
+  "subject": "mvcc/backend: rename ReadTx Lock() to RLock()",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 7
+ },
+ {
+  "repo": "etcd",
+  "sha": "47cff4dfe5d10c3ae39bc591f772a5948827cbe8",
+  "subject": "etcdserver/api/rafthttp: rename to \"pipelineProber\"",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "etcd",
+  "sha": "a1aade8c1b06263516c64eb16126f8d3ad4391cd",
+  "subject": "etcdserver: rename to \"heartbeat_send_failures_total\"",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "etcd",
+  "sha": "9149565cb31382edb1dfbab03c45b8cdedf3fb79",
+  "subject": "*: move to \"etcdserver/api/membership\"",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 35
+ },
+ {
+  "repo": "etcd",
+  "sha": "7dabd6c2558c932885540ddd3bcb127091c3f39e",
+  "subject": "*: rename internal packages in tools/testing",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 3
+ },
+ {
+  "repo": "etcd",
+  "sha": "04df89bc114fd570fa5141f0e0db5785c8549489",
+  "subject": "contrib/raftexample: rename internal packages",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "etcd",
+  "sha": "4d807538042458951f63b0bd0f655c006fc90aaf",
+  "subject": "etcdctl: rename internal snapshot packages",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 8
+ },
+ {
+  "repo": "etcd",
+  "sha": "143fbf4caaa5a2a314d4f79dc2285045f95ce04b",
+  "subject": "clientv3/snapshot: rename snapshot package",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 10
+ },
+ {
+  "repo": "etcd",
+  "sha": "2bd689acea4769efedf975da49d64f9d66379843",
+  "subject": "etcdserver/api/snap: rename internal package",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 14
+ },
+ {
+  "repo": "etcd",
+  "sha": "31094e5616a7e21986a583188e106faf4047c507",
+  "subject": "tests/e2e: rename to \"snapshotCount\"",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 4
+ },
+ {
+  "repo": "etcd",
+  "sha": "aa99ed54b7f7504fae6ff73edfb975bc73feece2",
+  "subject": "integration: rename \"SnapshotCount\"",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 3
+ },
+ {
+  "repo": "etcd",
+  "sha": "5235fc21067e63c51be7669f3a3bba817fd67119",
+  "subject": "functional/rpcpb: rename \"SnapshotCount\"",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "etcd",
+  "sha": "892f7e02e054a425ec64bb3e6e0a15ab742424f7",
+  "subject": "etcdmain: rename \"SnapshotCount\"",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "etcd",
+  "sha": "afe511945e24d5ce437e5566abeb1d3585d38885",
+  "subject": "embed: rename \"SnapshotCount\", add \"SnapshotCatchUpEntries\"",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "etcd",
+  "sha": "49d672ff9bc7d2e8883d96cf339fb1b99234bdbb",
+  "subject": "etcdserver: rename \"SnapshotCount\", add \"SnapshotCatchUpEntries\"",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 4
+ },
+ {
+  "repo": "etcd",
+  "sha": "3a80499da47016b9a66a3866302f3cf055bb0ce7",
+  "subject": "*: rename to \"journal\"",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 8
+ },
+ {
+  "repo": "etcd",
+  "sha": "a6c30eab965afd988806247a75f15eb206451028",
+  "subject": "functional: rename to \"log-outputs\"",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 4
+ },
+ {
+  "repo": "etcd",
+  "sha": "af5bc439b3b6bf76689ea7451f39d717cc93a9a9",
+  "subject": "embed,etcdmain: rename to \"--log-outputs\" flag",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 3
+ },
+ {
+  "repo": "etcd",
+  "sha": "f99cb35d299ef1b3d7fd9e071e37ed60dfadab67",
+  "subject": "embed: rename \"LogOutput\" to \"LogOutputs\"",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "etcd",
+  "sha": "23ce3a1acc416a1b1b64731f0b9a2ec03b42db79",
+  "subject": "functional: rename to \"listCases\"",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 3
+ },
+ {
+  "repo": "etcd",
+  "sha": "3815d6edb744ed4d99b891b951abff268e49c44d",
+  "subject": "functional: rename \"FailureCase\" to \"Case\"",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 26
+ },
+ {
+  "repo": "etcd",
+  "sha": "6b128bfb3b6b173d6c065fa9de44125f737f7b81",
+  "subject": "functional/tester: rename files, adding LEADER_SNAPSHOT case",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 19
+ },
+ {
+  "repo": "etcd",
+  "sha": "ca137afe8a1a0253206c117552a841b7fa56bf08",
+  "subject": "functional: rename to \"SIGQUIT_AND_REMOVE_QUORUM_AND_RESTORE_LEADER_SNAPSHOT_FROM_SCRATCH\"",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 4
+ },
+ {
+  "repo": "etcd",
+  "sha": "bc1fd9257936184bb638cb2e9be002708a2aa4c9",
+  "subject": "functional: rename to \"SIGTERM/SIGQUIT*\"",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 14
+ },
+ {
+  "repo": "etcd",
+  "sha": "09a4e059c5c239f2e613208074fc56346b1dc4fb",
+  "subject": "functional-tester/rpcpb: rename \"AdvertisePeerURLs\", add more tests",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 3
+ },
+ {
+  "repo": "etcd",
+  "sha": "c2731cde54fcd9aac00154f8ff38ddec9933256e",
+  "subject": "functional-tester/agent: rename \"logger\" field",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "etcd",
+  "sha": "eb0c66f9124ca979d524c258f80e245ebbd09b4f",
+  "subject": "functional-tester/tester: rename logger field",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 7
+ },
+ {
+  "repo": "etcd",
+  "sha": "e170d40f909057070d6bc00da3dd419ae01f450b",
+  "subject": "functional-tester: move \"etcd-runner\" to \"./cmd\"",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 19
+ },
+ {
+  "repo": "etcd",
+  "sha": "cfd8b3e86dec2f0f330ee8f6fdd9c16aeaabe149",
+  "subject": "embed: move \"unsafe\" flags to bottom",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "etcd",
+  "sha": "940200f1ae34d51a76881f68f487889255ccf607",
+  "subject": "etcdmain: move \"unsafe\" flags to bottom",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "etcd",
+  "sha": "3aa5711dca702229ee79d26e923112fa61fb0bd1",
+  "subject": "clientv3: move health balancer to \"balancer\"",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 7
+ },
+ {
+  "repo": "etcd",
+  "sha": "82ee796aa466b779703ff43c2bd72033db49147f",
+  "subject": "pkg/logutil: move \"pkg/logger\" to \"logutil\"",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 14
+ },
+ {
+  "repo": "etcd",
+  "sha": "69f7e115060b6454aa56a782b49861884f04e3dc",
+  "subject": "*: move \"error\" to \"etcdserver/v2error\"",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 23
+ },
+ {
+  "repo": "etcd",
+  "sha": "eecbba792785d28cba9cb8bf36380cf0fc19638f",
+  "subject": "etcdserver: move \"etcdserver/auth\" to \"etcdserver/v2auth\"",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 10
+ },
+ {
+  "repo": "etcd",
+  "sha": "37546f74ab460a41d645e5d245e8d7a5a39d4384",
+  "subject": "*: move \"version\" to \"internal/version\"",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 29
+ },
+ {
+  "repo": "etcd",
+  "sha": "6c917664901782080a30a33436da41ff08d1df49",
+  "subject": "*: move \"auth\" to \"internal/auth\"",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 32
+ },
+ {
+  "repo": "etcd",
+  "sha": "432581c7d08ee76ccef7a0eead64792909ad711f",
+  "subject": "*: move \"discovery\" to \"internal/discovery\"",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 6
+ },
+ {
+  "repo": "etcd",
+  "sha": "46b9844ca559bac46f34ecdedbd25b19330ca718",
+  "subject": "*: move \"alarm,compactor\" to \"internal/*\"",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 17
+ },
+ {
+  "repo": "etcd",
+  "sha": "dee39bf78617ff75b0923fee0068409ef728f542",
+  "subject": "internal/raftsnap: move \"raftsnap\" to internal",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 32
+ },
+ {
+  "repo": "etcd",
+  "sha": "2b6fd3094ff34950155848887cd295a6e55f6b94",
+  "subject": "*: rename \"snap\" to \"raftsnap\" package",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 6
+ },
+ {
+  "repo": "etcd",
+  "sha": "bb2c48b38ae610dc82b26b0b38aa6845c78af355",
+  "subject": "rafthttp: rename \"snap\" to \"raftsnap\" package",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 6
+ },
+ {
+  "repo": "etcd",
+  "sha": "6a70a931d3831b2f4ee676127b7f9bb63aca4a75",
+  "subject": "etcdserver: rename \"snap\" to \"raftsnap\" package",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 6
+ },
+ {
+  "repo": "etcd",
+  "sha": "60d5ab548564d7512c0a629b0411507b807e0e3c",
+  "subject": "raftsnap: rename \"snap\" to \"raftsnap\"",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 12
+ },
+ {
+  "repo": "etcd",
+  "sha": "bd76ac85db2f3236c14c159cda741e7fd8011f19",
+  "subject": "clientv3/integration: move isServerCtxTimeout to server_shutdown_test.go",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "etcd",
+  "sha": "1fa295e3ba6f4bd391fde9db911f0b4599710727",
+  "subject": "etcdmain: move SetupLogging to embed",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "etcd",
+  "sha": "a37dd0055f7f5fcac62148c402c897ddbe875cda",
+  "subject": "clientv3/integration: move to TestBalancerUnderBlackholeKeepAliveWatch",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "etcd",
+  "sha": "5d169b866fbfd68c51ad0489cb5b21ef09481d2d",
+  "subject": "clientv3/integration: rename to 'mustWaitPinReady'",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 4
+ },
+ {
+  "repo": "etcd",
+  "sha": "fe1ddab714e206d9afbfd2e349a4f4439791b55a",
+  "subject": "wal: fall back to closing wal if locked dir rename fails",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 3
+ },
+ {
+  "repo": "etcd",
+  "sha": "e29db923bc9b93dc3edae23b5fe702a54632c97f",
+  "subject": "*: move v2http handlers without /v2 prefix to etcdhttp",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 12
+ },
+ {
+  "repo": "etcd",
+  "sha": "dfdaf082c51ba14861267f632f6af795a27eb4ef",
+  "subject": "etcdserver: add a test to ensure renaming db happens before persisting wal and snap files",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "etcd",
+  "sha": "8b7b7222ddd888aa1b4463bc68f5a99c9b217da2",
+  "subject": "etcdserver: renaming db happens after snapshot persists to wal and snap files",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 4
+ },
+ {
+  "repo": "etcd",
+  "sha": "b94b8b5707065b91d702bb6ccaaad7f8af2a65b8",
+  "subject": "etcd-runner: move root cmd into command package",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 4
+ },
+ {
+  "repo": "etcd",
+  "sha": "4f9aa276bd877e750b092c100e6399d39bb83513",
+  "subject": "*: rename Snapshot STM isolation to SerializableSnapshot",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "etcd",
+  "sha": "8db8d01712707bf88fa81572fca44dbb2e0ae3d5",
+  "subject": "rafthttp: move test-only functions to '_test.go'",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "etcd",
+  "sha": "2c06def8ca12112a44a6c92e4f7e71fc3a6942d5",
+  "subject": "etcdserver, embed, v2http: move pprof setup to embed",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 5
+ },
+ {
+  "repo": "etcd",
+  "sha": "9f0ee53e86d671bd267964e77a5d82442a2d1dba",
+  "subject": "etcd-runner: move string generation to pkg/stringutil",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "etcd",
+  "sha": "86c4a7413937601a79df83d9ba15bce9d1df483e",
+  "subject": "etcd-tester: move stresser and checker to tester",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 4
+ },
+ {
+  "repo": "etcd",
+  "sha": "6ec03d3f7ccdcbfda8c91ea6b8cd86ca3bbf9fc5",
+  "subject": "etcdserver: move 'EtcdServer.send' to raft.go",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 4
+ },
+ {
+  "repo": "etcd",
+  "sha": "7d86d1050ee3a73dd8b81970f5b290e76e9178f5",
+  "subject": "functional-tester: move checker logic to cluster",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 4
+ },
+ {
+  "repo": "etcd",
+  "sha": "7cd7b5d5392e9f7dfe18ed123eecf8c0c4985dc0",
+  "subject": "e2e: rename 'backends' to 'processes'",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 3
+ },
+ {
+  "repo": "etcd",
+  "sha": "bd7107bd4bf26219ba9852aa6c4c817ccde0191c",
+  "subject": "wal: fsync directory after wal file rename",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "etcd",
+  "sha": "9aee3f01cd5d477d4ebf35f68aebae9836b04d4a",
+  "subject": "embed: Move the ReadyNotify() call to a better place",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 4
+ },
+ {
+  "repo": "etcd",
+  "sha": "af4f82228cae6c4eed715768e4977fb42f769452",
+  "subject": "wal: hold file lock while renaming WAL directory on non-Windows",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 4
+ },
+ {
+  "repo": "etcd",
+  "sha": "12bf1a3382ace4c21b00198b60dea4886cf82794",
+  "subject": "*: rename preserveKVs to prevKv",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 8
+ },
+ {
+  "repo": "etcd",
+  "sha": "94f22e8a07f60a5b980f100bd2616c36c4373bb4",
+  "subject": "*: rename RPCs and structs related to revoking",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 10
+ },
+ {
+  "repo": "etcd",
+  "sha": "a047aa4a813bc5e2c03864b0a4c406cb81907b5f",
+  "subject": "rafthttp: rename to to peerID",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 6
+ },
+ {
+  "repo": "etcd",
+  "sha": "0fe24e7ffc65cf5bfbf8c09e1c6a247898c85acb",
+  "subject": "etcdserver: rename v3demo_server to v3_server",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "etcd",
+  "sha": "66d2ae7a3949d19ae7917b154a5fbcf23ba2c10a",
+  "subject": "proxy: move http related thing to httpproxy",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 17
+ },
+ {
+  "repo": "etcd",
+  "sha": "ae9b251d9978e22ea51b3a0605f39f72f8d1f366",
+  "subject": "etcdctl: move endpoint-heath and status into endpoint command",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 7
+ },
+ {
+  "repo": "etcd",
+  "sha": "bf2289ae008e58927bf89acd94b41a734db1013a",
+  "subject": "etcdserver: move membership related code to membership pkg",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 25
+ },
+ {
+  "repo": "etcd",
+  "sha": "dc17eaace77cf2aa7463c15ad5df0f9cbc4d8f09",
+  "subject": "*: rename Lease Create to Grant",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 23
+ },
+ {
+  "repo": "etcd",
+  "sha": "030865abe3327815db0586e03198dc5782c1f3ed",
+  "subject": "*: move Cluster interface to api",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 8
+ },
+ {
+  "repo": "etcd",
+  "sha": "eb3919e8cf6552d653427731b2749eebfe8bdd5e",
+  "subject": "*: move baisc tls util funcs to tlsutil pkg",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "etcd",
+  "sha": "3fbacf4be2da283d69ee636dda54872f421359bb",
+  "subject": "v3rpc: move Hash RPC to Maintenance service",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 9
+ },
+ {
+  "repo": "etcd",
+  "sha": "94e77cfa5d9b60dfabeaa18511051ad779c7bf82",
+  "subject": "etcdserver: move v3 raft apply functions to interface",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 3
+ },
+ {
+  "repo": "etcd",
+  "sha": "489779d905e86494fea1d81168e079fa41a4e1f6",
+  "subject": "clientv3: rename comparison from CreatedRevision to CreateRevision",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 5
+ },
+ {
+  "repo": "etcd",
+  "sha": "2bb417bfff61ccabbd28aebaa8921c48d6d5c07c",
+  "subject": "clientv3: Renaming SortByCreatedRev to maintain consistency.",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 5
+ },
+ {
+  "repo": "etcd",
+  "sha": "44753594ecd199868a7e4b80cf3d4c042f17b640",
+  "subject": "v3rpc: move errors to v3rpc/rpctypes",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 13
+ },
+ {
+  "repo": "etcd",
+  "sha": "dcaf5ef586660edbfcc671f96053633df0d8b06d",
+  "subject": "move store recorder to 'mock/mockstore'",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 9
+ },
+ {
+  "repo": "etcd",
+  "sha": "c9e4e2b6dc656ad4a4ff90f36276eb54581f02f5",
+  "subject": "benchmark: move sample flag to root command",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 4
+ },
+ {
+  "repo": "etcd",
+  "sha": "3327858a5466496c322c4c182d8cdf4779f73b46",
+  "subject": "clientv3/concurrency: move election recipe into clientv3",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 4
+ },
+ {
+  "repo": "etcd",
+  "sha": "9f569842f0f666c85f81838b99ea415336c81b81",
+  "subject": "clientv3: move syncer to mirror package",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 4
+ },
+ {
+  "repo": "etcd",
+  "sha": "24a6abaf59c60153bf68128fd96e0162834949c6",
+  "subject": "*: move sync logic to clientv3/sync",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "etcd",
+  "sha": "5f1d30b76af2ca9d344f6f8d32c357542f283fcc",
+  "subject": "integration: move watch tests to v3_watch_test.go",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "etcd",
+  "sha": "82778ed4783c9267d07a4ef4c37543c46e2fac7d",
+  "subject": "Add refresh parameter to allow TTL refreshes without firing watch/wait responses",
+  "kinds": [
+   "add-param"
+  ],
+  "go_files": 14
+ },
+ {
+  "repo": "etcd",
+  "sha": "6f72b313168b9619a4468468257e593a28962f77",
+  "subject": "integration: add test promote and move lease tests to lease_test.go",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 7
+ },
+ {
+  "repo": "etcd",
+  "sha": "5e2dbadbc0d1a2dbd4cc0636c0147a321f174771",
+  "subject": "leasehttp: move lease/http.go to its own pkg",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 4
+ },
+ {
+  "repo": "etcd",
+  "sha": "f01c8188f8d53843b5eef15efe664b649f956e96",
+  "subject": "*: rename lease.DeleteableRange to lease.RangeDeleter",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 3
+ },
+ {
+  "repo": "etcd",
+  "sha": "f9af744be3dd50099936bf4a2e3a2dda16dbd94d",
+  "subject": "lease: move storage.NoLease to lease package",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 10
+ },
+ {
+  "repo": "etcd",
+  "sha": "09b420f08c3780fa8eb0225cee1431c0876c12e0",
+  "subject": "*: move leaseID typedef to lease pkg",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 9
+ },
+ {
+  "repo": "etcd",
+  "sha": "807db7e2aa874d264c822d063d4a609581def588",
+  "subject": "storage: rename watching -\u003e watcher",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 6
+ },
+ {
+  "repo": "etcd",
+  "sha": "ee0b3f42ed79bd197fa2c54a5787aeb25eee02cd",
+  "subject": "*: rename watcher to watchStream",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 10
+ },
+ {
+  "repo": "etcd",
+  "sha": "95c29838e33fc5f9a2a12f958a79a1b187582b9d",
+  "subject": "rafthttp: move ReadCloser to ioutil",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "etcd",
+  "sha": "6e5eb035444a0f0fe51d0dc0296fcaf000a5504c",
+  "subject": "storage: move watcherGauge to watchable_store",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "etcd",
+  "sha": "1a3f7f7fa45df7d8af20863ee056739ac7fe56cd",
+  "subject": "*: rename etcd service to kv service in gRPC",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 10
+ },
+ {
+  "repo": "etcd",
+  "sha": "f71bcfa8ce0460e365d0e4b36dd35b8d27f41658",
+  "subject": "storage: move watcher interface into watcher.go",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "etcd",
+  "sha": "7d3af5e15f2148baed0a06ba2d7378db913dfaae",
+  "subject": "rafthttp: rename message.go -\u003e message_codec.go",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 12
+ },
+ {
+  "repo": "etcd",
+  "sha": "478fab6acae3c617c652af2688f8be02117013a7",
+  "subject": "rafthttp: rename NewHandler to newPipelineHandler",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 3
+ },
+ {
+  "repo": "etcd",
+  "sha": "05c74bd890f80f7eef78504ff73ebcd8207a3e21",
+  "subject": "etcdserver: rename db file into a formal directory",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "etcd",
+  "sha": "c32919e6d18188947fb9d092a8b1f9f90a59beca",
+  "subject": "*: rename v3etcdctl to etcdctlv3",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 8
+ },
+ {
+  "repo": "etcd",
+  "sha": "fb1951204c9972d0a4364e24a6f2cd5900b7f2f2",
+  "subject": "etcdserver: move atomics to make etcd work on arm64",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 3
+ },
+ {
+  "repo": "etcd",
+  "sha": "64ec8af91be7462aa3c4b6d33a23a0c878e27a1d",
+  "subject": "*: Rename `security` to `auth`",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 20
+ },
+ {
+  "repo": "etcd",
+  "sha": "079e7c10a0b91a2ee5b82a9ef995bf24e764ee86",
+  "subject": "etcdctl: move format to format.go",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "etcd",
+  "sha": "711451ce2da13e65c82275a74514cae4d5a48398",
+  "subject": "*: rename logger to plog",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 3
+ },
+ {
+  "repo": "etcd",
+  "sha": "2adb58f9defff7e388bb834944a54e9836a00722",
+  "subject": "raft: move progress to progress.go",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "etcd",
+  "sha": "6d824722750e7d7775697828e1866fa7ae8375ae",
+  "subject": "client: move http.go into client.go",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 4
+ },
+ {
+  "repo": "etcd",
+  "sha": "6d89e6217d3dee599b8dde1d355540419d4d5960",
+  "subject": "client: rename KeysAPI.RecursiveWatch to RWatch",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 3
+ },
+ {
+  "repo": "etcd",
+  "sha": "fade9b606526cf27324684a2cc9404c6c53a7f82",
+  "subject": "etcdserver: Refactor 2.0.1 directory rename into a proper migration",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 5
+ },
+ {
+  "repo": "etcd",
+  "sha": "20497f1f8513ff21f5ca5c9b3c5fd11b23b9dc2c",
+  "subject": "etcdserver: move remote cluster retrive to cluster_util.go",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "etcd",
+  "sha": "59214978a22a7893aace389bab3750a9bea4a00f",
+  "subject": "raft: Add applied index as an argument to newRaft and RestartNode.",
+  "kinds": [
+   "add-param"
+  ],
+  "go_files": 7
+ },
+ {
+  "repo": "etcd",
+  "sha": "27d47977d92ff162679e070426f76f934c11f858",
+  "subject": "etcdserver: move recorder to testutil",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 3
+ },
+ {
+  "repo": "etcd",
+  "sha": "9de4e36b6af149615cc4fffc6b475064fdd9ab0f",
+  "subject": "tools: move etcd-migrate to tools",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "etcd",
+  "sha": "803c38f4489138a4c52da9abfb79d6342daa531c",
+  "subject": "etcdserver: move error to errors.go",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 3
+ },
+ {
+  "repo": "etcd",
+  "sha": "cea29fe158c953cf0ac2c815bc74398351dcceb1",
+  "subject": "etcdserver: move getExpr to timeutil",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 4
+ },
+ {
+  "repo": "etcd",
+  "sha": "7a5bf5322232888d4d74b7edc524d2308354d3f1",
+  "subject": "etcdserver: move member sort interface to member.go",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "etcd",
+  "sha": "08e9c25ea58cbc1cdbe4ddb387d67d9a99d1bafa",
+  "subject": "*: move srv into pkg discovery",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 5
+ },
+ {
+  "repo": "etcd",
+  "sha": "53bf7e4b5e7faf34d6eebfc08cd76bb9319275b7",
+  "subject": "wal: rename openAtIndex -\u003e open; OpenAtIndexUntilUsing -\u003e openNotInUse",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 4
+ },
+ {
+  "repo": "etcd",
+  "sha": "935f7128a9ce60d5439f6586a1124c6ff1aedd9b",
+  "subject": "etcdserver: move stats inferface to stats pkg",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 3
+ },
+ {
+  "repo": "etcd",
+  "sha": "8a626257c76b4f2621f0fdfbe244db2601b0e795",
+  "subject": "raft: move unstable related function to log_unstable.go",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 3
+ },
+ {
+  "repo": "etcd",
+  "sha": "66252c7d6264503c2288227ce9e94c582dadbf10",
+  "subject": "raft: move all unstable stuff into one struct for future cleanup",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 4
+ },
+ {
+  "repo": "etcd",
+  "sha": "9ddd8ee539081d1d11493b04f828401944664891",
+  "subject": "Rename Storage.HardState back to InitialState and include ConfState.",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 3
+ },
+ {
+  "repo": "etcd",
+  "sha": "46ee58c6f0604ddc03c1c4643e82a58a80256429",
+  "subject": "raft: Rename ErrSnapshotRequired To ErrCompacted.",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "etcd",
+  "sha": "f24e214ee5239f3e7f77cf0986dd750be62e59be",
+  "subject": "rafthttp: move server stats in raftHandler to etcdserver",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 3
+ },
+ {
+  "repo": "etcd",
+  "sha": "3fcc0117170021c316b7ad2162a6ecce47446b86",
+  "subject": "etcdserver: rename sender.go -\u003e sendhub.go",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 4
+ },
+ {
+  "repo": "etcd",
+  "sha": "0d18a0f3813d1bf628dd4f5206386a930c94dc7e",
+  "subject": "pkg/wait: move wait to pkg/wait",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 5
+ },
+ {
+  "repo": "etcd",
+  "sha": "1197c1f96500271d974bb4021ccc31f4ab4e960b",
+  "subject": "etcdserver: move peer URLs check to config",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 4
+ },
+ {
+  "repo": "etcd",
+  "sha": "077e144e8a4abdf0cf5452d505961ea04b89c891",
+  "subject": "etcdserver: move newTestMember* to member_test.go",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "etcd",
+  "sha": "99b1af40c62773b4a74f53e2433416256320859b",
+  "subject": "etcdserver: move config validation to cluster",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 5
+ },
+ {
+  "repo": "etcd",
+  "sha": "5de9d38cc638e1fab0cdbfdce8156774cab140c4",
+  "subject": "pkg: move to more generic StringsFlag",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 6
+ },
+ {
+  "repo": "etcd",
+  "sha": "9d07db44320a2bc08fc1469c770dd6c9a92bb3b5",
+  "subject": "client: move timeout into caller of httpClient",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 3
+ },
+ {
+  "repo": "etcd",
+  "sha": "3dfb6723b288cfc712126d5c8e1d4912fddc8f18",
+  "subject": "*: rename initial-cluster-name to initial-cluster-token",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 5
+ },
+ {
+  "repo": "etcd",
+  "sha": "cf9dd31daa15f798d57a698fd42bdf47a42b5855",
+  "subject": "etcd: move main logic to etcdmain subpackage",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 5
+ },
+ {
+  "repo": "etcd",
+  "sha": "81304b2b7ec232ada28bf601e816e5c6b6e86535",
+  "subject": "raft: move test helper function into tests",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 3
+ },
+ {
+  "repo": "etcd",
+  "sha": "480e92d340ff346578dddd45de7fcec429f68085",
+  "subject": "strutil: move IDAsHex/IDFromHex to new pkg",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 7
+ },
+ {
+  "repo": "etcd",
+  "sha": "54a2d8ffc91cf6005724edb6e23fd6bc84374a7e",
+  "subject": "client: move Member models to new types pkg",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 4
+ },
+ {
+  "repo": "etcd",
+  "sha": "6e6d1897d8f8185814ef2265b2e1600080ecc021",
+  "subject": "pkg: move everything into subpackages",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 11
+ },
+ {
+  "repo": "etcd",
+  "sha": "45d8fbdcdaa2204d007600d43254cb8ff4444017",
+  "subject": "client: move discovery path logic into client pkg",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "etcd",
+  "sha": "46be5d7d5f24769e02521564cfea7e073080cc3d",
+  "subject": "version: move version string into new package",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "etcd",
+  "sha": "c15c3eab4c08fe28b12969b14f2af716fd0954bb",
+  "subject": "etcdserver: move int64Slice into pkg/types/",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 3
+ },
+ {
+  "repo": "etcd",
+  "sha": "af6b29f291e5c10ff29192ac052e3bb1696b48f5",
+  "subject": "main: move server configuration to etcdserver package",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 5
+ },
+ {
+  "repo": "etcd",
+  "sha": "073eb7677dd33a43869cc6349844acd5925621df",
+  "subject": "etcdserver: move grep member logic into publish func",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 3
+ },
+ {
+  "repo": "etcd",
+  "sha": "e83f8519959a960d1fc7972ff105de513b504cd4",
+  "subject": "etcdserver: move cluster test from etcdhttp to etcdserver",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "etcd",
+  "sha": "720aa6aeae3bd97bcb8e902644025148a70a5328",
+  "subject": "pkg: move cors.go to /pkg/cors.go",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 3
+ },
+ {
+  "repo": "etcd",
+  "sha": "2f6086de227520c871ad6f8c58ae4f88bb1bc13a",
+  "subject": "pkg: move /crc to /pkg/crc",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 4
+ },
+ {
+  "repo": "etcd",
+  "sha": "a0f56257280786c8f17be6258a85c3b1c0e15e52",
+  "subject": "pkg: move /transport to pkg/transport",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 5
+ },
+ {
+  "repo": "etcd",
+  "sha": "45f71af33eb93d8a3986ff43c090f04e1903464d",
+  "subject": "pkg: move testutil to pkg",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 4
+ },
+ {
+  "repo": "etcd",
+  "sha": "e30c1eeefd4f75bf73564c1443a37c6b4ce6da66",
+  "subject": "pkg: move SetFlagsFromEnv to pkg package",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 4
+ },
+ {
+  "repo": "etcd",
+  "sha": "314c13a8f0c45362efbadf69b7b961fdad82fb90",
+  "subject": "pkg: move DeprecatedFlag to new package",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "etcd",
+  "sha": "1ca03d8e9d3168552c9d77e16cb60aaa3bc5f86f",
+  "subject": "raft: move logic to separate func",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "etcd",
+  "sha": "b98cf172096d13bb8adbc9f0b978f7a9fde38143",
+  "subject": "wal: move pb files to walpb",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 8
+ },
+ {
+  "repo": "etcd",
+  "sha": "9e77d180c4ba8e478f2c74289c1f9dbe1f20dd69",
+  "subject": "snapshot: move pb to snappb; remove clusterId",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 4
+ },
+ {
+  "repo": "etcd",
+  "sha": "c7cb8275c3dea3b2e6129eb2126b812ebb425891",
+  "subject": "etcdserver: move protobuf to etcdserverpb",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 4
+ },
+ {
+  "repo": "etcd",
+  "sha": "e8e588c67b9ec648fb254907c435ae06ffe591ed",
+  "subject": "raft: move protobufs into raftpb",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 11
+ },
+ {
+  "repo": "etcd",
+  "sha": "134a962222776af00ba7f2dff48e63f01ea0b3be",
+  "subject": "raft: move raft2 to raft",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 23
+ },
+ {
+  "repo": "etcd",
+  "sha": "9acb4cf2b0d0b4eefe84cc40e0156a79c7f8e1c3",
+  "subject": "raft: move raft.nextEnts to tests",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "etcd",
+  "sha": "0453d09af64b04e2d2b645b48a308e50cf68dc98",
+  "subject": "raft: moved into new raft",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 19
+ },
+ {
+  "repo": "etcd",
+  "sha": "85103adfe014c2a6323a3656991bde1546be0f9b",
+  "subject": "wal: move record method to record.go",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "etcd",
+  "sha": "8e2557697ffc5c6af30444b4f6efbdc6e25e456f",
+  "subject": "etcd: rename initTestServer -\u003e newUnstartedTestServer",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 3
+ },
+ {
+  "repo": "etcd",
+  "sha": "18c4be469fab71404072e48d3651dfa3667af3b1",
+  "subject": "move ./http to main",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 7
+ },
+ {
+  "repo": "etcd",
+  "sha": "0197ce4c66114d84d564399bcd7c4065ae1e1741",
+  "subject": "server: move TestMultiNodeKillAllAndRecovery to etcd/",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "etcd",
+  "sha": "215820dd4017920fa542c9c76397cccb4f3e8d23",
+  "subject": "server: move TestMultiNodeKillOne to etcd/",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 3
+ },
+ {
+  "repo": "etcd",
+  "sha": "a0fbc289ec493cbb4892d8d0425f11cec5b22bba",
+  "subject": "server: move discovery tests to etcd/",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "etcd",
+  "sha": "01322cd24396f44d3b1ab005d99eddf6aa6a2a7c",
+  "subject": "server: move TestClusterConfigReload to etcd/",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "etcd",
+  "sha": "05e77ecf90001492f843bed80da3baa6ed7ad357",
+  "subject": "server: move id to the head of log line",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 3
+ },
+ {
+  "repo": "etcd",
+  "sha": "7aa9838d8d41998ff30b32c2fe7b8ff5fd909e86",
+  "subject": "server: move TestModeChange to functional tests",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "etcd",
+  "sha": "2f51735e8ac16946f680d8cbf37bc2874c35de03",
+  "subject": "etcd: move raftprefix to raft_handler",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "etcd",
+  "sha": "6dc49def250d9df76b3853c0626622bc4f04953a",
+  "subject": "server: move var noneId to standby.go",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "etcd",
+  "sha": "e0e8495ace7513518cd7b6b7867563478c8a70a0",
+  "subject": "etcd: move fetch logic into peerhub",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "etcd",
+  "sha": "a922947bb082bdf0e8022884fe752d0f868231d3",
+  "subject": "etcd: move s.setClusterConfig to v2_admin.go",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "etcd",
+  "sha": "a50857d38a9e3997fa32540b765b6f945d1416c8",
+  "subject": "etcd: move s.ClusterConfig to v2_admin.go",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "etcd",
+  "sha": "44836d909931e38d8dd08695541cb93339e04374",
+  "subject": "etcd: move server/usage.go to etcd/v2_usage.go",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 3
+ },
+ {
+  "repo": "etcd",
+  "sha": "042a8e3d4f6cbe77bf4b9ee84712deeb7c7a72a5",
+  "subject": "etcd: move util to test",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "etcd",
+  "sha": "3817661f8214ccdb50fe552bf1833158ba43e038",
+  "subject": "raft: rename ConfigAdd/ConfigRemove -\u003e AddNode/RemoveNode",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 4
+ },
+ {
+  "repo": "etcd",
+  "sha": "989f41477df2ccd71a51b1e03b980880e3dd01da",
+  "subject": "raft: rename peer -\u003e peers",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "etcd",
+  "sha": "0cdd1b58a45c0d15a435a00a632060c118d2f954",
+  "subject": "raft: rename log.commit to log.committed",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 3
+ },
+ {
+  "repo": "etcd",
+  "sha": "092461d7c80cbeeb1fdfa0527765d5571b40d5e6",
+  "subject": "raft: rename log.len to log.lastIndex",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "etcd",
+  "sha": "8f3d109c1806a162c98d9cc15b1ce94cad6279a0",
+  "subject": "raft: rename log.isOk to log.matchTerm",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "etcd",
+  "sha": "8d7be33dd89343a6908c19571c7ea308e72ffd71",
+  "subject": "raft: move to raft pkg",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 4
+ },
+ {
+  "repo": "etcd",
+  "sha": "6d4f018887cd1ec0d2b9dce2f3acb2200642fa27",
+  "subject": "chore(cluster_config): rename SyncClusterInterval to SyncInterval",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 7
+ },
+ {
+  "repo": "etcd",
+  "sha": "b0ffb4fd1006068dfd081a56ac1a912602d1b08d",
+  "subject": "chore(config): move Sanitize and Force check to boot process",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 4
+ },
+ {
+  "repo": "etcd",
+  "sha": "6516cf854c2a64a08016eb4c87a31d0b61e11d2a",
+  "subject": "chore(server): rename daemon to startRoutine",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "etcd",
+  "sha": "67600603c5936c77eea9d9aee2089bcbe99ecd99",
+  "subject": "chore: rename proxy mode to standby mode",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 10
+ },
+ {
+  "repo": "etcd",
+  "sha": "bda8849c3bac06f1ef0780e03dfd8ddb631219c6",
+  "subject": "chore(btrfs): rename fs to btrfs",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 5
+ },
+ {
+  "repo": "etcd",
+  "sha": "1b59eacb72278035ee7849772fe32c385bd1d4b2",
+  "subject": "refactor(main): rename etcd.go to main.go",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "etcd",
+  "sha": "094cc6347d1ccd32349c1f211a69063cd57f28f8",
+  "subject": "refactor(main): move main logic to separate package",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 4
+ },
+ {
+  "repo": "etcd",
+  "sha": "f434177a9a95db581a8524d12b60dc8542a83875",
+  "subject": "chore: rename 'heartbeat timeout' to 'heartbeat interval'",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 5
+ },
+ {
+  "repo": "etcd",
+  "sha": "69922340f67f2e124d8922b534946595d64bb112",
+  "subject": "refactor(server): move utilities into pkg",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 4
+ },
+ {
+  "repo": "etcd",
+  "sha": "0abd860f7e655903a3dee37964b3126c94fee13a",
+  "subject": "refactor(server): drop Serve code; rename cors object",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 7
+ },
+ {
+  "repo": "etcd",
+  "sha": "86718167e88ad5c16554bb4f14f73da5b174db9b",
+  "subject": "refactor(peer_server): move stats construction to factories",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 3
+ },
+ {
+  "repo": "etcd",
+  "sha": "91f768f9ae4e7e6cc5b1be84ed263b432edba32b",
+  "subject": "refactor(cors): Rename cors_handler.go to cors.go",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "etcd",
+  "sha": "7a948746a80fc7c117376537b823ddf3f8195224",
+  "subject": "fix(store): move logic to handle whether or not to notify (re: hidden keys) entirely into watcher hub",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 3
+ },
+ {
+  "repo": "etcd",
+  "sha": "cba2611c68246b6a012ddd1acab4e6cf89f56af9",
+  "subject": "Renamed configuration parameters.",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 26
+ },
+ {
+  "repo": "etcd",
+  "sha": "0372cdea2326506a4bb6d6e7ddab43b81e686649",
+  "subject": "refactor move sync command into etcd",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 8
+ },
+ {
+  "repo": "etcd",
+  "sha": "5e604b7a1836de4ee667c97787b44e39234f7ad5",
+  "subject": "chore(dashboard): move to the mod directory",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 24
+ },
+ {
+  "repo": "etcd",
+  "sha": "090d049b81b39ba92f8622c545b4e89f6cb8fb51",
+  "subject": "refactor move raft http handlers to peer_server_handlers.go",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "etcd",
+  "sha": "8ee0845631be433bc45e72b1d9d0eaf14f00b9f5",
+  "subject": "chore(dashboard): move to the mod directory",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 24
+ },
+ {
+  "repo": "etcd",
+  "sha": "6f591032ef33b6e81311fb10957c3956974cd90e",
+  "subject": "rename to DupCnt, duped; add some comments, maintained some format, add notification for immediate expiration",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 6
+ },
+ {
+  "repo": "etcd",
+  "sha": "351e84aece21dade1818e07e0ce56a23380a33ef",
+  "subject": "feat(etcd): add listen host parameter",
+  "kinds": [
+   "add-param"
+  ],
+  "go_files": 4
+ },
+ {
+  "repo": "etcd",
+  "sha": "915266d5f50169e306e8d0113828e02dd0253de6",
+  "subject": "move tslconf to conf.go",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "etcd",
+  "sha": "3940196de0d1621a8e7d7916b158c0c998199e77",
+  "subject": "move trans related func to trans.go",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "etcd",
+  "sha": "82fe001c65c26082faf2028af5402e94ece9a571",
+  "subject": "move etcdMux to etcd_handlers.go (better proximity code)",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "etcd",
+  "sha": "339d8b435d723be51a3ae6f90022a003d0f1dd47",
+  "subject": "move to util",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "etcd",
+  "sha": "04318ff1be8a871d5b32099c5f99868917e7e70b",
+  "subject": "fix(etcd): rename ignore to force",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 3
+ }
+]

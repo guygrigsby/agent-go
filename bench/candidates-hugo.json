@@ -1,0 +1,920 @@
+[
+ {
+  "repo": "hugo",
+  "sha": "cf18b827e2bebe95f87b36bff9937218348a55ca",
+  "subject": "images: Deprecate Imaging.Compression and move it down to webp and avif configs",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 5
+ },
+ {
+  "repo": "hugo",
+  "sha": "58927aa14ae7e6679ca4533a15362fa99c61247a",
+  "subject": "Rename deprecated cascade._target to cascade.target in tests",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 4
+ },
+ {
+  "repo": "hugo",
+  "sha": "4652ae4a44d8767496f65646f6480a288b0b1d6b",
+  "subject": "Move to new locales library and upgrade CLDR from v36.1 to v48.1",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 8
+ },
+ {
+  "repo": "hugo",
+  "sha": "86aa62524f8bc36a04c8e0c0f76d1fd952585509",
+  "subject": "hugolib: Move site.Data to hugo.Data, deprecate Site.AllPages/BuildDrafts/Languages",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 6
+ },
+ {
+  "repo": "hugo",
+  "sha": "3c823408ee51bbfbad847d4b9f926ba813097185",
+  "subject": "Move common/hugo/HugoInfo to resources/page",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 15
+ },
+ {
+  "repo": "hugo",
+  "sha": "8ae5e1a8be5c44b15f45d4707083ae2e8bd2b6c0",
+  "subject": "tpl: Move from md5 to xxhash for some in memory keys",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "hugo",
+  "sha": "1a94731669b9873d33b6d23d0ef35910f1bfe519",
+  "subject": "Move from github.com/disintegration/gift to github.com/gohugoio/gift",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 15
+ },
+ {
+  "repo": "hugo",
+  "sha": "744b8566ec8ea138a63d3787dc2a0dd81511e492",
+  "subject": "Fix a rebuild on resource rename case",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "hugo",
+  "sha": "e079145373ed71707b9ed6e462f3dfd91ca85687",
+  "subject": "hugolib: Move hugolib/site_new.go into hugolib/site.go",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "hugo",
+  "sha": "469124823c8cb4477816686f56efdeebc79a9044",
+  "subject": "Rename  hstring.RenderedHTML =\u003e hstring.HTML",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 7
+ },
+ {
+  "repo": "hugo",
+  "sha": "9f22bc4414616210546899b83e37ef054491bf07",
+  "subject": "Rename DefaultPageSize =\u003e PagerSize",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 5
+ },
+ {
+  "repo": "hugo",
+  "sha": "7be7f89bf6a153f629009c93ece21b23df08ccf2",
+  "subject": "Fix rebuilds on cascade deletes/renames",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 5
+ },
+ {
+  "repo": "hugo",
+  "sha": "dc6a292133bf3249f1741a7624075b0782b16f84",
+  "subject": "common/hugo: Rename IsMultiHost and IsMultiLingual",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 18
+ },
+ {
+  "repo": "hugo",
+  "sha": "a322282e70c2935c79f9c0f5c593bfdd032eb964",
+  "subject": "Fix single mount rename panic",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 6
+ },
+ {
+  "repo": "hugo",
+  "sha": "53f204310ec8362d7084c123e8e16f5bb73dd257",
+  "subject": "all: Rename Unmormalized =\u003e Unnormalized",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 7
+ },
+ {
+  "repo": "hugo",
+  "sha": "b3cb6788b2634a89ae774895f345f082020b52d8",
+  "subject": "Move all Kind constants to its own package",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 36
+ },
+ {
+  "repo": "hugo",
+  "sha": "bf7ee8a91acf17613ffcd9c2f8c13abfa1ed0a11",
+  "subject": "Bump github.com/bep/clock v0.3.0 to renamed github.com/bep/clocks v0.5.0",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 3
+ },
+ {
+  "repo": "hugo",
+  "sha": "f86b5f70a60fc3793bc826f2ccd8dcdd62e26b51",
+  "subject": "commands: Move the --format flag to only the commands that support it",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 3
+ },
+ {
+  "repo": "hugo",
+  "sha": "e754d5cb3e6545ab5c21668a3e775ca5e9084761",
+  "subject": "tpl/diagrams: Move Goat to its own file",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "hugo",
+  "sha": "588710a7acb5f68e14a1fdc07228c4083b2884d4",
+  "subject": "media: Rename application/javascript, application/typescript to text/javascript etc.",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 3
+ },
+ {
+  "repo": "hugo",
+  "sha": "fa80fe3c8ab523846178f94fdc65c997d8eef10c",
+  "subject": "Some godoc adjustments and image struct renames",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 23
+ },
+ {
+  "repo": "hugo",
+  "sha": "fd0c1a5e9b59954c3a09bbff45306272d5c229df",
+  "subject": "tpl/diagrams: Rename the SVG accessor to Wrapped",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "hugo",
+  "sha": "cff14144a6306b9a60c4fc56d1dce17f0b3778e9",
+  "subject": "Rename Codeowners() to CodeOwners()",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 7
+ },
+ {
+  "repo": "hugo",
+  "sha": "f7109771a038e0237350dcfbe20f1036e9c8a46b",
+  "subject": "CodeblockContext method renames",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 5
+ },
+ {
+  "repo": "hugo",
+  "sha": "837fdfdf45014e3d5ef3b00b01548b68a4489c5f",
+  "subject": "commands: Rename --i18n-warnings to printI18nWarnings",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 3
+ },
+ {
+  "repo": "hugo",
+  "sha": "6819feab6c21f226c50705a61dd2eee8c6c564ea",
+  "subject": "commands: Rename --path-warnings, --print-men to --printPathWarnings, --printMemoryUsage",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 3
+ },
+ {
+  "repo": "hugo",
+  "sha": "c4aaf1d5169cdff7a7554717506feb4e9436e858",
+  "subject": "postcss: Move integration test to its own package",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "hugo",
+  "sha": "04dc469fbd78d9fe784829f2cba61c8cce982bdb",
+  "subject": "commands: Move time notification to after any build errors",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 3
+ },
+ {
+  "repo": "hugo",
+  "sha": "a7e3da242f98d4799dad013d7ba2f285717640d6",
+  "subject": "markup: Rename Header(s) to Heading(s) in ToC struct",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 5
+ },
+ {
+  "repo": "hugo",
+  "sha": "4fc918e02cfc7f260d6312248ff9d33e95b27943",
+  "subject": "tpl: Add title parameter to YouTube shortcode",
+  "kinds": [
+   "add-param"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "hugo",
+  "sha": "fc045e12a953aac88b942c25b958c5c0554b252b",
+  "subject": "Rename taxonomy kinds from taxonomy to term, taxonomyTerm to taxonomy",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 36
+ },
+ {
+  "repo": "hugo",
+  "sha": "6add6d77b48cf0aab8b39d7a2bddedb1aa2a52b8",
+  "subject": "Rename transpileJS to babel",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 7
+ },
+ {
+  "repo": "hugo",
+  "sha": "8a5124d6b38156cb6f765ac7492513ac7c0d90b2",
+  "subject": "commands: Rename doWithCommandeer to cfgInit/cfgSetAndInit",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "hugo",
+  "sha": "4b6c5eba306e6e69f3dd07a6c102bfc8040b38c9",
+  "subject": "Move the mount duplicate filter to the modules package",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 6
+ },
+ {
+  "repo": "hugo",
+  "sha": "882d678bbf2a149a90e2aed4341d7f6fc2cb394d",
+  "subject": "modules: Rename disabled =\u003e disable in config",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 3
+ },
+ {
+  "repo": "hugo",
+  "sha": "669ada436787311cc5d02dae5b88e60a09adda58",
+  "subject": "resource: Move resource processors into sub-packages",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 20
+ },
+ {
+  "repo": "hugo",
+  "sha": "ce06bdb16a64dd39a8ebbb2e5a53b33520b00bb1",
+  "subject": "Rename CSV option from comma to delimiter",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 5
+ },
+ {
+  "repo": "hugo",
+  "sha": "9cd54cab20a03475e34ca462bd943069111481ae",
+  "subject": "Move the emoji parsing to pageparser",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 13
+ },
+ {
+  "repo": "hugo",
+  "sha": "e3ed4a83b8e92ce9bf070f7b41780798b006e848",
+  "subject": "hugolib: Rename some page_* files",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 14
+ },
+ {
+  "repo": "hugo",
+  "sha": "f6863e1ef725f654a4c869ef4955f9add6908a46",
+  "subject": "parser/pageparser: File renames and splitting",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 6
+ },
+ {
+  "repo": "hugo",
+  "sha": "d6c16afde0ce62cfea73447f30d6ed2b8ef4b411",
+  "subject": "Move the shortcode parser to the new pageparser package",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 5
+ },
+ {
+  "repo": "hugo",
+  "sha": "ce264b936ce9f589bd889e18762881cff8bc9cd0",
+  "subject": "tpl: Add a delimiter parameter to lang.NumFmt",
+  "kinds": [
+   "add-param"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "hugo",
+  "sha": "d741064bebe2f4663a7ba12556dccc3dffe08629",
+  "subject": "Add optional lang as argument to rel/relref",
+  "kinds": [
+   "add-param"
+  ],
+  "go_files": 6
+ },
+ {
+  "repo": "hugo",
+  "sha": "d3dd74fd655c22f21e91e38edb1d377a1357e3be",
+  "subject": "commands: Move nextStepsText() to new_site.go",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "hugo",
+  "sha": "353148c2bc2cdb9f2eb8ee967ba756ce09323801",
+  "subject": "Move the privacy config into a parent",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 4
+ },
+ {
+  "repo": "hugo",
+  "sha": "a8f7fbbb10aa78f3ebac008d29d9969bb197393c",
+  "subject": "commands: Move the commands related logic to its own file",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 4
+ },
+ {
+  "repo": "hugo",
+  "sha": "d4beef0d2bb8f6481fa80e1d938454a7d4e38814",
+  "subject": "parser: Rename stringifyYAMLMapKeys to stringifyMapKeys",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "hugo",
+  "sha": "488631fe0abc3667355345c7eb98ba7a2204deb5",
+  "subject": "Add support for height argument to figure shortcode",
+  "kinds": [
+   "add-param"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "hugo",
+  "sha": "b277cb33e4dfa7440fca3b7888026944ce056154",
+  "subject": "hugolib: Move metrics output to the end of the site build",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "hugo",
+  "sha": "c265c102ae0705011bca6999e5b1c14fb00fa859",
+  "subject": "hugolib: Rename Page.Equals to Page.Eq",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "hugo",
+  "sha": "1cf2f3dc4fa81503485a73db21bfda6e965dee15",
+  "subject": "tpl/data: Move cache logic to separate file",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "hugo",
+  "sha": "09c88e84d196e6c0943b220cd6526d3473c530b6",
+  "subject": "output: Rename HTMLType etc. to HTMLFormat",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 11
+ },
+ {
+  "repo": "hugo",
+  "sha": "4c2abe0015393de6e7a2af119c2df5b05879fe19",
+  "subject": "Rename OutputType to OutputFormat",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 16
+ },
+ {
+  "repo": "hugo",
+  "sha": "3bb52bf7bff72457481acabfe8268915e23a7d23",
+  "subject": "output: Move layout logic to the output package",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "hugo",
+  "sha": "e81c06c3f0a6f9a960d91b31960e48a807112655",
+  "subject": "helpers: Rename WalkRootTooShortError to ErrWalkRootTooShort",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "hugo",
+  "sha": "9fba2a30a9ab5e17a699920079b3ca192686afd4",
+  "subject": "node to page: Rename PageType to Kind",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 12
+ },
+ {
+  "repo": "hugo",
+  "sha": "f023dfd7636f73b11c94e86a05c6273941d52c58",
+  "subject": "Move the Build* methods to HugoSites",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "hugo",
+  "sha": "5b9c2a40f180587de037122e3cd9ac0f3ce64f5e",
+  "subject": "Move HugoSites to hugolib",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 5
+ },
+ {
+  "repo": "hugo",
+  "sha": "c447b7dd6efcb662f177ad0c9037133361ed74e3",
+  "subject": "Rename MainSites to Sites",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "hugo",
+  "sha": "d45b55bdd405ae019c065bc6fa0888c25f7952c9",
+  "subject": "helpers: Rename getMmarkHtmlRenderer to getMmarkHTMLRenderer",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 3
+ },
+ {
+  "repo": "hugo",
+  "sha": "9413cf8499e16c50520edc4392408f16185bd168",
+  "subject": "Handle self rename operations gracefully",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "hugo",
+  "sha": "7e196a82944148ed3f78f334303b452ab2bd4078",
+  "subject": "Handle remove \u0026 rename source operations incrementally",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 3
+ },
+ {
+  "repo": "hugo",
+  "sha": "6cdb8109cfd1253ebb5b3f36e6a0e5ee95f11e71",
+  "subject": "Allow renaming of sitemap.xml",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 3
+ },
+ {
+  "repo": "hugo",
+  "sha": "9008ac0b55bc0f507e730e8b3d49fa8103e600e1",
+  "subject": "Rename random to shuffle. Remove count parameteter to simplify its role. Add tests for randomising.",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "hugo",
+  "sha": "9c39593dee7d0cf02a5249b1711992a1eb94b1aa",
+  "subject": "Move cobra.MousetrapHelpText to hugo_windows.go",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "hugo",
+  "sha": "6042fc2b83453ee92a3585848fdcac1a617bcb95",
+  "subject": "move some of the path helper utilities to afero and provide wrappers in Hugo.",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "hugo",
+  "sha": "75c61236f159d9315849c88c73d21a4678994ee9",
+  "subject": "Move `import jekyll` functions to import_jekyll.go",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 4
+ },
+ {
+  "repo": "hugo",
+  "sha": "5838420aa1f5dfb6aa73479caa60467cc27dee82",
+  "subject": "Move blackfriday site-wide config loading to NewBlackFriday()",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "hugo",
+  "sha": "6a3aced15a402183b7c92817a259c44d890cf7be",
+  "subject": "Rename prettiyPath to prettifyPath",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "hugo",
+  "sha": "078fad49e2508759aa33995eb0a4464ce0a63595",
+  "subject": "Add Param(key) to Node and Page",
+  "kinds": [
+   "add-param"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "hugo",
+  "sha": "218554e363084ddc248cba180708797fca23eb02",
+  "subject": "Rename NormalizeHugoFlagsFunc to NormalizeHugoFlags",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "hugo",
+  "sha": "f5308da32013279664379111d84fb8fa50d7e5f3",
+  "subject": "Move isThemeVsHugoVersionMismatch to /commands",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "hugo",
+  "sha": "f25ce7fefa797f01cc190c278832b23eb7e923e7",
+  "subject": "Revert \"Move matchRender to test helpers file\"",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "hugo",
+  "sha": "32d91d616e99cd05b59644e292b29be415d5054f",
+  "subject": "Move matchRender to test helpers file",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "hugo",
+  "sha": "bec22f8981c251f88594689c65ad7b8822fe1b09",
+  "subject": "Add pager size argument to paginator methods",
+  "kinds": [
+   "add-param"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "hugo",
+  "sha": "beb423a2d9683dfc07b2f69766e17c32589d489b",
+  "subject": "Rename Slice to Slicestr",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "hugo",
+  "sha": "be19f4eb91be594d4bcb5d7fde37be20835d294a",
+  "subject": "Rename Substr to Slice",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "hugo",
+  "sha": "66cf3bdc77d43f92333cd48a351d59d7a5abe1f8",
+  "subject": "Rename interface contentRewriter to contentTransformer",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 5
+ },
+ {
+  "repo": "hugo",
+  "sha": "724cc0ddff3427a37b1fa4367880fce23bb4f1f8",
+  "subject": "Add `safeUrl`; disable `safeHtmlAttr`; rename `safeCSS` to `safeCss`",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "hugo",
+  "sha": "49f5eb5c845b0978ac1227e5c6a2508d6cd93691",
+  "subject": "Moved a test regarding a content.go function to a new test file content_test.go. Added some tests for general helpers, especially as a way to document the expected behavior, and as a warm-up welcome contribution.",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "hugo",
+  "sha": "c0f54aefe38bc16406a187b3d20b6ffddc70eb04",
+  "subject": "Rename to plainIdAnchors",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "hugo",
+  "sha": "0d17ee7ed4331513adb6e08f5697c4d803155655",
+  "subject": "Add operator argument to `where` template function",
+  "kinds": [
+   "add-param"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "hugo",
+  "sha": "73f203ad86a71136a1d35e0aa1bba574edb91a51",
+  "subject": "Move template library into it's own package (tpl). No longer dependent on hugolib. Can be used externally.",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 11
+ },
+ {
+  "repo": "hugo",
+  "sha": "3da97656ea4c32fe7619945df7a13bc73cdca3fd",
+  "subject": "add 'width' parameter to 'figure' shortcode",
+  "kinds": [
+   "add-param"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "hugo",
+  "sha": "cbd9506c296dba99c59fef310a16b21be12b7b63",
+  "subject": "moving front matter parsing (and creation) to parse package",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 3
+ },
+ {
+  "repo": "hugo",
+  "sha": "58f8b43feed9a487e63b61352226d934743ebafe",
+  "subject": "moving writeToDisk to helpers to make it more accessible",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 3
+ },
+ {
+  "repo": "hugo",
+  "sha": "4a8de8ea46f45776518c7086222be0c94c893764",
+  "subject": "Add Disqus support out of the box. Move template/bundle into hugolib.",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 11
+ },
+ {
+  "repo": "hugo",
+  "sha": "93bcddebb3030705dcb643dffb65890a270b5182",
+  "subject": "Renamed Indexes to Taxonomies. Old template and config parameters still work.",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 10
+ },
+ {
+  "repo": "hugo",
+  "sha": "f45c6bc38a24ff9e6ed33ebcbf366f0e100ee896",
+  "subject": "Moved TOC test into page_test. Some general page_test cleanup.",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "hugo",
+  "sha": "3851117c25be59dc5bd6adec63610adf77efcfe1",
+  "subject": "renaming MinRead to ReadingTime and adding to documentation.",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "hugo",
+  "sha": "70745e8cb5f0c97b1d405ef1301aba77e90de17c",
+  "subject": "Complete refactor of indexes, move (and rewrite) page sorting to page.go, add tests",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 4
+ },
+ {
+  "repo": "hugo",
+  "sha": "0e04b9a0292732c20cc90e1f05c2f4ee200634d8",
+  "subject": "Moving processing short codes to the page",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "hugo",
+  "sha": "19cb6c7819baa0daa7c6d6f0c23481578171ead8",
+  "subject": "Move writing next to rendering",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "hugo",
+  "sha": "ff8b52758d9fe857455a20303bf23e92888413f0",
+  "subject": "Move in memory target into target module.",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 3
+ },
+ {
+  "repo": "hugo",
+  "sha": "eb117eb9043a4954079f1845f61cc0bfe2facb37",
+  "subject": "Move AbsURL into seperate file",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "hugo",
+  "sha": "f0211b84a1967c4dae471c19e5bde69016345c95",
+  "subject": "Rename Transform to AbsURL",
+  "kinds": [
+   "rename"
+  ],
+  "go_files": 3
+ },
+ {
+  "repo": "hugo",
+  "sha": "6b0752e8c0334dfb2275a2edb975ec13a2724134",
+  "subject": "Move AbUrlify to post content transformation",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 4
+ },
+ {
+  "repo": "hugo",
+  "sha": "2ebfb33fe01d38a1341d6fe3c922dad5e93fd769",
+  "subject": "Move alias logic to target module",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 7
+ },
+ {
+  "repo": "hugo",
+  "sha": "2f10da15707e1db0fab90524a247bc8a2d3ded90",
+  "subject": "Move alias rendering to target",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 6
+ },
+ {
+  "repo": "hugo",
+  "sha": "4004687fb2da9228203fec39b914ba534c934966",
+  "subject": "Move to target.Filesystem",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 3
+ },
+ {
+  "repo": "hugo",
+  "sha": "0305c82513dec62e1bb2ca2701f675e1ed37687e",
+  "subject": "Move timezone tests to integration test.",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 2
+ },
+ {
+  "repo": "hugo",
+  "sha": "a7f5f97bc2c8941cbe9ade740e3c0e54202d8613",
+  "subject": "sanity: move from json to yaml",
+  "kinds": [
+   "move"
+  ],
+  "go_files": 4
+ }
+]
