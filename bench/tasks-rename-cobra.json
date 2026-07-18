@@ -27,7 +27,6 @@
         "sym": "Command.IsHelpCommand",
         "to": "IsAdditionalHelpTopicCommand"
       }
-    ],
-    "certified": true
+    ]
   }
 ]

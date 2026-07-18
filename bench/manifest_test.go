@@ -159,3 +159,21 @@ func TestResumeEpisodeSkipsRecorded(t *testing.T) {
 		t.Fatal("corrupt episode must not resume (re-run it)")
 	}
 }
+
+// A spec with an empty pkg cannot verify anything: refs and inspect
+// reject, every count is zero, and the predicate passes vacuously
+// (cobra_0960ff7f: a pre-modules commit mined pkg "" and certified on
+// all-zero evidence). Such specs do not count as specs.
+func TestHasSpecsRejectsEmptyPkg(t *testing.T) {
+	cases := []Manifest{
+		{Kind: "rename", Renames: []RenameSpec{{Pkg: "", Sym: "Command.IsHelpCommand", To: "X"}}},
+		{Kind: "move", Moves: []MoveSpec{{Pkg: "", Sym: "A", ToPkg: "m/b"}}},
+		{Kind: "move", Moves: []MoveSpec{{Pkg: "m/a", Sym: "A", ToPkg: ""}}},
+		{Kind: "add-param", AddParams: []AddParamSpec{{Pkg: "", Sym: "F", Name: "n", Type: "int"}}},
+	}
+	for i, m := range cases {
+		if m.HasSpecs() {
+			t.Errorf("case %d: empty-pkg spec counted as runnable: %+v", i, m)
+		}
+	}
+}

@@ -48,3 +48,12 @@ advisory validation separates the two variables.
   else blocks it.
 - Skipped vendor-era tasks cap the move roster at 3 certified until
   more move tasks are extracted or agent-go-6yh lands.
+
+## Amendment (2026-07-17, same day)
+
+Closing agent-go-kxa surfaced that cobra_0960ff7f was certified on
+vacuous evidence: a pre-modules commit mined pkg "" specs, every count
+compared zeros, and certify had no validity gate. The task is revoked
+(bench certify now validates specs and revokes on failing or unverifiable
+evidence; predicates refuse zero-baseline specs). The dev set freezes at
+the certified 20, not 21.

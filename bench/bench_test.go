@@ -341,9 +341,14 @@ func episode(b testing.TB, c config, t Manifest, mode string, iter int) bool {
 	res["failure_kind"] = classifyFailure(agentErr, timedOut, agentOut, pass0)
 	if mode == "oracle" && agentErr != nil {
 		// An oracle rejection is a finding about the task or the protocol,
-		// not a harness failure.
-		res["failure_kind"] = "oracle_reject"
+		// not a harness failure. The error is always recorded; the kind
+		// only stamps a non-passing episode, so a pass never carries a
+		// failure_kind (agent-go-kxa: pass=true plus oracle_reject read as
+		// both at once).
 		res["oracle_error"] = agentErr.Error()
+		if !pass0 {
+			res["failure_kind"] = "oracle_reject"
+		}
 	}
 	// Fold the daemon request log into the episode evidence before record
 	// writes episode.json and episodes.jsonl, so counters land in both.
@@ -666,7 +671,10 @@ func renamePredicate(c config, wt string, t Manifest, baseline map[string]int) (
 		oldRefs := refCount(c, wt, r.Pkg, r.Sym)
 		newRefs := refCount(c, wt, r.Pkg, renamedSym(r))
 		want := baseline[r.Pkg+"."+r.Sym]
-		ok := oldRefs == 0 && newRefs == want
+		// A symbol always has at least its defining reference; a zero
+		// baseline means the spec never resolved (empty pkg, wrong sym)
+		// and every count below would compare zeros vacuously.
+		ok := want > 0 && oldRefs == 0 && newRefs == want
 		specs = append(specs, map[string]any{
 			"sym": r.Pkg + "." + r.Sym, "to": r.To, "ok": ok,
 			"old_refs_left": oldRefs, "new_refs": newRefs, "baseline_refs": want,

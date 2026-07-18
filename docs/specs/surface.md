@@ -81,7 +81,7 @@ total found, and a truncated response carries `truncated: true` plus
 | `callees` | shipped | static call edges |
 | `implementations` | shipped | both directions; no method-set candidate bridges (v1 ceiling) |
 | `doc` | shipped | |
-| SSA tier | planned | [agent-go-07u]; candidate expansion, dataflow |
+| SSA tier | planned | [agent-go-tpe]; concrete callers through interfaces (RTA/VTA), dead query kind |
 | async call edges | candidate | [agent-go-96n]; distinguish `go f()` in callers/callees |
 
 ## Rejection channel (shipped)

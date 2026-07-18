@@ -104,7 +104,7 @@ func extract(repo, sha, subject string) ([]RenameSpec, string) {
 		old, new_ := m[1], m[2]
 		if d, ok := decls[old]; ok {
 			spec := RenameSpec{Pkg: pkgPath(repo, sha, d.file), Sym: d.sym, To: new_}
-			if confirmed(spec) {
+			if spec.Pkg != "" && confirmed(spec) {
 				return []RenameSpec{spec}, ""
 			}
 		}
@@ -118,7 +118,7 @@ func extract(repo, sha, subject string) ([]RenameSpec, string) {
 				continue
 			}
 			if d, ok := decls[member]; ok {
-				if spec := (RenameSpec{Pkg: pkgPath(repo, sha, d.file), Sym: d.sym, To: renamed}); confirmed(spec) {
+				if spec := (RenameSpec{Pkg: pkgPath(repo, sha, d.file), Sym: d.sym, To: renamed}); spec.Pkg != "" && confirmed(spec) {
 					specs = append(specs, spec)
 				}
 			}
@@ -166,6 +166,9 @@ func extract(repo, sha, subject string) ([]RenameSpec, string) {
 			continue
 		}
 		spec := RenameSpec{Pkg: pkgPath(repo, sha, d.file), Sym: d.sym, To: c.gn}
+		if spec.Pkg == "" {
+			continue
+		}
 		if !confirmed(spec) {
 			continue
 		}
@@ -351,6 +354,10 @@ func plausible(old, new_ string) bool {
 		types.Universe.Lookup(old) == nil && types.Universe.Lookup(new_) == nil
 }
 
+// pkgPath derives the import path for declFile at sha's parent. Empty when
+// the commit predates go modules: no module path exists, specs built from
+// "" verify nothing (refs and inspect reject), and the predicates would
+// pass vacuously, so extractors drop such specs.
 func pkgPath(repo, sha, declFile string) string {
 	mod := ""
 	for line := range strings.SplitSeq(gitShow(repo, sha+"^:go.mod"), "\n") {

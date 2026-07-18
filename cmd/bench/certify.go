@@ -11,10 +11,14 @@ import (
 
 // certify flips the certified flag on task manifests from committed oracle
 // evidence: any oracle-mode episode.json with pass=true in the given run
-// dirs certifies its task. The flag gates model rounds (tenet 2) and is
-// never set by hand.
+// dirs certifies its task. It also REVOKES: a certified task whose specs
+// cannot verify (HasSpecs false, e.g. an empty pkg from a pre-modules
+// commit passes every predicate vacuously) or whose oracle evidence in
+// these runs uniformly fails loses the flag. The flag gates model rounds
+// (tenet 2) and is never set by hand.
 func certify(runDirs []string, tasksGlob string) error {
 	passes := map[string]bool{}
+	saw := map[string]bool{}
 	for _, d := range runDirs {
 		matches, _ := filepath.Glob(filepath.Join(d, "*", "oracle", "*", "episode.json"))
 		for _, m := range matches {
@@ -27,13 +31,16 @@ func certify(runDirs []string, tasksGlob string) error {
 				Mode string `json:"mode"`
 				Pass bool   `json:"pass"`
 			}
-			if json.Unmarshal(raw, &e) == nil && e.Mode == "oracle" && e.Pass {
-				passes[e.Task] = true
+			if json.Unmarshal(raw, &e) == nil && e.Mode == "oracle" {
+				saw[e.Task] = true
+				if e.Pass {
+					passes[e.Task] = true
+				}
 			}
 		}
 	}
-	if len(passes) == 0 {
-		return fmt.Errorf("no passing oracle episodes under %v", runDirs)
+	if len(saw) == 0 {
+		return fmt.Errorf("no oracle episodes under %v", runDirs)
 	}
 	files, err := filepath.Glob(tasksGlob)
 	if err != nil || len(files) == 0 {
@@ -54,7 +61,16 @@ func certify(runDirs []string, tasksGlob string) error {
 				continue
 			}
 			key := fmt.Sprintf("%s_%s", t.Repo, t.SHA[:8])
-			if passes[key] && !t.Certified {
+			switch {
+			case t.Certified && !t.HasSpecs():
+				tasks[i].Certified = false
+				changed = true
+				fmt.Printf("revoked %s: specs cannot verify (%s)\n", key, f)
+			case t.Certified && saw[key] && !passes[key]:
+				tasks[i].Certified = false
+				changed = true
+				fmt.Printf("revoked %s: oracle evidence fails (%s)\n", key, f)
+			case passes[key] && !t.Certified && t.HasSpecs():
 				tasks[i].Certified = true
 				changed = true
 				fmt.Printf("certified %s (%s)\n", key, f)

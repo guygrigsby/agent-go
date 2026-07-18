@@ -113,14 +113,32 @@ type AddParamSpec struct {
 }
 
 // HasSpecs reports whether the manifest carries the specs its kind scores;
-// a task without them is unextracted and unrunnable.
+// a task without them is unextracted and unrunnable. A spec with an empty
+// package path also does not count: refs and inspect reject on "", every
+// count is zero, and the predicate would pass vacuously (cobra_0960ff7f,
+// a pre-modules commit, certified exactly that way).
 func (m Manifest) HasSpecs() bool {
 	switch m.Kind {
 	case "", "rename":
+		for _, r := range m.Renames {
+			if r.Pkg == "" {
+				return false
+			}
+		}
 		return len(m.Renames) > 0
 	case "add-param":
+		for _, a := range m.AddParams {
+			if a.Pkg == "" {
+				return false
+			}
+		}
 		return len(m.AddParams) > 0
 	case "move":
+		for _, mv := range m.Moves {
+			if mv.Pkg == "" || mv.ToPkg == "" {
+				return false
+			}
+		}
 		return len(m.Moves) > 0
 	}
 	return false
