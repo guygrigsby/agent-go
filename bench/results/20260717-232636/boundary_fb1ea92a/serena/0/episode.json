@@ -1,0 +1,51 @@
+{
+ "agent_done": "2026-07-18T05:28:45.109723Z",
+ "agent_started": "2026-07-18T05:26:46.393513Z",
+ "cache_read": 582602,
+ "cache_write": 0,
+ "capped": false,
+ "failure_kind": "scored_fail",
+ "first_invalid_s": 86.640144375,
+ "intermediate_states": 3,
+ "invalid_intermediate_rate": 1,
+ "invalid_intermediates": 3,
+ "iter": 0,
+ "kind": "add-param",
+ "mode": "serena",
+ "new_errors": [
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenamegpt-oss-20b-mediumboundary_fb1ea92aserena361286738/001/boundary/internal/daemon/worker/proxy/proxy_test.go:20:73|missing parameter name",
+  "internal/daemon/worker/proxy/proxy_test.go:20:73|missing parameter name",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenamegpt-oss-20b-mediumboundary_fb1ea92aserena361286738/001/boundary/internal/daemon/worker/proxy/tcp/tcp.go:18:53|cannot use handleProxy (value of type func(controlCtx \"context\".Context, ctx \"context\".Context, _ proxy.DecryptFn, conn net.Conn, out *proxy.ProxyDialer, connId string, _ *anypb.Any, _ proxy.RecordingManager) (proxy.ProxyConnFn, error)) as proxy.Handler value in argument to proxy.RegisterHandler",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenamegpt-oss-20b-mediumboundary_fb1ea92aserena361286738/001/boundary/internal/daemon/worker/proxy/tcp/tcp_test.go:169:103|not enough arguments in call to handleProxy\n\thave (\"context\".Context, nil, net.Conn, *proxy.ProxyDialer, string, *anypb.Any, nil)\n\twant (\"context\".Context, \"context\".Context, proxy.DecryptFn, net.Conn, *proxy.ProxyDialer, string, *anypb.Any, proxy.RecordingManager)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenamegpt-oss-20b-mediumboundary_fb1ea92aserena361286738/001/boundary/internal/daemon/worker/proxy/proxy.go:49:79|missing parameter name",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenamegpt-oss-20b-mediumboundary_fb1ea92aserena361286738/001/boundary/internal/daemon/worker/handler.go:297:54|cannot use decryptFn (variable of func type \"github.com/hashicorp/boundary/internal/daemon/worker/proxy\".DecryptFn) as \"net\".Conn value in argument to handleProxyFn: \"github.com/hashicorp/boundary/internal/daemon/worker/proxy\".DecryptFn does not implement \"net\".Conn (missing method Close)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenamegpt-oss-20b-mediumboundary_fb1ea92aserena361286738/001/boundary/internal/daemon/worker/proxy/proxy_test.go:43:73|missing parameter name",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenamegpt-oss-20b-mediumboundary_fb1ea92aserena361286738/001/boundary/internal/daemon/worker/proxy/tcp/tcp.go:18:53|cannot use handleProxy (value of type func(controlCtx context.Context, ctx context.Context, _ proxy.DecryptFn, conn net.Conn, out *proxy.ProxyDialer, connId string, _ *anypb.Any, _ proxy.RecordingManager) (proxy.ProxyConnFn, error)) as proxy.Handler value in argument to proxy.RegisterHandler",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenamegpt-oss-20b-mediumboundary_fb1ea92aserena361286738/001/boundary/internal/daemon/worker/handler.go:297:78|cannot use acResp.GetConnectionId() (value of type string) as *anypb.Any value in argument to handleProxyFn"
+ ],
+ "op_mix": {},
+ "pass": false,
+ "predicate": true,
+ "profile": "gpt-oss-20b-medium",
+ "prompt": "Pass both the control and data context into handle\n\nSpecifically: add parameter controlCtx context.Context to handleProxy",
+ "rejects_total": 0,
+ "repairs_offered": 0,
+ "resends": 0,
+ "specs": [
+  {
+   "ok": true,
+   "param": "controlCtx context.Context",
+   "signature": "func(controlCtx context.Context, ctx context.Context, _ github.com/hashicorp/boundary/internal/daemon/worker/proxy.DecryptFn, conn net.Conn, out *github.com/hashicorp/boundary/internal/daemon/worker/proxy.ProxyDialer, connId string, _ *google.golang.org/protobuf/types/known/anypb.Any, _ github.com/hashicorp/boundary/internal/daemon/worker/proxy.RecordingManager) (github.com/hashicorp/boundary/internal/daemon/worker/proxy.ProxyConnFn, error)",
+   "sym": "github.com/hashicorp/boundary/internal/daemon/worker/proxy/tcp.handleProxy"
+  }
+ ],
+ "steps": 33,
+ "task": "boundary_fb1ea92a",
+ "tests": false,
+ "tests_baseline": true,
+ "tokens_in": 21915,
+ "tokens_out": 5950,
+ "tokens_reasoning": 0,
+ "typecheck": false,
+ "wall_s": 118.71621
+}

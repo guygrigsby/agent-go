@@ -88,7 +88,7 @@ func setup(b testing.TB) config {
 	c.profile = c.profiles[0]
 	c.endpoint, c.model = c.profile.Endpoint, c.profile.Model
 	c.modes = modesFor(os.Getenv("AGO_BENCH_MODES"))
-	modelNeeded := slices.Contains(c.modes, "raw") || slices.Contains(c.modes, "semantic")
+	modelNeeded := slices.Contains(c.modes, "raw") || slices.Contains(c.modes, "semantic") || slices.Contains(c.modes, "serena")
 	if c.scratch == "" || (modelNeeded && (c.endpoint == "" || c.model == "")) {
 		b.Skip("set AGO_BENCH_PROFILE (or AGO_BENCH_ENDPOINT + AGO_BENCH_MODEL) and AGO_BENCH_SCRATCH to run bench; oracle-only runs need only AGO_BENCH_SCRATCH")
 	}
@@ -136,6 +136,8 @@ func setup(b testing.TB) config {
 		"ago_rev": strings.TrimSpace(string(rev)), "started": time.Now().Format(time.RFC3339),
 		"raw_prompt_tokens":      estimateTokens(promptCommon + promptRaw),
 		"semantic_prompt_tokens": estimateTokens(promptCommon + promptSemantic),
+		"serena_prompt_tokens":   estimateTokens(promptCommon + promptSerena),
+		"serena_rev":             serenaRev,
 		"profiles":               c.profiles,
 	}
 	if os.Getenv("AGO_NO_REPAIRS") != "" {
@@ -286,8 +288,8 @@ func episode(b testing.TB, c config, t Manifest, mode string, iter int) bool {
 	// Old parents can carry rot (test files that no longer typecheck).
 	// Typecheck scoring is "no new errors", so capture the baseline set.
 	baseErrs := errorSet(agoJSON(c, wt, "status"))
-	if mode == "raw" {
-		agoStop(c, wt) // raw mode gets no daemon; scoring respawns it later
+	if mode == "raw" || mode == "serena" {
+		agoStop(c, wt) // these arms get no daemon; scoring respawns it later
 	}
 
 	if mode != "oracle" {
@@ -807,7 +809,8 @@ func writeOpencodeConfig(b testing.TB, c config, wt, mode string) {
 	tools := map[string]any{"task": false, "skill": false}
 	mcp := map[string]any{}
 	prompt := promptCommon
-	if mode == "semantic" {
+	switch mode {
+	case "semantic":
 		// Pure protocol: no shell, no file reads, no text edits. The ago
 		// tools are the only way to see or change code.
 		for _, t := range []string{"bash", "edit", "write", "patch", "read", "grep", "glob", "list", "webfetch"} {
@@ -816,7 +819,30 @@ func writeOpencodeConfig(b testing.TB, c config, wt, mode string) {
 		mcp["ago"] = map[string]any{"type": "local", "enabled": true,
 			"command": []string{c.agoBin, "mcp"}}
 		prompt += promptSemantic
-	} else {
+	case "serena":
+		// The ablation arm: symbol addressing (LSP) without mandatory
+		// validation. Same lockdown as semantic; serena's own shell tool is
+		// excluded in the project config below, so nothing validates edits.
+		for _, t := range []string{"bash", "edit", "write", "patch", "read", "grep", "glob", "list", "webfetch"} {
+			tools[t] = false
+		}
+		mcp["serena"] = map[string]any{"type": "local", "enabled": true,
+			"command": []string{"uvx", "--from", "git+https://github.com/oraios/serena@" + serenaRev,
+				"serena", "start-mcp-server", "--project", wt}}
+		prompt += promptSerena
+		// Shell breaks the no-validation premise; the memory and onboarding
+		// suite burns turns on state that dies with the worktree.
+		serenaProject := "project_name: bench\nlanguage: go\nexcluded_tools:\n" +
+			"  - execute_shell_command\n  - onboarding\n  - initial_instructions\n" +
+			"  - write_memory\n  - read_memory\n  - list_memories\n  - delete_memory\n" +
+			"  - edit_memory\n  - rename_memory\n"
+		if err := os.MkdirAll(filepath.Join(wt, ".serena"), 0o755); err != nil {
+			b.Fatal(err)
+		}
+		if err := os.WriteFile(filepath.Join(wt, ".serena", "project.yml"), []byte(serenaProject), 0o644); err != nil {
+			b.Fatal(err)
+		}
+	default:
 		prompt += promptRaw
 	}
 	agent := map[string]any{"mode": "primary", "prompt": prompt, "tools": tools}

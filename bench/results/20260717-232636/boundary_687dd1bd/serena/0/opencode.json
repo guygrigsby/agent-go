@@ -1,0 +1,57 @@
+{
+ "$schema": "https://opencode.ai/config.json",
+ "agent": {
+  "bench": {
+   "mode": "primary",
+   "prompt": "You are completing a repository-wide Go refactoring task. Work only through the serena tools. Workflow: find_symbol with a name path to locate a symbol, find_referencing_symbols to see every usage, replace_symbol_body to rewrite a declaration, replace_regex or insert_after_symbol for edits inside referencing files. A rename means editing the declaration and every reference; nothing validates your edits, so re-read what you changed.",
+   "temperature": 1,
+   "tools": {
+    "bash": false,
+    "edit": false,
+    "glob": false,
+    "grep": false,
+    "list": false,
+    "patch": false,
+    "read": false,
+    "skill": false,
+    "task": false,
+    "webfetch": false,
+    "write": false
+   }
+  }
+ },
+ "mcp": {
+  "serena": {
+   "command": [
+    "uvx",
+    "--from",
+    "git+https://github.com/oraios/serena@7c34662996f2d2e3db38001785e1f279dced2f50",
+    "serena",
+    "start-mcp-server",
+    "--project",
+    "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenamegpt-oss-20b-mediumboundary_687dd1bdserena2378866015/001/boundary"
+   ],
+   "enabled": true,
+   "type": "local"
+  }
+ },
+ "permission": {
+  "bash": "allow",
+  "edit": "allow",
+  "webfetch": "deny"
+ },
+ "provider": {
+  "local": {
+   "models": {
+    "ggml-org/gpt-oss-20b-GGUF:MXFP4": {
+     "name": "ggml-org/gpt-oss-20b-GGUF:MXFP4"
+    }
+   },
+   "name": "local",
+   "npm": "@ai-sdk/openai-compatible",
+   "options": {
+    "baseURL": "https://llama.lab.aeryx.ai/v1"
+   }
+  }
+ }
+}
