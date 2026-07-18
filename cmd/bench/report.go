@@ -16,6 +16,7 @@ type row struct {
 	Task, Mode, Profile     string
 	N, Passes, Capped       int
 	Resends, RepairsOffered int     // summed daemon request-log counters
+	States, Invalid         int     // sampled on-disk states and non-compiling ones
 	MedianGreen             float64 // median wall_s of passing episodes
 	Failures                map[string]int
 	greens                  []float64
@@ -74,6 +75,12 @@ func aggregate(episodes []map[string]any) []row {
 		if n, ok := e["repairs_offered"].(float64); ok {
 			r.RepairsOffered += int(n)
 		}
+		if n, ok := e["intermediate_states"].(float64); ok {
+			r.States += int(n)
+		}
+		if n, ok := e["invalid_intermediates"].(float64); ok {
+			r.Invalid += int(n)
+		}
 	}
 	rows := make([]row, 0, len(byKey))
 	for _, r := range byKey {
@@ -102,8 +109,8 @@ func aggregate(episodes []map[string]any) []row {
 
 func renderMarkdown(rows []row) string {
 	var b strings.Builder
-	b.WriteString("| profile | task | mode | pass@k | 95% CI | median green (s) | capped | resends | repairs offered | failures |\n")
-	b.WriteString("|---|---|---|---|---|---|---|---|---|---|\n")
+	b.WriteString("| profile | task | mode | pass@k | 95% CI | median green (s) | capped | resends | repairs offered | invalid mid-states | failures |\n")
+	b.WriteString("|---|---|---|---|---|---|---|---|---|---|---|\n")
 	for _, r := range rows {
 		lo, hi := wilson(r.Passes, r.N)
 		green := "-"
@@ -115,9 +122,13 @@ func renderMarkdown(rows []row) string {
 			kinds = append(kinds, fmt.Sprintf("%s:%d", k, n))
 		}
 		sort.Strings(kinds)
-		fmt.Fprintf(&b, "| %s | %s | %s | %d/%d | %.2f-%.2f | %s | %d | %d | %d | %s |\n",
+		mid := "-"
+		if r.States > 0 {
+			mid = fmt.Sprintf("%d/%d", r.Invalid, r.States)
+		}
+		fmt.Fprintf(&b, "| %s | %s | %s | %d/%d | %.2f-%.2f | %s | %d | %d | %d | %s | %s |\n",
 			r.Profile, r.Task, r.Mode, r.Passes, r.N, lo, hi, green, r.Capped,
-			r.Resends, r.RepairsOffered, strings.Join(kinds, " "))
+			r.Resends, r.RepairsOffered, mid, strings.Join(kinds, " "))
 	}
 	return b.String()
 }

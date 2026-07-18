@@ -140,7 +140,9 @@ func (c *mlflowClient) runExists(expID, path string) (bool, error) {
 var metricKeys = []string{"pass", "predicate", "typecheck", "tests", "capped",
 	"wall_s", "tokens_in", "tokens_out", "tokens_reasoning", "cache_read",
 	"cache_write", "steps", "rejects_total", "repairs_offered", "resends",
-	"time_to_first_mutation_s", "pre_existing"}
+	"time_to_first_mutation_s", "pre_existing",
+	"intermediate_states", "invalid_intermediates", "invalid_intermediate_rate",
+	"first_invalid_s"}
 
 func (c *mlflowClient) exportEpisode(expID, path, agoRev string, e map[string]any) error {
 	start := time.Now().UnixMilli()

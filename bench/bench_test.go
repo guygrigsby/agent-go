@@ -296,6 +296,11 @@ func episode(b testing.TB, c config, t Manifest, mode string, iter int) bool {
 		}
 	}
 
+	// The mechanism metric: sample the worktree during the agent window and
+	// typecheck every settled on-disk state (invalid.go). Runs identically
+	// for every arm; the oracle is the control.
+	iw := watchIntermediates(wt, 3*time.Second)
+
 	startTimer()
 	start := time.Now()
 	var agentOut string
@@ -311,6 +316,7 @@ func episode(b testing.TB, c config, t Manifest, mode string, iter int) bool {
 	}
 	wall := time.Since(start)
 	stopTimer()
+	states, invalidStates, firstInvalidS := iw.Stop()
 
 	res := score(b, c, wt, t, baseline, baseErrs)
 	res["task"] = t.Repo + "_" + t.SHA[:8]
@@ -337,6 +343,14 @@ func episode(b testing.TB, c config, t Manifest, mode string, iter int) bool {
 	res["agent_started"] = start.UTC().Format(time.RFC3339Nano)
 	res["agent_done"] = start.Add(wall).UTC().Format(time.RFC3339Nano)
 	res["capped"] = timedOut
+	res["intermediate_states"] = states
+	res["invalid_intermediates"] = invalidStates
+	if states > 0 {
+		res["invalid_intermediate_rate"] = float64(invalidStates) / float64(states)
+	}
+	if invalidStates > 0 {
+		res["first_invalid_s"] = firstInvalidS
+	}
 	pass0, _ := res["pass"].(bool)
 	res["failure_kind"] = classifyFailure(agentErr, timedOut, agentOut, pass0)
 	if mode == "oracle" && agentErr != nil {
