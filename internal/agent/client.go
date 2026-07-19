@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"maps"
 	"net/http"
 	"strconv"
 	"strings"
@@ -46,9 +47,7 @@ func (c *HTTPClient) Complete(ctx context.Context, msgs []Message, defs []ToolDe
 		body["tools"] = wireTools(defs)
 		body["tool_choice"] = "auto"
 	}
-	for k, v := range c.opt.Sampler {
-		body[k] = v
-	}
+	maps.Copy(body, c.opt.Sampler)
 	raw, err := json.Marshal(body)
 	if err != nil {
 		return Message{}, err

@@ -277,6 +277,29 @@ func newRoot() *cobra.Command {
 			return runMCP(abs)
 		},
 	})
+	var agentProfileFlag, agentEndpoint, agentModel string
+	var agentMaxSteps int
+	var agentCap time.Duration
+	agentCmd := &cobra.Command{
+		Use:     "agent <task>",
+		Short:   "run a one-shot authoring episode: a local model drives the ago tools until the task is done",
+		GroupID: "lifecycle",
+		Args:    cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			abs, err := filepath.Abs(f.dir)
+			if err != nil {
+				return err
+			}
+			return runAgent(abs, args[0], agentProfileFlag, agentEndpoint, agentModel, agentMaxSteps, agentCap)
+		},
+	}
+	agentCmd.Flags().StringVar(&agentProfileFlag, "profile", "", "profile name from .ago/agent.json")
+	agentCmd.Flags().StringVar(&agentEndpoint, "endpoint", "", "OpenAI-compatible base URL up to /v1")
+	agentCmd.Flags().StringVar(&agentModel, "model", "", "model name at the endpoint")
+	agentCmd.Flags().IntVar(&agentMaxSteps, "max-steps", 40, "completion cap for the episode")
+	agentCmd.Flags().DurationVar(&agentCap, "cap", 15*time.Minute, "wall clock cap for the episode")
+	root.AddCommand(agentCmd)
+
 	daemonCmd := &cobra.Command{
 		Use: "daemon", Short: opHelp["daemon"], Long: opLong["daemon"],
 		GroupID: groupOf["daemon"], Args: cobra.NoArgs,

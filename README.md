@@ -78,6 +78,7 @@ mutations (validated before anything touches disk):
   upsert      add or replace a whole declaration
 
 lifecycle:
+  agent       run a one-shot authoring episode: a local model drives the ago tools until the task is done
   daemon      run the workspace daemon in the foreground
   mcp         serve the MCP tools over stdio
   skill       install or print the embedded agent skill
