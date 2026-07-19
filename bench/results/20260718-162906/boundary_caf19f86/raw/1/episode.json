@@ -1,0 +1,67 @@
+{
+ "agent_done": "2026-07-19T11:32:27.156109375Z",
+ "agent_started": "2026-07-19T11:29:12.543807Z",
+ "cache_read": 728731,
+ "cache_write": 0,
+ "capped": false,
+ "failure_kind": "scored_fail",
+ "first_invalid_s": 88.690626583,
+ "intermediate_states": 10,
+ "invalid_intermediate_rate": 0.9,
+ "invalid_intermediates": 9,
+ "iter": 1,
+ "kind": "rename",
+ "mode": "raw",
+ "new_errors": null,
+ "op_mix": {},
+ "pass": false,
+ "predicate": false,
+ "profile": "qwen3.5-9b-udq4",
+ "prompt": "Rename some variables to remove Nodee\n\nSpecifically, rename: nodeeSplitListener -\u003e workerAuthSplitListener; NodeeFileStorage -\u003e WorkerAuthStorage; NodeeCurrentKeyId -\u003e WorkerAuthCurrentKeyId; NodeeRegistrationRequest -\u003e WorkerAuthRegistrationRequest",
+ "rejects_total": 0,
+ "repairs_offered": 0,
+ "resends": 0,
+ "specs": [
+  {
+   "baseline_refs": 11,
+   "new_refs": 11,
+   "ok": true,
+   "old_refs_left": 0,
+   "sym": "github.com/hashicorp/boundary/internal/daemon/worker.Worker.nodeeSplitListener",
+   "to": "workerAuthSplitListener"
+  },
+  {
+   "baseline_refs": 7,
+   "new_refs": 0,
+   "ok": false,
+   "old_refs_left": 0,
+   "sym": "github.com/hashicorp/boundary/internal/daemon/worker.Worker.NodeeFileStorage",
+   "to": "WorkerAuthStorage"
+  },
+  {
+   "baseline_refs": 4,
+   "new_refs": 4,
+   "ok": true,
+   "old_refs_left": 0,
+   "sym": "github.com/hashicorp/boundary/internal/daemon/worker.Worker.NodeeCurrentKeyId",
+   "to": "WorkerAuthCurrentKeyId"
+  },
+  {
+   "baseline_refs": 4,
+   "new_refs": 4,
+   "ok": true,
+   "old_refs_left": 0,
+   "sym": "github.com/hashicorp/boundary/internal/daemon/worker.Worker.NodeeRegistrationRequest",
+   "to": "WorkerAuthRegistrationRequest"
+  }
+ ],
+ "steps": 35,
+ "task": "boundary_caf19f86",
+ "tests": false,
+ "tests_baseline": true,
+ "tokens_in": 31891,
+ "tokens_out": 8962,
+ "tokens_reasoning": 0,
+ "typecheck": true,
+ "wall_s": 194.612302375
+}

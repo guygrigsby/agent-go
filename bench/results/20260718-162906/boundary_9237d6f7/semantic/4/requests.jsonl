@@ -1,0 +1,33 @@
+{"ms":1101,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/boundary/api/targets","req_sha":"8ac7aa18545123f9","sym":"Client.Authorize","ts":"2026-07-19T14:35:39.354356Z"}
+{"ms":3,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-19T14:35:40.46295Z"}
+{"ms":1190,"op":"query","outcome":"ok","req_sha":"79f6700ade6235f5","sym":"Authorize","ts":"2026-07-19T14:35:48.29302Z"}
+{"ms":2,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-19T14:35:53.623792Z"}
+{"ms":1,"op":"query","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/types/action","reason":"symbol is not a function","repairs":0,"req_sha":"56f1f6e4e588eb61","sym":"Authorize","ts":"2026-07-19T14:35:55.874597Z"}
+{"ms":12,"op":"query","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/types/action","req_sha":"7c37746779d72e04","sym":"Authorize","ts":"2026-07-19T14:35:57.367953Z"}
+{"ms":1,"op":"view","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/types/action","reason":"declaration not found","repairs":1,"req_sha":"4994fca598277baf","sym":"Authorize","ts":"2026-07-19T14:35:59.455432Z"}
+{"ms":1,"op":"view","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/types/action","reason":"receiver type not found","repairs":1,"req_sha":"a60fc9abb43b0307","sym":"action.go","ts":"2026-07-19T14:36:00.850291Z"}
+{"ms":0,"op":"patch","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/types/action","reason":"unknown op","repairs":0,"req_sha":"911ef93aed6d011b","ts":"2026-07-19T14:36:02.562872Z"}
+{"ms":2,"op":"view","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/types/action","reason":"receiver type not found","repairs":1,"req_sha":"20cb1ccdfba817b9","sym":"internal/types/action.action.go","ts":"2026-07-19T14:36:04.258184Z"}
+{"ms":0,"op":"patch","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/types/action","reason":"unknown op","repairs":0,"req_sha":"b6edac8ac053bcef","ts":"2026-07-19T14:36:06.249675Z"}
+{"ms":3,"op":"view","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/types/action, internal/types/action/action.go","reason":"package not found","repairs":1,"req_sha":"2475a30e433bd658","sym":"internal/types/action/action.go","ts":"2026-07-19T14:36:07.82758Z"}
+{"ms":1,"op":"view","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/types/action","reason":"receiver type not found","repairs":1,"req_sha":"cacab90b73c550cf","sym":"internal/types/action/action.go","ts":"2026-07-19T14:36:09.351779Z"}
+{"ms":1,"op":"view","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/types/action","reason":"declaration not found","repairs":1,"req_sha":"4994fca598277baf","sym":"Authorize","ts":"2026-07-19T14:36:10.682562Z"}
+{"ms":211,"op":"upsert","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/types/action","reason":"declaration does not typecheck","repairs":1,"req_sha":"215e0d4e43f77a74","ts":"2026-07-19T14:36:12.531127Z"}
+{"ms":1244,"op":"upsert","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/types/action","reason":"expected exactly one top-level declaration","repairs":0,"req_sha":"a38e95af9a01bb34","ts":"2026-07-19T14:36:16.072422Z"}
+{"ms":82,"op":"rename","outcome":"accepted","pkg":"github.com/hashicorp/boundary/internal/types/action","req_sha":"9d4810b79999ccf8","sym":"Authorize","ts":"2026-07-19T14:36:19.415807Z"}
+{"ms":630,"op":"test","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/types/action","req_sha":"73d9f13b47f05428","ts":"2026-07-19T14:36:21.434389Z"}
+{"ms":320496,"op":"test","outcome":"rejected","reason":"tests could not run","repairs":0,"req_sha":"12ef5d31bdb89522","ts":"2026-07-19T14:36:24.137998Z"}
+{"ms":10164,"op":"test","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/auth","req_sha":"0647a2c8e1217c60","ts":"2026-07-19T14:41:44.718922Z"}
+{"ms":979,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-19T14:41:54.883448Z"}
+{"ms":527,"op":"test","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/types/action","req_sha":"d12b88fe9e387af1","sym":"TestAction.*","ts":"2026-07-19T14:41:55.862787Z"}
+{"ms":472,"op":"test","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/types/action","req_sha":"ee4db627709f56fb","sym":"TestAction/authorize","ts":"2026-07-19T14:41:56.390982Z"}
+{"ms":509,"op":"test","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/perms","req_sha":"ef8823790d3f3df5","ts":"2026-07-19T14:41:56.863259Z"}
+{"ms":37,"op":"test","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/auth/additional_verification_test","reason":"tests could not run","repairs":0,"req_sha":"d678379f056c6088","ts":"2026-07-19T14:42:00.871846Z"}
+{"ms":36,"op":"test","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/auth_test","reason":"tests could not run","repairs":0,"req_sha":"89442fbad3212d49","ts":"2026-07-19T14:42:02.128528Z"}
+{"ms":2,"op":"upsert","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/servers/controller/handlers/targets","reason":"expected exactly one top-level declaration","repairs":0,"req_sha":"10c01bfd642b5d2c","ts":"2026-07-19T14:42:04.355672Z"}
+{"ms":16265,"op":"test","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/servers/controller/handlers/targets","req_sha":"3a4b274175d21f35","ts":"2026-07-19T14:42:05.614482Z"}
+{"ms":9,"op":"query","outcome":"ok","req_sha":"815cdb0c99d2aad8","sym":"action.Authorize","ts":"2026-07-19T14:42:25.896482Z"}
+{"ms":8,"op":"query","outcome":"ok","req_sha":"5808ea9645ae62bd","sym":"AuthorizeSession","ts":"2026-07-19T14:42:27.188278Z"}
+{"ms":969,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/boundary/api/targets","req_sha":"8ac7aa18545123f9","sym":"Client.Authorize","ts":"2026-07-19T14:42:32.944391Z"}
+{"ms":2,"op":"refs","outcome":"rejected","pkg":"github.com/hashicorp/boundary/api/targets","reason":"method or field not found","repairs":2,"req_sha":"5601782cc05bdc05","sym":"Client.AuthorizeSession","ts":"2026-07-19T14:42:33.920409Z"}
+{"ms":3,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-19T14:42:33.928717Z"}

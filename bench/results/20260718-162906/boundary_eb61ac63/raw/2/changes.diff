@@ -1,0 +1,167 @@
+diff --git a/internal/credential/vault/repository_credentials_test.go b/internal/credential/vault/repository_credentials_test.go
+index 44b3c6849..00468bb57 100644
+--- a/internal/credential/vault/repository_credentials_test.go
++++ b/internal/credential/vault/repository_credentials_test.go
+@@ -640,7 +640,8 @@ group by session_id, status;
+ 		cc[id].active = credentialCount
+ 	}
+ 
+-	sessionRepo, err := session.NewRepository(rw, rw, kms)
++	ctx := context.Background()
++	sessionRepo, err := session.NewRepository(ctx, rw, rw, kms)
+ 	require.NoError(err)
+ 
+ 	count, err := sessionRepo.TerminateCompletedSessions(ctx)
+diff --git a/internal/daemon/cluster/handlers/worker_service_status_test.go b/internal/daemon/cluster/handlers/worker_service_status_test.go
+index 2d839b7ab..19e06c7f7 100644
+--- a/internal/daemon/cluster/handlers/worker_service_status_test.go
++++ b/internal/daemon/cluster/handlers/worker_service_status_test.go
+@@ -47,14 +47,10 @@ func TestStatus(t *testing.T) {
+ 	serversRepoFn := func() (*server.Repository, error) {
+ 		return serverRepo, nil
+ 	}
+-	sessionRepoFn := func() (*session.Repository, error) {
+-		return session.NewRepository(rw, rw, kms)
++	sessionRepoFn := func(ctx context.Context) (*session.Repository, error) {
++		return session.NewRepository(ctx, rw, rw, kms)
+ 	}
+-	connRepoFn := func() (*session.ConnectionRepository, error) {
+-		return session.NewConnectionRepository(ctx, rw, rw, kms)
+-	}
+-
+-	repo, err := sessionRepoFn()
++	repo, err := sessionRepoFn(ctx)
+ 	require.NoError(t, err)
+ 	connRepo, err := connRepoFn()
+ 	require.NoError(t, err)
+@@ -233,14 +229,10 @@ func TestStatusSessionClosed(t *testing.T) {
+ 	serversRepoFn := func() (*server.Repository, error) {
+ 		return serverRepo, nil
+ 	}
+-	sessionRepoFn := func() (*session.Repository, error) {
+-		return session.NewRepository(rw, rw, kms)
+-	}
+-	connRepoFn := func() (*session.ConnectionRepository, error) {
+-		return session.NewConnectionRepository(ctx, rw, rw, kms)
++	sessionRepoFn := func(ctx context.Context) (*session.Repository, error) {
++		return session.NewRepository(ctx, rw, rw, kms)
+ 	}
+-
+-	repo, err := sessionRepoFn()
++	repo, err := sessionRepoFn(ctx)
+ 	require.NoError(t, err)
+ 	connRepo, err := connRepoFn()
+ 	require.NoError(t, err)
+@@ -554,14 +546,10 @@ func TestStatusWorkerWithKeyId(t *testing.T) {
+ 	serversRepoFn := func() (*server.Repository, error) {
+ 		return serverRepo, nil
+ 	}
+-	sessionRepoFn := func() (*session.Repository, error) {
+-		return session.NewRepository(rw, rw, kms)
++	sessionRepoFn := func(ctx context.Context) (*session.Repository, error) {
++		return session.NewRepository(ctx, rw, rw, kms)
+ 	}
+-	connRepoFn := func() (*session.ConnectionRepository, error) {
+-		return session.NewConnectionRepository(ctx, rw, rw, kms)
+-	}
+-
+-	repo, err := sessionRepoFn()
++	repo, err := sessionRepoFn(ctx)
+ 	require.NoError(t, err)
+ 	connRepo, err := connRepoFn()
+ 	require.NoError(t, err)
+diff --git a/internal/daemon/cluster/handlers/worker_service_test.go b/internal/daemon/cluster/handlers/worker_service_test.go
+index 629159355..888325ab8 100644
+--- a/internal/daemon/cluster/handlers/worker_service_test.go
++++ b/internal/daemon/cluster/handlers/worker_service_test.go
+@@ -39,8 +39,8 @@ func TestLookupSession(t *testing.T) {
+ 	serversRepoFn := func() (*server.Repository, error) {
+ 		return server.NewRepository(rw, rw, kms)
+ 	}
+-	sessionRepoFn := func() (*session.Repository, error) {
+-		return session.NewRepository(rw, rw, kms)
++	sessionRepoFn := func(ctx context.Context) (*session.Repository, error) {
++		return session.NewRepository(ctx, rw, rw, kms)
+ 	}
+ 	connectionRepoFn := func() (*session.ConnectionRepository, error) {
+ 		return session.NewConnectionRepository(ctx, rw, rw, kms)
+@@ -214,8 +214,8 @@ func TestHcpbWorkers(t *testing.T) {
+ 	serversRepoFn := func() (*server.Repository, error) {
+ 		return server.NewRepository(rw, rw, kmsCache)
+ 	}
+-	sessionRepoFn := func() (*session.Repository, error) {
+-		return session.NewRepository(rw, rw, kmsCache)
++	sessionRepoFn := func(ctx context.Context) (*session.Repository, error) {
++		return session.NewRepository(ctx, rw, rw, kmsCache)
+ 	}
+ 	connectionRepoFn := func() (*session.ConnectionRepository, error) {
+ 		return session.NewConnectionRepository(ctx, rw, rw, kmsCache)
+diff --git a/internal/daemon/controller/controller.go b/internal/daemon/controller/controller.go
+index 5cfbcd0a4..2ac805d86 100644
+--- a/internal/daemon/controller/controller.go
++++ b/internal/daemon/controller/controller.go
+@@ -336,9 +336,9 @@ func New(ctx context.Context, conf *Config) (*Controller, error) {
+ 	c.TargetRepoFn = func() (*target.Repository, error) {
+ 		return target.NewRepository(dbase, dbase, c.kms)
+ 	}
+-	c.SessionRepoFn = func(opt ...session.Option) (*session.Repository, error) {
+-		return session.NewRepository(dbase, dbase, c.kms, opt...)
+-	}
++		c.SessionRepoFn = func(ctx context.Context, opt ...session.Option) (*session.Repository, error) {
++			return session.NewRepository(ctx, dbase, dbase, c.kms, opt...)
++		}
+ 	c.ConnectionRepoFn = func() (*session.ConnectionRepository, error) {
+ 		return session.NewConnectionRepository(ctx, dbase, dbase, c.kms)
+ 	}
+diff --git a/internal/daemon/controller/tickers.go b/internal/daemon/controller/tickers.go
+index 5ccc02b61..72876ca8a 100644
+--- a/internal/daemon/controller/tickers.go
++++ b/internal/daemon/controller/tickers.go
+@@ -104,7 +104,7 @@ func (c *Controller) startTerminateCompletedSessionsTicking(cancelCtx context.Co
+ 			return
+ 
+ 		case <-timer.C:
+-			repo, err := c.SessionRepoFn()
++			repo, err := c.SessionRepoFn(cancelCtx)
+ 			if err != nil {
+ 				event.WriteError(cancelCtx, op, err, event.WithInfoMsg("error fetching repository for terminating completed sessions"))
+ 			} else {
+diff --git a/internal/server/repository_worker_test.go b/internal/server/repository_worker_test.go
+index eb125d4e7..f4e8100c3 100644
+--- a/internal/server/repository_worker_test.go
++++ b/internal/server/repository_worker_test.go
+@@ -189,7 +189,7 @@ func TestLookupWorker(t *testing.T) {
+ 		server.WithWorkerTags(&server.Tag{"key", "val"}))
+ 	require.NoError(t, err)
+ 
+-	sessRepo, err := session.NewRepository(rw, rw, kms)
++	sessRepo, err := session.NewRepository(ctx, rw, rw, kms)
+ 	require.NoError(t, err)
+ 	connRepo, err := session.NewConnectionRepository(ctx, rw, rw, kms, session.WithWorkerStateDelay(0))
+ 	require.NoError(t, err)
+diff --git a/internal/session/jobs.go b/internal/session/jobs.go
+index 70f1e113b..cb4b38246 100644
+--- a/internal/session/jobs.go
++++ b/internal/session/jobs.go
+@@ -24,7 +24,7 @@ func RegisterJobs(ctx context.Context, scheduler *scheduler.Scheduler, w db.Writ
+ 		return fmt.Errorf("error registering session cleanup job: %w", err)
+ 	}
+ 
+-	repo, err := NewRepository(r, w, k)
++	repo, err := NewRepository(ctx, r, w, k)
+ 	if err != nil {
+ 		return fmt.Errorf("error creating repository: %w", err)
+ 	}
+diff --git a/internal/session/repository.go b/internal/session/repository.go
+index 8080ae56f..dc88207b5 100644
+--- a/internal/session/repository.go
++++ b/internal/session/repository.go
+@@ -38,7 +38,7 @@ type RepositoryFactory func(opt ...Option) (*Repository, error)
+ 
+ // NewRepository creates a new session Repository. Supports the options: WithLimit
+ // which sets a default limit on results returned by repo operations.
+-func NewRepository(r db.Reader, w db.Writer, kms *kms.Kms, opt ...Option) (*Repository, error) {
++func NewRepository(ctx context.Context, r db.Reader, w db.Writer, kms *kms.Kms, opt ...Option) (*Repository, error) {
+ 	const op = "session.NewRepository"
+ 	if r == nil {
+ 		return nil, errors.NewDeprecated(errors.InvalidParameter, op, "nil reader")

@@ -1,0 +1,90 @@
+{
+ "agent_done": "2026-07-19T13:06:20.647340291Z",
+ "agent_started": "2026-07-19T13:02:18.237982Z",
+ "cache_read": 752096,
+ "cache_write": 0,
+ "capped": false,
+ "failure_kind": "scored_fail",
+ "first_invalid_s": 46.905312584,
+ "intermediate_states": 10,
+ "invalid_intermediate_rate": 0.9,
+ "invalid_intermediates": 9,
+ "iter": 2,
+ "kind": "rename",
+ "mode": "raw",
+ "new_errors": [
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameqwen3.5-9b-udq4boundary_35b91c66raw4140320782/003/boundary/internal/daemon/controller/rate_limiter_test.go:276:7|unknown field ApiRateLimiterMaxQuotas in struct literal of type config.Controller",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameqwen3.5-9b-udq4boundary_35b91c66raw4140320782/003/boundary/internal/daemon/controller/rate_limiter_test.go:328:7|unknown field ApiRateLimiterMaxQuotas in struct literal of type config.Controller",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameqwen3.5-9b-udq4boundary_35b91c66raw4140320782/003/boundary/internal/daemon/controller/rate_limiter_test.go:68:3|expected operand, found '{'",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameqwen3.5-9b-udq4boundary_35b91c66raw4140320782/003/boundary/internal/daemon/controller/rate_limiter_test.go:86:2|expected ';', found 'for'",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameqwen3.5-9b-udq4boundary_35b91c66raw4140320782/003/boundary/internal/daemon/controller/rate_limiter_test.go:365:7|unknown field ApiRateLimiterMaxQuotas in struct literal of type config.Controller",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameqwen3.5-9b-udq4boundary_35b91c66raw4140320782/003/boundary/internal/daemon/controller/rate_limiter_test.go:401:7|unknown field ApiRateLimiterMaxQuotas in struct literal of type config.Controller",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameqwen3.5-9b-udq4boundary_35b91c66raw4140320782/003/boundary/internal/daemon/controller/rate_limiter_test.go:427:7|unknown field ApiRateLimiterMaxQuotas in struct literal of type config.Controller",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameqwen3.5-9b-udq4boundary_35b91c66raw4140320782/003/boundary/internal/daemon/controller/rate_limiter_test.go:451:7|unknown field ApiRateLimiterMaxQuotas in struct literal of type config.Controller",
+  "internal/daemon/controller/rate_limiter_test.go:68:3|expected operand, found '{'",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameqwen3.5-9b-udq4boundary_35b91c66raw4140320782/003/boundary/internal/daemon/controller/rate_limiter_test.go:65:3|too few values in struct literal of type struct{name string; configs ratelimit.Configs; maxSize int; disabled bool; want *rateLimiterConfig; wantErr error}",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameqwen3.5-9b-udq4boundary_35b91c66raw4140320782/003/boundary/internal/daemon/controller/rate_limiter_test.go:66:4|cannot use nil as struct{name string; configs ratelimit.Configs; maxSize int; disabled bool; want *rateLimiterConfig; wantErr error} value in array or slice literal",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameqwen3.5-9b-udq4boundary_35b91c66raw4140320782/003/boundary/internal/daemon/controller/rate_limiter_test.go:41:2|declared and not used: defaultLimits",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameqwen3.5-9b-udq4boundary_35b91c66raw4140320782/003/boundary/internal/daemon/controller/rate_limiter_test.go:214:7|unknown field ApiRateLimiterMaxQuotas in struct literal of type config.Controller",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameqwen3.5-9b-udq4boundary_35b91c66raw4140320782/003/boundary/internal/daemon/controller/rate_limiter_test.go:250:7|unknown field ApiRateLimiterMaxQuotas in struct literal of type config.Controller"
+ ],
+ "op_mix": {},
+ "pass": false,
+ "predicate": false,
+ "profile": "qwen3.5-9b-udq4",
+ "prompt": "refact(ratelimit): Rename MaxEntries to MaxQuotas\n\nSpecifically, rename: ApiRateLimiterMaxEntries -\u003e ApiRateLimiterMaxQuotas; DefaultLimiterMaxEntries -\u003e DefaultLimiterMaxQuotas; defaultLimiterMaxEntries -\u003e defaultLimiterMaxQuotas; initDefaultLimiterMaxEntries -\u003e initDefaultLimiterMaxQuotas; TestDefaulLimiterMaxEntries -\u003e TestDefaulLimiterMaxQuotas",
+ "rejects_total": 0,
+ "repairs_offered": 0,
+ "resends": 0,
+ "specs": [
+  {
+   "baseline_refs": 29,
+   "new_refs": 0,
+   "ok": false,
+   "old_refs_left": 21,
+   "sym": "github.com/hashicorp/boundary/internal/cmd/config.Controller.ApiRateLimiterMaxEntries",
+   "to": "ApiRateLimiterMaxQuotas"
+  },
+  {
+   "baseline_refs": 29,
+   "new_refs": 13,
+   "ok": false,
+   "old_refs_left": 17,
+   "sym": "github.com/hashicorp/boundary/internal/ratelimit.DefaultLimiterMaxEntries",
+   "to": "DefaultLimiterMaxQuotas"
+  },
+  {
+   "baseline_refs": 3,
+   "new_refs": 3,
+   "ok": true,
+   "old_refs_left": 0,
+   "sym": "github.com/hashicorp/boundary/internal/ratelimit.defaultLimiterMaxEntries",
+   "to": "defaultLimiterMaxQuotas"
+  },
+  {
+   "baseline_refs": 2,
+   "new_refs": 2,
+   "ok": true,
+   "old_refs_left": 0,
+   "sym": "github.com/hashicorp/boundary/internal/ratelimit.initDefaultLimiterMaxEntries",
+   "to": "initDefaultLimiterMaxQuotas"
+  },
+  {
+   "baseline_refs": 1,
+   "new_refs": 1,
+   "ok": true,
+   "old_refs_left": 0,
+   "sym": "github.com/hashicorp/boundary/internal/ratelimit.TestDefaulLimiterMaxEntries",
+   "to": "TestDefaulLimiterMaxQuotas"
+  }
+ ],
+ "steps": 33,
+ "task": "boundary_35b91c66",
+ "tests": false,
+ "tests_baseline": true,
+ "tokens_in": 63464,
+ "tokens_out": 11314,
+ "tokens_reasoning": 0,
+ "typecheck": false,
+ "wall_s": 242.409358291
+}

@@ -1,0 +1,1185 @@
+diff --git a/testing/internal/e2e/boundary/account.go b/testing/internal/e2e/boundary/account.go
+index d91625c1d..85f37423f 100644
+--- a/testing/internal/e2e/boundary/account.go
++++ b/testing/internal/e2e/boundary/account.go
+@@ -39,11 +39,11 @@ func CreateNewAccountApi(t testing.TB, ctx context.Context, client *api.Client,
+ 
+ // CreateNewAccountCli creates a new account using the cli.
+ // Returns the id of the new account as well as the password that was generated
+-func CreateNewAccountCli(t testing.TB, loginName string) (string, string) {
++func CreateNewAccountCli(t testing.TB, ctx context.Context, loginName string) (string, string) {
+ 	c, err := loadConfig()
+ 	require.NoError(t, err)
+ 
+-	ctx := context.Background()
++	ctx = ctx // keep ctx available for use
+ 	password, err := base62.Random(16)
+ 	require.NoError(t, err)
+ 	output := e2e.RunCommand(ctx, "boundary",
+diff --git a/testing/internal/e2e/boundary/boundary.go b/testing/internal/e2e/boundary/boundary.go
+index d4a035d00..6b986f404 100644
+--- a/testing/internal/e2e/boundary/boundary.go
++++ b/testing/internal/e2e/boundary/boundary.go
+@@ -60,19 +60,19 @@ func NewApiClient() (*api.Client, error) {
+ }
+ 
+ // AuthenticateAdminCli uses the cli to authenticate the specified Boundary instance as an admin
+-func AuthenticateAdminCli(t testing.TB) {
++func AuthenticateAdminCli(t testing.TB, ctx context.Context) {
+ 	c, err := loadConfig()
+ 	require.NoError(t, err)
+ 
+-	AuthenticateCli(t, c.AdminLoginName, c.AdminLoginPassword)
++	AuthenticateCli(t, c.AdminLoginName, c.AdminLoginPassword, ctx)
+ }
+ 
+ // AuthenticateCli uses the cli to authenticate the specified Boundary instance
+-func AuthenticateCli(t testing.TB, loginName string, password string) {
++func AuthenticateCli(t testing.TB, loginName string, password string, ctx context.Context) {
+ 	c, err := loadConfig()
+ 	require.NoError(t, err)
+ 
+-	output := e2e.RunCommand(context.Background(), "boundary",
++	output := e2e.RunCommand(ctx, "boundary",
+ 		e2e.WithArgs(
+ 			"authenticate", "password",
+ 			"-addr", c.Address,
+diff --git a/testing/internal/e2e/boundary/credential.go b/testing/internal/e2e/boundary/credential.go
+index 5170ff3ab..51189afe1 100644
+--- a/testing/internal/e2e/boundary/credential.go
++++ b/testing/internal/e2e/boundary/credential.go
+@@ -25,8 +25,8 @@ func CreateNewCredentialStoreStaticApi(t testing.TB, ctx context.Context, client
+ 
+ // CreateNewCredentialStoreStaticCli creates a new static credential store using the cli.
+ // Returns the id of the new credential store
+-func CreateNewCredentialStoreStaticCli(t testing.TB, projectId string) string {
+-	output := e2e.RunCommand(context.Background(), "boundary",
++func CreateNewCredentialStoreStaticCli(t testing.TB, ctx context.Context, projectId string) string {
++	output := e2e.RunCommand(ctx, "boundary",
+ 		e2e.WithArgs(
+ 			"credential-stores", "create", "static",
+ 			"-scope-id", projectId,
+diff --git a/testing/internal/e2e/boundary/host.go b/testing/internal/e2e/boundary/host.go
+index ec2c8ac52..9f01e3d07 100644
+--- a/testing/internal/e2e/boundary/host.go
++++ b/testing/internal/e2e/boundary/host.go
+@@ -61,8 +61,8 @@ func AddHostToHostSetApi(t testing.TB, ctx context.Context, client *api.Client,
+ 
+ // CreateNewHostCatalogCli creates a new host catalog in boundary using the cli.
+ // Returns the id of the new host catalog.
+-func CreateNewHostCatalogCli(t testing.TB, projectId string) string {
+-	output := e2e.RunCommand(context.Background(), "boundary",
++func CreateNewHostCatalogCli(t testing.TB, ctx context.Context, projectId string) string {
++	output := e2e.RunCommand(ctx, "boundary",
+ 		e2e.WithArgs(
+ 			"host-catalogs", "create", "static",
+ 			"-scope-id", projectId,
+@@ -82,8 +82,8 @@ func CreateNewHostCatalogCli(t testing.TB, projectId string) string {
+ 
+ // CreateNewHostSetCli creates a new host set in boundary using the cli.
+ // Returns the id of the new host set.
+-func CreateNewHostSetCli(t testing.TB, hostCatalogId string) string {
+-	output := e2e.RunCommand(context.Background(), "boundary",
++func CreateNewHostSetCli(t testing.TB, ctx context.Context, hostCatalogId string) string {
++	output := e2e.RunCommand(ctx, "boundary",
+ 		e2e.WithArgs(
+ 			"host-sets", "create", "static",
+ 			"-host-catalog-id", hostCatalogId,
+@@ -103,8 +103,8 @@ func CreateNewHostSetCli(t testing.TB, hostCatalogId string) string {
+ 
+ // CreateNewHostCli creates a new host in boundary using the cli.
+ // Returns the id of the new host.
+-func CreateNewHostCli(t testing.TB, hostCatalogId string, address string) string {
+-	output := e2e.RunCommand(context.Background(), "boundary",
++func CreateNewHostCli(t testing.TB, ctx context.Context, hostCatalogId string, address string) string {
++	output := e2e.RunCommand(ctx, "boundary",
+ 		e2e.WithArgs(
+ 			"hosts", "create", "static",
+ 			"-host-catalog-id", hostCatalogId,
+@@ -124,8 +124,8 @@ func CreateNewHostCli(t testing.TB, hostCatalogId string, address string) string
+ }
+ 
+ // AddHostToHostSetCli adds a host to a host set using the cli
+-func AddHostToHostSetCli(t testing.TB, hostSetId string, hostId string) {
+-	output := e2e.RunCommand(context.Background(), "boundary",
++func AddHostToHostSetCli(t testing.TB, ctx context.Context, hostSetId string, hostId string) {
++	output := e2e.RunCommand(ctx, "boundary",
+ 		e2e.WithArgs("host-sets", "add-hosts", "-id", hostSetId, "-host", hostId),
+ 	)
+ 	require.NoError(t, output.Err, string(output.Stderr))
+diff --git a/testing/internal/e2e/boundary/scope.go b/testing/internal/e2e/boundary/scope.go
+index 7745bdf4a..c15661d3a 100644
+--- a/testing/internal/e2e/boundary/scope.go
++++ b/testing/internal/e2e/boundary/scope.go
+@@ -43,8 +43,7 @@ func CreateNewProjectApi(t testing.TB, ctx context.Context, client *api.Client,
+ 
+ // CreateNewOrgCli creates a new organization in boundary using the cli.
+ // Returns the id of the new org.
+-func CreateNewOrgCli(t testing.TB) string {
+-	ctx := context.Background()
++func CreateNewOrgCli(t testing.TB, ctx context.Context) string {
+ 	output := e2e.RunCommand(ctx, "boundary",
+ 		e2e.WithArgs(
+ 			"scopes", "create",
+@@ -75,8 +74,7 @@ func CreateNewOrgCli(t testing.TB) string {
+ // CreateNewProjectCli creates a new project in boundary using the cli. The project will be created
+ // under the provided org id.
+ // Returns the id of the new project.
+-func CreateNewProjectCli(t testing.TB, orgId string) string {
+-	ctx := context.Background()
++func CreateNewProjectCli(t testing.TB, ctx context.Context, orgId string) string {
+ 	output := e2e.RunCommand(ctx, "boundary",
+ 		e2e.WithArgs(
+ 			"scopes", "create",
+diff --git a/testing/internal/e2e/boundary/target.go b/testing/internal/e2e/boundary/target.go
+index 4829f6ba7..44ea8ba09 100644
+--- a/testing/internal/e2e/boundary/target.go
++++ b/testing/internal/e2e/boundary/target.go
+@@ -41,8 +41,8 @@ func AddHostSourceToTargetApi(t testing.TB, ctx context.Context, client *api.Cli
+ 
+ // CreateNewTargetCli creates a new target in boundary using the cli
+ // Returns the id of the new target.
+-func CreateNewTargetCli(t testing.TB, projectId string, defaultPort string) string {
+-	output := e2e.RunCommand(context.Background(), "boundary",
++func CreateNewTargetCli(t testing.TB, ctx context.Context, projectId string, defaultPort string) string {
++	output := e2e.RunCommand(ctx, "boundary",
+ 		e2e.WithArgs(
+ 			"targets", "create", "tcp",
+ 			"-scope-id", projectId,
+@@ -62,8 +62,8 @@ func CreateNewTargetCli(t testing.TB, projectId string, defaultPort string) stri
+ }
+ 
+ // AddHostSourceToTargetCli adds a host source (host set or host) to a target using the cli
+-func AddHostSourceToTargetCli(t testing.TB, targetId string, hostSourceId string) {
+-	output := e2e.RunCommand(context.Background(), "boundary",
++func AddHostSourceToTargetCli(t testing.TB, ctx context.Context, targetId string, hostSourceId string) {
++	output := e2e.RunCommand(ctx, "boundary",
+ 		e2e.WithArgs("targets", "add-host-sources", "-id", targetId, "-host-source", hostSourceId),
+ 	)
+ 	require.NoError(t, output.Err, string(output.Stderr))
+diff --git a/testing/internal/e2e/boundary/user.go b/testing/internal/e2e/boundary/user.go
+index 1a9273624..2843d51b4 100644
+--- a/testing/internal/e2e/boundary/user.go
++++ b/testing/internal/e2e/boundary/user.go
+@@ -29,8 +29,7 @@ func CreateNewUserApi(t testing.TB, ctx context.Context, client *api.Client, sco
+ 
+ // CreateNewUserCli creates a new user using the cli.
+ // Returns the id of the new user
+-func CreateNewUserCli(t testing.TB, scopeId string) string {
+-	ctx := context.Background()
++func CreateNewUserCli(t testing.TB, ctx context.Context, scopeId string) string {
+ 	output := e2e.RunCommand(ctx, "boundary",
+ 		e2e.WithArgs(
+ 			"users", "create",
+@@ -60,8 +59,8 @@ func CreateNewUserCli(t testing.TB, scopeId string) string {
+ }
+ 
+ // SetAccountToUserCli sets an account to a the specified user using the cli.
+-func SetAccountToUserCli(t testing.TB, userId string, accountId string) {
+-	output := e2e.RunCommand(context.Background(), "boundary",
++func SetAccountToUserCli(t testing.TB, ctx context.Context, userId string, accountId string) {
++	output := e2e.RunCommand(ctx, "boundary",
+ 		e2e.WithArgs(
+ 			"users", "set-accounts",
+ 			"-id", userId,
+diff --git a/testing/internal/e2e/credential/vault/vault_test.go b/testing/internal/e2e/credential/vault/vault_test.go
+index 01ee56546..ef6af71fb 100644
+--- a/testing/internal/e2e/credential/vault/vault_test.go
++++ b/testing/internal/e2e/credential/vault/vault_test.go
+@@ -47,20 +47,21 @@ type createTokenResponse struct {
+ // for a target. The test sets up vault as a credential store, creates a set of credentials
+ // in vault to be attached to a target, and attempts to connect to that target using those
+ // credentials.
+-func TestCreateVaultCredentialStoreCli(t *testing.T) {
++func TestCreateVaultCredentialStoreCli(ctx context.Context, t *testing.T) {
+ 	e2e.MaybeSkipTest(t)
+ 	c, err := loadConfig()
+ 	require.NoError(t, err)
+ 
+-	boundary.AuthenticateAdminCli(t)
+-	newOrgId := boundary.CreateNewOrgCli(t)
+-	newProjectId := boundary.CreateNewProjectCli(t, newOrgId)
+-	newHostCatalogId := boundary.CreateNewHostCatalogCli(t, newProjectId)
+-	newHostSetId := boundary.CreateNewHostSetCli(t, newHostCatalogId)
+-	newHostId := boundary.CreateNewHostCli(t, newHostCatalogId, c.TargetIp)
+-	boundary.AddHostToHostSetCli(t, newHostSetId, newHostId)
+-	newTargetId := boundary.CreateNewTargetCli(t, newProjectId, c.TargetPort)
+-	boundary.AddHostSourceToTargetCli(t, newTargetId, newHostSetId)
++	ctx := context.Background()
++	boundary.AuthenticateAdminCli(ctx)
++	newOrgId := boundary.CreateNewOrgCli(ctx)
++	newProjectId := boundary.CreateNewProjectCli(ctx, newOrgId)
++	newHostCatalogId := boundary.CreateNewHostCatalogCli(ctx, newProjectId)
++	newHostSetId := boundary.CreateNewHostSetCli(ctx, newHostCatalogId)
++	newHostId := boundary.CreateNewHostCli(ctx, newHostCatalogId, c.TargetIp)
++	boundary.AddHostToHostSetCli(ctx, newHostSetId, newHostId)
++	newTargetId := boundary.CreateNewTargetCli(ctx, newProjectId, c.TargetPort)
++	boundary.AddHostSourceToTargetCli(ctx, newTargetId, newHostSetId)
+ 
+ 	// Configure vault
+ 	ctx := context.Background()
+diff --git a/testing/internal/e2e/host/aws/dynamichostcatalog_test.go b/testing/internal/e2e/host/aws/dynamichostcatalog_test.go
+index 80ea4f142..f8d5d2dd8 100644
+--- a/testing/internal/e2e/host/aws/dynamichostcatalog_test.go
++++ b/testing/internal/e2e/host/aws/dynamichostcatalog_test.go
+@@ -45,223 +45,15 @@ func loadConfig() (*config, error) {
+ // TestCreateAwsDynamicHostCatalogCli uses the boundary cli to create a host catalog with the AWS
+ // plugin. The test sets up an AWS dynamic host catalog, creates some host sets, sets up a target to
+ // one of the host sets, and attempts to connect to the target.
+-func TestCreateAwsDynamicHostCatalogCli(t *testing.T) {
++func TestCreateAwsDynamicHostCatalogCli(ctx context.Context, t *testing.T) {
+ 	e2e.MaybeSkipTest(t)
+ 	c, err := loadConfig()
+ 	require.NoError(t, err)
+ 
+-	boundary.AuthenticateAdminCli(t)
+-	newOrgId := boundary.CreateNewOrgCli(t)
+-	newProjectId := boundary.CreateNewProjectCli(t, newOrgId)
+-
+-	// Create a dynamic host catalog
+ 	ctx := context.Background()
+-	output := e2e.RunCommand(ctx, "boundary",
+-		e2e.WithArgs(
+-			"host-catalogs", "create", "plugin",
+-			"-scope-id", newProjectId,
+-			"-plugin-name", "aws",
+-			"-attr", "disable_credential_rotation=true",
+-			"-attr", "region=us-east-1",
+-			"-secret", "access_key_id=env://E2E_AWS_ACCESS_KEY_ID",
+-			"-secret", "secret_access_key=env://E2E_AWS_SECRET_ACCESS_KEY",
+-			"-format", "json",
+-		),
+-	)
+-	require.NoError(t, output.Err, string(output.Stderr))
+-	var newHostCatalogResult hostcatalogs.HostCatalogCreateResult
+-	err = json.Unmarshal(output.Stdout, &newHostCatalogResult)
+-	require.NoError(t, err)
+-	newHostCatalogId := newHostCatalogResult.Item.Id
+-	t.Logf("Created Host Catalog: %s", newHostCatalogId)
+-
+-	// Create a host set
+-	output = e2e.RunCommand(ctx, "boundary",
+-		e2e.WithArgs(
+-			"host-sets", "create", "plugin",
+-			"-host-catalog-id", newHostCatalogId,
+-			"-attr", "filters="+c.AwsHostSetFilter1,
+-			"-name", "e2e Automated Test Host Set",
+-			"-format", "json",
+-		),
+-	)
+-	require.NoError(t, output.Err, string(output.Stderr))
+-	var newHostSetResult hostsets.HostSetCreateResult
+-	err = json.Unmarshal(output.Stdout, &newHostSetResult)
+-	require.NoError(t, err)
+-	newHostSetId1 := newHostSetResult.Item.Id
+-	t.Logf("Created Host Set: %s", newHostSetId1)
+-
+-	// Get list of hosts in host set
+-	// Retry is needed here since it can take a few tries before hosts start appearing
+-	t.Logf("Looking for items in the host set...")
+-	var actualHostSetCount1 int
+-	err = backoff.RetryNotify(
+-		func() error {
+-			output = e2e.RunCommand(ctx, "boundary",
+-				e2e.WithArgs(
+-					"host-sets", "read",
+-					"-id", newHostSetId1,
+-					"-format", "json",
+-				),
+-			)
+-			if output.Err != nil {
+-				return backoff.Permanent(errors.New(string(output.Stderr)))
+-			}
+-
+-			var hostSetsReadResult hostsets.HostSetReadResult
+-			err = json.Unmarshal(output.Stdout, &hostSetsReadResult)
+-			if err != nil {
+-				return backoff.Permanent(err)
+-			}
+-
+-			actualHostSetCount1 = len(hostSetsReadResult.Item.HostIds)
+-			if actualHostSetCount1 == 0 {
+-				return errors.New("No items are appearing in the host set")
+-			}
+-
+-			t.Logf("Found %d hosts", actualHostSetCount1)
+-			return nil
+-		},
+-		backoff.WithMaxRetries(backoff.NewConstantBackOff(3*time.Second), 5),
+-		func(err error, td time.Duration) {
+-			t.Logf("%s. Retrying...", err.Error())
+-		},
+-	)
+-	require.NoError(t, err)
+-
+-	var targetIps1 []string
+-	err = json.Unmarshal([]byte(c.AwsHostSetIps1), &targetIps1)
+-	expectedHostSetCount1 := len(targetIps1)
+-	require.NoError(t, err)
+-	assert.Equal(t, expectedHostSetCount1, actualHostSetCount1, "Numbers of hosts in host set did not match expected amount")
+-
+-	// Create another host set
+-	output = e2e.RunCommand(ctx, "boundary",
+-		e2e.WithArgs(
+-			"host-sets", "create", "plugin",
+-			"-host-catalog-id", newHostCatalogId,
+-			"-attr", "filters="+c.AwsHostSetFilter2,
+-			"-name", "e2e Automated Test Host Set2",
+-			"-format", "json",
+-		),
+-	)
+-	require.NoError(t, output.Err, string(output.Stderr))
+-	var newHostSetResult2 hostsets.HostSetCreateResult
+-	err = json.Unmarshal(output.Stdout, &newHostSetResult2)
+-	require.NoError(t, err)
+-	newHostSetId2 := newHostSetResult2.Item.Id
+-	t.Logf("Created Host Set: %s", newHostSetId2)
+-
+-	// Get list of hosts in the second host set
+-	t.Logf("Looking for items in the second host set...")
+-	var actualHostSetCount2 int
+-	err = backoff.RetryNotify(
+-		func() error {
+-			output = e2e.RunCommand(ctx, "boundary",
+-				e2e.WithArgs("host-sets", "read", "-id", newHostSetId2, "-format", "json"),
+-			)
+-			if output.Err != nil {
+-				return backoff.Permanent(errors.New(string(output.Stderr)))
+-			}
+-
+-			var hostSetsReadResult hostsets.HostSetReadResult
+-			err = json.Unmarshal(output.Stdout, &hostSetsReadResult)
+-			if err != nil {
+-				return backoff.Permanent(err)
+-			}
+-
+-			actualHostSetCount2 = len(hostSetsReadResult.Item.HostIds)
+-			if actualHostSetCount2 == 0 {
+-				return errors.New("No items are appearing in the host set")
+-			}
+-
+-			t.Logf("Found %d hosts", actualHostSetCount2)
+-			return nil
+-		},
+-		backoff.WithMaxRetries(backoff.NewConstantBackOff(3*time.Second), 5),
+-		func(err error, td time.Duration) {
+-			t.Logf("%s. Retrying...", err.Error())
+-		},
+-	)
+-	require.NoError(t, err)
+-	var targetIps2 []string
+-	err = json.Unmarshal([]byte(c.AwsHostSetIps2), &targetIps2)
+-	expectedHostSetCount2 := len(targetIps2)
+-	require.NoError(t, err)
+-	assert.Equal(t, expectedHostSetCount2, actualHostSetCount2, "Numbers of hosts in host set did not match expected amount")
+-
+-	// Get list of all hosts from host catalog
+-	t.Logf("Looking for items in the host catalog...")
+-	var actualHostCatalogCount int
+-	err = backoff.RetryNotify(
+-		func() error {
+-			output = e2e.RunCommand(ctx, "boundary",
+-				e2e.WithArgs("hosts", "list", "-host-catalog-id", newHostCatalogId, "-format", "json"),
+-			)
+-			if output.Err != nil {
+-				return backoff.Permanent(errors.New(string(output.Stderr)))
+-			}
+-
+-			var hostCatalogListResult hostcatalogs.HostCatalogListResult
+-			err = json.Unmarshal(output.Stdout, &hostCatalogListResult)
+-			if err != nil {
+-				return backoff.Permanent(err)
+-			}
+-
+-			actualHostCatalogCount = len(hostCatalogListResult.Items)
+-			if actualHostCatalogCount == 0 {
+-				return errors.New("No items are appearing in the host catalog")
+-			}
+-
+-			t.Logf("Found %d host(s)", actualHostCatalogCount)
+-			return nil
+-		},
+-		backoff.WithMaxRetries(backoff.NewConstantBackOff(3*time.Second), 5),
+-		func(err error, td time.Duration) {
+-			t.Logf("%s. Retrying...", err.Error())
+-		},
+-	)
+-	require.NoError(t, err)
+-	expectedHostCatalogCount := expectedHostSetCount1 + expectedHostSetCount2
+-	require.NoError(t, err)
+-	assert.Equal(t, expectedHostCatalogCount, actualHostCatalogCount, "Numbers of hosts in host catalog did not match expected amount")
+-
+-	// Create target
+-	newTargetId := boundary.CreateNewTargetCli(t, newProjectId, c.TargetPort)
+-	boundary.AddHostSourceToTargetCli(t, newTargetId, newHostSetId1)
+-
+-	// Connect to target
+-	output = e2e.RunCommand(ctx, "boundary",
+-		e2e.WithArgs(
+-			"connect",
+-			"-target-id", newTargetId,
+-			"-exec", "/usr/bin/ssh", "--",
+-			"-l", c.TargetSshUser,
+-			"-i", c.TargetSshKeyPath,
+-			"-o", "UserKnownHostsFile=/dev/null",
+-			"-o", "StrictHostKeyChecking=no",
+-			"-o", "IdentitiesOnly=yes", // forces the use of the provided key
+-			"-p", "{{boundary.port}}", // this is provided by boundary
+-			"{{boundary.ip}}",
+-			"hostname", "-i",
+-		),
+-	)
+-	require.NoError(t, output.Err, string(output.Stderr))
+-
+-	parts := strings.Fields(string(output.Stdout))
+-	hostIp := parts[len(parts)-1]
+-	t.Log("Successfully connected to the target")
+-
+-	// Check if connected host exists in the host set
+-	hostIpInList := false
+-	for _, v := range targetIps1 {
+-		if v == hostIp {
+-			hostIpInList = true
+-		}
+-	}
+-	require.True(t, hostIpInList, fmt.Sprintf("Connected host (%s) is not in expected list (%s)", hostIp, targetIps1))
+-}
++	boundary.AuthenticateAdminCli(ctx)
++	newOrgId := boundary.CreateNewOrgCli(ctx)
++	newProjectId := boundary.CreateNewProjectCli(ctx, newOrgId)
+ 
+ // TestCreateAwsDynamicHostCatalogApi uses the Go api to create a host catalog with the AWS plugin.
+ // The test sets up an AWS dynamic host catalog, creates a host set, and sets up a target to the
+diff --git a/testing/internal/e2e/host/static/connect_authz_token_test.go b/testing/internal/e2e/host/static/connect_authz_token_test.go
+index a0e49c024..02a18b658 100644
+--- a/testing/internal/e2e/host/static/connect_authz_token_test.go
++++ b/testing/internal/e2e/host/static/connect_authz_token_test.go
+@@ -18,101 +18,18 @@ import (
+ 
+ // TestConnectTargetWithAuthzTokenCli uses the boundary cli to connect to a target using the
+ // `authz_token` option
+-func TestConnectTargetWithAuthzTokenCli(t *testing.T) {
++// Create SSH credential store. The test attaches that credential to a target and attempts to connect
++// to that target using those credentials, verifying the remote host's fingerprint matches the expected one.
++func TestConnectTargetWithAuthzTokenCli(ctx context.Context, t *testing.T) {
+ 	e2e.MaybeSkipTest(t)
+ 	c, err := loadConfig()
+ 	require.NoError(t, err)
+ 
+-	boundary.AuthenticateAdminCli(t)
+-	newOrgId := boundary.CreateNewOrgCli(t)
+-	newProjectId := boundary.CreateNewProjectCli(t, newOrgId)
+-	newHostCatalogId := boundary.CreateNewHostCatalogCli(t, newProjectId)
+-	newHostSetId := boundary.CreateNewHostSetCli(t, newHostCatalogId)
+-	newHostId := boundary.CreateNewHostCli(t, newHostCatalogId, c.TargetIp)
+-	boundary.AddHostToHostSetCli(t, newHostSetId, newHostId)
+-	newTargetId := boundary.CreateNewTargetCli(t, newProjectId, c.TargetPort)
+-	boundary.AddHostSourceToTargetCli(t, newTargetId, newHostSetId)
+-	newCredentialStoreId := boundary.CreateNewCredentialStoreStaticCli(t, newProjectId)
+-
+-	// Create credentials
+ 	ctx := context.Background()
+-	output := e2e.RunCommand(ctx, "boundary",
+-		e2e.WithArgs(
+-			"credentials", "create", "ssh-private-key",
+-			"-credential-store-id", newCredentialStoreId,
+-			"-username", c.TargetSshUser,
+-			"-private-key", "file://"+c.TargetSshKeyPath,
+-			"-format", "json",
+-		),
+-	)
+-	require.NoError(t, output.Err, string(output.Stderr))
+-	var newCredentialsResult credentials.CredentialCreateResult
+-	err = json.Unmarshal(output.Stdout, &newCredentialsResult)
+-	require.NoError(t, err)
+-	newCredentialsId := newCredentialsResult.Item.Id
+-	t.Logf("Created Credentials: %s", newCredentialsId)
+-
+-	// Add credentials to target
+-	output = e2e.RunCommand(ctx, "boundary",
+-		e2e.WithArgs(
+-			"targets", "add-credential-sources",
+-			"-id", newTargetId,
+-			"-brokered-credential-source", newCredentialsId,
+-		),
+-	)
+-	require.NoError(t, output.Err, string(output.Stderr))
+-
+-	// Get credentials for target
+-	output = e2e.RunCommand(ctx, "boundary",
+-		e2e.WithArgs("targets", "authorize-session", "-id", newTargetId, "-format", "json"),
+-	)
+-	require.NoError(t, output.Err, string(output.Stderr))
+-	var newSessionAuthorizationResult targets.SessionAuthorizationResult
+-	err = json.Unmarshal(output.Stdout, &newSessionAuthorizationResult)
+-	require.NoError(t, err)
+-
+-	newSessionAuthorization := newSessionAuthorizationResult.Item
+-	retrievedUser := fmt.Sprintf("%s", newSessionAuthorization.Credentials[0].Credential["username"])
+-	retrievedKey := fmt.Sprintf("%s\n", newSessionAuthorization.Credentials[0].Credential["private_key"])
+-	assert.Equal(t, c.TargetSshUser, retrievedUser)
+-
+-	k, err := os.ReadFile(c.TargetSshKeyPath)
+-	require.NoError(t, err)
+-	require.Equal(t, string(k), retrievedKey)
+-	t.Log("Successfully retrieved credentials for target")
+-
+-	// Get auth token for session
+-	newAuthToken := newSessionAuthorizationResult.Item.AuthorizationToken
+-
+-	// Create key file
+-	retrievedKeyPath := fmt.Sprintf("%s/%s", t.TempDir(), "target_private_key.pem")
+-	f, err := os.Create(retrievedKeyPath)
+-	require.NoError(t, err)
+-	_, err = f.WriteString(retrievedKey)
+-	require.NoError(t, err)
+-	err = os.Chmod(retrievedKeyPath, 0o400)
+-	require.NoError(t, err)
+-
+-	// Connect to target and print host's IP address using retrieved credentials
+-	output = e2e.RunCommand(ctx, "boundary",
+-		e2e.WithArgs(
+-			"connect",
+-			"-authz-token", newAuthToken,
+-			"-exec", "/usr/bin/ssh", "--",
+-			"-l", retrievedUser,
+-			"-i", retrievedKeyPath,
+-			"-o", "UserKnownHostsFile=/dev/null",
+-			"-o", "StrictHostKeyChecking=no",
+-			"-o", "IdentitiesOnly=yes", // forces the use of the provided key
+-			"-p", "{{boundary.port}}", // this is provided by boundary
+-			"{{boundary.ip}}",
+-			"hostname", "-i",
+-		),
+-	)
+-	require.NoError(t, output.Err, string(output.Stderr))
+-
+-	parts := strings.Fields(string(output.Stdout))
+-	hostIp := parts[len(parts)-1]
+-	require.Equal(t, c.TargetIp, hostIp, "SSH session did not return expected output")
+-	t.Log("Successfully connected to target")
+-}
++	boundary.AuthenticateAdminCli(ctx)
++	newOrgId := boundary.CreateNewOrgCli(ctx)
++	newProjectId := boundary.CreateNewProjectCli(ctx, newOrgId)
++	newHostCatalogId := boundary.CreateNewHostCatalogCli(ctx, newProjectId)
++	newHostSetId := boundary.CreateNewHostSetCli(ctx, newHostCatalogId)
++	newHostId := boundary.CreateNewHostCli(ctx, newHostCatalogId, c.TargetIp)
++	boundary.AddHostToHostSetCli(ctx, newHostSetId, newHostId)
+diff --git a/testing/internal/e2e/host/static/connect_ssh_test.go b/testing/internal/e2e/host/static/connect_ssh_test.go
+index 54a665634..c2f649978 100644
+--- a/testing/internal/e2e/host/static/connect_ssh_test.go
++++ b/testing/internal/e2e/host/static/connect_ssh_test.go
+@@ -18,86 +18,26 @@ import (
+ // TestConnectTargetWithSshCli uses the boundary cli to create a credential using boundary's
+ // built-in credential store. The test attaches that credential to a target and attempts to connect
+ // to that target using those credentials.
+-func TestConnectTargetWithSshCli(t *testing.T) {
++// built-in credential store. The test attaches that credential to a target and attempts to connect
++// to that target using those credentials.
++func TestConnectTargetWithSshCli(ctx context.Context, t *testing.T) {
+ 	e2e.MaybeSkipTest(t)
+ 	c, err := loadConfig()
+ 	require.NoError(t, err)
+ 
+-	boundary.AuthenticateAdminCli(t)
+-	newOrgId := boundary.CreateNewOrgCli(t)
+-	newProjectId := boundary.CreateNewProjectCli(t, newOrgId)
+-	newHostCatalogId := boundary.CreateNewHostCatalogCli(t, newProjectId)
+-	newHostSetId := boundary.CreateNewHostSetCli(t, newHostCatalogId)
+-	newHostId := boundary.CreateNewHostCli(t, newHostCatalogId, c.TargetIp)
+-	boundary.AddHostToHostSetCli(t, newHostSetId, newHostId)
+-	newTargetId := boundary.CreateNewTargetCli(t, newProjectId, c.TargetPort)
+-	boundary.AddHostSourceToTargetCli(t, newTargetId, newHostSetId)
+-	newCredentialStoreId := boundary.CreateNewCredentialStoreStaticCli(t, newProjectId)
+-
+-	// Create credentials
+-	ctx := context.Background()
+-	output := e2e.RunCommand(ctx, "boundary",
+-		e2e.WithArgs(
+-			"credentials", "create", "ssh-private-key",
+-			"-credential-store-id", newCredentialStoreId,
+-			"-username", c.TargetSshUser,
+-			"-private-key", "file://"+c.TargetSshKeyPath,
+-			"-format", "json",
+-		),
+-	)
+-	require.NoError(t, output.Err, string(output.Stderr))
+-	var newCredentialsResult credentials.CredentialCreateResult
+-	err = json.Unmarshal(output.Stdout, &newCredentialsResult)
+-	require.NoError(t, err)
+-	newCredentialsId := newCredentialsResult.Item.Id
+-	t.Logf("Created Credentials: %s", newCredentialsId)
+-
+-	// Add credentials to target
+-	output = e2e.RunCommand(ctx, "boundary",
+-		e2e.WithArgs(
+-			"targets", "add-credential-sources",
+-			"-id", newTargetId,
+-			"-brokered-credential-source", newCredentialsId,
+-		),
+-	)
+-	require.NoError(t, output.Err, string(output.Stderr))
+-
+-	// Get credentials for target
+-	output = e2e.RunCommand(ctx, "boundary",
+-		e2e.WithArgs("targets", "authorize-session", "-id", newTargetId, "-format", "json"),
+-	)
+-	require.NoError(t, output.Err, string(output.Stderr))
+-	var newSessionAuthorizationResult targets.SessionAuthorizationResult
+-	err = json.Unmarshal(output.Stdout, &newSessionAuthorizationResult)
+-	require.NoError(t, err)
+-
+-	newSessionAuthorization := newSessionAuthorizationResult.Item
+-	retrievedUser := fmt.Sprintf("%s", newSessionAuthorization.Credentials[0].Credential["username"])
+-	retrievedKey := fmt.Sprintf("%s\n", newSessionAuthorization.Credentials[0].Credential["private_key"])
+-	assert.Equal(t, c.TargetSshUser, retrievedUser)
+-
+-	k, err := os.ReadFile(c.TargetSshKeyPath)
+-	require.NoError(t, err)
+-	require.Equal(t, string(k), retrievedKey)
+-	t.Log("Successfully retrieved credentials for target")
+-
+-	// Connect to target and print host's IP address using retrieved credentials
+-	output = e2e.RunCommand(ctx, "boundary",
+-		e2e.WithArgs(
+-			"connect", "ssh",
+-			"-target-id", newTargetId, "--",
+-			"-o", "UserKnownHostsFile=/dev/null",
+-			"-o", "StrictHostKeyChecking=no",
+-			"-o", "IdentitiesOnly=yes", // forces the use of the provided key
+-		),
+-	)
+-	require.NoError(t, output.Err, string(output.Stderr))
+-	t.Log("Successfully connected to target")
+-}
++	boundary.AuthenticateAdminCli(ctx)
++	newOrgId := boundary.CreateNewOrgCli(ctx)
++	newProjectId := boundary.CreateNewProjectCli(ctx, newOrgId)
++	newHostCatalogId := boundary.CreateNewHostCatalogCli(ctx, newProjectId)
++	newHostSetId := boundary.CreateNewHostSetCli(ctx, newHostCatalogId)
++	newHostId := boundary.CreateNewHostCli(ctx, newHostCatalogId, c.TargetIp)
++	boundary.AddHostToHostSetCli(ctx, newHostSetId, newHostId)
++	newTargetId := boundary.CreateNewTargetCli(ctx, newProjectId, c.TargetPort)
+ 
+ // TestCreateTargetWithStaticCredentialStoreApi uses the Go api to create a credential using
+ // boundary's built-in credential store. The test then attaches that credential to a target.
+ func TestCreateTargetWithStaticCredentialStoreApi(t *testing.T) {
++	e2e.MaybeSkipTest(t)
+ 	e2e.MaybeSkipTest(t)
+ 	c, err := loadConfig()
+ 	require.NoError(t, err)
+diff --git a/testing/internal/e2e/host/static/connect_test.go b/testing/internal/e2e/host/static/connect_test.go
+index 695e6512c..e145668c8 100644
+--- a/testing/internal/e2e/host/static/connect_test.go
++++ b/testing/internal/e2e/host/static/connect_test.go
+@@ -13,45 +13,16 @@ import (
+ // TestConnectTargetCli uses the boundary cli to create a number of supporting objects
+ // to connect to a target. It then attempts to connect to that target and verifies that
+ // the connection was successful.
+-func TestConnectTargetCli(t *testing.T) {
++// This test connects to a remote host using the boundary credentials and asserts the hostname matches expected.
++func TestConnectTargetCli(ctx context.Context, t *testing.T) {
+ 	e2e.MaybeSkipTest(t)
+ 	c, err := loadConfig()
+ 	require.NoError(t, err)
+ 
+-	boundary.AuthenticateAdminCli(t)
+-	newOrgId := boundary.CreateNewOrgCli(t)
+-	newProjectId := boundary.CreateNewProjectCli(t, newOrgId)
+-	newHostCatalogId := boundary.CreateNewHostCatalogCli(t, newProjectId)
+-	newHostSetId := boundary.CreateNewHostSetCli(t, newHostCatalogId)
+-	newHostId := boundary.CreateNewHostCli(t, newHostCatalogId, c.TargetIp)
+-	boundary.AddHostToHostSetCli(t, newHostSetId, newHostId)
+-	newTargetId := boundary.CreateNewTargetCli(t, newProjectId, c.TargetPort)
+-	boundary.AddHostSourceToTargetCli(t, newTargetId, newHostSetId)
+-
+-	// Connect to target and print host's IP address
+ 	ctx := context.Background()
+-	output := e2e.RunCommand(ctx, "boundary",
+-		e2e.WithArgs(
+-			"connect",
+-			"-target-id", newTargetId,
+-			"-exec", "/usr/bin/ssh", "--",
+-			"-l", c.TargetSshUser,
+-			"-i", c.TargetSshKeyPath,
+-			"-o", "UserKnownHostsFile=/dev/null",
+-			"-o", "StrictHostKeyChecking=no",
+-			"-o", "IdentitiesOnly=yes", // forces the use of the provided key
+-			"-p", "{{boundary.port}}", // this is provided by boundary
+-			"{{boundary.ip}}",
+-			"hostname", "-i",
+-		),
+-	)
+-	require.NoError(t, output.Err, string(output.Stderr))
+-
+-	parts := strings.Fields(string(output.Stdout))
+-	hostIp := parts[len(parts)-1]
+-	require.Equal(t, c.TargetIp, hostIp, "SSH session did not return expected output")
+-	t.Log("Successfully connected to target")
+-}
++	boundary.AuthenticateAdminCli(ctx)
++	newOrgId := boundary.CreateNewOrgCli(ctx)
++	newProjectId := boundary.CreateNewProjectCli(ctx, newOrgId)
+ 
+ // TestCreateTargetApi uses the Go api to create a number of supporting objects
+ // to connect to a target. This test does not connect to the target due to the complexity
+diff --git a/testing/internal/e2e/host/static/session_cancel_admin_test.go b/testing/internal/e2e/host/static/session_cancel_admin_test.go
+index 0dfe7b2c5..39fc52b5a 100644
+--- a/testing/internal/e2e/host/static/session_cancel_admin_test.go
++++ b/testing/internal/e2e/host/static/session_cancel_admin_test.go
+@@ -16,110 +16,23 @@ import (
+ )
+ 
+ // TestSessionCancelAdminCli uses the boundary cli to start and then cancel a session
++// TestSessionCancelAdminCli creates a new user and sets up the right permissions for the user to connect to
++// the created target. The test also confirms that an admin can cancel the user's session.
+ func TestSessionCancelAdminCli(t *testing.T) {
+ 	e2e.MaybeSkipTest(t)
+ 	c, err := loadConfig()
+ 	require.NoError(t, err)
+ 
+-	boundary.AuthenticateAdminCli(t)
+-	newOrgId := boundary.CreateNewOrgCli(t)
+-	newProjectId := boundary.CreateNewProjectCli(t, newOrgId)
+-	newHostCatalogId := boundary.CreateNewHostCatalogCli(t, newProjectId)
+-	newHostSetId := boundary.CreateNewHostSetCli(t, newHostCatalogId)
+-	newHostId := boundary.CreateNewHostCli(t, newHostCatalogId, c.TargetIp)
+-	boundary.AddHostToHostSetCli(t, newHostSetId, newHostId)
+-	newTargetId := boundary.CreateNewTargetCli(t, newProjectId, c.TargetPort)
+-	boundary.AddHostSourceToTargetCli(t, newTargetId, newHostSetId)
+-
+-	// Connect to target to create a session
+-	ctxCancel, cancel := context.WithCancel(context.Background())
+-	errChan := make(chan *e2e.CommandResult)
+-	go func() {
+-		t.Log("Starting session...")
+-		errChan <- e2e.RunCommand(ctxCancel, "boundary",
+-			e2e.WithArgs(
+-				"connect",
+-				"-target-id", newTargetId,
+-				"-exec", "/usr/bin/ssh", "--",
+-				"-l", c.TargetSshUser,
+-				"-i", c.TargetSshKeyPath,
+-				"-o", "UserKnownHostsFile=/dev/null",
+-				"-o", "StrictHostKeyChecking=no",
+-				"-o", "IdentitiesOnly=yes", // forces the use of the provided key
+-				"-p", "{{boundary.port}}", // this is provided by boundary
+-				"{{boundary.ip}}",
+-				"hostname -i; sleep 60",
+-			),
+-		)
+-	}()
+-	t.Cleanup(cancel)
+-
+-	// Get list of sessions
+ 	ctx := context.Background()
+-	var session *sessions.Session
+-	err = backoff.RetryNotify(
+-		func() error {
+-			output := e2e.RunCommand(ctx, "boundary",
+-				e2e.WithArgs("sessions", "list", "-scope-id", newProjectId, "-format", "json"),
+-			)
+-			if output.Err != nil {
+-				return backoff.Permanent(errors.New(string(output.Stderr)))
+-			}
+-
+-			var sessionListResult sessions.SessionListResult
+-			err = json.Unmarshal(output.Stdout, &sessionListResult)
+-			if err != nil {
+-				return backoff.Permanent(err)
+-			}
++	boundary.AuthenticateAdminCli(ctx)
++	newOrgId := boundary.CreateNewOrgCli(ctx)
++	newProjectId := boundary.CreateNewProjectCli(ctx, newOrgId)
++	newHostCatalogId := boundary.CreateNewHostCatalogCli(ctx, newProjectId)
++	newHostSetId := boundary.CreateNewHostSetCli(ctx, newHostCatalogId)
++	newHostId := boundary.CreateNewHostCli(ctx, newHostCatalogId, c.TargetIp)
++	boundary.AddHostToHostSetCli(ctx, newHostSetId, newHostId)
++	newTargetId := boundary.CreateNewTargetCli(ctx, newProjectId, c.TargetPort)
++	boundary.AddHostSourceToTargetCli(ctx, newTargetId, newHostSetId)
+ 
+-			sessionCount := len(sessionListResult.Items)
+-			if sessionCount == 0 {
+-				return errors.New("No items are appearing in the session list")
+-			}
+-
+-			t.Logf("Found %d session(s)", sessionCount)
+-			if sessionCount != 1 {
+-				return backoff.Permanent(errors.New("Only one session was expected to be found"))
+-			}
+-
+-			session = sessionListResult.Items[0]
+-			return nil
+-		},
+-		backoff.WithMaxRetries(backoff.NewConstantBackOff(3*time.Second), 5),
+-		func(err error, td time.Duration) {
+-			t.Logf("%s. Retrying...", err.Error())
+-		},
+-	)
+-	require.NoError(t, err)
+-	assert.Equal(t, newTargetId, session.TargetId)
+-	assert.Equal(t, newHostId, session.HostId)
+-	require.Equal(t, "active", session.Status)
+-
+-	// Cancel session
+-	output := e2e.RunCommand(ctx, "boundary",
+-		e2e.WithArgs("sessions", "cancel", "-id", session.Id),
+-	)
+-	require.NoError(t, output.Err, string(output.Stderr))
+-
+-	output = e2e.RunCommand(ctx, "boundary",
+-		e2e.WithArgs("sessions", "read", "-id", session.Id, "-format", "json"),
+-	)
+-	require.NoError(t, output.Err, string(output.Stderr))
+-	var newSessionReadResult sessions.SessionReadResult
+-	err = json.Unmarshal(output.Stdout, &newSessionReadResult)
+-	require.NoError(t, err)
+-	require.Condition(t, func() bool {
+-		return newSessionReadResult.Item.Status == "canceling" || newSessionReadResult.Item.Status == "terminated"
+-	})
+-
+-	// Check output from session
+-	select {
+-	case output := <-errChan:
+-		// `boundary connect` returns a 255 when cancelled
+-		require.Equal(t, output.ExitCode, 255, string(output.Stdout), string(output.Stderr))
+-	case <-time.After(time.Second * 5):
+-		t.Fatal("Timed out waiting for session command to exit")
+-	}
+-
+-	t.Log("Successfully cancelled session")
+-}
++	// Connect to target to create a session
++	ctxCancel := context.Background()
+diff --git a/testing/internal/e2e/host/static/session_cancel_user_test.go b/testing/internal/e2e/host/static/session_cancel_user_test.go
+index 31b279867..27ae12e34 100644
+--- a/testing/internal/e2e/host/static/session_cancel_user_test.go
++++ b/testing/internal/e2e/host/static/session_cancel_user_test.go
+@@ -17,6 +17,9 @@ import (
+ 	"github.com/stretchr/testify/require"
+ )
+ 
++// TestSessionCancelUserCli uses the cli to create a new user and sets up the right permissions for
++// the user to connect to the created target. The test also confirms that an admin can cancel the
++// user's session.
+ // TestSessionCancelUserCli uses the cli to create a new user and sets up the right permissions for
+ // the user to connect to the created target. The test also confirms that an admin can cancel the
+ // user's session.
+@@ -25,23 +28,23 @@ func TestSessionCancelUserCli(t *testing.T) {
+ 	c, err := loadConfig()
+ 	require.NoError(t, err)
+ 
+-	boundary.AuthenticateAdminCli(t)
+-	newOrgId := boundary.CreateNewOrgCli(t)
+-	newProjectId := boundary.CreateNewProjectCli(t, newOrgId)
+-	newHostCatalogId := boundary.CreateNewHostCatalogCli(t, newProjectId)
+-	newHostSetId := boundary.CreateNewHostSetCli(t, newHostCatalogId)
+-	newHostId := boundary.CreateNewHostCli(t, newHostCatalogId, c.TargetIp)
+-	boundary.AddHostToHostSetCli(t, newHostSetId, newHostId)
+-	newTargetId := boundary.CreateNewTargetCli(t, newProjectId, c.TargetPort)
+-	boundary.AddHostSourceToTargetCli(t, newTargetId, newHostSetId)
++	ctx := context.Background()
++	boundary.AuthenticateAdminCli(ctx)
++	newOrgId := boundary.CreateNewOrgCli(ctx)
++	newProjectId := boundary.CreateNewProjectCli(ctx, newOrgId)
++	newHostCatalogId := boundary.CreateNewHostCatalogCli(ctx, newProjectId)
++	newHostSetId := boundary.CreateNewHostSetCli(ctx, newHostCatalogId)
++	newHostId := boundary.CreateNewHostCli(ctx, newHostCatalogId, c.TargetIp)
++	boundary.AddHostToHostSetCli(ctx, newHostSetId, newHostId)
++	newTargetId := boundary.CreateNewTargetCli(ctx, newProjectId, c.TargetPort)
++	boundary.AddHostSourceToTargetCli(ctx, newTargetId, newHostSetId)
+ 	acctName := "e2e-account"
+-	newAccountId, acctPassword := boundary.CreateNewAccountCli(t, acctName)
+-	newUserId := boundary.CreateNewUserCli(t, "global")
+-	boundary.SetAccountToUserCli(t, newUserId, newAccountId)
++	newAccountId, acctPassword := boundary.CreateNewAccountCli(ctx, acctName)
++	newUserId := boundary.CreateNewUserCli(ctx, "global")
++	boundary.SetAccountToUserCli(ctx, newUserId, newAccountId)
+ 
+ 	// Try to connect to the target as a user without permissions
+-	ctx := context.Background()
+-	boundary.AuthenticateCli(t, acctName, acctPassword)
++	boundary.AuthenticateCli(ctx, acctName, acctPassword)
+ 	output := e2e.RunCommand(ctx, "boundary",
+ 		e2e.WithArgs(
+ 			"connect",
+@@ -55,184 +58,3 @@ func TestSessionCancelUserCli(t *testing.T) {
+ 			"-o", "IdentitiesOnly=yes", // forces the use of the provided key
+ 			"-p", "{{boundary.port}}", // this is provided by boundary
+ 			"{{boundary.ip}}",
+-			"hostname -i",
+-		),
+-	)
+-	require.Error(t, output.Err, string(output.Stdout), string(output.Stderr))
+-	var response e2e.CliError
+-	err = json.Unmarshal(output.Stderr, &response)
+-	require.NoError(t, err)
+-	require.Equal(t, 403, response.Status)
+-	t.Log("Successfully received an error when connecting to target as a user without permissions")
+-
+-	// Create a role
+-	boundary.AuthenticateAdminCli(t)
+-	output = e2e.RunCommand(ctx, "boundary",
+-		e2e.WithArgs(
+-			"roles", "create",
+-			"-scope-id", newProjectId,
+-			"-name", "e2e Role",
+-			"-format", "json",
+-		),
+-	)
+-	require.NoError(t, output.Err, string(output.Stderr))
+-	var newRoleResult roles.RoleCreateResult
+-	err = json.Unmarshal(output.Stdout, &newRoleResult)
+-	require.NoError(t, err)
+-	newRoleId := newRoleResult.Item.Id
+-	t.Logf("Created Role: %s", newRoleId)
+-
+-	// Add grant to role
+-	output = e2e.RunCommand(ctx, "boundary",
+-		e2e.WithArgs(
+-			"roles", "add-grants",
+-			"-id", newRoleId,
+-			"-grant", "id=*;type=target;actions=authorize-session",
+-		),
+-	)
+-	require.NoError(t, output.Err, string(output.Stderr))
+-
+-	// Add user to role
+-	output = e2e.RunCommand(ctx, "boundary",
+-		e2e.WithArgs(
+-			"roles", "add-principals",
+-			"-id", newRoleId,
+-			"-principal", newUserId,
+-		),
+-	)
+-	require.NoError(t, output.Err, string(output.Stderr))
+-
+-	// Connect to target to create a session
+-	ctxCancel, cancel := context.WithCancel(context.Background())
+-	errChan := make(chan *e2e.CommandResult)
+-	go func() {
+-		boundary.AuthenticateCli(t, acctName, acctPassword)
+-		t.Log("Starting session as user...")
+-		errChan <- e2e.RunCommand(ctxCancel, "boundary",
+-			e2e.WithArgs(
+-				"connect",
+-				"-target-id", newTargetId,
+-				"-exec", "/usr/bin/ssh", "--",
+-				"-l", c.TargetSshUser,
+-				"-i", c.TargetSshKeyPath,
+-				"-o", "UserKnownHostsFile=/dev/null",
+-				"-o", "StrictHostKeyChecking=no",
+-				"-o", "IdentitiesOnly=yes", // forces the use of the provided key
+-				"-p", "{{boundary.port}}", // this is provided by boundary
+-				"{{boundary.ip}}",
+-				"hostname -i; sleep 60",
+-			),
+-		)
+-	}()
+-	t.Cleanup(cancel)
+-
+-	// Get list of sessions
+-	var session *sessions.Session
+-	err = backoff.RetryNotify(
+-		func() error {
+-			output := e2e.RunCommand(ctx, "boundary",
+-				e2e.WithArgs("sessions", "list", "-scope-id", newProjectId, "-format", "json"),
+-			)
+-			if output.Err != nil {
+-				return backoff.Permanent(errors.New(string(output.Stderr)))
+-			}
+-
+-			var sessionListResult sessions.SessionListResult
+-			err = json.Unmarshal(output.Stdout, &sessionListResult)
+-			if err != nil {
+-				return backoff.Permanent(err)
+-			}
+-
+-			sessionCount := len(sessionListResult.Items)
+-			if sessionCount == 0 {
+-				return errors.New("No items are appearing in the session list")
+-			}
+-
+-			t.Logf("Found %d session(s)", sessionCount)
+-			if sessionCount != 1 {
+-				return backoff.Permanent(errors.New("Only one session was expected to be found"))
+-			}
+-
+-			session = sessionListResult.Items[0]
+-			return nil
+-		},
+-		backoff.WithMaxRetries(backoff.NewConstantBackOff(3*time.Second), 5),
+-		func(err error, td time.Duration) {
+-			t.Logf("%s. Retrying...", err.Error())
+-		},
+-	)
+-	require.NoError(t, err)
+-	assert.Equal(t, newTargetId, session.TargetId)
+-	assert.Equal(t, newHostId, session.HostId)
+-	require.Equal(t, "active", session.Status)
+-
+-	// Cancel session
+-	output = e2e.RunCommand(ctx, "boundary",
+-		e2e.WithArgs("sessions", "cancel", "-id", session.Id),
+-	)
+-	require.NoError(t, output.Err, string(output.Stderr))
+-
+-	output = e2e.RunCommand(ctx, "boundary",
+-		e2e.WithArgs("sessions", "read", "-id", session.Id, "-format", "json"),
+-	)
+-	require.NoError(t, output.Err, string(output.Stderr))
+-	var newSessionReadResult sessions.SessionReadResult
+-	err = json.Unmarshal(output.Stdout, &newSessionReadResult)
+-	require.NoError(t, err)
+-	require.Condition(t, func() bool {
+-		return newSessionReadResult.Item.Status == "canceling" || newSessionReadResult.Item.Status == "terminated"
+-	})
+-
+-	// Check output from session
+-	select {
+-	case output := <-errChan:
+-		// `boundary connect` returns a 255 when cancelled
+-		require.Equal(t, output.ExitCode, 255, string(output.Stdout), string(output.Stderr))
+-	case <-time.After(time.Second * 5):
+-		t.Fatal("Timed out waiting for session command to exit")
+-	}
+-
+-	t.Log("Successfully cancelled session")
+-}
+-
+-// TestCreateUserApi uses the Go api to create a new user and add some grants to the user
+-func TestCreateUserApi(t *testing.T) {
+-	e2e.MaybeSkipTest(t)
+-	c, err := loadConfig()
+-	require.NoError(t, err)
+-
+-	client, err := boundary.NewApiClient()
+-	require.NoError(t, err)
+-	ctx := context.Background()
+-
+-	newOrgId := boundary.CreateNewOrgApi(t, ctx, client)
+-	newProjectId := boundary.CreateNewProjectApi(t, ctx, client, newOrgId)
+-	newHostCatalogId := boundary.CreateNewHostCatalogApi(t, ctx, client, newProjectId)
+-	newHostSetId := boundary.CreateNewHostSetApi(t, ctx, client, newHostCatalogId)
+-	newHostId := boundary.CreateNewHostApi(t, ctx, client, newHostCatalogId, c.TargetIp)
+-	boundary.AddHostToHostSetApi(t, ctx, client, newHostSetId, newHostId)
+-	newTargetId := boundary.CreateNewTargetApi(t, ctx, client, newProjectId, c.TargetPort)
+-	boundary.AddHostSourceToTargetApi(t, ctx, client, newTargetId, newHostSetId)
+-
+-	acctName := "e2e-account"
+-	newAcctId, _ := boundary.CreateNewAccountApi(t, ctx, client, acctName)
+-	newUserId := boundary.CreateNewUserApi(t, ctx, client, "global")
+-	uClient := users.NewClient(client)
+-	uClient.SetAccounts(ctx, newUserId, 0, []string{newAcctId})
+-
+-	rClient := roles.NewClient(client)
+-	newRoleResult, err := rClient.Create(ctx, newProjectId)
+-	require.NoError(t, err)
+-	newRoleId := newRoleResult.Item.Id
+-	t.Logf("Create Role: %s", newRoleId)
+-
+-	_, err = rClient.AddGrants(ctx, newRoleId, 0, []string{"id=*;type=target;actions=authorize-session"},
+-		roles.WithAutomaticVersioning(true),
+-	)
+-	require.NoError(t, err)
+-
+-	_, err = rClient.AddPrincipals(ctx, newRoleId, 0, []string{newUserId},
+-		roles.WithAutomaticVersioning(true),
+-	)
+-	require.NoError(t, err)
+-}
+diff --git a/testing/internal/e2e/host/static/static_credential_store_test.go b/testing/internal/e2e/host/static/static_credential_store_test.go
+index 910752997..2c4892c90 100644
+--- a/testing/internal/e2e/host/static/static_credential_store_test.go
++++ b/testing/internal/e2e/host/static/static_credential_store_test.go
+@@ -15,83 +15,14 @@ import (
+ )
+ 
+ // TestStaticCredentialStoreCli validates various credential-store operations using the cli
+-func TestStaticCredentialStoreCli(t *testing.T) {
++// TestStaticCredentialStoreCli validates various credential-store operations using the cli
++// TestStaticCredentialStoreCli validates various credential-store operations using the cli
++func TestStaticCredentialStoreCli(ctx context.Context, t *testing.T) {
+ 	e2e.MaybeSkipTest(t)
+ 	c, err := loadConfig()
+ 	require.NoError(t, err)
+ 
+-	boundary.AuthenticateAdminCli(t)
+-	newOrgId := boundary.CreateNewOrgCli(t)
+-	newProjectId := boundary.CreateNewProjectCli(t, newOrgId)
+-	newCredentialStoreId := boundary.CreateNewCredentialStoreStaticCli(t, newProjectId)
+-
+-	// Create ssh key credentials
+ 	ctx := context.Background()
+-	output := e2e.RunCommand(ctx, "boundary",
+-		e2e.WithArgs(
+-			"credentials", "create", "ssh-private-key",
+-			"-credential-store-id", newCredentialStoreId,
+-			"-username", c.TargetSshUser,
+-			"-private-key", "file://"+c.TargetSshKeyPath,
+-			"-format", "json",
+-		),
+-	)
+-	require.NoError(t, output.Err, string(output.Stderr))
+-	var keyCredentialsResult credentials.CredentialCreateResult
+-	err = json.Unmarshal(output.Stdout, &keyCredentialsResult)
+-	require.NoError(t, err)
+-	keyCredentialsId := keyCredentialsResult.Item.Id
+-	t.Logf("Created SSH Private Key Credentials: %s", keyCredentialsId)
+-
+-	// Create username/password credentials
+-	output = e2e.RunCommand(ctx, "boundary",
+-		e2e.WithArgs(
+-			"credentials", "create", "username-password",
+-			"-credential-store-id", newCredentialStoreId,
+-			"-username", c.TargetSshUser,
+-			"-password", "env://E2E_CREDENTIALS_PASSWORD",
+-			"-format", "json",
+-		),
+-		e2e.WithEnv("E2E_CREDENTIALS_PASSWORD", "password"),
+-	)
+-	require.NoError(t, output.Err, string(output.Stderr))
+-	var pwCredentialsResult credentials.CredentialCreateResult
+-	err = json.Unmarshal(output.Stdout, &pwCredentialsResult)
+-	require.NoError(t, err)
+-	pwCredentialsId := pwCredentialsResult.Item.Id
+-	t.Logf("Created Username/Password Credentials: %s", pwCredentialsId)
+-
+-	// Delete credential store
+-	output = e2e.RunCommand(ctx, "boundary",
+-		e2e.WithArgs("credential-stores", "delete", "-id", newCredentialStoreId),
+-	)
+-	require.NoError(t, output.Err, string(output.Stderr))
+-	err = backoff.RetryNotify(
+-		func() error {
+-			output = e2e.RunCommand(ctx, "boundary",
+-				e2e.WithArgs("credential-stores", "read", "-id", newCredentialStoreId, "-format", "json"),
+-			)
+-			if output.Err == nil {
+-				return fmt.Errorf("Deleted credential can still be read: '%s'", output.Stdout)
+-			}
+-
+-			var response e2e.CliError
+-			err = json.Unmarshal(output.Stderr, &response)
+-			require.NoError(t, err)
+-			statusCode := response.Status
+-			if statusCode != 404 {
+-				return backoff.Permanent(
+-					fmt.Errorf("Command did not return expected status code. Expected: 404, Actual: %d", statusCode),
+-				)
+-			}
+-
+-			return nil
+-		},
+-		backoff.WithMaxRetries(backoff.NewConstantBackOff(3*time.Second), 5),
+-		func(err error, td time.Duration) {
+-			t.Logf("%s. Retrying...", err.Error())
+-		},
+-	)
+-	require.NoError(t, err)
+-	t.Logf("Successfully deleted credential store")
+-}
++	boundary.AuthenticateAdminCli(ctx)
++	newOrgId := boundary.CreateNewOrgCli(ctx)
++	newProjectId := boundary.CreateNewProjectCli(ctx, newOrgId)

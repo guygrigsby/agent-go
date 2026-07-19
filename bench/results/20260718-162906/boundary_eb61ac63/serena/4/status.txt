@@ -1,0 +1,3 @@
+ M internal/session/repository.go
+?? .serena/
+?? opencode.json

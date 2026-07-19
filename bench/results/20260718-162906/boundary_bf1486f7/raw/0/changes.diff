@@ -1,0 +1,52 @@
+diff --git a/internal/cmd/base/initial_resources.go b/internal/cmd/base/initial_resources.go
+index e32f27611..38218c293 100644
+--- a/internal/cmd/base/initial_resources.go
++++ b/internal/cmd/base/initial_resources.go
+@@ -478,7 +478,7 @@ func (b *Server) CreateInitialTarget(ctx context.Context) (target.Target, error)
+ 		}
+ 	}()
+ 
+-	targetRepo, err := target.NewRepository(rw, rw, kmsCache)
++	targetRepo, err := target.NewRepository(ctx, rw, rw, kmsCache)
+ 	if err != nil {
+ 		return nil, fmt.Errorf("error creating target repository: %w", err)
+ 	}
+diff --git a/internal/daemon/controller/controller.go b/internal/daemon/controller/controller.go
+index b4427bcb8..ef2123fdc 100644
+--- a/internal/daemon/controller/controller.go
++++ b/internal/daemon/controller/controller.go
+@@ -334,7 +334,7 @@ func New(ctx context.Context, conf *Config) (*Controller, error) {
+ 		return password.NewRepository(dbase, dbase, c.kms)
+ 	}
+ 	c.TargetRepoFn = func(o ...target.Option) (*target.Repository, error) {
+-		return target.NewRepository(dbase, dbase, c.kms, o...)
++		return target.NewRepository(ctx, dbase, dbase, c.kms, o...)
+ 	}
+ 	c.SessionRepoFn = func(opt ...session.Option) (*session.Repository, error) {
+ 		return session.NewRepository(ctx, dbase, dbase, c.kms, opt...)
+diff --git a/internal/session/testing.go b/internal/session/testing.go
+index 65b4dc3a2..09857b634 100644
+--- a/internal/session/testing.go
++++ b/internal/session/testing.go
+@@ -144,7 +144,7 @@ func TestSessionParams(t testing.TB, conn *db.DB, wrapper wrapping.Wrapper, iamR
+ 	tcpTarget := tcp.TestTarget(ctx, t, conn, proj.PublicId, "test target")
+ 
+ 	kms := kms.TestKms(t, conn, wrapper)
+-	targetRepo, err := target.NewRepository(rw, rw, kms)
++	targetRepo, err := target.NewRepository(ctx, rw, rw, kms)
+ 	require.NoError(err)
+ 	_, _, _, err = targetRepo.AddTargetHostSources(ctx, tcpTarget.GetPublicId(), tcpTarget.GetVersion(), []string{sets[0].PublicId})
+ 	require.NoError(err)
+diff --git a/internal/target/repository.go b/internal/target/repository.go
+index 7ec5d1b2d..83105dd6f 100644
+--- a/internal/target/repository.go
++++ b/internal/target/repository.go
+@@ -48,7 +48,7 @@ type Repository struct {
+ // - WithLimit: sets a limit on the number of results returned by various repo operations.
+ // - WithPermissions: defines the permissions the user has to perform different
+ // actions and access resources within the created repo object.
+-func NewRepository(r db.Reader, w db.Writer, kms *kms.Kms, opt ...Option) (*Repository, error) {
++func NewRepository(ctx context.Context, r db.Reader, w db.Writer, kms *kms.Kms, opt ...Option) (*Repository, error) {
+ 	const op = "target.NewRepository"
+ 	if r == nil {
+ 		return nil, errors.NewDeprecated(errors.InvalidParameter, op, "nil reader")

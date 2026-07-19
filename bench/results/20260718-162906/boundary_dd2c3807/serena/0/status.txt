@@ -1,0 +1,3 @@
+?? .serena/
+?? internal/libs/crypto/
+?? opencode.json

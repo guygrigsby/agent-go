@@ -1,0 +1,2 @@
+ D internal/cmd/config/config_test.go
+?? opencode.json

@@ -1,0 +1,14 @@
+diff --git a/audit/format.go b/audit/format.go
+index 5e461ef61a..b902a59930 100644
+--- a/audit/format.go
++++ b/audit/format.go
+@@ -51,7 +51,8 @@ var (
+ 
+ // AuditFormatter should be used to format audit requests and responses.
+ type AuditFormatter struct {
+-	salter Salter
++	salter         Salter
++	useEventLogger bool
+ }
+ 
+ // AuditFormatterWriter should be used to format and write out audit requests and responses.

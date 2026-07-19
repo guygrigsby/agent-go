@@ -1,0 +1,171 @@
+{
+ "agent_done": "2026-07-19T01:37:20.452291834Z",
+ "agent_started": "2026-07-19T01:35:12.321209Z",
+ "cache_read": 389524,
+ "cache_write": 0,
+ "capped": false,
+ "failure_kind": "scored_fail",
+ "intermediate_states": 0,
+ "invalid_intermediates": 0,
+ "iter": 1,
+ "kind": "add-param",
+ "mode": "serena",
+ "new_errors": null,
+ "op_mix": {},
+ "pass": false,
+ "predicate": false,
+ "profile": "qwen3.5-9b-udq4",
+ "prompt": "refactor(vault): add context and remove deprecated errors\n\nSpecifically: add parameter ctx context.Context to CredentialStore.client; add parameter ctx context.Context to privateCredential.client; add parameter ctx context.Context to privateLibrary.client; add parameter ctx context.Context to privateStore.client; add parameter ctx context.Context to newClient; add parameter ctx context.Context to client.renewToken; add parameter ctx context.Context to client.renewLease; add parameter ctx context.Context to client.swapToken; add parameter ctx context.Context to client.get; add parameter ctx context.Context to client.capabilities; add parameter ctx context.Context to client.ping; add parameter ctx context.Context to client.revokeToken; add parameter ctx context.Context to client.revokeLease; add parameter ctx context.Context to client.lookupToken; add parameter ctx context.Context to client.post; add parameter ctx context.Context to toProto; add parameter ctx context.Context to toStorageStaticStore; add parameter ctx context.Context to toStorageVaultStore; add parameter ctx context.Context to NewService; add parameter ctx context.Context to validateUpdateRequest; add parameter ctx context.Context to validateCreateRequest; add parameter ctx context.Context to extractClientCertAndPk; add parameter ctx context.Context to decodePemBlocks",
+ "rejects_total": 0,
+ "repairs_offered": 0,
+ "resends": 0,
+ "specs": [
+  {
+   "ok": false,
+   "param": "ctx context.Context",
+   "signature": "func() (*client, error)",
+   "sym": "github.com/hashicorp/boundary/internal/credential/vault.CredentialStore.client"
+  },
+  {
+   "ok": false,
+   "param": "ctx context.Context",
+   "signature": "func() (*client, error)",
+   "sym": "github.com/hashicorp/boundary/internal/credential/vault.privateCredential.client"
+  },
+  {
+   "ok": false,
+   "param": "ctx context.Context",
+   "signature": "func() (*client, error)",
+   "sym": "github.com/hashicorp/boundary/internal/credential/vault.privateLibrary.client"
+  },
+  {
+   "ok": false,
+   "param": "ctx context.Context",
+   "signature": "func() (*client, error)",
+   "sym": "github.com/hashicorp/boundary/internal/credential/vault.privateStore.client"
+  },
+  {
+   "ok": false,
+   "param": "ctx context.Context",
+   "signature": "func(c *clientConfig) (*client, error)",
+   "sym": "github.com/hashicorp/boundary/internal/credential/vault.newClient"
+  },
+  {
+   "ok": false,
+   "param": "ctx context.Context",
+   "signature": "func() (*github.com/hashicorp/vault/api.Secret, error)",
+   "sym": "github.com/hashicorp/boundary/internal/credential/vault.client.renewToken"
+  },
+  {
+   "ok": false,
+   "param": "ctx context.Context",
+   "signature": "func(leaseId string, leaseDuration time.Duration) (*github.com/hashicorp/vault/api.Secret, error)",
+   "sym": "github.com/hashicorp/boundary/internal/credential/vault.client.renewLease"
+  },
+  {
+   "ok": false,
+   "param": "ctx context.Context",
+   "signature": "func(new TokenSecret) (old TokenSecret)",
+   "sym": "github.com/hashicorp/boundary/internal/credential/vault.client.swapToken"
+  },
+  {
+   "ok": false,
+   "param": "ctx context.Context",
+   "signature": "func(path string) (*github.com/hashicorp/vault/api.Secret, error)",
+   "sym": "github.com/hashicorp/boundary/internal/credential/vault.client.get"
+  },
+  {
+   "ok": false,
+   "param": "ctx context.Context",
+   "signature": "func(paths []string) (pathCapabilities, error)",
+   "sym": "github.com/hashicorp/boundary/internal/credential/vault.client.capabilities"
+  },
+  {
+   "ok": false,
+   "param": "ctx context.Context",
+   "signature": "func() error",
+   "sym": "github.com/hashicorp/boundary/internal/credential/vault.client.ping"
+  },
+  {
+   "ok": false,
+   "param": "ctx context.Context",
+   "signature": "func() error",
+   "sym": "github.com/hashicorp/boundary/internal/credential/vault.client.revokeToken"
+  },
+  {
+   "ok": false,
+   "param": "ctx context.Context",
+   "signature": "func(leaseId string) error",
+   "sym": "github.com/hashicorp/boundary/internal/credential/vault.client.revokeLease"
+  },
+  {
+   "ok": false,
+   "param": "ctx context.Context",
+   "signature": "func() (*github.com/hashicorp/vault/api.Secret, error)",
+   "sym": "github.com/hashicorp/boundary/internal/credential/vault.client.lookupToken"
+  },
+  {
+   "ok": false,
+   "param": "ctx context.Context",
+   "signature": "func(path string, data []byte) (*github.com/hashicorp/vault/api.Secret, error)",
+   "sym": "github.com/hashicorp/boundary/internal/credential/vault.client.post"
+  },
+  {
+   "ok": false,
+   "param": "ctx context.Context",
+   "signature": "func(in github.com/hashicorp/boundary/internal/credential.Store, opt ...github.com/hashicorp/boundary/internal/daemon/controller/handlers.Option) (*github.com/hashicorp/boundary/sdk/pbs/controller/api/resources/credentialstores.CredentialStore, error)",
+   "sym": "github.com/hashicorp/boundary/internal/daemon/controller/handlers/credentialstores.toProto"
+  },
+  {
+   "ok": false,
+   "param": "ctx context.Context",
+   "signature": "func(scopeId string, in *github.com/hashicorp/boundary/sdk/pbs/controller/api/resources/credentialstores.CredentialStore) (out *github.com/hashicorp/boundary/internal/credential/static.CredentialStore, err error)",
+   "sym": "github.com/hashicorp/boundary/internal/daemon/controller/handlers/credentialstores.toStorageStaticStore"
+  },
+  {
+   "ok": false,
+   "param": "ctx context.Context",
+   "signature": "func(scopeId string, in *github.com/hashicorp/boundary/sdk/pbs/controller/api/resources/credentialstores.CredentialStore) (out *github.com/hashicorp/boundary/internal/credential/vault.CredentialStore, err error)",
+   "sym": "github.com/hashicorp/boundary/internal/daemon/controller/handlers/credentialstores.toStorageVaultStore"
+  },
+  {
+   "ok": false,
+   "param": "ctx context.Context",
+   "signature": "func(vaultRepo github.com/hashicorp/boundary/internal/daemon/controller/common.VaultCredentialRepoFactory, staticRepo github.com/hashicorp/boundary/internal/daemon/controller/common.StaticCredentialRepoFactory, iamRepo github.com/hashicorp/boundary/internal/daemon/controller/common.IamRepoFactory) (Service, error)",
+   "sym": "github.com/hashicorp/boundary/internal/daemon/controller/handlers/credentialstores.NewService"
+  },
+  {
+   "ok": false,
+   "param": "ctx context.Context",
+   "signature": "func(req *github.com/hashicorp/boundary/internal/gen/controller/api/services.UpdateCredentialStoreRequest) error",
+   "sym": "github.com/hashicorp/boundary/internal/daemon/controller/handlers/credentialstores.validateUpdateRequest"
+  },
+  {
+   "ok": false,
+   "param": "ctx context.Context",
+   "signature": "func(req *github.com/hashicorp/boundary/internal/gen/controller/api/services.CreateCredentialStoreRequest) error",
+   "sym": "github.com/hashicorp/boundary/internal/daemon/controller/handlers/credentialstores.validateCreateRequest"
+  },
+  {
+   "ok": false,
+   "param": "ctx context.Context",
+   "signature": "func(cert string, pk string) ([]*encoding/pem.Block, *encoding/pem.Block, error)",
+   "sym": "github.com/hashicorp/boundary/internal/daemon/controller/handlers/credentialstores.extractClientCertAndPk"
+  },
+  {
+   "ok": false,
+   "param": "ctx context.Context",
+   "signature": "func(input string) ([]*encoding/pem.Block, error)",
+   "sym": "github.com/hashicorp/boundary/internal/daemon/controller/handlers/credentialstores.decodePemBlocks"
+  }
+ ],
+ "steps": 25,
+ "task": "boundary_b4b95e0f",
+ "tests": false,
+ "tests_baseline": true,
+ "tokens_in": 48261,
+ "tokens_out": 2761,
+ "tokens_reasoning": 0,
+ "typecheck": true,
+ "wall_s": 128.131082834
+}

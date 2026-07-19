@@ -1,0 +1,13 @@
+ M command/operator_diagnose.go
+ M command/server.go
+ M helper/testhelpers/seal/sealhelper.go
+ M ui/.yarn/releases/yarn-3.5.0.cjs
+ M vault/core.go
+ M vault/logical_system.go
+ M vault/rekey.go
+ M vault/seal/seal.go
+ M vault/seal/seal_testing.go
+ M vault/seal_autoseal.go
+ M vault/seal_testing_util.go
+?? .serena/
+?? opencode.json

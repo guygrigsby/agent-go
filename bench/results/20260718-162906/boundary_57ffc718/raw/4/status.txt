@@ -1,0 +1,8 @@
+ M testing/internal/e2e/boundary/account.go
+ M testing/internal/e2e/boundary/boundary.go
+ M testing/internal/e2e/boundary/credential.go
+ M testing/internal/e2e/boundary/host.go
+ M testing/internal/e2e/boundary/scope.go
+ M testing/internal/e2e/boundary/target.go
+ M testing/internal/e2e/boundary/user.go
+?? opencode.json

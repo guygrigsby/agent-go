@@ -1,0 +1,635 @@
+diff --git a/internal/auth/password/repository.go b/internal/auth/password/repository.go
+index c5d78e65b..7014f3b39 100644
+--- a/internal/auth/password/repository.go
++++ b/internal/auth/password/repository.go
+@@ -1,6 +1,7 @@
+ package password
+ 
+ import (
++	"context"
+ 	"strings"
+ 
+ 	"github.com/hashicorp/boundary/internal/db"
+@@ -22,7 +23,7 @@ type Repository struct {
+ // only be used for one transaction and it is not safe for concurrent go
+ // routines to access it.  WithLimit option is used as a repo wide default
+ // limit applied to all ListX methods.
+-func NewRepository(r db.Reader, w db.Writer, kms *kms.Kms, opt ...Option) (*Repository, error) {
++func NewRepository(r db.Reader, w db.Writer, kms *kms.Kms, ctx context.Context, opt ...Option) (*Repository, error) {
+ 	const op = "password.NewRepository"
+ 	switch {
+ 	case r == nil:
+diff --git a/internal/auth/password/repository_account_test.go b/internal/auth/password/repository_account_test.go
+index e1f999659..6d7bf5c3c 100644
+--- a/internal/auth/password/repository_account_test.go
++++ b/internal/auth/password/repository_account_test.go
+@@ -231,7 +231,7 @@ func TestRepository_CreateAccount(t *testing.T) {
+ 		tt := tt
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			assert, require := assert.New(t), require.New(t)
+-			repo, err := NewRepository(rw, rw, kms)
++			repo, err := NewRepository(rw, rw, kms, nil)
+ 			assert.NoError(err)
+ 			require.NotNil(repo)
+ 			got, err := repo.CreateAccount(context.Background(), org.GetPublicId(), tt.in, tt.opts...)
+@@ -271,7 +271,7 @@ func TestRepository_CreateAccount_DuplicateNames(t *testing.T) {
+ 
+ 	t.Run("invalid-duplicate-names", func(t *testing.T) {
+ 		assert, require := assert.New(t), require.New(t)
+-		repo, err := NewRepository(rw, rw, kms)
++		repo, err := NewRepository(rw, rw, kms, nil)
+ 		assert.NoError(err)
+ 		require.NotNil(repo)
+ 
+@@ -303,7 +303,7 @@ func TestRepository_CreateAccount_DuplicateNames(t *testing.T) {
+ 
+ 	t.Run("valid-duplicate-names-diff-parents", func(t *testing.T) {
+ 		assert, require := assert.New(t), require.New(t)
+-		repo, err := NewRepository(rw, rw, kms)
++		repo, err := NewRepository(rw, rw, kms, nil)
+ 		assert.NoError(err)
+ 		require.NotNil(repo)
+ 
+@@ -381,7 +381,7 @@ func TestRepository_LookupAccount(t *testing.T) {
+ 		tt := tt
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			assert, require := assert.New(t), require.New(t)
+-			repo, err := NewRepository(rw, rw, kms)
++			repo, err := NewRepository(rw, rw, kms, nil)
+ 			assert.NoError(err)
+ 			require.NotNil(repo)
+ 			got, err := repo.LookupAccount(context.Background(), tt.in)
+@@ -438,7 +438,7 @@ func TestRepository_DeleteAccount(t *testing.T) {
+ 		tt := tt
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			assert, require := assert.New(t), require.New(t)
+-			repo, err := NewRepository(rw, rw, kms)
++			repo, err := NewRepository(rw, rw, kms, nil)
+ 			assert.NoError(err)
+ 			require.NotNil(repo)
+ 			got, err := repo.DeleteAccount(context.Background(), org.GetPublicId(), tt.in)
+@@ -496,7 +496,7 @@ func TestRepository_ListAccounts(t *testing.T) {
+ 		tt := tt
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			assert, require := assert.New(t), require.New(t)
+-			repo, err := NewRepository(rw, rw, kms)
++			repo, err := NewRepository(rw, rw, kms, nil)
+ 			assert.NoError(err)
+ 			require.NotNil(repo)
+ 			got, err := repo.ListAccounts(context.Background(), tt.in, tt.opts...)
+@@ -573,7 +573,7 @@ func TestRepository_ListAccounts_Limits(t *testing.T) {
+ 		tt := tt
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			assert, require := assert.New(t), require.New(t)
+-			repo, err := NewRepository(rw, rw, kms, tt.repoOpts...)
++			repo, err := NewRepository(rw, rw, kms, nil, tt.repoOpts...)
+ 			assert.NoError(err)
+ 			require.NotNil(repo)
+ 			got, err := repo.ListAccounts(context.Background(), am.GetPublicId(), tt.listOpts...)
+@@ -912,7 +912,7 @@ func TestRepository_UpdateAccount(t *testing.T) {
+ 		tt := tt
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			assert, require := assert.New(t), require.New(t)
+-			repo, err := NewRepository(rw, rw, kms)
++			repo, err := NewRepository(rw, rw, kms, nil)
+ 			assert.NoError(err)
+ 			require.NotNil(repo)
+ 
+@@ -979,7 +979,7 @@ func TestRepository_UpdateAccount_DupeNames(t *testing.T) {
+ 
+ 	t.Run("invalid-duplicate-names", func(t *testing.T) {
+ 		assert, require := assert.New(t), require.New(t)
+-		repo, err := NewRepository(rw, rw, kms)
++		repo, err := NewRepository(rw, rw, kms, nil)
+ 		assert.NoError(err)
+ 		require.NotNil(repo)
+ 
+@@ -1011,7 +1011,7 @@ func TestRepository_UpdateAccount_DupeNames(t *testing.T) {
+ 
+ 	t.Run("valid-duplicate-names-diff-AuthMethods", func(t *testing.T) {
+ 		assert, require := assert.New(t), require.New(t)
+-		repo, err := NewRepository(rw, rw, kms)
++		repo, err := NewRepository(rw, rw, kms, nil)
+ 		assert.NoError(err)
+ 		require.NotNil(repo)
+ 
+@@ -1057,7 +1057,7 @@ func TestRepository_UpdateAccount_DupeNames(t *testing.T) {
+ 
+ 	t.Run("invalid-duplicate-loginnames", func(t *testing.T) {
+ 		assert, require := assert.New(t), require.New(t)
+-		repo, err := NewRepository(rw, rw, kms)
++		repo, err := NewRepository(rw, rw, kms, nil)
+ 		assert.NoError(err)
+ 		require.NotNil(repo)
+ 
+@@ -1089,7 +1089,7 @@ func TestRepository_UpdateAccount_DupeNames(t *testing.T) {
+ 
+ 	t.Run("valid-duplicate-loginnames-diff-AuthMethods", func(t *testing.T) {
+ 		assert, require := assert.New(t), require.New(t)
+-		repo, err := NewRepository(rw, rw, kms)
++		repo, err := NewRepository(rw, rw, kms, nil)
+ 		assert.NoError(err)
+ 		require.NotNil(repo)
+ 
+@@ -1131,7 +1131,7 @@ func TestRepository_UpdateAccount_DupeNames(t *testing.T) {
+ 
+ 	t.Run("change-authmethod-id", func(t *testing.T) {
+ 		assert, require := assert.New(t), require.New(t)
+-		repo, err := NewRepository(rw, rw, kms)
++		repo, err := NewRepository(rw, rw, kms, nil)
+ 		assert.NoError(err)
+ 		require.NotNil(repo)
+ 
+diff --git a/internal/auth/password/repository_authmethod_test.go b/internal/auth/password/repository_authmethod_test.go
+index 1c5a073a6..93e07bc2f 100644
+--- a/internal/auth/password/repository_authmethod_test.go
++++ b/internal/auth/password/repository_authmethod_test.go
+@@ -141,7 +141,7 @@ func TestRepository_CreateAuthMethod(t *testing.T) {
+ 		tt := tt
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			assert, require := assert.New(t), require.New(t)
+-			repo, err := NewRepository(rw, rw, kms)
++			repo, err := NewRepository(rw, rw, kms, nil)
+ 			require.NoError(err)
+ 			require.NotNil(repo)
+ 			got, err := repo.CreateAuthMethod(context.Background(), tt.in, tt.opts...)
+@@ -171,7 +171,7 @@ func TestRepository_CreateAuthMethod_DupeNames(t *testing.T) {
+ 
+ 	t.Run("invalid-duplicate-names", func(t *testing.T) {
+ 		assert, require := assert.New(t), require.New(t)
+-		repo, err := NewRepository(rw, rw, kms)
++		repo, err := NewRepository(rw, rw, kms, nil)
+ 		require.NoError(err)
+ 		require.NotNil(repo)
+ 
+@@ -199,7 +199,7 @@ func TestRepository_CreateAuthMethod_DupeNames(t *testing.T) {
+ 
+ 	t.Run("valid-duplicate-names-diff-scopes", func(t *testing.T) {
+ 		assert, require := assert.New(t), require.New(t)
+-		repo, err := NewRepository(rw, rw, kms)
++		repo, err := NewRepository(rw, rw, kms, nil)
+ 		require.NoError(err)
+ 		require.NotNil(repo)
+ 
+@@ -243,7 +243,7 @@ func TestRepository_CreateAuthMethod_PublicId(t *testing.T) {
+ 
+ 	t.Run("valid-with-publicid", func(t *testing.T) {
+ 		assert, require := assert.New(t), require.New(t)
+-		repo, err := NewRepository(rw, rw, kms)
++		repo, err := NewRepository(rw, rw, kms, nil)
+ 		require.NoError(err)
+ 		require.NotNil(repo)
+ 
+@@ -263,7 +263,7 @@ func TestRepository_CreateAuthMethod_PublicId(t *testing.T) {
+ 
+ 	t.Run("invalid-with-badpublicid", func(t *testing.T) {
+ 		assert, require := assert.New(t), require.New(t)
+-		repo, err := NewRepository(rw, rw, kms)
++		repo, err := NewRepository(rw, rw, kms, nil)
+ 		require.NoError(err)
+ 		require.NotNil(repo)
+ 
+@@ -316,7 +316,7 @@ func TestRepository_LookupAuthMethod(t *testing.T) {
+ 		tt := tt
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			assert, require := assert.New(t), require.New(t)
+-			repo, err := NewRepository(rw, rw, kms)
++			repo, err := NewRepository(rw, rw, kms, nil)
+ 			assert.NoError(err)
+ 			require.NotNil(repo)
+ 			got, err := repo.LookupAuthMethod(context.Background(), tt.in)
+@@ -370,7 +370,7 @@ func TestRepository_DeleteAuthMethod(t *testing.T) {
+ 		tt := tt
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			assert, require := assert.New(t), require.New(t)
+-			repo, err := NewRepository(rw, rw, kms)
++			repo, err := NewRepository(rw, rw, kms, nil)
+ 			assert.NoError(err)
+ 			require.NotNil(repo)
+ 			got, err := repo.DeleteAuthMethod(context.Background(), o.GetPublicId(), tt.in)
+@@ -424,7 +424,7 @@ func TestRepository_ListAuthMethods(t *testing.T) {
+ 		tt := tt
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			assert, require := assert.New(t), require.New(t)
+-			repo, err := NewRepository(rw, rw, kms)
++			repo, err := NewRepository(rw, rw, kms, nil)
+ 			assert.NoError(err)
+ 			require.NotNil(repo)
+ 			got, err := repo.ListAuthMethods(context.Background(), tt.in, tt.opts...)
+@@ -445,7 +445,7 @@ func TestRepository_ListAuthMethods_Multiple_Scopes(t *testing.T) {
+ 	wrapper := db.TestWrapper(t)
+ 	kms := kms.TestKms(t, conn, wrapper)
+ 	iamRepo := iam.TestRepo(t, conn, wrapper)
+-	repo, err := NewRepository(rw, rw, kms)
++	repo, err := NewRepository(rw, rw, kms, nil)
+ 	require.NoError(t, err)
+ 
+ 	var total int
+@@ -539,7 +539,7 @@ func TestRepository_ListAuthMethods_Limits(t *testing.T) {
+ 		tt := tt
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			assert, require := assert.New(t), require.New(t)
+-			repo, err := NewRepository(rw, rw, kms, tt.repoOpts...)
++			repo, err := NewRepository(rw, rw, kms, nil, tt.repoOpts...)
+ 			assert.NoError(err)
+ 			require.NotNil(repo)
+ 			got, err := repo.ListAuthMethods(context.Background(), []string{ams[0].GetScopeId()}, tt.listOpts...)
+@@ -558,7 +558,7 @@ func TestRepository_UpdateAuthMethod(t *testing.T) {
+ 	rw := db.New(conn)
+ 	wrapper := db.TestWrapper(t)
+ 	kms := kms.TestKms(t, conn, wrapper)
+-	repo, err := NewRepository(rw, rw, kms)
++	repo, err := NewRepository(rw, rw, kms, nil)
+ 	require.NoError(t, err)
+ 	iamRepo := iam.TestRepo(t, conn, wrapper)
+ 
+diff --git a/internal/auth/password/repository_configuration_test.go b/internal/auth/password/repository_configuration_test.go
+index ab4fd024e..04a1810db 100644
+--- a/internal/auth/password/repository_configuration_test.go
++++ b/internal/auth/password/repository_configuration_test.go
+@@ -20,7 +20,7 @@ func TestRepository_GetSetConfiguration(t *testing.T) {
+ 	rw := db.New(conn)
+ 	wrapper := db.TestWrapper(t)
+ 	kms := kms.TestKms(t, conn, wrapper)
+-	repo, err := NewRepository(rw, rw, kms)
++	repo, err := NewRepository(rw, rw, kms, nil)
+ 	assert.NoError(t, err)
+ 	require.NotNil(t, repo)
+ 
+@@ -126,7 +126,7 @@ func TestRepository_GetConfiguration(t *testing.T) {
+ 	rw := db.New(conn)
+ 	wrapper := db.TestWrapper(t)
+ 	kms := kms.TestKms(t, conn, wrapper)
+-	repo, err := NewRepository(rw, rw, kms)
++	repo, err := NewRepository(rw, rw, kms, nil)
+ 	assert.NoError(t, err)
+ 	require.NotNil(t, repo)
+ 
+@@ -198,7 +198,7 @@ func TestRepository_SetConfiguration(t *testing.T) {
+ 	rw := db.New(conn)
+ 	wrapper := db.TestWrapper(t)
+ 	kms := kms.TestKms(t, conn, wrapper)
+-	repo, err := NewRepository(rw, rw, kms)
++	repo, err := NewRepository(rw, rw, kms, nil)
+ 	assert.NoError(t, err)
+ 	require.NotNil(t, repo)
+ 
+diff --git a/internal/auth/password/repository_password_test.go b/internal/auth/password/repository_password_test.go
+index 6fed14c7f..73f6772b1 100644
+--- a/internal/auth/password/repository_password_test.go
++++ b/internal/auth/password/repository_password_test.go
+@@ -32,7 +32,7 @@ func TestRepository_Authenticate(t *testing.T) {
+ 	}
+ 	passwd := "12345678"
+ 
+-	repo, err := NewRepository(rw, rw, kms)
++	repo, err := NewRepository(rw, rw, kms, nil)
+ 	assert.NoError(t, err)
+ 	require.NotNil(t, repo)
+ 	outAcct, err := repo.CreateAccount(context.Background(), o.GetPublicId(), inAcct, WithPassword(passwd))
+@@ -142,7 +142,7 @@ func TestRepository_AuthenticateRehash(t *testing.T) {
+ 	passwd := "12345678"
+ 	ctx := context.Background()
+ 
+-	repo, err := NewRepository(rw, rw, kmsCache)
++	repo, err := NewRepository(rw, rw, kmsCache, nil)
+ 	assert.NoError(err)
+ 	require.NotNil(repo)
+ 
+@@ -252,7 +252,7 @@ func TestRepository_ChangePassword(t *testing.T) {
+ 	wrapper := db.TestWrapper(t)
+ 	kms := kms.TestKms(t, conn, wrapper)
+ 
+-	repo, err := NewRepository(rw, rw, kms)
++	repo, err := NewRepository(rw, rw, kms, nil)
+ 	require.NoError(t, err)
+ 	require.NotNil(t, repo)
+ 
+@@ -415,7 +415,7 @@ func TestRepository_SetPassword(t *testing.T) {
+ 	wrapper := db.TestWrapper(t)
+ 	kms := kms.TestKms(t, conn, wrapper)
+ 
+-	repo, err := NewRepository(rw, rw, kms)
++	repo, err := NewRepository(rw, rw, kms, nil)
+ 	require.NoError(t, err)
+ 	require.NotNil(t, repo)
+ 
+diff --git a/internal/auth/password/repository_test.go b/internal/auth/password/repository_test.go
+index 80b9eb236..714f62e8a 100644
+--- a/internal/auth/password/repository_test.go
++++ b/internal/auth/password/repository_test.go
+@@ -109,7 +109,7 @@ func TestRepository_New(t *testing.T) {
+ 		tt := tt
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			assert, require := assert.New(t), require.New(t)
+-			got, err := NewRepository(tt.args.r, tt.args.w, tt.args.kms, tt.args.opts...)
++			got, err := NewRepository(tt.args.r, tt.args.w, tt.args.kms, nil, tt.args.opts...)
+ 			if tt.wantIsErr != 0 {
+ 				assert.Truef(errors.Match(errors.T(tt.wantIsErr), err), "Unexpected error %s", err)
+ 				assert.Equal(tt.wantErrMsg, err.Error())
+diff --git a/internal/cmd/base/initial_resources.go b/internal/cmd/base/initial_resources.go
+index e32f27611..610be0707 100644
+--- a/internal/cmd/base/initial_resources.go
++++ b/internal/cmd/base/initial_resources.go
+@@ -88,7 +88,7 @@ func (b *Server) CreateInitialPasswordAuthMethod(ctx context.Context) (*password
+ 	}
+ 
+ 	// Create the dev auth method
+-	pwRepo, err := password.NewRepository(rw, rw, kmsCache)
++	pwRepo, err := password.NewRepository(rw, rw, kmsCache, nil)
+ 	if err != nil {
+ 		return nil, nil, fmt.Errorf("error creating password repo: %w", err)
+ 	}
+diff --git a/internal/daemon/controller/controller.go b/internal/daemon/controller/controller.go
+index b4427bcb8..ca31149df 100644
+--- a/internal/daemon/controller/controller.go
++++ b/internal/daemon/controller/controller.go
+@@ -331,7 +331,7 @@ func New(ctx context.Context, conf *Config) (*Controller, error) {
+ 		return oidc.NewRepository(ctx, dbase, dbase, c.kms)
+ 	}
+ 	c.PasswordAuthRepoFn = func() (*password.Repository, error) {
+-		return password.NewRepository(dbase, dbase, c.kms)
++		return password.NewRepository(dbase, dbase, c.kms, nil)
+ 	}
+ 	c.TargetRepoFn = func(o ...target.Option) (*target.Repository, error) {
+ 		return target.NewRepository(dbase, dbase, c.kms, o...)
+diff --git a/internal/daemon/controller/handlers/accounts/account_service_test.go b/internal/daemon/controller/handlers/accounts/account_service_test.go
+index 6993381bc..0a75598b3 100644
+--- a/internal/daemon/controller/handlers/accounts/account_service_test.go
++++ b/internal/daemon/controller/handlers/accounts/account_service_test.go
+@@ -62,7 +62,7 @@ func TestNewService(t *testing.T) {
+ 	wrap := db.TestWrapper(t)
+ 	kmsCache := kms.TestKms(t, conn, wrap)
+ 	pwRepoFn := func() (*password.Repository, error) {
+-		return password.NewRepository(rw, rw, kmsCache)
++		return password.NewRepository(rw, rw, kmsCache, nil)
+ 	}
+ 	oidcRepoFn := func() (*oidc.Repository, error) {
+ 		return oidc.NewRepository(ctx, rw, rw, kmsCache)
+@@ -113,7 +113,7 @@ func TestGet(t *testing.T) {
+ 	wrap := db.TestWrapper(t)
+ 	kmsCache := kms.TestKms(t, conn, wrap)
+ 	pwRepoFn := func() (*password.Repository, error) {
+-		return password.NewRepository(rw, rw, kmsCache)
++		return password.NewRepository(rw, rw, kmsCache, nil)
+ 	}
+ 	oidcRepoFn := func() (*oidc.Repository, error) {
+ 		return oidc.NewRepository(ctx, rw, rw, kmsCache)
+@@ -256,7 +256,7 @@ func TestListPassword(t *testing.T) {
+ 	wrap := db.TestWrapper(t)
+ 	kms := kms.TestKms(t, conn, wrap)
+ 	pwRepoFn := func() (*password.Repository, error) {
+-		return password.NewRepository(rw, rw, kms)
++		return password.NewRepository(rw, rw, kms, nil)
+ 	}
+ 	oidcRepoFn := func() (*oidc.Repository, error) {
+ 		return oidc.NewRepository(ctx, rw, rw, kms)
+@@ -394,7 +394,7 @@ func TestListOidc(t *testing.T) {
+ 	wrap := db.TestWrapper(t)
+ 	kmsCache := kms.TestKms(t, conn, wrap)
+ 	pwRepoFn := func() (*password.Repository, error) {
+-		return password.NewRepository(rw, rw, kmsCache)
++		return password.NewRepository(rw, rw, kmsCache, nil)
+ 	}
+ 	oidcRepoFn := func() (*oidc.Repository, error) {
+ 		return oidc.NewRepository(ctx, rw, rw, kmsCache)
+@@ -551,7 +551,7 @@ func TestDelete(t *testing.T) {
+ 	wrap := db.TestWrapper(t)
+ 	kmsCache := kms.TestKms(t, conn, wrap)
+ 	pwRepoFn := func() (*password.Repository, error) {
+-		return password.NewRepository(rw, rw, kmsCache)
++		return password.NewRepository(rw, rw, kmsCache, nil)
+ 	}
+ 	oidcRepoFn := func() (*oidc.Repository, error) {
+ 		return oidc.NewRepository(ctx, rw, rw, kmsCache)
+@@ -647,7 +647,7 @@ func TestDelete_twice(t *testing.T) {
+ 	rw := db.New(conn)
+ 	kms := kms.TestKms(t, conn, wrap)
+ 	pwRepoFn := func() (*password.Repository, error) {
+-		return password.NewRepository(rw, rw, kms)
++		return password.NewRepository(rw, rw, kms, nil)
+ 	}
+ 	oidcRepoFn := func() (*oidc.Repository, error) {
+ 		return oidc.NewRepository(ctx, rw, rw, kms)
+@@ -679,7 +679,7 @@ func TestCreatePassword(t *testing.T) {
+ 	wrap := db.TestWrapper(t)
+ 	kms := kms.TestKms(t, conn, wrap)
+ 	pwRepoFn := func() (*password.Repository, error) {
+-		return password.NewRepository(rw, rw, kms)
++		return password.NewRepository(rw, rw, kms, nil)
+ 	}
+ 	oidcRepoFn := func() (*oidc.Repository, error) {
+ 		return oidc.NewRepository(ctx, rw, rw, kms)
+@@ -923,7 +923,7 @@ func TestCreateOidc(t *testing.T) {
+ 	wrap := db.TestWrapper(t)
+ 	kmsCache := kms.TestKms(t, conn, wrap)
+ 	pwRepoFn := func() (*password.Repository, error) {
+-		return password.NewRepository(rw, rw, kmsCache)
++		return password.NewRepository(rw, rw, kmsCache, nil)
+ 	}
+ 	oidcRepoFn := func() (*oidc.Repository, error) {
+ 		return oidc.NewRepository(ctx, rw, rw, kmsCache)
+@@ -1157,7 +1157,7 @@ func TestUpdatePassword(t *testing.T) {
+ 	wrap := db.TestWrapper(t)
+ 	kms := kms.TestKms(t, conn, wrap)
+ 	pwRepoFn := func() (*password.Repository, error) {
+-		return password.NewRepository(rw, rw, kms)
++		return password.NewRepository(rw, rw, kms, nil)
+ 	}
+ 	oidcRepoFn := func() (*oidc.Repository, error) {
+ 		return oidc.NewRepository(ctx, rw, rw, kms)
+@@ -1544,7 +1544,7 @@ func TestUpdateOidc(t *testing.T) {
+ 	wrap := db.TestWrapper(t)
+ 	kmsCache := kms.TestKms(t, conn, wrap)
+ 	pwRepoFn := func() (*password.Repository, error) {
+-		return password.NewRepository(rw, rw, kmsCache)
++		return password.NewRepository(rw, rw, kmsCache, nil)
+ 	}
+ 	oidcRepoFn := func() (*oidc.Repository, error) {
+ 		return oidc.NewRepository(ctx, rw, rw, kmsCache)
+@@ -1931,7 +1931,7 @@ func TestSetPassword(t *testing.T) {
+ 	wrap := db.TestWrapper(t)
+ 	kms := kms.TestKms(t, conn, wrap)
+ 	pwRepoFn := func() (*password.Repository, error) {
+-		return password.NewRepository(rw, rw, kms)
++		return password.NewRepository(rw, rw, kms, nil)
+ 	}
+ 	oidcRepoFn := func() (*oidc.Repository, error) {
+ 		return oidc.NewRepository(ctx, rw, rw, kms)
+@@ -2070,7 +2070,7 @@ func TestChangePassword(t *testing.T) {
+ 	wrap := db.TestWrapper(t)
+ 	kms := kms.TestKms(t, conn, wrap)
+ 	pwRepoFn := func() (*password.Repository, error) {
+-		return password.NewRepository(rw, rw, kms)
++		return password.NewRepository(rw, rw, kms, nil)
+ 	}
+ 	oidcRepoFn := func() (*oidc.Repository, error) {
+ 		return oidc.NewRepository(ctx, rw, rw, kms)
+diff --git a/internal/daemon/controller/handlers/authmethods/authmethod_service_test.go b/internal/daemon/controller/handlers/authmethods/authmethod_service_test.go
+index 97963eb2c..9208d93e4 100644
+--- a/internal/daemon/controller/handlers/authmethods/authmethod_service_test.go
++++ b/internal/daemon/controller/handlers/authmethods/authmethod_service_test.go
+@@ -84,7 +84,7 @@ func TestGet(t *testing.T) {
+ 		return oidc.NewRepository(ctx, rw, rw, kmsCache)
+ 	}
+ 	pwRepoFn := func() (*password.Repository, error) {
+-		return password.NewRepository(rw, rw, kmsCache)
++		return password.NewRepository(rw, rw, kmsCache, nil)
+ 	}
+ 	atRepoFn := func() (*authtoken.Repository, error) {
+ 		return authtoken.NewRepository(rw, rw, kmsCache)
+@@ -225,7 +225,7 @@ func TestList(t *testing.T) {
+ 		return oidc.NewRepository(ctx, rw, rw, kmsCache)
+ 	}
+ 	pwRepoFn := func() (*password.Repository, error) {
+-		return password.NewRepository(rw, rw, kmsCache)
++		return password.NewRepository(rw, rw, kmsCache, nil)
+ 	}
+ 	atRepoFn := func() (*authtoken.Repository, error) {
+ 		return authtoken.NewRepository(rw, rw, kmsCache)
+@@ -411,7 +411,7 @@ func TestDelete(t *testing.T) {
+ 		return oidc.NewRepository(ctx, rw, rw, kmsCache)
+ 	}
+ 	pwRepoFn := func() (*password.Repository, error) {
+-		return password.NewRepository(rw, rw, kmsCache)
++		return password.NewRepository(rw, rw, kmsCache, nil)
+ 	}
+ 	atRepoFn := func() (*authtoken.Repository, error) {
+ 		return authtoken.NewRepository(rw, rw, kmsCache)
+@@ -491,7 +491,7 @@ func TestDelete_twice(t *testing.T) {
+ 		return oidc.NewRepository(ctx, rw, rw, kms)
+ 	}
+ 	pwRepoFn := func() (*password.Repository, error) {
+-		return password.NewRepository(rw, rw, kms)
++		return password.NewRepository(rw, rw, kms, nil)
+ 	}
+ 	atRepoFn := func() (*authtoken.Repository, error) {
+ 		return authtoken.NewRepository(rw, rw, kms)
+@@ -524,7 +524,7 @@ func TestCreate(t *testing.T) {
+ 		return iam.TestRepo(t, conn, wrapper), nil
+ 	}
+ 	pwRepoFn := func() (*password.Repository, error) {
+-		return password.NewRepository(rw, rw, kms)
++		return password.NewRepository(rw, rw, kms, nil)
+ 	}
+ 	oidcRepoFn := func() (*oidc.Repository, error) {
+ 		return oidc.NewRepository(ctx, rw, rw, kms)
+diff --git a/internal/daemon/controller/handlers/authmethods/oidc_test.go b/internal/daemon/controller/handlers/authmethods/oidc_test.go
+index f9c7fa79f..86003e3d0 100644
+--- a/internal/daemon/controller/handlers/authmethods/oidc_test.go
++++ b/internal/daemon/controller/handlers/authmethods/oidc_test.go
+@@ -89,7 +89,7 @@ func getSetup(t *testing.T) setup {
+ 		return oidc.NewRepository(ctx, ret.rw, ret.rw, ret.kmsCache)
+ 	}
+ 	ret.pwRepoFn = func() (*password.Repository, error) {
+-		return password.NewRepository(ret.rw, ret.rw, ret.kmsCache)
++		return password.NewRepository(ret.rw, ret.rw, ret.kmsCache, nil)
+ 	}
+ 	ret.atRepoFn = func() (*authtoken.Repository, error) {
+ 		return authtoken.NewRepository(ret.rw, ret.rw, ret.kmsCache)
+@@ -146,7 +146,7 @@ func TestList_FilterNonPublic(t *testing.T) {
+ 		return oidc.NewRepository(ctx, rw, rw, kmsCache)
+ 	}
+ 	pwRepoFn := func() (*password.Repository, error) {
+-		return password.NewRepository(rw, rw, kmsCache)
++		return password.NewRepository(rw, rw, kmsCache, nil)
+ 	}
+ 	atRepoFn := func() (*authtoken.Repository, error) {
+ 		return authtoken.NewRepository(rw, rw, kmsCache)
+@@ -248,7 +248,7 @@ func TestUpdate_OIDC(t *testing.T) {
+ 		return oidc.NewRepository(ctx, rw, rw, kms)
+ 	}
+ 	pwRepoFn := func() (*password.Repository, error) {
+-		return password.NewRepository(rw, rw, kms)
++		return password.NewRepository(rw, rw, kms, nil)
+ 	}
+ 	atRepoFn := func() (*authtoken.Repository, error) {
+ 		return authtoken.NewRepository(rw, rw, kms)
+@@ -1056,7 +1056,7 @@ func TestUpdate_OIDCDryRun(t *testing.T) {
+ 		return oidc.NewRepository(ctx, rw, rw, kmsCache)
+ 	}
+ 	pwRepoFn := func() (*password.Repository, error) {
+-		return password.NewRepository(rw, rw, kmsCache)
++		return password.NewRepository(rw, rw, kmsCache, nil)
+ 	}
+ 	atRepoFn := func() (*authtoken.Repository, error) {
+ 		return authtoken.NewRepository(rw, rw, kmsCache)
+@@ -1232,7 +1232,7 @@ func TestChangeState_OIDC(t *testing.T) {
+ 		return oidc.NewRepository(ctx, rw, rw, kmsCache)
+ 	}
+ 	pwRepoFn := func() (*password.Repository, error) {
+-		return password.NewRepository(rw, rw, kmsCache)
++		return password.NewRepository(rw, rw, kmsCache, nil)
+ 	}
+ 	atRepoFn := func() (*authtoken.Repository, error) {
+ 		return authtoken.NewRepository(rw, rw, kmsCache)
+diff --git a/internal/daemon/controller/handlers/authmethods/password_test.go b/internal/daemon/controller/handlers/authmethods/password_test.go
+index 3f1688fb4..c82fb1a91 100644
+--- a/internal/daemon/controller/handlers/authmethods/password_test.go
++++ b/internal/daemon/controller/handlers/authmethods/password_test.go
+@@ -42,7 +42,7 @@ func TestUpdate_Password(t *testing.T) {
+ 		return oidc.NewRepository(ctx, rw, rw, kms)
+ 	}
+ 	pwRepoFn := func() (*password.Repository, error) {
+-		return password.NewRepository(rw, rw, kms)
++		return password.NewRepository(rw, rw, kms, nil)
+ 	}
+ 	atRepoFn := func() (*authtoken.Repository, error) {
+ 		return authtoken.NewRepository(rw, rw, kms)
+@@ -479,7 +479,7 @@ func TestAuthenticate_Password(t *testing.T) {
+ 		return oidc.NewRepository(ctx, rw, rw, kms)
+ 	}
+ 	pwRepoFn := func() (*password.Repository, error) {
+-		return password.NewRepository(rw, rw, kms)
++		return password.NewRepository(rw, rw, kms, nil)
+ 	}
+ 	atRepoFn := func() (*authtoken.Repository, error) {
+ 		return authtoken.NewRepository(rw, rw, kms)
+@@ -657,7 +657,7 @@ func TestAuthenticate_AuthAccountConnectedToIamUser_Password(t *testing.T) {
+ 		return oidc.NewRepository(ctx, rw, rw, kms)
+ 	}
+ 	pwRepoFn := func() (*password.Repository, error) {
+-		return password.NewRepository(rw, rw, kms)
++		return password.NewRepository(rw, rw, kms, nil)
+ 	}
+ 	atRepoFn := func() (*authtoken.Repository, error) {
+ 		return authtoken.NewRepository(rw, rw, kms)
+diff --git a/internal/daemon/controller/handlers/sessions/session_list_benchmarks_test.go b/internal/daemon/controller/handlers/sessions/session_list_benchmarks_test.go
+index 81c079f25..d860e55bf 100644
+--- a/internal/daemon/controller/handlers/sessions/session_list_benchmarks_test.go
++++ b/internal/daemon/controller/handlers/sessions/session_list_benchmarks_test.go
+@@ -87,7 +87,7 @@ func BenchmarkSessionList(b *testing.B) {
+ 			authTokenRepo, err := authtoken.NewRepository(rw, rw, kmsThing)
+ 			require.NoError(b, err)
+ 
+-			pwRepo, err := password.NewRepository(rw, rw, kmsThing)
++			pwRepo, err := password.NewRepository(rw, rw, kmsThing, nil)
+ 			require.NoError(b, err)
+ 
+ 			serversRepo, err := server.NewRepository(rw, rw, kmsThing)
+diff --git a/internal/db/schema/migrations/oss/postgres_2_10_test.go b/internal/db/schema/migrations/oss/postgres_2_10_test.go
+index 1fd6f830a..4e195c443 100644
+--- a/internal/db/schema/migrations/oss/postgres_2_10_test.go
++++ b/internal/db/schema/migrations/oss/postgres_2_10_test.go
+@@ -52,7 +52,7 @@ func Test_AuthMethodSubtypes(t *testing.T) {
+ 	// test password subtype insert
+ 	pw, err := password.NewAuthMethod(org.PublicId, password.WithName("eve's favorite"))
+ 	require.NoError(err)
+-	passRepo, err := password.NewRepository(rw, rw, kmsCache)
++	passRepo, err := password.NewRepository(rw, rw, kmsCache, nil)
+ 	require.NoError(err)
+ 	pw, err = passRepo.CreateAuthMethod(ctx, pw)
+ 	require.NoError(err)
+diff --git a/testing/dbtest/session_list_benchmarks_dump_generation_test.go b/testing/dbtest/session_list_benchmarks_dump_generation_test.go
+index 60c6aa2d7..d2c9e4585 100644
+--- a/testing/dbtest/session_list_benchmarks_dump_generation_test.go
++++ b/testing/dbtest/session_list_benchmarks_dump_generation_test.go
+@@ -124,7 +124,7 @@ func TestGenerateSessionBenchmarkTemplateDumps(t *testing.T) {
+ 			iamRepo := iam.TestRepo(t, conn, wrap)
+ 			authTokenRepo, err := authtoken.NewRepository(rw, rw, kms)
+ 			require.NoError(err)
+-			pwRepo, err := password.NewRepository(rw, rw, kms)
++			pwRepo, err := password.NewRepository(rw, rw, kms, nil)
+ 			require.NoError(err)
+ 			sessRepo, err := session.NewRepository(ctx, rw, rw, kms)
+ 			require.NoError(err)

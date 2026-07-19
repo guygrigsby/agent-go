@@ -1,0 +1,22 @@
+diff --git a/internal/servers/controller/handler_noui.go b/internal/servers/controller/handler_noui.go
+index 20bc64689..3924de40c 100644
+--- a/internal/servers/controller/handler_noui.go
++++ b/internal/servers/controller/handler_noui.go
+@@ -8,7 +8,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/observability/event"
+ )
+ 
+-func devPassthroughHandler(passthroughDir string) http.Handler {
++func devUiPassthroughHandler(passthroughDir string) http.Handler {
+ 	const op = "controller.devPassthroughHandler"
+ 	ctx := context.TODO()
+ 	// Panic may not be ideal but this is never a production call and it'll
+@@ -27,7 +27,7 @@ func devPassthroughHandler(passthroughDir string) http.Handler {
+ 
+ var handleUi = func(c *Controller) http.Handler {
+ 	if c.conf.RawConfig.PassthroughDirectory != "" {
+-		return devPassthroughHandler(c.conf.RawConfig.PassthroughDirectory)
++		return devUiPassthroughHandler(c.conf.RawConfig.PassthroughDirectory)
+ 	}
+ 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+ 		w.WriteHeader(http.StatusNotFound)

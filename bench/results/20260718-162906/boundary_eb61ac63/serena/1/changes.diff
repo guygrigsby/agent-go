@@ -1,0 +1,22 @@
+diff --git a/internal/credential/vault/repository.go b/internal/credential/vault/repository.go
+index 1f32016dd..b177cc6bf 100644
+--- a/internal/credential/vault/repository.go
++++ b/internal/credential/vault/repository.go
+@@ -23,7 +23,7 @@ type Repository struct {
+ // only be used for one transaction and it is not safe for concurrent go
+ // routines to access it. WithLimit option is used as a repo wide default
+ // limit applied to all ListX methods.
+-func NewRepository(r db.Reader, w db.Writer, kms *kms.Kms, scheduler *scheduler.Scheduler, opt ...Option) (*Repository, error) {
++func NewRepository(ctx context.Context, r db.Reader, w db.Writer, kms *kms.Kms, scheduler *scheduler.Scheduler, opt ...Option) (*Repository, error) {
+ 	const op = "vault.NewRepository"
+ 	switch {
+ 	case r == nil:
+@@ -34,7 +34,7 @@ func NewRepository(r db.Reader, w db.Writer, kms *kms.Kms, scheduler *scheduler.
+ 		return nil, errors.NewDeprecated(errors.InvalidParameter, op, "kms")
+ 	case scheduler == nil:
+ 		return nil, errors.NewDeprecated(errors.InvalidParameter, op, "scheduler")
+-	}
++}
+ 
+ 	opts := getOpts(opt...)
+ 	if opts.withLimit == 0 {

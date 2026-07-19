@@ -1,0 +1,65 @@
+{"ms":1401,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-19T08:44:23.193615Z"}
+{"ms":1472,"op":"query","outcome":"ok","req_sha":"224cafcd7fae5585","sym":"AnyAuthenticatedUserId","ts":"2026-07-19T08:44:33.829834Z"}
+{"ms":19,"op":"query","outcome":"ok","req_sha":"5c9940d964013dbe","sym":"RecoveryUserId","ts":"2026-07-19T08:44:36.861881Z"}
+{"ms":5,"op":"view","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/perms","reason":"declaration not found","repairs":1,"req_sha":"69d48687efb10427","sym":"AnyAuthenticatedUserId","ts":"2026-07-19T08:44:38.787048Z"}
+{"ms":10,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-19T08:44:40.03972Z"}
+{"ms":9,"op":"view","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/perms","reason":"receiver type not found","repairs":1,"req_sha":"14cbc240aef5faba","sym":"acl.go","ts":"2026-07-19T08:44:41.39404Z"}
+{"ms":50,"op":"query","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/perms","req_sha":"da784fa90ce066f1","sym":"AnyAuthenticatedUserId","ts":"2026-07-19T08:44:43.315715Z"}
+{"ms":8,"op":"view","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/perms","reason":"symbol not found","repairs":1,"req_sha":"f618d707585b2cf4","sym":"AnyUserIdConst","ts":"2026-07-19T08:44:45.075914Z"}
+{"ms":27,"op":"query","outcome":"ok","req_sha":"c204080a5a75e3e5","sym":"github.com/hashicorp/boundary/globals","ts":"2026-07-19T08:44:46.716403Z"}
+{"ms":9,"op":"query","outcome":"rejected","pkg":"github.com/hashicorp/boundary/globals","reason":"symbol not found","repairs":1,"req_sha":"0773f5591aeaa571","sym":"Global","ts":"2026-07-19T08:44:48.264562Z"}
+{"ms":8,"op":"query","outcome":"rejected","pkg":"github.com/hashicorp/boundary/globals","reason":"symbol not found","repairs":3,"req_sha":"f3f972d1af0f43b2","ts":"2026-07-19T08:44:49.92527Z"}
+{"ms":5,"op":"rename","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/perms","reason":"symbol already has that name","repairs":0,"req_sha":"81eb3671d0ed059e","sym":"AnyAuthenticatedUserId","ts":"2026-07-19T08:44:52.061612Z"}
+{"ms":7,"op":"query","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/perms","reason":"declaration not found","repairs":0,"req_sha":"74dc0de3c14762aa","sym":"AnyAuthenticatedUserId","ts":"2026-07-19T08:44:54.624158Z"}
+{"ms":29,"op":"query","outcome":"ok","pkg":"github.com/hashicorp/boundary/globals","req_sha":"1a8918a5596068d6","sym":"UserId","ts":"2026-07-19T08:44:56.130915Z"}
+{"ms":9,"op":"view","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/perms","reason":"receiver type not found","repairs":1,"req_sha":"5ce6080def3b6ba0","sym":"auth.go","ts":"2026-07-19T08:45:01.062118Z"}
+{"ms":29,"op":"query","outcome":"ok","req_sha":"224cafcd7fae5585","sym":"AnyAuthenticatedUserId","ts":"2026-07-19T08:45:02.437829Z"}
+{"ms":5,"op":"view","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/perms","reason":"receiver type not found","repairs":1,"req_sha":"3543c455b916db71","sym":"acl.go:12","ts":"2026-07-19T08:45:04.317873Z"}
+{"ms":48,"op":"query","outcome":"ok","pkg":"github.com/hashicorp/boundary/globals","req_sha":"a1ba9903aea4e49f","sym":"AccountIdField","ts":"2026-07-19T08:45:06.336318Z"}
+{"ms":9,"op":"view","outcome":"rejected","pkg":"github.com/hashicorp/boundary/globals","reason":"receiver type not found","repairs":1,"req_sha":"0ddcc078a2f86451","sym":"fields.go:15","ts":"2026-07-19T08:45:08.105788Z"}
+{"ms":29,"op":"query","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/perms","req_sha":"b5dbce94195a0b47","sym":"const.*UserId","ts":"2026-07-19T08:45:10.165963Z"}
+{"ms":13,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-19T08:45:11.247273Z"}
+{"ms":8,"op":"view","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/perms","reason":"symbol not found","repairs":1,"req_sha":"e572e61bfa4d3594","sym":"acl:go","ts":"2026-07-19T08:45:12.701255Z"}
+{"ms":8,"op":"upsert","outcome":"rejected","pkg":"github.com/hashicorp/boundary/globals","reason":"expected exactly one top-level declaration","repairs":0,"req_sha":"f1d76203ae1483da","ts":"2026-07-19T08:45:14.954242Z"}
+{"ms":327,"op":"patch","outcome":"accepted","req_sha":"3189c8fe3823b11e","ts":"2026-07-19T08:45:16.975599Z"}
+{"ms":302,"op":"patch","outcome":"accepted","req_sha":"002b6573090f37cc","ts":"2026-07-19T08:45:19.340903Z"}
+{"ms":29,"op":"query","outcome":"ok","req_sha":"66382d3cc96df482","sym":"AnyAuthenticatedUserId|RecoveryUserId","ts":"2026-07-19T08:45:22.00499Z"}
+{"ms":0,"op":"patch","outcome":"rejected","reason":"unknown op","repairs":1,"req_sha":"4b8a1fc0010a86b3","ts":"2026-07-19T08:45:24.376148Z"}
+{"ms":2,"op":"patch","outcome":"rejected","reason":"expected exactly one top-level declaration","repairs":0,"req_sha":"3cb4b47403100c19","ts":"2026-07-19T08:45:26.368043Z"}
+{"ms":2,"op":"view","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/perms","reason":"symbol not found","repairs":1,"req_sha":"f618d707585b2cf4","sym":"AnyUserIdConst","ts":"2026-07-19T08:45:28.536527Z"}
+{"ms":2,"op":"query","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/perms","reason":"symbol not found","repairs":3,"req_sha":"19238d8667c55454","ts":"2026-07-19T08:45:30.69124Z"}
+{"ms":4,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-19T08:45:31.80051Z"}
+{"ms":4,"op":"view","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/perms","reason":"receiver type not found","repairs":1,"req_sha":"14cbc240aef5faba","sym":"acl.go","ts":"2026-07-19T08:45:33.296177Z"}
+{"ms":72,"op":"query","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/perms","req_sha":"bf50feffd9015184","sym":"const","ts":"2026-07-19T08:45:35.018577Z"}
+{"ms":4,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/perms","req_sha":"e34b191afa407e68","sym":"ACL","ts":"2026-07-19T08:45:38.043623Z"}
+{"ms":14,"op":"query","outcome":"ok","req_sha":"e53085265a91db76","sym":"const.*userId","ts":"2026-07-19T08:45:40.063561Z"}
+{"ms":11,"op":"query","outcome":"ok","req_sha":"e994653bf6818413","sym":"const","ts":"2026-07-19T08:45:41.4974Z"}
+{"ms":3,"op":"query","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/perms","reason":"empty query","repairs":0,"req_sha":"2fe11a57789bdf1e","ts":"2026-07-19T08:45:44.500363Z"}
+{"ms":3,"op":"view","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/perms","reason":"symbol not found","repairs":1,"req_sha":"25b980873d9eeafa","sym":"acl:go\"","ts":"2026-07-19T08:45:46.452783Z"}
+{"ms":2,"op":"query","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/perms","reason":"symbol not found","repairs":3,"req_sha":"b0ac1ee20fece802","sym":"const","ts":"2026-07-19T08:45:48.415084Z"}
+{"ms":37,"op":"query","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/perms","req_sha":"da784fa90ce066f1","sym":"AnyAuthenticatedUserId","ts":"2026-07-19T08:45:50.696018Z"}
+{"ms":9,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-19T08:45:52.841392Z"}
+{"ms":24,"op":"query","outcome":"ok","req_sha":"358ea0e749a04e87","sym":"const.*UserId","ts":"2026-07-19T08:45:54.318302Z"}
+{"ms":29,"op":"query","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/perms","req_sha":"590bda5dc60df84d","sym":"const.*UserIdConst","ts":"2026-07-19T08:45:56.098084Z"}
+{"ms":9,"op":"patch","outcome":"rejected","reason":"op argument not in this op's schema","repairs":1,"req_sha":"69b5206db23acf4e","ts":"2026-07-19T08:45:59.283517Z"}
+{"ms":0,"op":"help","outcome":"ok","req_sha":"0b56758d64d8a078","ts":"2026-07-19T08:46:00.497679Z"}
+{"ms":78,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-19T08:46:28.859995Z"}
+{"ms":35,"op":"query","outcome":"ok","req_sha":"224cafcd7fae5585","sym":"AnyAuthenticatedUserId","ts":"2026-07-19T08:46:30.342489Z"}
+{"ms":34,"op":"query","outcome":"ok","req_sha":"5c9940d964013dbe","sym":"RecoveryUserId","ts":"2026-07-19T08:46:31.840607Z"}
+{"ms":38,"op":"query","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/perms","req_sha":"da784fa90ce066f1","sym":"AnyAuthenticatedUserId","ts":"2026-07-19T08:46:35.039184Z"}
+{"ms":9,"op":"view","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/perms","reason":"declaration not found","repairs":1,"req_sha":"69d48687efb10427","sym":"AnyAuthenticatedUserId","ts":"2026-07-19T08:46:37.152962Z"}
+{"ms":49,"op":"patch","outcome":"rejected","reason":"symbol is still referenced","repairs":0,"req_sha":"958275399e898065","ts":"2026-07-19T08:46:39.399539Z"}
+{"ms":29,"op":"query","outcome":"ok","req_sha":"224cafcd7fae5585","sym":"AnyAuthenticatedUserId","ts":"2026-07-19T08:46:45.615366Z"}
+{"ms":76,"op":"query","outcome":"ok","pkg":"github.com/hashicorp/boundary/globals","req_sha":"1677347142a794f8","sym":"AnyAuthenticatedUserId","ts":"2026-07-19T08:46:50.093657Z"}
+{"ms":6,"op":"view","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/daemon/controller/auth","reason":"symbol not found","repairs":1,"req_sha":"a940c1f08c2baecb","sym":"testing","ts":"2026-07-19T08:46:53.379468Z"}
+{"ms":7,"op":"view","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/daemon/controller/auth","reason":"symbol not found","repairs":1,"req_sha":"8a6676ce1a1e8974","sym":"PackageControllerAuthTesting","ts":"2026-07-19T08:46:55.58907Z"}
+{"ms":29,"op":"query","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/daemon/controller/auth","req_sha":"57fadf1a1fa63031","sym":"testing","ts":"2026-07-19T08:46:57.487298Z"}
+{"ms":27,"op":"query","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/daemon/controller/auth","req_sha":"4fd072bd0b0ee1a6","sym":"AnyAuthenticated","ts":"2026-07-19T08:47:01.845455Z"}
+{"ms":12,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-19T08:47:07.088559Z"}
+{"ms":8,"op":"view","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/daemon/controller/auth","reason":"receiver type not found","repairs":1,"req_sha":"f45757964c53ac4f","sym":"testing.go","ts":"2026-07-19T08:47:11.186526Z"}
+{"ms":31,"op":"query","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/daemon/controller/auth","req_sha":"e0ab8c5e0ec7aaaf","sym":"AnyAuthenticatedUserId","ts":"2026-07-19T08:47:13.144857Z"}
+{"ms":1506,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/boundary/globals","req_sha":"0e831559fd4b988f","sym":"AnyAuthenticatedUserId","ts":"2026-07-19T08:47:20.503443Z"}
+{"ms":3,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/perms","req_sha":"c7e6e23fe99ba5b4","sym":"AnyAuthenticatedUserId","ts":"2026-07-19T08:47:22.046669Z"}
+{"ms":3,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/boundary/globals","req_sha":"a1d3cd360a94ef2c","sym":"RecoveryUserId","ts":"2026-07-19T08:47:22.054629Z"}
+{"ms":2,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/perms","req_sha":"f4841669ed53df91","sym":"RecoveryUserId","ts":"2026-07-19T08:47:22.061913Z"}
+{"ms":3,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-19T08:47:22.068639Z"}

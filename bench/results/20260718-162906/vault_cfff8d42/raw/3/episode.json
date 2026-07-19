@@ -1,0 +1,40 @@
+{
+ "agent_done": "2026-07-19T03:44:27.003114042Z",
+ "agent_started": "2026-07-19T03:43:32.305537Z",
+ "cache_read": 115961,
+ "cache_write": 0,
+ "capped": false,
+ "failure_kind": "",
+ "intermediate_states": 2,
+ "invalid_intermediate_rate": 0,
+ "invalid_intermediates": 0,
+ "iter": 3,
+ "kind": "add-param",
+ "mode": "raw",
+ "new_errors": null,
+ "op_mix": {},
+ "pass": true,
+ "predicate": true,
+ "profile": "qwen3.5-9b-udq4",
+ "prompt": "aws: pass cancelable context with aws calls\n\nSpecifically: add parameter ctx context.Context to backend.instanceIamRoleARN",
+ "rejects_total": 0,
+ "repairs_offered": 0,
+ "resends": 0,
+ "specs": [
+  {
+   "ok": true,
+   "param": "ctx context.Context",
+   "signature": "func(ctx context.Context, iamClient *github.com/aws/aws-sdk-go/service/iam.IAM, instanceProfileName string) (string, error)",
+   "sym": "github.com/hashicorp/vault/builtin/credential/aws.backend.instanceIamRoleARN"
+  }
+ ],
+ "steps": 11,
+ "task": "vault_cfff8d42",
+ "tests": true,
+ "tests_baseline": true,
+ "tokens_in": 11137,
+ "tokens_out": 2227,
+ "tokens_reasoning": 0,
+ "typecheck": true,
+ "wall_s": 54.697577042
+}

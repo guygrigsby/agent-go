@@ -1,0 +1,19 @@
+diff --git a/globals/globals.go b/globals/globals.go
+index daba120cc..bc4bd091b 100644
+--- a/globals/globals.go
++++ b/globals/globals.go
+@@ -3,9 +3,11 @@ package globals
+ import "time"
+ 
+ const (
+-	TcpProxyV1     = "boundary-tcp-proxy-v1"
+-	ServiceTokenV1 = "s1"
+-	SessionPrefix  = "s_"
++	AnyAuthenticatedUserId = "u_auth"
++	TcpProxyV1             = "boundary-tcp-proxy-v1"
++	RecoveryUserId         = "u_recovery"
++	ServiceTokenV1         = "s1"
++	SessionPrefix          = "s_"
+ )
+ 
+ type (

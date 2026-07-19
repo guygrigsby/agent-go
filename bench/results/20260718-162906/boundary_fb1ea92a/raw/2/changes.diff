@@ -1,0 +1,206 @@
+diff --git a/go.mod b/go.mod
+index beb42aabc..2d8af70a5 100644
+--- a/go.mod
++++ b/go.mod
+@@ -101,6 +101,7 @@ require (
+ 	github.com/mikesmitty/edkey v0.0.0-20170222072505-3356ea4e686a
+ 	golang.org/x/exp v0.0.0-20230425010034-47ecfdc1ba53
+ 	golang.org/x/net v0.9.0
++	gopkg.in/square/go-jose.v2 v2.5.1
+ )
+ 
+ require (
+@@ -196,7 +197,6 @@ require (
+ 	golang.org/x/text v0.9.0 // indirect
+ 	golang.org/x/time v0.3.0 // indirect
+ 	google.golang.org/appengine v1.6.7 // indirect
+-	gopkg.in/square/go-jose.v2 v2.5.1 // indirect
+ 	gopkg.in/yaml.v2 v2.4.0 // indirect
+ 	gopkg.in/yaml.v3 v3.0.1 // indirect
+ 	gorm.io/driver/sqlite v1.3.6 // indirect
+diff --git a/go.sum b/go.sum
+index d29f6324f..b42b6778f 100644
+--- a/go.sum
++++ b/go.sum
+@@ -713,16 +713,12 @@ github.com/hashicorp/go-rootcerts v1.0.2/go.mod h1:pqUvnprVnM5bf7AOirdbb01K4ccR3
+ github.com/hashicorp/go-secure-stdlib/base62 v0.1.1/go.mod h1:EdWO6czbmthiwZ3/PUsDV+UD1D5IRU4ActiaWGwt0Yw=
+ github.com/hashicorp/go-secure-stdlib/base62 v0.1.2 h1:ET4pqyjiGmY09R5y+rSd70J2w45CtbWDNvGqWp/R3Ng=
+ github.com/hashicorp/go-secure-stdlib/base62 v0.1.2/go.mod h1:EdWO6czbmthiwZ3/PUsDV+UD1D5IRU4ActiaWGwt0Yw=
+-github.com/hashicorp/go-secure-stdlib/configutil/v2 v2.0.9 h1:YZ01/aiARPneDUryzjiPGvr3pmjCSC+1WBZKI1P7I7k=
+-github.com/hashicorp/go-secure-stdlib/configutil/v2 v2.0.9/go.mod h1:G8x+Vlrimz5ut7wC6tI/Lr/kcryPN0BskeWmI3gpr1k=
+ github.com/hashicorp/go-secure-stdlib/configutil/v2 v2.0.10-0.20230529201716-91e78a9970b4 h1:RCxroYl2qNXhvfmeQ4uPqyc1UCSLvmpKAPyyeF9H/P0=
+ github.com/hashicorp/go-secure-stdlib/configutil/v2 v2.0.10-0.20230529201716-91e78a9970b4/go.mod h1:HMhbgSmrkmnKA2fh50EJUmOjVboh9ug+1evG1ek9MiY=
+ github.com/hashicorp/go-secure-stdlib/gatedwriter v0.1.1 h1:9um9R8i0+HbRHS9d64kdvWR0/LJvo12sIonvR9zr1+U=
+ github.com/hashicorp/go-secure-stdlib/gatedwriter v0.1.1/go.mod h1:6RoRTSMDK2H/rKh3P/JIsk1tK8aatKTt3JyvIopi3GQ=
+ github.com/hashicorp/go-secure-stdlib/kv-builder v0.1.2 h1:NS6BHieb/pDfx3M9jDdaPpGyyVp+aD4A3DjX3dgRmzs=
+ github.com/hashicorp/go-secure-stdlib/kv-builder v0.1.2/go.mod h1:rf5JPE13wi+NwjgsmGkbg4b2CgHq8v7Htn/F0nDe/hg=
+-github.com/hashicorp/go-secure-stdlib/listenerutil v0.1.6 h1:rOmnqOSUBn5opme1Kh9OXO8qWd0KztO+f02vvCwCc/w=
+-github.com/hashicorp/go-secure-stdlib/listenerutil v0.1.6/go.mod h1:Gbwv+gqdNaKMKQq+1c1Yl4OtX1khZ9qe3eYMhJqtGtI=
+ github.com/hashicorp/go-secure-stdlib/listenerutil v0.1.7-0.20230529201716-91e78a9970b4 h1:GZkfxX/imqOzQmeKmEAfbzGXN4Tt27WRjtEraopcHIQ=
+ github.com/hashicorp/go-secure-stdlib/listenerutil v0.1.7-0.20230529201716-91e78a9970b4/go.mod h1:Gbwv+gqdNaKMKQq+1c1Yl4OtX1khZ9qe3eYMhJqtGtI=
+ github.com/hashicorp/go-secure-stdlib/mlock v0.1.1/go.mod h1:zq93CJChV6L9QTfGKtfBxKqD7BqqXx5O04A/ns2p5+I=
+diff --git a/internal/daemon/worker/handler.go b/internal/daemon/worker/handler.go
+index de3ef4829..6c447e0ef 100644
+--- a/internal/daemon/worker/handler.go
++++ b/internal/daemon/worker/handler.go
+@@ -136,7 +136,11 @@ func (w *Worker) handleProxy(listenerCfg *listenerutil.ListenerConfig, sessionMa
+ 		defer conn.Close(websocket.StatusNormalClosure, "done")
+ 
+ 		connCtx, connCancel := context.WithDeadline(ctx, sess.GetExpiration())
+-		defer connCancel()
++		controlCtx, controlCancel := context.WithCancel(connCtx)
++		defer func() {
++			connCancel()
++			controlCancel()
++		}()
+ 
+ 		var handshake proxy.ClientHandshake
+ 		if err := wspb.Read(connCtx, conn, &handshake); err != nil {
+@@ -294,7 +298,7 @@ func (w *Worker) handleProxy(listenerCfg *listenerutil.ListenerConfig, sessionMa
+ 			conn.Close(proxyHandlers.WebsocketStatusProtocolSetupError, "error getting decryption function")
+ 			event.WriteError(ctx, op, err)
+ 		}
+-		runProxy, err := handleProxyFn(ctx, decryptFn, cc, pDialer, acResp.GetConnectionId(), protocolCtx, w.recorderManager)
++		runProxy, err := handleProxyFn(controlCtx, ctx, decryptFn, cc.Conn, pDialer, acResp.GetConnectionId(), protocolCtx, w.recorderManager)
+ 		if err != nil {
+ 			conn.Close(proxyHandlers.WebsocketStatusProtocolSetupError, "unable to setup proxying")
+ 			event.WriteError(ctx, op, err)
+@@ -321,7 +325,7 @@ func (w *Worker) handleProxy(listenerCfg *listenerutil.ListenerConfig, sessionMa
+ 			return
+ 		}
+ 
+-		runProxy(ctx)
++		runProxy(controlCtx, ctx)
+ 	}, nil
+ }
+ 
+diff --git a/internal/daemon/worker/proxy/proxy.go b/internal/daemon/worker/proxy/proxy.go
+index 428c5683b..746c4e8b5 100644
+--- a/internal/daemon/worker/proxy/proxy.go
++++ b/internal/daemon/worker/proxy/proxy.go
+@@ -39,14 +39,14 @@ type DecryptFn func(ctx context.Context, from []byte, to proto.Message) error
+ 
+ // ProxyConnFn is called after the call to ConnectConnection on the cluster.
+ // ProxyConnFn blocks until the specific request that is being proxied is finished
+-type ProxyConnFn func(ctx context.Context)
++type ProxyConnFn func(controlCtx context.Context, ctx context.Context)
+ 
+ // Handler is the type that all proxies need to implement to be called by the worker
+ // when a new client connection is created.  If there is an error ProxyConnFn must
+ // be nil. If there is no error ProxyConnFn must be set.  When Handler has
+ // returned, it is expected that the initial connection to the endpoint has been
+ // established.
+-type Handler func(context.Context, DecryptFn, net.Conn, *ProxyDialer, string, *anypb.Any, RecordingManager) (ProxyConnFn, error)
++type Handler func(controlCtx context.Context, ctx context.Context, DecryptFn DecryptFn, conn net.Conn, proxyDialer *ProxyDialer, connId string, any *anypb.Any, recordingManager RecordingManager) (ProxyConnFn, error)
+ 
+ func RegisterHandler(protocol string, handler Handler) error {
+ 	_, loaded := handlers.LoadOrStore(protocol, handler)
+diff --git a/internal/daemon/worker/proxy/proxy_conn_tracker.go b/internal/daemon/worker/proxy/proxy_conn_tracker.go
+index a52b4c44b..960a38e9d 100644
+--- a/internal/daemon/worker/proxy/proxy_conn_tracker.go
++++ b/internal/daemon/worker/proxy/proxy_conn_tracker.go
+@@ -35,9 +35,9 @@ func ProxyHandlerCounter(h http.Handler) http.Handler {
+ // proxyConnFnCounter wraps a ProxyState and keeps the proxyCount incremented
+ // while it runs.
+ func proxyConnFnCounter(fn ProxyConnFn) ProxyConnFn {
+-	return func(ctx context.Context) {
++	return func(controlCtx, ctx context.Context) {
+ 		ProxyState.proxyCount.Add(1)
+ 		defer ProxyState.proxyCount.Add(-1)
+-		fn(ctx)
++		fn(controlCtx, ctx)
+ 	}
+ }
+diff --git a/internal/daemon/worker/proxy/tcp/tcp.go b/internal/daemon/worker/proxy/tcp/tcp.go
+index c4f0a1773..c5928712e 100644
+--- a/internal/daemon/worker/proxy/tcp/tcp.go
++++ b/internal/daemon/worker/proxy/tcp/tcp.go
+@@ -21,41 +21,42 @@ func init() {
+ 	}
+ }
+ 
+-// handleProxy creates a tcp proxy between the incoming conn and the
++// HandleProxy creates a tcp proxy between the incoming conn and the
+ // connection created by the ProxyDialer.
+ //
+-// handleProxy returns a ProxyConnFn which starts the copy between the
++// HandleProxy returns a ProxyConnFn which starts the copy between the
+ // connections and blocks until an error (EOF on happy path) is received on
+-// either connection.
+-func handleProxy(ctx context.Context, _ proxy.DecryptFn, conn net.Conn, out *proxy.ProxyDialer, connId string, _ *anypb.Any, _ proxy.RecordingManager) (proxy.ProxyConnFn, error) {
++// either connection.  controlCtx provides context that persists across all
++// connections initiated via this handler including reconnects.
++func handleProxy(controlCtx, ctx context.Context, _ proxy.DecryptFn, conn net.Conn, out *proxy.ProxyDialer, connId string, _ *anypb.Any, _ proxy.RecordingManager) (proxy.ProxyConnFn, error) {
+ 	const op = "tcp.HandleProxy"
+ 	switch {
+ 	case conn == nil:
+-		return nil, errors.New(ctx, errors.InvalidParameter, op, "conn is nil")
++		return nil, errors.New(controlCtx, errors.InvalidParameter, op, "conn is nil")
+ 	case out == nil:
+-		return nil, errors.New(ctx, errors.InvalidParameter, op, "proxy dialer is nil")
++		return nil, errors.New(controlCtx, errors.InvalidParameter, op, "proxy dialer is nil")
+ 	case len(connId) == 0:
+-		return nil, errors.New(ctx, errors.InvalidParameter, op, "connection id is empty")
++		return nil, errors.New(controlCtx, errors.InvalidParameter, op, "connection id is empty")
+ 	}
+ 	remoteConn, err := out.Dial(ctx)
+ 	if err != nil {
+ 		return nil, err
+ 	}
+ 
+-	return func(ctx context.Context) {
++	return func(controlCtx, ctx context.Context) {
++		defer func() {
++			conn.Close()
++			remoteConn.Close()
++		}()
+ 		connWg := new(sync.WaitGroup)
+ 		connWg.Add(2)
+ 		go func() {
+ 			defer connWg.Done()
+ 			_, _ = io.Copy(conn, remoteConn)
+-			_ = conn.Close()
+-			_ = remoteConn.Close()
+ 		}()
+ 		go func() {
+ 			defer connWg.Done()
+ 			_, _ = io.Copy(remoteConn, conn)
+-			_ = remoteConn.Close()
+-			_ = conn.Close()
+ 		}()
+ 		connWg.Wait()
+ 	}, nil
+diff --git a/internal/daemon/worker/proxy/tcp/tcp_test.go b/internal/daemon/worker/proxy/tcp/tcp_test.go
+index 1a819e5d7..5596d4cf4 100644
+--- a/internal/daemon/worker/proxy/tcp/tcp_test.go
++++ b/internal/daemon/worker/proxy/tcp/tcp_test.go
+@@ -88,7 +88,9 @@ func TestHandleProxy_Errors(t *testing.T) {
+ 	}
+ 	for _, tc := range cases {
+ 		t.Run(tc.name, func(t *testing.T) {
+-			fn, err := handleProxy(context.Background(), nil, tc.conn, tc.dialer, tc.connId, tc.protocolCtx, nil)
++			ctrlCtx, ctrlCancel := context.WithCancel(context.Background())
++			defer ctrlCancel()
++			fn, err := handleProxy(ctrlCtx, ctx, nil, tc.conn, tc.dialer, tc.connId, tc.protocolCtx, nil)
+ 			if tc.wantError {
+ 				assert.Error(t, err)
+ 				assert.Nil(t, fn)
+@@ -166,14 +168,13 @@ func TestHandleTcpProxyV1(t *testing.T) {
+ 	conn := websocket.NetConn(ctx, proxyConn, websocket.MessageBinary)
+ 
+ 	go func() {
+-		fn, err := handleProxy(ctx, nil, conn, tDial, resp.GetConnectionId(), resp.GetProtocolContext(), nil)
++		ctrlCtx, ctrlCancel := context.WithCancel(context.Background())
++		defer ctrlCancel()
++		fn, err := handleProxy(ctrlCtx, ctx, nil, conn, tDial, resp.GetConnectionId(), resp.GetProtocolContext(), nil)
+ 		t.Cleanup(func() {
+-			// Use of the t.Cleanup is so we can check the state of the returned
+-			// error since it isn't valid to call `t.FailNow()` from a goroutine.
+-			// https://pkg.go.dev/testing#T.FailNow
+ 			require.NoError(err)
+ 		})
+-		fn(context.Background())
++		fn(ctrlCtx, context.Background())
+ 	}()
+ 
+ 	// wait for HandleTcpProxyV1 to dial endpoint

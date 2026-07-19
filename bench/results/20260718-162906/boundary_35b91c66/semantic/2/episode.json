@@ -1,0 +1,100 @@
+{
+ "agent_done": "2026-07-19T13:42:32.220189959Z",
+ "agent_started": "2026-07-19T13:40:59.137182Z",
+ "cache_read": 197125,
+ "cache_write": 0,
+ "capped": false,
+ "failure_kind": "scored_fail",
+ "intermediate_states": 2,
+ "invalid_intermediate_rate": 0,
+ "invalid_intermediates": 0,
+ "iter": 2,
+ "kind": "rename",
+ "mode": "semantic",
+ "new_errors": null,
+ "op_mix": {
+  "help": {
+   "ok": 1,
+   "rejected": 0
+  },
+  "patch": {
+   "ok": 0,
+   "rejected": 2
+  },
+  "query": {
+   "ok": 7,
+   "rejected": 2
+  },
+  "rename": {
+   "ok": 4,
+   "rejected": 2
+  },
+  "status": {
+   "ok": 2,
+   "rejected": 0
+  },
+  "view": {
+   "ok": 2,
+   "rejected": 0
+  }
+ },
+ "pass": false,
+ "predicate": false,
+ "profile": "qwen3.5-9b-udq4",
+ "prompt": "refact(ratelimit): Rename MaxEntries to MaxQuotas\n\nSpecifically, rename: ApiRateLimiterMaxEntries -\u003e ApiRateLimiterMaxQuotas; DefaultLimiterMaxEntries -\u003e DefaultLimiterMaxQuotas; defaultLimiterMaxEntries -\u003e defaultLimiterMaxQuotas; initDefaultLimiterMaxEntries -\u003e initDefaultLimiterMaxQuotas; TestDefaulLimiterMaxEntries -\u003e TestDefaulLimiterMaxQuotas",
+ "rejects_total": 6,
+ "repairs_offered": 2,
+ "resends": 1,
+ "specs": [
+  {
+   "baseline_refs": 29,
+   "new_refs": 0,
+   "ok": false,
+   "old_refs_left": 29,
+   "sym": "github.com/hashicorp/boundary/internal/cmd/config.Controller.ApiRateLimiterMaxEntries",
+   "to": "ApiRateLimiterMaxQuotas"
+  },
+  {
+   "baseline_refs": 29,
+   "new_refs": 29,
+   "ok": true,
+   "old_refs_left": 0,
+   "sym": "github.com/hashicorp/boundary/internal/ratelimit.DefaultLimiterMaxEntries",
+   "to": "DefaultLimiterMaxQuotas"
+  },
+  {
+   "baseline_refs": 3,
+   "new_refs": 3,
+   "ok": true,
+   "old_refs_left": 0,
+   "sym": "github.com/hashicorp/boundary/internal/ratelimit.defaultLimiterMaxEntries",
+   "to": "defaultLimiterMaxQuotas"
+  },
+  {
+   "baseline_refs": 2,
+   "new_refs": 2,
+   "ok": true,
+   "old_refs_left": 0,
+   "sym": "github.com/hashicorp/boundary/internal/ratelimit.initDefaultLimiterMaxEntries",
+   "to": "initDefaultLimiterMaxQuotas"
+  },
+  {
+   "baseline_refs": 1,
+   "new_refs": 1,
+   "ok": true,
+   "old_refs_left": 0,
+   "sym": "github.com/hashicorp/boundary/internal/ratelimit.TestDefaulLimiterMaxEntries",
+   "to": "TestDefaulLimiterMaxQuotas"
+  }
+ ],
+ "steps": 15,
+ "task": "boundary_35b91c66",
+ "tests": false,
+ "tests_baseline": true,
+ "time_to_first_mutation_s": 15.713234,
+ "tokens_in": 47575,
+ "tokens_out": 3943,
+ "tokens_reasoning": 0,
+ "typecheck": true,
+ "wall_s": 93.083007959
+}

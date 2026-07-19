@@ -1,0 +1,3 @@
+ M internal/credential/vault/repository.go
+?? .serena/
+?? opencode.json

@@ -1,0 +1,2 @@
+ M internal/host/plugin/repository.go
+?? opencode.json

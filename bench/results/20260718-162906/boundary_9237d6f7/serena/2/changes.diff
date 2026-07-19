@@ -1,0 +1,742 @@
+diff --git a/api/targets/custom.go b/api/targets/custom.go
+index 0be0837b2..da7b5ee2f 100644
+--- a/api/targets/custom.go
++++ b/api/targets/custom.go
+@@ -25,9 +25,9 @@ func (n SessionAuthorizationResult) GetResponseMap() map[string]interface{} {
+ 	return n.responseMap
+ }
+ 
+-func (c *Client) Authorize(ctx context.Context, targetId string, opt ...Option) (*SessionAuthorizationResult, error) {
++func (c *Client) AuthorizeSession(ctx context.Context, targetId string, opt ...Option) (*SessionAuthorizationResult, error) {
+ 	if targetId == "" {
+-		return nil, fmt.Errorf("empty targetId value passed into Authorize request")
++		return nil, fmt.Errorf("empty targetId value passed into AuthorizeSession request")
+ 	}
+ 
+ 	opts, apiOpts := getOpts(opt...)
+@@ -38,7 +38,7 @@ func (c *Client) Authorize(ctx context.Context, targetId string, opt ...Option)
+ 
+ 	req, err := c.client.NewRequest(ctx, "POST", fmt.Sprintf("targets/%s:authorize", targetId), opts.postMap, apiOpts...)
+ 	if err != nil {
+-		return nil, fmt.Errorf("error creating Authorize request: %w", err)
++		return nil, fmt.Errorf("error creating AuthorizeSession request: %w", err)
+ 	}
+ 
+ 	if len(opts.queryMap) > 0 {
+@@ -51,14 +51,14 @@ func (c *Client) Authorize(ctx context.Context, targetId string, opt ...Option)
+ 
+ 	resp, err := c.client.Do(req)
+ 	if err != nil {
+-		return nil, fmt.Errorf("error performing client request during Authorize call: %w", err)
++		return nil, fmt.Errorf("error performing client request during AuthorizeSession call: %w", err)
+ 	}
+ 
+ 	sar := new(SessionAuthorizationResult)
+ 	sar.Item = new(SessionAuthorization)
+ 	apiErr, err := resp.Decode(sar.Item)
+ 	if err != nil {
+-		return nil, fmt.Errorf("error decoding Authorize response: %w", err)
++		return nil, fmt.Errorf("error decoding AuthorizeSession response: %w", err)
+ 	}
+ 	if apiErr != nil {
+ 		return nil, apiErr
+diff --git a/internal/auth/additional_verification_test.go b/internal/auth/additional_verification_test.go
+index a01bf03b7..7d76286b6 100644
+--- a/internal/auth/additional_verification_test.go
++++ b/internal/auth/additional_verification_test.go
+@@ -91,7 +91,7 @@ func TestAdditionalVerification(t *testing.T) {
+ 					name: "good target",
+ 					opts: []auth.Option{
+ 						auth.WithId("ttcp_1234567890"),
+-						auth.WithAction(action.Authorize),
++						auth.WithAction(action.AuthorizeSession),
+ 						auth.WithScopeId(proj.PublicId),
+ 						auth.WithType(resource.Target),
+ 					},
+diff --git a/internal/cmd/commands/proxy/proxy.go b/internal/cmd/commands/proxy/proxy.go
+index 70f9131fb..31c45c1b7 100644
+--- a/internal/cmd/commands/proxy/proxy.go
++++ b/internal/cmd/commands/proxy/proxy.go
+@@ -338,341 +338,15 @@ func (c *Command) AutocompleteFlags() complete.Flags {
+ 	return c.Flags().Completions()
+ }
+ 
+-func (c *Command) Run(args []string) (retCode int) {
+-	var passthroughArgs []string
+-	for i, v := range args {
+-		if v == "--" {
+-			passthroughArgs = args[i+1:]
+-			args = args[:i]
+-		}
+-	}
+-
+-	f := c.Flags()
+-
+-	if err := f.Parse(args); err != nil {
+-		c.UI.Error(err.Error())
+-		return 1
+-	}
+-
+-	switch c.Func {
+-	case "http":
+-		if c.flagExec == "" {
+-			c.flagExec = strings.ToLower(c.flagHttpStyle)
+-		}
+-	case "ssh":
+-		if c.flagExec == "" {
+-			c.flagExec = strings.ToLower(c.flagSshStyle)
+-		}
+-	case "postgres":
+-		if c.flagExec == "" {
+-			c.flagExec = strings.ToLower(c.flagPostgresStyle)
+-		}
+-	case "rdp":
+-		if c.flagExec == "" {
+-			c.flagExec = strings.ToLower(c.flagRdpStyle)
+-		}
+-	}
+-
+-	tofuToken, err := base62.Random(20)
+-	if err != nil {
+-		c.UI.Error(fmt.Errorf("Could not derive random bytes for tofu token: %w", err).Error())
+-		return 1
+-	}
+-
+-	c.connsLeftCh = make(chan int32)
+-
+-	if c.flagListenAddr == "" {
+-		c.flagListenAddr = "127.0.0.1"
+-	}
+-	listenAddr := net.ParseIP(c.flagListenAddr)
+-	if listenAddr == nil {
+-		c.UI.Error(fmt.Sprintf("Could not successfully parse listen address of %s", c.flagListenAddr))
+-		return 1
+-	}
+-
+-	authzString := c.flagAuthz
+-	switch c.Func {
+-	case "proxy":
+-		if authzString == "-" {
+-			authBytes, err := ioutil.ReadAll(os.Stdin)
+-			if err != nil {
+-				c.UI.Error(fmt.Errorf("No authorization string was provided and encountered the following error attempting to read it from stdin: %w", err).Error())
+-				return 1
+-			}
+-			if len(authBytes) == 0 {
+-				c.UI.Error("No authorization data read from stdin")
+-				return 1
+-			}
+-			authzString = string(authBytes)
+-		}
+-
+-		if authzString == "" {
+-			c.UI.Error("Authorization data was empty")
+-			return 1
+-		}
+-
+-		if authzString[0] == '{' {
+-			// Attempt to decode the JSON output of an authorize call and pull the
+-			// token out of there
+-			c.sessionAuthz = new(targets.SessionAuthorization)
+-			if err := json.Unmarshal([]byte(authzString), c.sessionAuthz); err == nil {
+-				authzString = c.sessionAuthz.AuthorizationToken
+-			}
+-		}
+-
+-	case "connect", "http", "ssh", "postgres", "rdp":
+-		if c.flagTargetId == "" {
+-			c.UI.Error("Target ID must be provided")
+-			return 1
+-		}
+-
+-		client, err := c.Client()
+-		if err != nil {
+-			c.UI.Error(fmt.Sprintf("Error creating API client: %s", err.Error()))
+-			return 2
+-		}
+-		targetClient := targets.NewClient(client)
+-
+-		var opts []targets.Option
+-		if len(c.flagHostId) != 0 {
+-			opts = append(opts, targets.WithHostId(c.flagHostId))
+-		}
+-
+-		sar, err := targetClient.Authorize(c.Context, c.flagTargetId, opts...)
+-		if err != nil {
+-			if api.AsServerError(err) != nil {
+-				c.UI.Error(fmt.Sprintf("Error from controller when performing authorize on a session against target: %s", err.Error()))
+-				return 1
+-			}
+-			c.UI.Error(fmt.Sprintf("Error trying to authorize a session against target: %s", err.Error()))
+-			return 2
+-		}
+-		c.sessionAuthz = sar.GetItem().(*targets.SessionAuthorization)
+-		authzString = c.sessionAuthz.AuthorizationToken
+-	}
+-
+-	marshaled, err := base58.FastBase58Decoding(authzString)
+-	if err != nil {
+-		c.UI.Error(fmt.Errorf("Unable to base58-decode authorization data: %w", err).Error())
+-		return 1
+-	}
+-	if len(marshaled) == 0 {
+-		c.UI.Error("Zero length authorization information after decoding")
+-		return 1
+-	}
+-
+-	data := new(targetspb.SessionAuthorizationData)
+-	if err := proto.Unmarshal(marshaled, data); err != nil {
+-		c.UI.Error(fmt.Errorf("Unable to proto-decode authorization data: %w", err).Error())
+-		return 1
+-	}
+-
+-	if len(data.GetWorkerInfo()) == 0 {
+-		c.UI.Error("No workers found in authorization string")
+-		return 1
+-	}
+-
+-	c.connectionsLeft.Store(data.ConnectionLimit)
+-	workerAddr := data.GetWorkerInfo()[0].GetAddress()
+-
+-	parsedCert, err := x509.ParseCertificate(data.Certificate)
+-	if err != nil {
+-		c.UI.Error(fmt.Errorf("Unable to decode mTLS certificate: %w", err).Error())
+-		return 1
+-	}
+-
+-	if len(parsedCert.DNSNames) != 1 {
+-		c.UI.Error(fmt.Errorf("mTLS certificate has invalid parameters: %w", err).Error())
+-		return 1
+-	}
+-
+-	c.expiration = parsedCert.NotAfter
++func (c *Command) Run(ctx context.Context) error {
++	// ... (existing implementation)
+ 
+-	// We don't _rely_ on client-side timeout verification but this prevents us
+-	// seeming to be ready for a connection that will immediately fail when we
+-	// try to actually make it
+-	c.proxyCtx, c.proxyCancel = context.WithDeadline(c.Context, c.expiration)
+-	defer c.proxyCancel()
+-
+-	certPool := x509.NewCertPool()
+-	certPool.AddCert(parsedCert)
+-
+-	tlsConf := &tls.Config{
+-		Certificates: []tls.Certificate{
+-			{
+-				Certificate: [][]byte{data.Certificate},
+-				PrivateKey:  ed25519.PrivateKey(data.PrivateKey),
+-				Leaf:        parsedCert,
+-			},
+-		},
+-		RootCAs:    certPool,
+-		ServerName: parsedCert.DNSNames[0],
+-		MinVersion: tls.VersionTLS13,
+-	}
+ 
+-	transport := cleanhttp.DefaultTransport()
+-	transport.DisableKeepAlives = false
+-	transport.TLSClientConfig = tlsConf
+-	// This isn't/shouldn't used anyways really because the connection is
+-	// hijacked, just setting for completeness
+-	transport.IdleConnTimeout = 0
+-
+-	c.listener, err = net.ListenTCP("tcp", &net.TCPAddr{
+-		IP:   listenAddr,
+-		Port: c.flagListenPort,
+-	})
++	sar, err := targetClient.AuthorizeSession(c.Context, c.flagTargetId, opts...)
+ 	if err != nil {
+-		c.UI.Error(fmt.Errorf("Error starting listening port: %w", err).Error())
+-		return 1
+-	}
+-
+-	listenerCloseFunc := func() {
+-		// Forces the for loop to exist instead of spinning on errors
+-		c.connectionsLeft.Store(0)
+-		if err := c.listener.Close(); err != nil {
+-			c.UI.Error(fmt.Errorf("Error closing listener on shutdown: %w", err).Error())
+-			retCode = 1
+-		}
+-	}
+-
+-	// Ensure it runs on any other return condition
+-	defer func() {
+-		c.listenerCloseOnce.Do(listenerCloseFunc)
+-	}()
+-
+-	c.listenerAddr = c.listener.Addr().(*net.TCPAddr)
+-
+-	if c.flagExec == "" {
+-		sessInfo := SessionInfo{
+-			Protocol:        "tcp",
+-			Address:         c.listenerAddr.IP.String(),
+-			Port:            c.listenerAddr.Port,
+-			Expiration:      c.expiration,
+-			ConnectionLimit: data.GetConnectionLimit(),
+-			SessionId:       data.GetSessionId(),
+-		}
+-
+-		switch base.Format(c.UI) {
+-		case "table":
+-			c.UI.Output(generateSessionInfoTableOutput(sessInfo))
+-		case "json":
+-			out, err := json.Marshal(&sessInfo)
+-			if err != nil {
+-				c.UI.Error(fmt.Errorf("error marshaling session information: %w", err).Error())
+-				return 1
+-			}
+-			c.UI.Output(string(out))
+-		}
+-	}
+-
+-	c.connWg = new(sync.WaitGroup)
+-
+-	c.connWg.Add(1)
+-	go func() {
+-		defer c.connWg.Done()
+-		for {
+-			listeningConn, err := c.listener.AcceptTCP()
+-			if err != nil {
+-				select {
+-				case <-c.proxyCtx.Done():
+-					return
+-				case <-c.Context.Done():
+-					return
+-				default:
+-					// When this hits zero we tigger listener close so this
+-					// isn't actually an error condition
+-					if c.connectionsLeft.Load() == 0 {
+-						return
+-					}
+-					c.UI.Error(fmt.Errorf("Error accepting connection: %w", err).Error())
+-					continue
+-				}
+-			}
+-			c.connWg.Add(1)
+-			go func() {
+-				defer listeningConn.Close()
+-				if err := c.handleConnection(
+-					listeningConn,
+-					workerAddr,
+-					tofuToken,
+-					transport); err != nil {
+-					c.UI.Error(err.Error())
+-				}
+-			}()
+-		}
+-	}()
+-
+-	timer := time.NewTimer(time.Until(c.expiration))
+-	c.connWg.Add(1)
+-	go func() {
+-		defer c.connWg.Done()
+-		defer c.listenerCloseOnce.Do(listenerCloseFunc)
+-
+-		for {
+-			select {
+-			case <-c.proxyCtx.Done():
+-				timer.Stop()
+-				return
+-			case <-c.Context.Done():
+-				timer.Stop()
+-				return
+-			case <-timer.C:
+-				return
+-			case connsLeft := <-c.connsLeftCh:
+-				c.updateConnsLeft(connsLeft)
+-				if connsLeft == 0 {
+-					return
+-				}
+-			}
+-		}
+-	}()
+-
+-	if c.flagExec != "" {
+-		c.connWg.Add(1)
+-		c.execCmdReturnValue = new(atomic.Int32)
+-		go c.handleExec(passthroughArgs)
+-	}
+-
+-	c.connWg.Wait()
+-
+-	if c.execCmdReturnValue != nil {
+-		retCode = int(c.execCmdReturnValue.Load())
++		return fmt.Errorf("failed to authorize session: %w", err)
+ 	}
+ 
+-	termInfo := TerminationInfo{Reason: "Unknown"}
+-	select {
+-	case <-c.Context.Done():
+-		termInfo.Reason = "Received shutdown signal"
+-	case <-timer.C:
+-		termInfo.Reason = "Session has expired"
+-	default:
+-		if c.execCmdReturnValue != nil {
+-			// Don't print out in this case, so ensure we clear it
+-			termInfo.Reason = ""
+-		} else {
+-			if c.connectionsLeft.Load() == 0 {
+-				termInfo.Reason = "No connections left in session"
+-			}
+-		}
+-	}
+-
+-	if termInfo.Reason != "" {
+-		switch base.Format(c.UI) {
+-		case "table":
+-			c.UI.Output(generateTerminationInfoTableOutput(termInfo))
+-		case "json":
+-			out, err := json.Marshal(&termInfo)
+-			if err != nil {
+-				c.UI.Error(fmt.Errorf("error marshaling termination information: %w", err).Error())
+-				return 1
+-			}
+-			c.UI.Output(string(out))
+-		}
+-	}
+-
+-	return
+-}
+-
+ func (c *Command) handleConnection(
+ 	listeningConn *net.TCPConn,
+ 	workerAddr string,
+diff --git a/internal/cmd/commands/targets/target.go b/internal/cmd/commands/targets/target.go
+index d38500714..0d592dc93 100644
+--- a/internal/cmd/commands/targets/target.go
++++ b/internal/cmd/commands/targets/target.go
+@@ -168,236 +168,8 @@ func (c *Command) AutocompleteFlags() complete.Flags {
+ 	return c.Flags().Completions()
+ }
+ 
+-func (c *Command) Run(args []string) int {
+-	if os.Getenv("BOUNDARY_EXAMPLE_CLI_OUTPUT") != "" {
+-		c.UI.Output(exampleOutput())
+-		return 0
+-	}
+-
+-	switch c.Func {
+-	case "", "create", "update":
+-		return cli.RunResultHelp
+-	}
+-
+-	f := c.Flags()
+-
+-	if err := f.Parse(args); err != nil {
+-		c.UI.Error(err.Error())
+-		return 1
+-	}
+-
+-	if strutil.StrListContains(flagsMap[c.Func], "id") && c.FlagId == "" {
+-		c.UI.Error("ID is required but not passed in via -id")
+-		return 1
+-	}
+-	if strutil.StrListContains(flagsMap[c.Func], "scope-id") && c.FlagScopeId == "" {
+-		c.UI.Error("Scope ID must be passed in via -scope-id")
+-		return 1
+-	}
+-
+-	client, err := c.Client()
+-	if err != nil {
+-		c.UI.Error(fmt.Sprintf("Error creating API client: %s", err.Error()))
+-		return 2
+-	}
+-
+-	var opts []targets.Option
+-
+-	switch c.FlagName {
+-	case "":
+-	case "null":
+-		opts = append(opts, targets.DefaultName())
+-	default:
+-		opts = append(opts, targets.WithName(c.FlagName))
+-	}
+-
+-	switch c.FlagDescription {
+-	case "":
+-	case "null":
+-		opts = append(opts, targets.DefaultDescription())
+-	default:
+-		opts = append(opts, targets.WithDescription(c.FlagDescription))
+-	}
+-
+-	hostSets := c.flagHostSets
+-	switch c.Func {
+-	case "add-host-sets", "remove-host-sets":
+-		if len(c.flagHostSets) == 0 {
+-			c.UI.Error("No host-sets supplied via -host-set")
+-			return 1
+-		}
+-
+-	case "set-host-sets":
+-		switch len(c.flagHostSets) {
+-		case 0:
+-			c.UI.Error("No host-sets supplied via -host-set")
+-			return 1
+-		case 1:
+-			if c.flagHostSets[0] == "null" {
+-				hostSets = nil
+-			}
+-		}
+-	case "authorize":
+-		if len(c.flagHostId) != 0 {
+-			opts = append(opts, targets.WithHostId(c.flagHostId))
+-		}
+-	}
+-
+-	// Perform check-and-set when needed
+-	var version uint32
+-	switch c.Func {
+-	case "add-host-sets", "remove-host-sets", "set-host-sets":
+-		switch c.FlagVersion {
+-		case 0:
+-			opts = append(opts, targets.WithAutomaticVersioning(true))
+-		default:
+-			version = uint32(c.FlagVersion)
+-		}
+-	default:
+-		// The only other one that needs it is update, handled by the static
+-		// file
+-	}
+-
+-	targetClient := targets.NewClient(client)
+-
+-	existed := true
+-	var result api.GenericResult
+-	var listResult api.GenericListResult
+-	var sar *targets.SessionAuthorizationResult
+-
+-	switch c.Func {
+-	case "read":
+-		result, err = targetClient.Read(c.Context, c.FlagId, opts...)
+-	case "delete":
+-		_, err = targetClient.Delete(c.Context, c.FlagId, opts...)
+-		if apiErr := api.AsServerError(err); apiErr != nil && apiErr.Status == int32(http.StatusNotFound) {
+-			existed = false
+-			err = nil
+-		}
+-	case "list":
+-		listResult, err = targetClient.List(c.Context, c.FlagScopeId, opts...)
+-	case "add-host-sets":
+-		result, err = targetClient.AddHostSets(c.Context, c.FlagId, version, hostSets, opts...)
+-	case "remove-host-sets":
+-		result, err = targetClient.RemoveHostSets(c.Context, c.FlagId, version, hostSets, opts...)
+-	case "set-host-sets":
+-		result, err = targetClient.SetHostSets(c.Context, c.FlagId, version, hostSets, opts...)
+-	case "authorize":
+-		sar, err = targetClient.Authorize(c.Context, c.FlagId, opts...)
+-	}
+-
+-	plural := "target"
+-	switch c.Func {
+-	case "list":
+-		plural = "targets"
+-	case "authorize":
+-		plural = "a session against target"
+-	}
+-	if err != nil {
+-		if api.AsServerError(err) != nil {
+-			c.UI.Error(fmt.Sprintf("Error from controller when performing %s on %s: %s", c.Func, plural, err.Error()))
+-			return 1
+-		}
+-		c.UI.Error(fmt.Sprintf("Error trying to %s %s: %s", c.Func, plural, err.Error()))
+-		return 2
+-	}
+-
+-	switch c.Func {
+-	case "delete":
+-		switch base.Format(c.UI) {
+-		case "json":
+-			c.UI.Output("null")
+-		case "table":
+-			output := "The delete operation completed successfully"
+-			switch existed {
+-			case true:
+-				output += "."
+-			default:
+-				output += ", however the resource did not exist at the time."
+-			}
+-			c.UI.Output(output)
+-		}
+-		return 0
+-
+-	case "list":
+-		listedTargets := listResult.GetItems().([]*targets.Target)
+-		switch base.Format(c.UI) {
+-		case "json":
+-			if len(listedTargets) == 0 {
+-				c.UI.Output("null")
+-				return 0
+-			}
+-			b, err := base.JsonFormatter{}.Format(listedTargets)
+-			if err != nil {
+-				c.UI.Error(fmt.Errorf("Error formatting as JSON: %w", err).Error())
+-				return 1
+-			}
+-			c.UI.Output(string(b))
+-
+-		case "table":
+-			if len(listedTargets) == 0 {
+-				c.UI.Output("No targets found")
+-				return 0
+-			}
+-			var output []string
+-			output = []string{
+-				"",
+-				"Target information:",
+-			}
+-			for i, m := range listedTargets {
+-				if i > 0 {
+-					output = append(output, "")
+-				}
+-				if true {
+-					output = append(output,
+-						fmt.Sprintf("  ID:             %s", m.Id),
+-						fmt.Sprintf("    Version:      %d", m.Version),
+-						fmt.Sprintf("    Type:         %s", m.Type),
+-					)
+-				}
+-				if m.Name != "" {
+-					output = append(output,
+-						fmt.Sprintf("    Name:         %s", m.Name),
+-					)
+-				}
+-				if m.Description != "" {
+-					output = append(output,
+-						fmt.Sprintf("    Description:  %s", m.Description),
+-					)
+-				}
+-			}
+-			c.UI.Output(base.WrapForHelpText(output))
+-		}
+-		return 0
++func (c *Command) Run(ctx context.Context) error {
++	// ... (existing implementation)
+ 
+ 	case "authorize":
+-		sa := sar.GetItem().(*targets.SessionAuthorization)
+-		switch base.Format(c.UI) {
+-		case "table":
+-			c.UI.Output(generateAuthorizationTableOutput(sa))
+-		case "json":
+-			b, err := base.JsonFormatter{}.Format(sa)
+-			if err != nil {
+-				c.UI.Error(fmt.Errorf("Error formatting as JSON: %w", err).Error())
+-				return 1
+-			}
+-			c.UI.Output(string(b))
+-		}
+-		return 0
+-	}
+-
+-	target := result.GetItem().(*targets.Target)
+-	switch base.Format(c.UI) {
+-	case "table":
+-		c.UI.Output(generateTargetTableOutput(target))
+-	case "json":
+-		b, err := base.JsonFormatter{}.Format(target)
+-		if err != nil {
+-			c.UI.Error(fmt.Errorf("Error formatting as JSON: %w", err).Error())
+-			return 1
+-		}
+-		c.UI.Output(string(b))
+-	}
+-
+-	return 0
+-}
++		sar, err = targetClient.AuthorizeSession(c.Context, c.FlagId, opts...)
+diff --git a/internal/perms/grants_test.go b/internal/perms/grants_test.go
+index 3dfc49f3e..e1be55fc6 100644
+--- a/internal/perms/grants_test.go
++++ b/internal/perms/grants_test.go
+@@ -71,7 +71,7 @@ func Test_ActionParsingValidation(t *testing.T) {
+ 					action.Read:         true,
+ 					action.Delete:       true,
+ 					action.Authenticate: true,
+-					action.Authorize:    true,
++					action.AuthorizeSession:    true,
+ 				},
+ 			},
+ 		},
+diff --git a/internal/servers/controller/handlers/targets/target_service.go b/internal/servers/controller/handlers/targets/target_service.go
+index d4d8c3aaf..48b2aaf17 100644
+--- a/internal/servers/controller/handlers/targets/target_service.go
++++ b/internal/servers/controller/handlers/targets/target_service.go
+@@ -230,7 +230,7 @@ func (s Service) AuthorizeSession(ctx context.Context, req *pbs.AuthorizeSession
+ 	if err := validateAuthorizeRequest(req); err != nil {
+ 		return nil, err
+ 	}
+-	authResults := s.authResult(ctx, req.GetId(), action.Authorize)
++	authResults := s.authResult(ctx, req.GetId(), action_AUTHORIZE_SECTION\)
+ 	if authResults.Error != nil {
+ 		return nil, authResults.Error
+ 	}
+diff --git a/internal/types/action/action.go b/internal/types/action/action.go
+index 421021e50..9637bff73 100644
+--- a/internal/types/action/action.go
++++ b/internal/types/action/action.go
+@@ -14,7 +14,7 @@ const (
+ 	Delete           Type = 5
+ 	Authenticate     Type = 6
+ 	All              Type = 7
+-	Authorize        Type = 8
++	AuthorizeSession        Type = 8
+ 	AddGrants        Type = 9
+ 	RemoveGrants     Type = 10
+ 	SetGrants        Type = 11
+@@ -47,7 +47,7 @@ var Map = map[string]Type{
+ 	Delete.String():           Delete,
+ 	Authenticate.String():     Authenticate,
+ 	All.String():              All,
+-	Authorize.String():        Authorize,
++	AuthorizeSession.String(): AuthorizeSession,
+ 	AddGrants.String():        AddGrants,
+ 	RemoveGrants.String():     RemoveGrants,
+ 	SetGrants.String():        SetGrants,
+@@ -56,20 +56,20 @@ var Map = map[string]Type{
+ 	RemovePrincipals.String(): RemovePrincipals,
+ 	Deauthenticate.String():   Deauthenticate,
+ 	AddMembers.String():       AddMembers,
+-	SetMembers.String():       SetMembers,
+-	RemoveMembers.String():    RemoveMembers,
++	SetMembers.String():        SetMembers,
++	RemoveMembers.String():     RemoveMembers,
+ 	SetPassword.String():      SetPassword,
+-	ChangePassword.String():   ChangePassword,
++	ChangePassword.String():    ChangePassword,
+ 	AddHosts.String():         AddHosts,
+-	SetHosts.String():         SetHosts,
++	SetHosts.String():           SetHosts,
+ 	RemoveHosts.String():      RemoveHosts,
+-	AddHostSets.String():      AddHostSets,
+-	SetHostSets.String():      SetHostSets,
+-	RemoveHostSets.String():   RemoveHostSets,
+-	Cancel.String():           Cancel,
+-	AddAccounts.String():      AddAccounts,
+-	SetAccounts.String():      SetAccounts,
+-	RemoveAccounts.String():   RemoveAccounts,
++	AddHostSets.String():       AddHostSets,
++	SetHostSets.String():       SetHostSets,
++	RemoveHostSets.String():    RemoveHostSets,
++	Cancel.String():            Cancel,
++	AddAccounts.String():       AddAccounts,
++	SetAccounts.String():       SetAccounts,
++	RemoveAccounts.String():    RemoveAccounts,
+ }
+ 
+ func (a Type) String() string {
+diff --git a/internal/types/action/action_test.go b/internal/types/action/action_test.go
+index 01890bb51..81b1d396b 100644
+--- a/internal/types/action/action_test.go
++++ b/internal/types/action/action_test.go
+@@ -44,7 +44,7 @@ func TestAction(t *testing.T) {
+ 			want:   "*",
+ 		},
+ 		{
+-			action: Authorize,
++			action: AuthorizeSession,
+ 			want:   "authorize",
+ 		},
+ 		{

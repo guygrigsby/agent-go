@@ -1,0 +1,26 @@
+{
+ "ago_rev": "d4496d1de9ffef77f93ff158cf44f44100c3e6c9",
+ "cap": "12m0s",
+ "endpoint": "https://llama.lab.aeryx.ai/v1",
+ "model": "qwen",
+ "profiles": [
+  {
+   "name": "qwen3.5-9b-udq4",
+   "endpoint": "https://llama.lab.aeryx.ai/v1",
+   "model": "qwen",
+   "sampler": {
+    "repeat_penalty": 1,
+    "temperature": 0.7,
+    "top_k": 20,
+    "top_p": 0.8
+   },
+   "quant": "UD-Q4_K_XL",
+   "notes": "The freeze-grid qwen profile: embed server evicted from the 3070 Ti so the larger UD quant fits. Same endpoint and sampler as qwen3.5-9b; a distinct profile name keeps the two quants apart in every run record."
+  }
+ ],
+ "raw_prompt_tokens": 129,
+ "semantic_prompt_tokens": 138,
+ "serena_prompt_tokens": 111,
+ "serena_rev": "7c34662996f2d2e3db38001785e1f279dced2f50",
+ "started": "2026-07-18T16:29:06-06:00"
+}

@@ -1,0 +1,41 @@
+{"ms":1775,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-19T08:36:40.914713Z"}
+{"ms":1899,"op":"query","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/perms","reason":"symbol not found","repairs":3,"req_sha":"19238d8667c55454","ts":"2026-07-19T08:36:52.234353Z"}
+{"ms":13,"op":"query","outcome":"ok","req_sha":"224cafcd7fae5585","sym":"AnyAuthenticatedUserId","ts":"2026-07-19T08:36:56.092662Z"}
+{"ms":12,"op":"query","outcome":"ok","req_sha":"5c9940d964013dbe","sym":"RecoveryUserId","ts":"2026-07-19T08:36:57.544896Z"}
+{"ms":5,"op":"view","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/perms","reason":"declaration not found","repairs":1,"req_sha":"69d48687efb10427","sym":"AnyAuthenticatedUserId","ts":"2026-07-19T08:36:59.268406Z"}
+{"ms":10,"op":"query","outcome":"ok","req_sha":"224cafcd7fae5585","sym":"AnyAuthenticatedUserId","ts":"2026-07-19T08:37:00.757537Z"}
+{"ms":16,"op":"query","outcome":"ok","req_sha":"5c9940d964013dbe","sym":"RecoveryUserId","ts":"2026-07-19T08:37:02.153465Z"}
+{"ms":8,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-19T08:37:03.516774Z"}
+{"ms":22,"op":"query","outcome":"ok","req_sha":"224cafcd7fae5585","sym":"AnyAuthenticatedUserId","ts":"2026-07-19T08:37:04.940586Z"}
+{"ms":9,"op":"view","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/perms","reason":"declaration not found","repairs":1,"req_sha":"69d48687efb10427","sym":"AnyAuthenticatedUserId","ts":"2026-07-19T08:37:06.634357Z"}
+{"ms":10,"op":"patch","outcome":"rejected","reason":"declaration does not parse","repairs":0,"req_sha":"7d0b49154b55632e","ts":"2026-07-19T08:37:08.827538Z"}
+{"ms":21,"op":"query","outcome":"ok","req_sha":"f57471f7441f093a","sym":"AuthenticatedUserId","ts":"2026-07-19T08:37:10.197218Z"}
+{"ms":12,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-19T08:37:11.345057Z"}
+{"ms":0,"op":"help","outcome":"ok","req_sha":"0b56758d64d8a078","ts":"2026-07-19T08:37:12.392708Z"}
+{"ms":25,"op":"query","outcome":"ok","req_sha":"aa363b87c8f85c1d","sym":"AnyUser","ts":"2026-07-19T08:37:19.074802Z"}
+{"ms":29,"op":"query","outcome":"ok","req_sha":"5dcac0b956767bb5","sym":"MaxSessionTtl","ts":"2026-07-19T08:37:20.541355Z"}
+{"ms":48,"op":"query","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/perms","req_sha":"da784fa90ce066f1","sym":"AnyAuthenticatedUserId","ts":"2026-07-19T08:37:22.547755Z"}
+{"ms":29,"op":"query","outcome":"ok","req_sha":"706d5c7ba8e6f4a1","sym":"globals","ts":"2026-07-19T08:37:24.050608Z"}
+{"ms":23,"op":"query","outcome":"ok","req_sha":"b6691f243136e5e8","sym":"MaxSessionDuration","ts":"2026-07-19T08:37:25.484271Z"}
+{"ms":13,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-19T08:37:26.675985Z"}
+{"ms":10,"op":"query","outcome":"ok","req_sha":"40faf19f19513ee8","sym":"boundary/globals","ts":"2026-07-19T08:37:28.22111Z"}
+{"ms":58,"op":"query","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/perms","req_sha":"408ef78d750e2b5d","sym":"RecoveryUserId","ts":"2026-07-19T08:37:30.138969Z"}
+{"ms":28,"op":"query","outcome":"ok","req_sha":"649b709632d63781","sym":"MaxIdleSessionTTL","ts":"2026-07-19T08:37:32.140435Z"}
+{"ms":778,"op":"patch","outcome":"accepted","req_sha":"4ccc4e3182a46481","ts":"2026-07-19T08:37:34.311873Z"}
+{"ms":1341,"op":"patch","outcome":"accepted","req_sha":"b0f9f40cf96c89d7","ts":"2026-07-19T08:37:37.164548Z"}
+{"ms":37,"op":"query","outcome":"ok","pkg":"github.com/hashicorp/boundary/globals","req_sha":"1677347142a794f8","sym":"AnyAuthenticatedUserId","ts":"2026-07-19T08:37:41.199285Z"}
+{"ms":51,"op":"query","outcome":"ok","pkg":"github.com/hashicorp/boundary/globals","req_sha":"ccef5ef3df6a955f","sym":"RecoveryUserId","ts":"2026-07-19T08:37:43.151589Z"}
+{"ms":114150,"op":"test","outcome":"ok","req_sha":"12ef5d31bdb89522","ts":"2026-07-19T08:37:46.120222Z"}
+{"ms":158,"op":"test","outcome":"ok","pkg":"github.com/hashicorp/boundary/globals","req_sha":"586fb6d9aefa1732","ts":"2026-07-19T08:39:40.278515Z"}
+{"ms":1231,"op":"test","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/perms","req_sha":"ef8823790d3f3df5","ts":"2026-07-19T08:39:42.098778Z"}
+{"ms":65,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-19T08:40:06.317156Z"}
+{"ms":18,"op":"query","outcome":"ok","req_sha":"299dc490a6b61ac1","sym":"boundary_developer_env","ts":"2026-07-19T08:40:07.704801Z"}
+{"ms":15,"op":"query","outcome":"ok","req_sha":"224cafcd7fae5585","sym":"AnyAuthenticatedUserId","ts":"2026-07-19T08:40:09.062501Z"}
+{"ms":24,"op":"query","outcome":"ok","pkg":"github.com/hashicorp/boundary/globals","req_sha":"1677347142a794f8","sym":"AnyAuthenticatedUserId","ts":"2026-07-19T08:40:10.727119Z"}
+{"ms":19,"op":"query","outcome":"ok","pkg":"github.com/hashicorp/boundary/globals","req_sha":"ccef5ef3df6a955f","sym":"RecoveryUserId","ts":"2026-07-19T08:40:12.547855Z"}
+{"ms":142,"op":"test","outcome":"ok","pkg":"github.com/hashicorp/boundary/globals","req_sha":"586fb6d9aefa1732","ts":"2026-07-19T08:40:14.346834Z"}
+{"ms":1479,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/boundary/globals","req_sha":"0e831559fd4b988f","sym":"AnyAuthenticatedUserId","ts":"2026-07-19T08:40:18.880689Z"}
+{"ms":3,"op":"inspect","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/perms","reason":"symbol not found","repairs":2,"req_sha":"c7e6e23fe99ba5b4","sym":"AnyAuthenticatedUserId","ts":"2026-07-19T08:40:20.37819Z"}
+{"ms":2,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/boundary/globals","req_sha":"a1d3cd360a94ef2c","sym":"RecoveryUserId","ts":"2026-07-19T08:40:20.386851Z"}
+{"ms":2,"op":"inspect","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/perms","reason":"symbol not found","repairs":1,"req_sha":"f4841669ed53df91","sym":"RecoveryUserId","ts":"2026-07-19T08:40:20.393957Z"}
+{"ms":4,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-19T08:40:20.400861Z"}

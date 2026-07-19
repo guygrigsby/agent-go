@@ -1,0 +1,5 @@
+{"ms":2468,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-19T05:07:06.025995Z"}
+{"ms":2414,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/vault/builtin/audit/file","req_sha":"4c3540a12b62c322","sym":"Factory","ts":"2026-07-19T05:07:59.302533Z"}
+{"ms":3,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/vault/builtin/audit/socket","req_sha":"a0e3f335d0446612","sym":"Factory","ts":"2026-07-19T05:08:01.722245Z"}
+{"ms":3,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/vault/builtin/audit/syslog","req_sha":"14a613cd501bbcea","sym":"Factory","ts":"2026-07-19T05:08:01.729673Z"}
+{"ms":5,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-19T05:08:01.736684Z"}

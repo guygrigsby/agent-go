@@ -1,0 +1,25 @@
+{"ms":883,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/boundary/api/targets","req_sha":"8ac7aa18545123f9","sym":"Client.Authorize","ts":"2026-07-19T14:20:05.329206Z"}
+{"ms":2,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-19T14:20:06.218035Z"}
+{"ms":1046,"op":"query","outcome":"ok","req_sha":"79f6700ade6235f5","sym":"Authorize","ts":"2026-07-19T14:20:14.587561Z"}
+{"ms":3,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/boundary/api/targets","req_sha":"a659ff5551612bab","sym":"Client.Authorize","ts":"2026-07-19T14:20:21.216433Z"}
+{"ms":3,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/session","req_sha":"edc8636d55e9401f","sym":"TestRepository_AuthorizeConnect","ts":"2026-07-19T14:20:23.807995Z"}
+{"ms":20,"op":"query","outcome":"ok","pkg":"github.com/hashicorp/boundary/api/targets","req_sha":"182d89017c0fc23e","sym":"Client.Authorize","ts":"2026-07-19T14:20:29.183281Z"}
+{"ms":2,"op":"rename","outcome":"rejected","pkg":"github.com/hashicorp/boundary/api/targets","reason":"new name is not a valid identifier","repairs":0,"req_sha":"a57c86b3ffc05c2e","sym":"Client.Authorize","ts":"2026-07-19T14:20:30.827014Z"}
+{"ms":3,"op":"rename","outcome":"rejected","pkg":"github.com/hashicorp/boundary/api/targets","reason":"symbol not found","repairs":2,"req_sha":"59a4bfcc3e5a3d61","sym":"Authorize","ts":"2026-07-19T14:20:32.868541Z"}
+{"ms":33,"op":"rename","outcome":"accepted","pkg":"github.com/hashicorp/boundary/api/targets","req_sha":"e7bda493a46c6086","sym":"Client.Authorize","ts":"2026-07-19T14:20:34.508469Z"}
+{"ms":46,"op":"rename","outcome":"accepted","pkg":"github.com/hashicorp/boundary/internal/session","req_sha":"da9752214ba953b4","sym":"TestRepository_AuthorizeConnect","ts":"2026-07-19T14:20:39.37979Z"}
+{"ms":313779,"op":"test","outcome":"rejected","reason":"tests could not run","repairs":0,"req_sha":"12ef5d31bdb89522","ts":"2026-07-19T14:20:41.301361Z"}
+{"ms":1115,"op":"query","outcome":"ok","req_sha":"5808ea9645ae62bd","sym":"AuthorizeSession","ts":"2026-07-19T14:25:55.189548Z"}
+{"ms":2,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-19T14:25:56.30594Z"}
+{"ms":1,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/boundary/api/targets","req_sha":"cf9beb95f810707d","sym":"Client.AuthorizeSession","ts":"2026-07-19T14:25:56.308611Z"}
+{"ms":1,"op":"patch","outcome":"rejected","reason":"package not found","repairs":0,"req_sha":"43f9d70a9885c6d2","ts":"2026-07-19T14:25:56.310093Z"}
+{"ms":12813,"op":"test","outcome":"ok","pkg":"github.com/hashicorp/boundary/api/targets","req_sha":"ce37fb848ad0c675","ts":"2026-07-19T14:25:56.311475Z"}
+{"ms":49184,"op":"test","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/session","req_sha":"9d03e543ebeb399f","ts":"2026-07-19T14:26:10.64645Z"}
+{"ms":42,"op":"query","outcome":"ok","req_sha":"5808ea9645ae62bd","sym":"AuthorizeSession","ts":"2026-07-19T14:27:06.135746Z"}
+{"ms":13,"op":"query","outcome":"ok","req_sha":"89df4239c22342cd","sym":"Client.Authorize","ts":"2026-07-19T14:27:09.092905Z"}
+{"ms":1071,"op":"test","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/cmd/commands/proxy","req_sha":"1b511820455c3dad","ts":"2026-07-19T14:31:20.378909Z"}
+{"ms":345,"op":"test","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/cmd/commands/targets","req_sha":"98af8f4474969f11","ts":"2026-07-19T14:31:21.450941Z"}
+{"ms":1021,"op":"refs","outcome":"rejected","pkg":"github.com/hashicorp/boundary/api/targets","reason":"method or field not found","repairs":3,"req_sha":"8ac7aa18545123f9","sym":"Client.Authorize","ts":"2026-07-19T14:31:22.42241Z"}
+{"ms":13,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/boundary/api/targets","req_sha":"5601782cc05bdc05","sym":"Client.AuthorizeSession","ts":"2026-07-19T14:31:23.450713Z"}
+{"ms":2,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-19T14:31:23.470448Z"}
+{"ms":25120,"op":"test","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/servers/controller/handlers/targets","req_sha":"3a4b274175d21f35","ts":"2026-07-19T14:31:21.796178Z"}

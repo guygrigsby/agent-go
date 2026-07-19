@@ -1,0 +1,7 @@
+ M globals/globals.go
+ M internal/daemon/controller/auth/auth.go
+ M internal/daemon/controller/handlers/groups/group_service.go
+ M internal/daemon/controller/handlers/roles/role_service.go
+ M internal/iam/repository_scope.go
+ M internal/perms/acl.go
+?? opencode.json

@@ -1,0 +1,13 @@
+diff --git a/internal/servers/controller/session_cleanup_job_test.go b/internal/servers/controller/session_cleanup_job_test.go
+index 094a0602d..34ea6bf28 100644
+--- a/internal/servers/controller/session_cleanup_job_test.go
++++ b/internal/servers/controller/session_cleanup_job_test.go
+@@ -23,7 +23,7 @@ var _ = scheduler.Job(new(sessionConnectionCleanupJob))
+ // This test has been largely adapted from
+ // TestRepository_CloseDeadConnectionsOnWorker in
+ // internal/session/repository_connection_test.go.
+-func TestSessionConnectionCleanupJob(t *testing.T) {
++func TestSessionConnectionCleanupJobInternalSession(t *testing.T) {
+ 	t.Parallel()
+ 	ctx := context.Background()
+ 

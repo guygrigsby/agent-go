@@ -1,0 +1,162 @@
+diff --git a/internal/bsr/bsr.go b/internal/bsr/bsr.go
+index c58998056..b75624a4f 100644
+--- a/internal/bsr/bsr.go
++++ b/internal/bsr/bsr.go
+@@ -19,32 +19,13 @@ import (
+ )
+ 
+ const (
+-	bsrFile         = "%s.bsr"
+-	connectionFile  = "%s.connection"
++	bsrFileNameTemplate         = "%s.bsr"
++	connectionFileNameTemplate  = "%s.connection"
+ 	channelFile     = "%s.channel"
+-	messagesFile    = "messages-%s.data"
+-	requestsFile    = "requests-%s.data"
+-	sessionMetaFile = "session-meta.json"
+-
+-	bsrPubKeyFile           = "bsrKey.pub"
+-	wrappedBsrKeyFile       = "wrappedBsrKey"
+-	wrappedPrivKeyFile      = "wrappedPrivKey"
+-	pubKeyBsrSignatureFile  = "pubKeyBsrSignature.sign"
+-	pubKeySelfSignatureFile = "pubKeySelfSignature.sign"
+-)
+-
+-// Session is the top level container in a bsr that contains the files for
+-// a recorded session.
+-type Session struct {
+-	*container
+-	multiplexed bool
+-
+-	Meta        *SessionRecordingMeta
+-	SessionMeta *SessionMeta
+-}
++^[[:space:]]*\tmessagesFileNameTemplate = "messages-%s.data"
++	sessionMetaFileName = "session-meta.json"
+ 
+-// NewSession creates a Session container for a given session id.
+-func NewSession(ctx context.Context, meta *SessionRecordingMeta, sessionMeta *SessionMeta, f storage.FS, keys *kms.Keys, options ...Option) (*Session, error) {
++	meta *SessionRecordingMeta, sessionMeta *SessionMeta, f storage.FS, meta *SessionRecordingMeta, sessionMeta *SessionMeta, f storage.FS, keys *kms.Keys, options ...Option) (*Session, error) {
+ 	const op = "bsr.NewSession"
+ 
+ 	switch {
+@@ -90,7 +71,7 @@ func NewSession(ctx context.Context, meta *SessionRecordingMeta, sessionMeta *Se
+ 		return nil, errors.Join(err, fmt.Errorf("%s: %w", op, ErrBsrKeyPersistenceFailure))
+ 	}
+ 
+-	sm, err := nc.create(ctx, sessionMetaFile)
++	sm, err := nc.create(ctx, sessionMetaFileName)
+ 	if err != nil {
+ 		return nil, err
+ 	}
+@@ -145,14 +126,7 @@ func persistBsrSessionKeys(ctx context.Context, keys *kms.Keys, c *container) er
+ 	}
+ 
+ 	keyFiles := map[string]proto.Message{
+-		bsrPubKeyFile:           keys.PubKey,
+-		wrappedBsrKeyFile:       keys.WrappedBsrKey,
+-		wrappedPrivKeyFile:      keys.WrappedPrivKey,
+-		pubKeyBsrSignatureFile:  keys.PubKeyBsrSignature,
+-		pubKeySelfSignatureFile: keys.PubKeySelfSignature,
+-	}
+-	for f, k := range keyFiles {
+-		b, err := proto.Marshal(k)
++		bsrPubKeyFileNamek)
+ 		if err != nil {
+ 			return fmt.Errorf("%s: failed to marshal data for %s: %w", op, f, err)
+ 		}
+@@ -209,7 +183,7 @@ func OpenSession(ctx context.Context, sessionRecordingId string, f storage.FS, k
+ 	}
+ 
+ 	sessionMeta := &SessionMeta{}
+-	if err := cc.decodeJsonFile(ctx, sessionMetaFile, sessionMeta); err != nil {
++	if err := cc.decodeJsonFile(ctx, sessionMetaFileName, sessionMeta); err != nil {
+ 		return nil, err
+ 	}
+ 
+diff --git a/internal/bsr/container.go b/internal/bsr/container.go
+index 9d92ca8a8..bcc53992a 100644
+--- a/internal/bsr/container.go
++++ b/internal/bsr/container.go
+@@ -23,10 +23,10 @@ import (
+ )
+ 
+ const (
+-	metaFile     = "%s-recording.meta"
++	metaFileNameTemplate     = "%s-recording.meta"
+ 	summaryFile  = "%s-recording-summary.json"
+ 	checksumFile = "SHA256SUM"
+-	sigFile      = "SHA256SUM.sig"
++	sigFileNameName      = "SHA256SUM.sig"
+ 	journalFile  = ".journal"
+ )
+ 
+@@ -56,7 +56,7 @@ type container struct {
+ 
+ 	// Field used for reading
+ 	shaSums  checksum.Sha256Sums
+-	metaFile storage.File
++	\b(metaFileNameTemplate\b) storage.File
+ 
+ 	// Field used for reading and writing
+ 	keys     *kms.Keys
+@@ -82,7 +82,7 @@ func newContainer(ctx context.Context, t containerType, c storage.Container, key
+ 		keys:      keys,
+ 	}
+ 
+-	cc.sigs, err = cc.create(ctx, sigFile)
++	cc.sigs, err = cc.create(ctx, sigFileName)
+ 	if err != nil {
+ 		return nil, err
+ 	}
+@@ -96,7 +96,7 @@ func newContainer(ctx context.Context, t containerType, c storage.Container, key
+ 		return nil, err
+ 	}
+ 
+-	cc.metaName = fmt.Sprintf(metaFile, t)
++	cc.metaName = fmt.Sprintf(\b(metaFileNameTemplate\b), t)
+ 	meta, err := cc.create(ctx, cc.metaName)
+ 	if err != nil {
+ 		return nil, err
+@@ -151,12 +151,12 @@ func openContainer(ctx context.Context, t containerType, c storage.Container, ke
+ 	}
+ 
+ 	// Load the meta file
+-	cc.metaName = fmt.Sprintf(metaFile, t)
++	cc.metaName = fmt.Sprintf(\b(metaFileNameTemplate\b), t)
+ 	mFile, err := cc.container.OpenFile(ctx, cc.metaName)
+ 	if err != nil {
+ 		return nil, err
+ 	}
+-	cc.metaFile = mFile
++	cc.\b(metaFileNameTemplate\b) = mFile
+ 
+ 	return cc, nil
+ }
+@@ -165,7 +165,7 @@ func (c *container) loadChecksums(ctx context.Context) error {
+ 	const op = "bsr.(container).loadChecksums"
+ 
+ 	// Open and extract checksum signature
+-	checksumsSigFile, err := c.container.OpenFile(ctx, sigFile)
++	checksumsSigFile, err := c.container.OpenFile(ctx, sigFileName)
+ 	if err != nil {
+ 		return err
+ 	}
+@@ -234,14 +234,14 @@ func (c *container) loadKey(ctx context.Context, keyFileName string) (*wrapping.
+ 	return key, nil
+ }
+ 
+-func (c *container) loadSignature(ctx context.Context, sigFileName string) (*wrapping.SigInfo, error) {
+-	sigFile, err := c.container.OpenFile(ctx, sigFileName)
++func (c *container) loadSignature(ctx context.Context, sigFileNameName string) (*wrapping.SigInfo, error) {
++	sigFileName, err := c.container.OpenFile(ctx, sigFileNameName)
+ 	if err != nil {
+ 		return nil, err
+ 	}
+ 
+ 	sigBytes := new(bytes.Buffer)
+-	_, err = sigBytes.ReadFrom(sigFile)
++	_, err = sigBytes.ReadFrom(sigFileName)
+ 	if err != nil {
+ 		return nil, err
+ 	}

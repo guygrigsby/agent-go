@@ -1,0 +1,9 @@
+ M internal/credential/vault/repository_credentials_test.go
+ M internal/daemon/cluster/handlers/worker_service_status_test.go
+ M internal/daemon/cluster/handlers/worker_service_test.go
+ M internal/daemon/controller/controller.go
+ M internal/daemon/controller/tickers.go
+ M internal/server/repository_worker_test.go
+ M internal/session/jobs.go
+ M internal/session/repository.go
+?? opencode.json

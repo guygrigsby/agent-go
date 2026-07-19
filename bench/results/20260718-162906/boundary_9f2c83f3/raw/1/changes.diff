@@ -1,0 +1,23 @@
+diff --git a/internal/bsr/container.go b/internal/bsr/container.go
+index 9d92ca8a8..9dca55707 100644
+--- a/internal/bsr/container.go
++++ b/internal/bsr/container.go
+@@ -59,9 +59,15 @@ type container struct {
+ 	metaFile storage.File
+ 
+ 	// Field used for reading and writing
+-	keys     *kms.Keys
+-	metaName string
+-}
++	keys      *kms.Keys
++	metaName  string
++}</parameter>
++</function>
++</tool_call>
++<tool_call>
++<function=edit>
++<parameter=filePath>
++/private/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameqwen3.5-9b-udq4boundary_9f2c83f3raw1703367342/002/boundary/internal/bsr/container.go
+ 
+ // newContainer creates a container for the given type backed by the provide storage.Container.
+ func newContainer(ctx context.Context, t containerType, c storage.Container, keys *kms.Keys) (*container, error) {

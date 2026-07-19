@@ -1,0 +1,37 @@
+diff --git a/internal/cmd/config/config.go b/internal/cmd/config/config.go
+index 144bb5769..c45a9a9d2 100644
+--- a/internal/cmd/config/config.go
++++ b/internal/cmd/config/config.go
+@@ -216,7 +216,7 @@ type Controller struct {
+ 	SchedulerRunJobInterval time.Duration `hcl:"-"`
+ 
+ 	ApiRateLimits            ratelimit.Configs `hcl:"-"`
+-	ApiRateLimiterMaxEntries int               `hcl:"api_rate_limit_max_entries"`
++	ApiRateLimiterMaxQuotas int               `hcl:"api_rate_limit_max_quotas"`
+ 	ApiRateLimitDisable      bool              `hcl:"api_rate_limit_disable"`
+ 
+ 	// License is the license used by HCP builds
+@@ -693,8 +693,8 @@ func Parse(d string) (*Config, error) {
+ 			return nil, err
+ 		}
+ 
+-		if result.Controller.ApiRateLimiterMaxEntries <= 0 {
+-			result.Controller.ApiRateLimiterMaxEntries = ratelimit.DefaultLimiterMaxEntries()
++		if result.Controller.ApiRateLimiterMaxQuotas <= 0 {
++			result.Controller.ApiRateLimiterMaxQuotas = ratelimit.DefaultLimiterMaxQuotas()
+ 		}
+ 	}
+ 
+diff --git a/internal/cmd/config/config_load_test.go b/internal/cmd/config/config_load_test.go
+index ac76012dd..633de1b4b 100644
+--- a/internal/cmd/config/config_load_test.go
++++ b/internal/cmd/config/config_load_test.go
+@@ -1283,7 +1283,7 @@ func TestLoad(t *testing.T) {
+ 							Unlimited: false,
+ 						},
+ 					},
+-					ApiRateLimiterMaxEntries: ratelimit.DefaultLimiterMaxEntries(),
++					ApiRateLimiterMaxQuotas:        ratelimit.DefaultLimiterMaxQuotas(),
+ 				},
+ 				DevController:           false,
+ 				DevUiPassthroughDir:     "",

@@ -1,0 +1,26 @@
+diff --git a/internal/target/repository.go b/internal/target/repository.go
+index 7ec5d1b2d..26edd6d91 100644
+--- a/internal/target/repository.go
++++ b/internal/target/repository.go
+@@ -20,7 +20,8 @@ import (
+ 
+ // RepositoryFactory enables `target.Repository` object instantiation,
+ // and is used by the various service packages/controller object to do so.
+-type RepositoryFactory func(...Option) (*Repository, error)
++type RepositoryFactory func(ctx context.Context, r db.Reader, w db.Writer, kms *kms.Kms, opt ...Option) (*Repository, error)
++...Option) (*Repository, error)
+ 
+ // Cloneable provides a cloning interface
+ type Cloneable interface {
+@@ -48,8 +49,9 @@ type Repository struct {
+ // - WithLimit: sets a limit on the number of results returned by various repo operations.
+ // - WithPermissions: defines the permissions the user has to perform different
+ // actions and access resources within the created repo object.
+-func NewRepository(r db.Reader, w db.Writer, kms *kms.Kms, opt ...Option) (*Repository, error) {
+-	const op = "target.NewRepository"
++func NewRepository(ctx context.Context, r db.Reader, w db.Writer, kms *kms.Kms, opt ...Option) (*Repository, error) {
++
++func NewRepository(ctx context.Context, r db.Reader, w db.Writer, kms *kms.Kms, opt ...Option) (*Repository, error) {
+ 	if r == nil {
+ 		return nil, errors.NewDeprecated(errors.InvalidParameter, op, "nil reader")
+ 	}

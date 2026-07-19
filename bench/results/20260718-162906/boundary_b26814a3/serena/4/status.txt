@@ -1,0 +1,17 @@
+ M globals/globals.go
+ M internal/auth/oidc/service.go
+ M internal/credential/vault/internal/sshprivatekey/sshprivatekey.go
+ M internal/credential/vault/internal/usernamepassword/usernamepassword.go
+ M internal/daemon/controller/auth/auth.go
+ M internal/daemon/controller/auth/testing.go
+ M internal/daemon/controller/common/common.go
+ M internal/daemon/controller/handlers/groups/group_service.go
+ M internal/daemon/controller/handlers/mask_manager.go
+ M internal/daemon/controller/handlers/roles/role_service.go
+ M internal/db/read_writer_oplog.go
+ M internal/iam/repository_scope.go
+ M internal/observability/event/event.go
+ M internal/perms/acl.go
+ M internal/server/worker.go
+?? .serena/
+?? opencode.json

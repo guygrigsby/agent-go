@@ -1,0 +1,3 @@
+{"ms":1450,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-18T22:50:40.096215Z"}
+{"ms":1309,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/daemon/worker/proxy/tcp","req_sha":"3ac4dcd0bc12772c","sym":"handleProxy","ts":"2026-07-18T22:52:21.308377Z"}
+{"ms":4,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-18T22:52:22.622969Z"}

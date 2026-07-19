@@ -1,0 +1,20 @@
+{"ms":2105,"op":"refs","outcome":"ok","pkg":"github.com/traefik/traefik/v3/pkg/provider/docker","req_sha":"6882b4641729f188","sym":"Shared.extractLabels","ts":"2026-07-19T09:15:27.609743Z"}
+{"ms":3,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-19T09:15:29.719508Z"}
+{"ms":2246,"op":"query","outcome":"ok","req_sha":"6c967fa0813c87f4","sym":"extractLabels","ts":"2026-07-19T09:15:38.642504Z"}
+{"ms":1,"op":"query","outcome":"rejected","reason":"package not found","repairs":1,"req_sha":"0c9c3abf443b83d4","sym":"extractLabels","ts":"2026-07-19T09:15:43.180796Z"}
+{"ms":11,"op":"query","outcome":"ok","pkg":"github.com/traefik/traefik/v3/pkg/provider/docker","req_sha":"5b8813bfb2cee6f9","sym":"DynConfBuilder.extractLabels","ts":"2026-07-19T09:15:45.856969Z"}
+{"ms":8,"op":"query","outcome":"ok","pkg":"github.com/traefik/traefik/v3/pkg/provider/docker","req_sha":"7fa29b99fbe93c74","sym":"Provider.extractLabels","ts":"2026-07-19T09:15:48.345394Z"}
+{"ms":9,"op":"query","outcome":"ok","pkg":"github.com/traefik/traefik/v3/pkg/provider/docker","req_sha":"65b40b4ae29570ae","sym":"Shared.extractLabels","ts":"2026-07-19T09:15:50.797758Z"}
+{"ms":40,"op":"query","outcome":"ok","pkg":"github.com/traefik/traefik/v3/pkg/provider/docker","req_sha":"f6b3f7dc1f9ff295","sym":"SwarmProvider.extractLabels","ts":"2026-07-19T09:15:53.187655Z"}
+{"ms":2,"op":"view","outcome":"rejected","pkg":"github.com/traefik/traefik/v3/pkg/provider/docker","reason":"symbol not found","repairs":3,"req_sha":"ccadd7e152ac9530","sym":"extractLabels","ts":"2026-07-19T09:15:56.115204Z"}
+{"ms":47,"op":"rename","outcome":"accepted","pkg":"github.com/traefik/traefik/v3/pkg/provider/docker","req_sha":"603ec423fa298bef","sym":"DynConfBuilder.extractLabels","ts":"2026-07-19T09:15:58.181755Z"}
+{"ms":1,"op":"rename","outcome":"rejected","pkg":"github.com/traefik/traefik/v3/pkg/provider/docker","reason":"method or field not found","repairs":4,"req_sha":"658a7306d7ef7ce9","sym":"Provider.extractLabels","ts":"2026-07-19T09:16:00.284063Z"}
+{"ms":1,"op":"rename","outcome":"rejected","pkg":"github.com/traefik/traefik/v3/pkg/provider/docker","reason":"method or field not found","repairs":4,"req_sha":"faf7d1a81ec64dea","sym":"Shared.extractLabels","ts":"2026-07-19T09:16:02.672102Z"}
+{"ms":118160,"op":"test","outcome":"rejected","reason":"tests could not run","repairs":0,"req_sha":"12ef5d31bdb89522","ts":"2026-07-19T09:16:04.439025Z"}
+{"ms":56,"op":"query","outcome":"ok","req_sha":"6897f1493bf83bf0","sym":"extractLabel","ts":"2026-07-19T09:18:02.595406Z"}
+{"ms":10,"op":"query","outcome":"ok","req_sha":"ed2605fb499839a8","sym":"extractSwarmLabels","ts":"2026-07-19T09:18:04.415032Z"}
+{"ms":104347,"op":"test","outcome":"rejected","reason":"tests could not run","repairs":0,"req_sha":"12ef5d31bdb89522","ts":"2026-07-19T09:18:06.393039Z"}
+{"ms":55,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-19T09:19:50.740971Z"}
+{"ms":2175,"op":"refs","outcome":"rejected","pkg":"github.com/traefik/traefik/v3/pkg/provider/docker","reason":"method or field not found","repairs":4,"req_sha":"6882b4641729f188","sym":"Shared.extractLabels","ts":"2026-07-19T09:19:52.972501Z"}
+{"ms":8,"op":"refs","outcome":"ok","pkg":"github.com/traefik/traefik/v3/pkg/provider/docker","req_sha":"32f9c5b3be964d9a","sym":"Shared.extractSwarmLabels","ts":"2026-07-19T09:19:55.152956Z"}
+{"ms":4,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-19T09:19:55.166337Z"}

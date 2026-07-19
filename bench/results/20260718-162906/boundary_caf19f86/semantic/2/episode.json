@@ -1,0 +1,90 @@
+{
+ "agent_done": "2026-07-19T12:22:18.241548583Z",
+ "agent_started": "2026-07-19T12:20:30.618364Z",
+ "cache_read": 427674,
+ "cache_write": 0,
+ "capped": false,
+ "failure_kind": "scored_fail",
+ "intermediate_states": 0,
+ "invalid_intermediates": 0,
+ "iter": 2,
+ "kind": "rename",
+ "mode": "semantic",
+ "new_errors": null,
+ "op_mix": {
+  "help": {
+   "ok": 2,
+   "rejected": 0
+  },
+  "patch": {
+   "ok": 0,
+   "rejected": 1
+  },
+  "query": {
+   "ok": 11,
+   "rejected": 5
+  },
+  "rename": {
+   "ok": 0,
+   "rejected": 4
+  },
+  "status": {
+   "ok": 1,
+   "rejected": 0
+  },
+  "view": {
+   "ok": 2,
+   "rejected": 3
+  }
+ },
+ "pass": false,
+ "predicate": false,
+ "profile": "qwen3.5-9b-udq4",
+ "prompt": "Rename some variables to remove Nodee\n\nSpecifically, rename: nodeeSplitListener -\u003e workerAuthSplitListener; NodeeFileStorage -\u003e WorkerAuthStorage; NodeeCurrentKeyId -\u003e WorkerAuthCurrentKeyId; NodeeRegistrationRequest -\u003e WorkerAuthRegistrationRequest",
+ "rejects_total": 13,
+ "repairs_offered": 9,
+ "resends": 0,
+ "specs": [
+  {
+   "baseline_refs": 11,
+   "new_refs": 0,
+   "ok": false,
+   "old_refs_left": 11,
+   "sym": "github.com/hashicorp/boundary/internal/daemon/worker.Worker.nodeeSplitListener",
+   "to": "workerAuthSplitListener"
+  },
+  {
+   "baseline_refs": 7,
+   "new_refs": 0,
+   "ok": false,
+   "old_refs_left": 7,
+   "sym": "github.com/hashicorp/boundary/internal/daemon/worker.Worker.NodeeFileStorage",
+   "to": "WorkerAuthStorage"
+  },
+  {
+   "baseline_refs": 4,
+   "new_refs": 0,
+   "ok": false,
+   "old_refs_left": 4,
+   "sym": "github.com/hashicorp/boundary/internal/daemon/worker.Worker.NodeeCurrentKeyId",
+   "to": "WorkerAuthCurrentKeyId"
+  },
+  {
+   "baseline_refs": 4,
+   "new_refs": 0,
+   "ok": false,
+   "old_refs_left": 4,
+   "sym": "github.com/hashicorp/boundary/internal/daemon/worker.Worker.NodeeRegistrationRequest",
+   "to": "WorkerAuthRegistrationRequest"
+  }
+ ],
+ "steps": 31,
+ "task": "boundary_caf19f86",
+ "tests": false,
+ "tests_baseline": true,
+ "tokens_in": 51407,
+ "tokens_out": 3860,
+ "tokens_reasoning": 0,
+ "typecheck": true,
+ "wall_s": 107.623184583
+}

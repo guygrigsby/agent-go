@@ -1,0 +1,127 @@
+{"ms":1175,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-19T07:28:43.548704Z"}
+{"ms":1339,"op":"query","outcome":"ok","req_sha":"b9ca9d68cf1c150c","sym":"NewDerivedReader","ts":"2026-07-19T07:28:52.66358Z"}
+{"ms":5,"op":"query","outcome":"rejected","reason":"package not found","repairs":1,"req_sha":"47f323287f3ddf09","sym":"kms.NewDerivedReader","ts":"2026-07-19T07:28:55.79384Z"}
+{"ms":24,"op":"query","outcome":"ok","req_sha":"b9ca9d68cf1c150c","sym":"NewDerivedReader","ts":"2026-07-19T07:28:57.578486Z"}
+{"ms":10,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-19T07:28:59.261332Z"}
+{"ms":6,"op":"query","outcome":"rejected","reason":"package not found","repairs":1,"req_sha":"e2b41300fd91ce6f","sym":"NewDerivedReader","ts":"2026-07-19T07:29:01.150684Z"}
+{"ms":24,"op":"query","outcome":"ok","req_sha":"d3a2d875a6e6c440","sym":"Import*kms*NewDerivedReader","ts":"2026-07-19T07:29:03.42374Z"}
+{"ms":24,"op":"query","outcome":"ok","req_sha":"d97ecd89105e0696","sym":"import*kms","ts":"2026-07-19T07:29:04.975439Z"}
+{"ms":24,"op":"query","outcome":"ok","req_sha":"0cb7873d34109ba0","sym":"crypto","ts":"2026-07-19T07:29:06.558183Z"}
+{"ms":0,"op":"patch","outcome":"rejected","reason":"unknown op","repairs":1,"req_sha":"3642d603ec5c10b5","ts":"2026-07-19T07:29:09.388658Z"}
+{"ms":10,"op":"query","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/kms","reason":"receiver type not found","repairs":1,"req_sha":"f9c4cd21aef05cdc","sym":"kms.NewDerivedReader","ts":"2026-07-19T07:29:11.631352Z"}
+{"ms":36,"op":"query","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/kms","req_sha":"fecdcd01c4624fde","sym":"NewDerivedReader","ts":"2026-07-19T07:29:13.728976Z"}
+{"ms":23,"op":"query","outcome":"ok","req_sha":"19c7d0145068490f","sym":"crypto.*internal","ts":"2026-07-19T07:29:17.795393Z"}
+{"ms":23,"op":"query","outcome":"ok","req_sha":"7d409c0071157d73","sym":"internal/libs","ts":"2026-07-19T07:29:19.219486Z"}
+{"ms":23,"op":"query","outcome":"ok","req_sha":"d251de0ece9bbae8","sym":"crypto\"","ts":"2026-07-19T07:29:20.722124Z"}
+{"ms":7,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/kms","req_sha":"87a5693b2f7bdc60","sym":"NewDerivedReader","ts":"2026-07-19T07:29:22.536856Z"}
+{"ms":25,"op":"query","outcome":"ok","req_sha":"f21bc6d52fd691ae","sym":"libs","ts":"2026-07-19T07:29:24.676966Z"}
+{"ms":13,"op":"query","outcome":"ok","req_sha":"edc63be01e6f71c4","sym":"internal/","ts":"2026-07-19T07:29:26.266334Z"}
+{"ms":0,"op":"patch","outcome":"rejected","reason":"unknown op","repairs":1,"req_sha":"0663aa705f6f4f71","ts":"2026-07-19T07:29:28.588984Z"}
+{"ms":0,"op":"patch","outcome":"rejected","reason":"unknown op","repairs":1,"req_sha":"8ba587f8f9f961b2","ts":"2026-07-19T07:29:31.170307Z"}
+{"ms":23,"op":"query","outcome":"ok","req_sha":"ed1aeafa152e24f6","sym":"\"kms\"","ts":"2026-07-19T07:29:33.167562Z"}
+{"ms":0,"op":"patch","outcome":"rejected","reason":"unknown op","repairs":1,"req_sha":"60e6fd899ab240d8","ts":"2026-07-19T07:29:35.281043Z"}
+{"ms":23,"op":"query","outcome":"ok","req_sha":"129eb8316976e06c","sym":"kms.NewDerivedReader","ts":"2026-07-19T07:29:37.323812Z"}
+{"ms":14,"op":"query","outcome":"ok","req_sha":"db8a8e722dcb97ab","sym":"libs/crypto.go\"","ts":"2026-07-19T07:29:39.114531Z"}
+{"ms":24,"op":"query","outcome":"ok","req_sha":"b2a437fbce12477a","sym":"libs/crypto","ts":"2026-07-19T07:29:40.769501Z"}
+{"ms":15,"op":"query","outcome":"ok","req_sha":"8de03dfa1e5f92b6","sym":"\"crypto\"","ts":"2026-07-19T07:29:42.428198Z"}
+{"ms":0,"op":"patch","outcome":"rejected","reason":"unknown op","repairs":1,"req_sha":"60e6fd899ab240d8","ts":"2026-07-19T07:29:44.635496Z"}
+{"ms":25,"op":"query","outcome":"ok","req_sha":"f99d022d7889b812","sym":"session/kms.NewDerivedReader","ts":"2026-07-19T07:29:47.532484Z"}
+{"ms":0,"op":"patch","outcome":"rejected","reason":"unknown op","repairs":1,"req_sha":"64366b9b5cabce78","ts":"2026-07-19T07:29:49.492563Z"}
+{"ms":0,"op":"patch","outcome":"rejected","reason":"unknown op","repairs":1,"req_sha":"305815b5e84de102","ts":"2026-07-19T07:29:51.602337Z"}
+{"ms":0,"op":"patch","outcome":"rejected","reason":"unknown op","repairs":1,"req_sha":"16c35db19c55a3c0","ts":"2026-07-19T07:29:53.927925Z"}
+{"ms":0,"op":"patch","outcome":"rejected","reason":"unknown op","repairs":1,"req_sha":"639aaba0f09e409c","ts":"2026-07-19T07:29:56.634934Z"}
+{"ms":0,"op":"patch","outcome":"rejected","reason":"unknown op","repairs":1,"req_sha":"91355a46f13c7c2b","ts":"2026-07-19T07:29:58.754213Z"}
+{"ms":0,"op":"patch","outcome":"rejected","reason":"unknown op","repairs":1,"req_sha":"4f00cc1ce42f8ea2","ts":"2026-07-19T07:30:01.226758Z"}
+{"ms":0,"op":"patch","outcome":"rejected","reason":"unknown op","repairs":1,"req_sha":"6b0c56b16452e91d","ts":"2026-07-19T07:30:03.411913Z"}
+{"ms":0,"op":"patch","outcome":"rejected","reason":"unknown op","repairs":1,"req_sha":"38fce4922e33f86d","ts":"2026-07-19T07:30:05.771488Z"}
+{"ms":0,"op":"patch","outcome":"rejected","reason":"unknown op","repairs":1,"req_sha":"2838dc6900820d53","ts":"2026-07-19T07:30:08.284736Z"}
+{"ms":0,"op":"patch","outcome":"rejected","reason":"unknown op","repairs":1,"req_sha":"85bc6eb98e19d550","ts":"2026-07-19T07:30:11.756308Z"}
+{"ms":0,"op":"patch","outcome":"rejected","reason":"unknown op","repairs":1,"req_sha":"91355a46f13c7c2b","ts":"2026-07-19T07:30:13.907722Z"}
+{"ms":0,"op":"patch","outcome":"rejected","reason":"unknown op","repairs":1,"req_sha":"890e130c3cd3f415","ts":"2026-07-19T07:30:16.845002Z"}
+{"ms":0,"op":"patch","outcome":"rejected","reason":"unknown op","repairs":1,"req_sha":"174ecd378df1fc25","ts":"2026-07-19T07:30:18.887813Z"}
+{"ms":0,"op":"patch","outcome":"rejected","reason":"unknown op","repairs":1,"req_sha":"5dbf1c5bdb6aff35","ts":"2026-07-19T07:30:21.108764Z"}
+{"ms":0,"op":"patch","outcome":"rejected","reason":"unknown op","repairs":1,"req_sha":"5dbf1c5bdb6aff35","ts":"2026-07-19T07:30:23.453836Z"}
+{"ms":0,"op":"patch","outcome":"rejected","reason":"unknown op","repairs":1,"req_sha":"5dbf1c5bdb6aff35","ts":"2026-07-19T07:30:25.92843Z"}
+{"ms":0,"op":"patch","outcome":"rejected","reason":"unknown op","repairs":1,"req_sha":"5dbf1c5bdb6aff35","ts":"2026-07-19T07:30:28.357133Z"}
+{"ms":0,"op":"patch","outcome":"rejected","reason":"unknown op","repairs":1,"req_sha":"5dbf1c5bdb6aff35","ts":"2026-07-19T07:30:30.443402Z"}
+{"ms":0,"op":"patch","outcome":"rejected","reason":"unknown op","repairs":1,"req_sha":"5dbf1c5bdb6aff35","ts":"2026-07-19T07:30:32.637189Z"}
+{"ms":0,"op":"patch","outcome":"rejected","reason":"unknown op","repairs":1,"req_sha":"5dbf1c5bdb6aff35","ts":"2026-07-19T07:30:34.835464Z"}
+{"ms":0,"op":"patch","outcome":"rejected","reason":"unknown op","repairs":1,"req_sha":"5dbf1c5bdb6aff35","ts":"2026-07-19T07:30:36.909716Z"}
+{"ms":0,"op":"patch","outcome":"rejected","reason":"unknown op","repairs":1,"req_sha":"5dbf1c5bdb6aff35","ts":"2026-07-19T07:30:39.215945Z"}
+{"ms":75,"op":"query","outcome":"ok","req_sha":"0cb7873d34109ba0","sym":"crypto","ts":"2026-07-19T07:30:41.370752Z"}
+{"ms":0,"op":"patch","outcome":"rejected","reason":"unknown op","repairs":1,"req_sha":"5dbf1c5bdb6aff35","ts":"2026-07-19T07:30:43.936791Z"}
+{"ms":0,"op":"patch","outcome":"rejected","reason":"unknown op","repairs":1,"req_sha":"5dbf1c5bdb6aff35","ts":"2026-07-19T07:30:46.441989Z"}
+{"ms":0,"op":"patch","outcome":"rejected","reason":"unknown op","repairs":1,"req_sha":"5dbf1c5bdb6aff35","ts":"2026-07-19T07:30:48.982318Z"}
+{"ms":0,"op":"patch","outcome":"rejected","reason":"unknown op","repairs":1,"req_sha":"5dbf1c5bdb6aff35","ts":"2026-07-19T07:30:53.261748Z"}
+{"ms":0,"op":"patch","outcome":"rejected","reason":"unknown op","repairs":1,"req_sha":"5dbf1c5bdb6aff35","ts":"2026-07-19T07:30:55.28849Z"}
+{"ms":0,"op":"patch","outcome":"rejected","reason":"unknown op","repairs":1,"req_sha":"5dbf1c5bdb6aff35","ts":"2026-07-19T07:30:57.168897Z"}
+{"ms":0,"op":"patch","outcome":"rejected","reason":"unknown op","repairs":1,"req_sha":"5dbf1c5bdb6aff35","ts":"2026-07-19T07:30:58.922425Z"}
+{"ms":0,"op":"patch","outcome":"rejected","reason":"unknown op","repairs":1,"req_sha":"5dbf1c5bdb6aff35","ts":"2026-07-19T07:31:00.682001Z"}
+{"ms":0,"op":"patch","outcome":"rejected","reason":"unknown op","repairs":1,"req_sha":"5dbf1c5bdb6aff35","ts":"2026-07-19T07:31:02.489058Z"}
+{"ms":0,"op":"patch","outcome":"rejected","reason":"unknown op","repairs":1,"req_sha":"5dbf1c5bdb6aff35","ts":"2026-07-19T07:31:04.423236Z"}
+{"ms":0,"op":"patch","outcome":"rejected","reason":"unknown op","repairs":1,"req_sha":"5dbf1c5bdb6aff35","ts":"2026-07-19T07:31:06.325233Z"}
+{"ms":0,"op":"patch","outcome":"rejected","reason":"unknown op","repairs":1,"req_sha":"5dbf1c5bdb6aff35","ts":"2026-07-19T07:31:08.104572Z"}
+{"ms":0,"op":"patch","outcome":"rejected","reason":"unknown op","repairs":1,"req_sha":"5dbf1c5bdb6aff35","ts":"2026-07-19T07:31:09.993876Z"}
+{"ms":0,"op":"patch","outcome":"rejected","reason":"unknown op","repairs":1,"req_sha":"5dbf1c5bdb6aff35","ts":"2026-07-19T07:31:11.844686Z"}
+{"ms":0,"op":"patch","outcome":"rejected","reason":"unknown op","repairs":1,"req_sha":"5dbf1c5bdb6aff35","ts":"2026-07-19T07:31:13.569402Z"}
+{"ms":0,"op":"patch","outcome":"rejected","reason":"unknown op","repairs":1,"req_sha":"5dbf1c5bdb6aff35","ts":"2026-07-19T07:31:15.481301Z"}
+{"ms":0,"op":"patch","outcome":"rejected","reason":"unknown op","repairs":1,"req_sha":"5dbf1c5bdb6aff35","ts":"2026-07-19T07:31:17.313163Z"}
+{"ms":0,"op":"patch","outcome":"rejected","reason":"unknown op","repairs":1,"req_sha":"5dbf1c5bdb6aff35","ts":"2026-07-19T07:31:19.094399Z"}
+{"ms":0,"op":"patch","outcome":"rejected","reason":"unknown op","repairs":1,"req_sha":"5dbf1c5bdb6aff35","ts":"2026-07-19T07:31:20.812712Z"}
+{"ms":0,"op":"patch","outcome":"rejected","reason":"unknown op","repairs":1,"req_sha":"5dbf1c5bdb6aff35","ts":"2026-07-19T07:31:22.742753Z"}
+{"ms":0,"op":"patch","outcome":"rejected","reason":"unknown op","repairs":1,"req_sha":"5dbf1c5bdb6aff35","ts":"2026-07-19T07:31:24.488555Z"}
+{"ms":0,"op":"patch","outcome":"rejected","reason":"unknown op","repairs":1,"req_sha":"5dbf1c5bdb6aff35","ts":"2026-07-19T07:31:26.439164Z"}
+{"ms":0,"op":"patch","outcome":"rejected","reason":"unknown op","repairs":1,"req_sha":"5dbf1c5bdb6aff35","ts":"2026-07-19T07:31:28.174993Z"}
+{"ms":0,"op":"patch","outcome":"rejected","reason":"unknown op","repairs":1,"req_sha":"5dbf1c5bdb6aff35","ts":"2026-07-19T07:31:29.965301Z"}
+{"ms":0,"op":"patch","outcome":"rejected","reason":"unknown op","repairs":1,"req_sha":"5dbf1c5bdb6aff35","ts":"2026-07-19T07:31:31.842977Z"}
+{"ms":0,"op":"patch","outcome":"rejected","reason":"unknown op","repairs":1,"req_sha":"5dbf1c5bdb6aff35","ts":"2026-07-19T07:31:33.582451Z"}
+{"ms":42,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-19T07:31:34.728188Z"}
+{"ms":0,"op":"patch","outcome":"rejected","reason":"unknown op","repairs":1,"req_sha":"5dbf1c5bdb6aff35","ts":"2026-07-19T07:31:36.680271Z"}
+{"ms":0,"op":"patch","outcome":"rejected","reason":"unknown op","repairs":1,"req_sha":"5dbf1c5bdb6aff35","ts":"2026-07-19T07:31:38.583036Z"}
+{"ms":0,"op":"patch","outcome":"rejected","reason":"unknown op","repairs":1,"req_sha":"5dbf1c5bdb6aff35","ts":"2026-07-19T07:31:40.741096Z"}
+{"ms":0,"op":"patch","outcome":"rejected","reason":"unknown op","repairs":1,"req_sha":"5dbf1c5bdb6aff35","ts":"2026-07-19T07:31:42.779081Z"}
+{"ms":0,"op":"patch","outcome":"rejected","reason":"unknown op","repairs":1,"req_sha":"5dbf1c5bdb6aff35","ts":"2026-07-19T07:31:44.748167Z"}
+{"ms":26,"op":"query","outcome":"ok","req_sha":"05fa80ce47da3b2c","sym":"internallibs","ts":"2026-07-19T07:31:50.03611Z"}
+{"ms":0,"op":"patch","outcome":"rejected","reason":"unknown op","repairs":1,"req_sha":"5dbf1c5bdb6aff35","ts":"2026-07-19T07:31:52.816451Z"}
+{"ms":0,"op":"patch","outcome":"rejected","reason":"unknown op","repairs":1,"req_sha":"5dbf1c5bdb6aff35","ts":"2026-07-19T07:31:54.776786Z"}
+{"ms":44,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-19T07:32:26.542425Z"}
+{"ms":0,"op":"help","outcome":"ok","req_sha":"0b56758d64d8a078","ts":"2026-07-19T07:32:32.959197Z"}
+{"ms":2,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/kms","req_sha":"87a5693b2f7bdc60","sym":"NewDerivedReader","ts":"2026-07-19T07:32:42.189152Z"}
+{"ms":5,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/kms","req_sha":"0c4665e48e7cc461","sym":"TestNewDerivedReader","ts":"2026-07-19T07:32:44.207631Z"}
+{"ms":2127,"op":"patch","outcome":"rejected","reason":"package not found","repairs":0,"req_sha":"8db9bb49af21cdbc","ts":"2026-07-19T07:32:48.462815Z"}
+{"ms":23,"op":"query","outcome":"ok","req_sha":"f21bc6d52fd691ae","sym":"libs","ts":"2026-07-19T07:32:54.675608Z"}
+{"ms":26,"op":"query","outcome":"ok","req_sha":"0cb7873d34109ba0","sym":"crypto","ts":"2026-07-19T07:32:56.216643Z"}
+{"ms":6,"op":"patch","outcome":"rejected","reason":"declaration does not parse","repairs":0,"req_sha":"fd9018f5a407ce57","ts":"2026-07-19T07:33:05.999829Z"}
+{"ms":7,"op":"patch","outcome":"rejected","reason":"declaration does not parse","repairs":0,"req_sha":"a729a31c4368be83","ts":"2026-07-19T07:33:11.66776Z"}
+{"ms":26,"op":"query","outcome":"ok","req_sha":"508086e36649e0a6","sym":"internal/auth/oidc/service","ts":"2026-07-19T07:33:14.098801Z"}
+{"ms":5,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/kms","req_sha":"87a5693b2f7bdc60","sym":"NewDerivedReader","ts":"2026-07-19T07:33:17.301665Z"}
+{"ms":7,"op":"patch","outcome":"rejected","reason":"op argument not in this op's schema","repairs":1,"req_sha":"b7a43855fc66fa71","ts":"2026-07-19T07:33:23.668218Z"}
+{"ms":7,"op":"patch","outcome":"rejected","reason":"declaration does not parse","repairs":0,"req_sha":"7ca26f598eb18e65","ts":"2026-07-19T07:33:27.98543Z"}
+{"ms":1047,"op":"patch","outcome":"accepted","req_sha":"21fbed352db7843e","ts":"2026-07-19T07:33:33.737224Z"}
+{"ms":6,"op":"patch","outcome":"rejected","reason":"package not found","repairs":0,"req_sha":"4928494bea093873","ts":"2026-07-19T07:33:38.508532Z"}
+{"ms":2,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/libs/crypto","req_sha":"968204f401fbfffd","sym":"Init","ts":"2026-07-19T07:33:40.926901Z"}
+{"ms":8,"op":"query","outcome":"ok","req_sha":"b2a437fbce12477a","sym":"libs/crypto","ts":"2026-07-19T07:33:43.723682Z"}
+{"ms":6,"op":"view","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/libs/crypto","reason":"receiver type not found","repairs":1,"req_sha":"ce50a5200a68c46d","sym":"agent.go","ts":"2026-07-19T07:33:48.484805Z"}
+{"ms":7,"op":"patch","outcome":"rejected","reason":"package not found","repairs":0,"req_sha":"d08123fd6d158800","ts":"2026-07-19T07:33:53.160103Z"}
+{"ms":20,"op":"query","outcome":"ok","req_sha":"29fe17b799cbe4f3","sym":"boundary/internal","ts":"2026-07-19T07:33:56.260153Z"}
+{"ms":226,"op":"patch","outcome":"accepted","req_sha":"c3aeb07cf3e9f5ed","ts":"2026-07-19T07:34:01.641987Z"}
+{"ms":6,"op":"patch","outcome":"rejected","reason":"package not found","repairs":0,"req_sha":"d08123fd6d158800","ts":"2026-07-19T07:34:04.994359Z"}
+{"ms":19,"op":"query","outcome":"ok","req_sha":"5b92fe1660b50e35","sym":"kms.go","ts":"2026-07-19T07:34:10.281641Z"}
+{"ms":4,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/kms","req_sha":"87a5693b2f7bdc60","sym":"NewDerivedReader","ts":"2026-07-19T07:34:12.774347Z"}
+{"ms":22,"op":"query","outcome":"ok","req_sha":"9087436f8158cf21","sym":"MultiWrapper","ts":"2026-07-19T07:34:16.722787Z"}
+{"ms":10,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-19T07:34:18.995814Z"}
+{"ms":24,"op":"query","outcome":"ok","req_sha":"274478833bc7e217","sym":"internal/kms/","ts":"2026-07-19T07:34:23.328627Z"}
+{"ms":25,"op":"query","outcome":"ok","req_sha":"b9b1905d795f1ce3","sym":"TestWrapper","ts":"2026-07-19T07:34:25.527614Z"}
+{"ms":63,"op":"patch","outcome":"rejected","reason":"package not found","repairs":0,"req_sha":"d08123fd6d158800","ts":"2026-07-19T07:34:30.516609Z"}
+{"ms":22,"op":"query","outcome":"ok","req_sha":"69929c64c88742ae","sym":"boundary/internal/libs","ts":"2026-07-19T07:34:33.111629Z"}
+{"ms":23,"op":"query","outcome":"ok","req_sha":"dc702bc599931f6f","sym":"crypto/","ts":"2026-07-19T07:34:37.299719Z"}
+{"ms":8,"op":"patch","outcome":"rejected","reason":"package not found","repairs":0,"req_sha":"d08123fd6d158800","ts":"2026-07-19T07:34:39.79319Z"}
+{"ms":171,"op":"patch","outcome":"accepted","req_sha":"86f3b9fea2c829d9","ts":"2026-07-19T07:34:42.499657Z"}
+{"ms":4,"op":"patch","outcome":"rejected","reason":"package not found","repairs":0,"req_sha":"d08123fd6d158800","ts":"2026-07-19T07:34:44.904721Z"}
+{"ms":13,"op":"query","outcome":"ok","req_sha":"813e7d3ee9c7e327","sym":"crypto/agent.go","ts":"2026-07-19T07:34:48.060443Z"}
+{"ms":0,"op":"patch","outcome":"rejected","reason":"unknown op","repairs":0,"req_sha":"9839f6a280db6f3f","ts":"2026-07-19T07:34:52.562869Z"}
+{"ms":931,"op":"inspect","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/libs/crypto","reason":"symbol not found","repairs":1,"req_sha":"4735785bc98b9d6e","sym":"NewDerivedReader","ts":"2026-07-19T07:34:55.559575Z"}
+{"ms":1,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/kms","req_sha":"06b3709f94d43a41","sym":"NewDerivedReader","ts":"2026-07-19T07:34:56.49623Z"}
+{"ms":1,"op":"inspect","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/libs/crypto","reason":"symbol not found","repairs":1,"req_sha":"4d400ef2f960ae93","sym":"TestNewDerivedReader","ts":"2026-07-19T07:34:56.502338Z"}
+{"ms":1,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/kms","req_sha":"45003c1614a7068f","sym":"TestNewDerivedReader","ts":"2026-07-19T07:34:56.508238Z"}
+{"ms":2,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-19T07:34:56.513759Z"}

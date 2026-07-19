@@ -1,0 +1,193 @@
+diff --git a/internal/session/job_delete_terminated_sessions_test.go b/internal/session/job_delete_terminated_sessions_test.go
+index 40fc58d92..ae4835ab0 100644
+--- a/internal/session/job_delete_terminated_sessions_test.go
++++ b/internal/session/job_delete_terminated_sessions_test.go
+@@ -20,7 +20,7 @@ func TestDeleteTermiantedSessionsJob(t *testing.T) {
+ 	wrapper := db.TestWrapper(t)
+ 	iamRepo := iam.TestRepo(t, conn, wrapper)
+ 	kms := kms.TestKms(t, conn, wrapper)
+-	repo, err := NewRepository(rw, rw, kms)
++	repo, err := NewRepository(ctx, rw, rw, kms)
+ 	require.NoError(t, err)
+ 	composedOf := TestSessionParams(t, conn, wrapper, iamRepo)
+ 	require.NoError(t, err)
+diff --git a/internal/session/job_session_cleanup_test.go b/internal/session/job_session_cleanup_test.go
+index 8c64c3c64..4c40316c2 100644
+--- a/internal/session/job_session_cleanup_test.go
++++ b/internal/session/job_session_cleanup_test.go
+@@ -35,9 +35,9 @@ func TestSessionConnectionCleanupJob(t *testing.T) {
+ 	wrapper := db.TestWrapper(t)
+ 	iamRepo := iam.TestRepo(t, conn, wrapper)
+ 	kms := kms.TestKms(t, conn, wrapper)
+-	serversRepo, err := server.NewRepository(rw, rw, kms)
++	serversRepo, err := server.NewRepository(ctx, rw, rw, kms)
+ 	require.NoError(err)
+-	sessionRepo, err := NewRepository(rw, rw, kms)
++	sessionRepo, err := NewRepository(ctx, rw, rw, kms)
+ 	connectionRepo, err := NewConnectionRepository(ctx, rw, rw, kms)
+ 	require.NoError(err)
+ 
+@@ -180,12 +180,12 @@ func TestCloseConnectionsForDeadWorkers(t *testing.T) {
+ 	wrapper := db.TestWrapper(t)
+ 	iamRepo := iam.TestRepo(t, conn, wrapper)
+ 	kms := kms.TestKms(t, conn, wrapper)
+-	repo, err := NewRepository(rw, rw, kms)
++	repo, err := NewRepository(ctx, rw, rw, kms)
+ 	require.NoError(err)
+ 	gracePeriod := 1 * time.Second
+ 	connRepo, err := NewConnectionRepository(ctx, rw, rw, kms)
+ 	require.NoError(err)
+-	serversRepo, err := server.NewRepository(rw, rw, kms)
++	serversRepo, err := server.NewRepository(ctx, rw, rw, kms)
+ 	require.NoError(err)
+ 
+ 	job, err := newSessionConnectionCleanupJob(rw, deadWorkerConnCloseMinGrace)
+@@ -443,7 +443,7 @@ func TestCloseWorkerlessConnections(t *testing.T) {
+ 	wrapper := db.TestWrapper(t)
+ 	iamRepo := iam.TestRepo(t, conn, wrapper)
+ 	kms := kms.TestKms(t, conn, wrapper)
+-	repo, err := NewRepository(rw, rw, kms)
++	repo, err := NewRepository(ctx, rw, rw, kms)
+ 	require.NoError(err)
+ 	connRepo, err := NewConnectionRepository(ctx, rw, rw, kms)
+ 	require.NoError(err)
+diff --git a/internal/session/jobs.go b/internal/session/jobs.go
+index 70f1e113b..cb4b38246 100644
+--- a/internal/session/jobs.go
++++ b/internal/session/jobs.go
+@@ -24,7 +24,7 @@ func RegisterJobs(ctx context.Context, scheduler *scheduler.Scheduler, w db.Writ
+ 		return fmt.Errorf("error registering session cleanup job: %w", err)
+ 	}
+ 
+-	repo, err := NewRepository(r, w, k)
++	repo, err := NewRepository(ctx, r, w, k)
+ 	if err != nil {
+ 		return fmt.Errorf("error creating repository: %w", err)
+ 	}
+diff --git a/internal/session/repository.go b/internal/session/repository.go
+index 8080ae56f..abddf5455 100644
+--- a/internal/session/repository.go
++++ b/internal/session/repository.go
+@@ -38,8 +38,11 @@ type RepositoryFactory func(opt ...Option) (*Repository, error)
+ 
+ // NewRepository creates a new session Repository. Supports the options: WithLimit
+ // which sets a default limit on results returned by repo operations.
+-func NewRepository(r db.Reader, w db.Writer, kms *kms.Kms, opt ...Option) (*Repository, error) {
++func NewRepository(ctx context.Context, r db.Reader, w db.Writer, kms *kms.Kms, opt ...Option) (*Repository, error) {
+ 	const op = "session.NewRepository"
++	if ctx == nil {
++		return nil, errors.NewDeprecated(errors.InvalidParameter, op, "nil context")
++	}
+ 	if r == nil {
+ 		return nil, errors.NewDeprecated(errors.InvalidParameter, op, "nil reader")
+ 	}
+diff --git a/internal/session/repository_connection_test.go b/internal/session/repository_connection_test.go
+index 8ee6f7b2c..ed790bb62 100644
+--- a/internal/session/repository_connection_test.go
++++ b/internal/session/repository_connection_test.go
+@@ -25,7 +25,7 @@ func TestRepository_ListConnection(t *testing.T) {
+ 	iamRepo := iam.TestRepo(t, conn, wrapper)
+ 	rw := db.New(conn)
+ 	kms := kms.TestKms(t, conn, wrapper)
+-	repo, err := NewRepository(rw, rw, kms, WithLimit(testLimit))
++	repo, err := NewRepository(ctx, rw, rw, kms, WithLimit(testLimit))
+ 	require.NoError(t, err)
+ 	connRepo, err := NewConnectionRepository(ctx, rw, rw, kms, WithLimit(testLimit))
+ 	require.NoError(t, err)
+@@ -141,13 +141,13 @@ func TestRepository_ConnectConnection(t *testing.T) {
+ 	wrapper := db.TestWrapper(t)
+ 	iamRepo := iam.TestRepo(t, conn, wrapper)
+ 	kms := kms.TestKms(t, conn, wrapper)
+-	repo, err := NewRepository(rw, rw, kms)
++	repo, err := NewRepository(ctx, rw, rw, kms)
+ 	require.NoError(t, err)
+ 	connRepo, err := NewConnectionRepository(ctx, rw, rw, kms)
+-	require.NoError(t, err)
+ 
+ 	setupFn := func() ConnectWith {
+ 		s := TestDefaultSession(t, conn, wrapper, iamRepo)
++
+ 		tofu := TestTofu(t)
+ 		_, _, err := repo.ActivateSession(context.Background(), s.PublicId, s.Version, tofu)
+ 		require.NoError(t, err)
+@@ -351,7 +351,7 @@ func TestRepository_orphanedConnections(t *testing.T) {
+ 	wrapper := db.TestWrapper(t)
+ 	iamRepo := iam.TestRepo(t, conn, wrapper)
+ 	kms := kms.TestKms(t, conn, wrapper)
+-	repo, err := NewRepository(rw, rw, kms)
++	repo, err := NewRepository(ctx, rw, rw, kms)
+ 	require.NoError(err)
+ 	connRepo, err := NewConnectionRepository(ctx, rw, rw, kms, WithWorkerStateDelay(0))
+ 	require.NoError(err)
+@@ -446,7 +446,7 @@ func TestRepository_CloseConnections(t *testing.T) {
+ 	wrapper := db.TestWrapper(t)
+ 	iamRepo := iam.TestRepo(t, conn, wrapper)
+ 	kms := kms.TestKms(t, conn, wrapper)
+-	repo, err := NewRepository(rw, rw, kms)
++	repo, err := NewRepository(ctx, rw, rw, kms)
+ 	require.NoError(t, err)
+ 	connRepo, err := NewConnectionRepository(ctx, rw, rw, kms)
+ 	require.NoError(t, err)
+diff --git a/internal/session/repository_credential_test.go b/internal/session/repository_credential_test.go
+index 832f8298b..a619a2725 100644
+--- a/internal/session/repository_credential_test.go
++++ b/internal/session/repository_credential_test.go
+@@ -14,12 +14,13 @@ import (
+ 
+ func TestRepository_AddSessionCredentials(t *testing.T) {
+ 	t.Parallel()
++	ctx := context.Background()
+ 	conn, _ := db.TestSetup(t, "postgres")
+ 	wrapper := db.TestWrapper(t)
+ 	iamRepo := iam.TestRepo(t, conn, wrapper)
+ 	rw := db.New(conn)
+ 	kms := kms.TestKms(t, conn, wrapper)
+-	repo, err := NewRepository(rw, rw, kms)
++	repo, err := NewRepository(ctx, rw, rw, kms)
+ 	require.NoError(t, err)
+ 	s := TestSession(t, conn, wrapper, TestSessionParams(t, conn, wrapper, iamRepo))
+ 
+diff --git a/internal/session/repository_test.go b/internal/session/repository_test.go
+index 4a2ed7878..4e7faea7d 100644
+--- a/internal/session/repository_test.go
++++ b/internal/session/repository_test.go
+@@ -1,6 +1,7 @@
+ package session
+ 
+ import (
++	"context"
+ 	"testing"
+ 
+ 	"github.com/hashicorp/boundary/internal/db"
+@@ -11,6 +12,7 @@ import (
+ 
+ func TestNewRepository(t *testing.T) {
+ 	t.Parallel()
++	ctx := context.Background()
+ 	conn, _ := db.TestSetup(t, "postgres")
+ 	rw := db.New(conn)
+ 	wrapper := db.TestWrapper(t)
+@@ -36,7 +38,7 @@ func TestNewRepository(t *testing.T) {
+ 				k: testKms,
+ 			},
+ 			want: func() *Repository {
+-				ret, err := NewRepository(rw, rw, testKms)
++				ret, err := NewRepository(ctx, rw, rw, testKms)
+ 				require.NoError(t, err)
+ 				return ret
+ 			}(),
+@@ -63,10 +65,10 @@ func TestNewRepository(t *testing.T) {
+ 			wantErrString: "session.NewRepository: nil reader: parameter violation: error #100",
+ 		},
+ 	}
+-	for _, tt := range tests {
+-		t.Run(tt.name, func(t *testing.T) {
+-			assert, require := assert.New(t), require.New(t)
+-			got, err := NewRepository(tt.args.r, tt.args.w, tt.args.k)
++		for _, tt := range tests {
++			t.Run(tt.name, func(t *testing.T) {
++				assert, require := assert.New(t), require.New(t)
++				got, err := NewRepository(ctx, tt.args.r, tt.args.w, tt.args.k)
+ 			if tt.wantErr {
+ 				require.Error(err)
+ 				assert.Equal(tt.wantErrString, err.Error())

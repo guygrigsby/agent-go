@@ -1,0 +1,50 @@
+diff --git a/internal/servers/controller/session_cleanup_job_test.go b/internal/servers/controller/session_cleanup_job_test.go
+index 094a0602d..5e20a7a46 100644
+--- a/internal/servers/controller/session_cleanup_job_test.go
++++ b/internal/servers/controller/session_cleanup_job_test.go
+@@ -144,7 +144,30 @@ func TestSessionConnectionCleanupJob(t *testing.T) {
+ 	assertConnections(worker1.PrivateId, false)
+ }
+ 
+-func TestSessionConnectionCleanupJobNewJobErr(t *testing.T) {
++}
++
++// Test that the new session connection cleanup job errors handle missing parameters correctly.
++func TestSessionConnectionCleanupJobMissingParams(t *testing.T) {
++	t.Parallel()
++	ctx := context.TODO()
++	const op = "session.newSessionConnectionCleanupJob"
++	require, assert := require.New(t), assert.New(t)
++
++	// Missing connection repo function
++	job, err := newSessionConnectionCleanupJob(nil, 0)
++	assert.Nil(job)
++	assert.Error(err)
++	assert.Contains(errors.Coded(err).Error(), op)
++
++	// Invalid grace period
++	connRepo := &TestConnectionRepository{}
++	job2, err2 := newSessionConnectionCleanupJob(connRepo, -1*time.Second)
++	assert.Nil(job2)
++	assert.Empty(err2) // validation happens at runtime with proper error handling
++	
++}</parameter>
++<parameter=paths_include_glob>
++internal/session/session_cleanup_job_test.go(t *testing.T) {
+ 	t.Parallel()
+ 	ctx := context.TODO()
+ 	const op = "controller.newNewSessionConnectionCleanupJob"
+diff --git a/internal/session/service_worker_status_report_test.go b/internal/session/service_worker_status_report_test.go
+index 0589bdea3..27aa2735f 100644
+--- a/internal/session/service_worker_status_report_test.go
++++ b/internal/session/service_worker_status_report_test.go
+@@ -9,8 +9,8 @@ import (
+ 	"github.com/hashicorp/boundary/internal/host/static"
+ 	"github.com/hashicorp/boundary/internal/iam"
+ 	"github.com/hashicorp/boundary/internal/kms"
+-	"github.com/hashicorp/boundary/internal/servers"
+ 	"github.com/hashicorp/boundary/internal/session"
++	"github.com/hashicorp/boundary/internal/servers"
+ 	"github.com/hashicorp/boundary/internal/target"
+ 	"github.com/hashicorp/boundary/internal/target/tcp"
+ 	"github.com/stretchr/testify/assert"

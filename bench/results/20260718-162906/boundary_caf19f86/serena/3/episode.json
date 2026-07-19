@@ -1,0 +1,80 @@
+{
+ "agent_done": "2026-07-19T12:08:43.236551291Z",
+ "agent_started": "2026-07-19T12:02:44.055366Z",
+ "cache_read": 2534545,
+ "cache_write": 0,
+ "capped": false,
+ "failure_kind": "scored_fail",
+ "first_invalid_s": 77.126104833,
+ "intermediate_states": 12,
+ "invalid_intermediate_rate": 1,
+ "invalid_intermediates": 12,
+ "iter": 3,
+ "kind": "rename",
+ "mode": "serena",
+ "new_errors": [
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameqwen3.5-9b-udq4boundary_caf19f86serena3220966226/007/boundary/internal/daemon/worker/worker.go:87:2|\tother declaration of TestOverrideX509VerifyDnsName",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameqwen3.5-9b-udq4boundary_caf19f86serena3220966226/007/boundary/internal/daemon/worker/worker.go:91:2|TestOverrideX509VerifyCertPool redeclared",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameqwen3.5-9b-udq4boundary_caf19f86serena3220966226/007/boundary/internal/daemon/worker/listeners.go:126:18|cannot use w.WorkerAuthStorage (variable of struct type WorkerAuthStorage) as nodeenrollment.Storage value in struct literal: WorkerAuthStorage does not implement nodeenrollment.Storage (missing method List)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameqwen3.5-9b-udq4boundary_caf19f86serena3220966226/007/boundary/internal/daemon/worker/worker.go:170:29|cannot use nodeefile.NewFileStorage(w.baseContext, nodeefile.WithBaseDirectory(w.conf.RawConfig.Worker.AuthStoragePath)) (value of type *\"github.com/hashicorp/nodeenrollment/storage/file\".FileStorage) as WorkerAuthStorage value in assignment",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameqwen3.5-9b-udq4boundary_caf19f86serena3220966226/007/boundary/internal/daemon/worker/worker.go:197:60|cannot use w.WorkerAuthStorage (variable of struct type WorkerAuthStorage) as nodeenrollment.Storage value in argument to types.NewNodeCredentials: WorkerAuthStorage does not implement nodeenrollment.Storage (missing method List)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameqwen3.5-9b-udq4boundary_caf19f86serena3220966226/007/boundary/internal/daemon/worker/worker.go:33:2|\"github.com/hashicorp/nodeenrollment/util/splitlistener\" imported and not used",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameqwen3.5-9b-udq4boundary_caf19f86serena3220966226/007/boundary/internal/cmd/commands/dev/dev.go:775:33|c.worker.WorkerAuthStorage.Cleanup undefined (type worker.WorkerAuthStorage has no field or method Cleanup)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameqwen3.5-9b-udq4boundary_caf19f86serena3220966226/007/boundary/internal/daemon/worker/worker.go:84:26|splitlistener (package name) is not a type",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameqwen3.5-9b-udq4boundary_caf19f86serena3220966226/007/boundary/internal/daemon/worker/worker.go:90:2|TestOverrideX509VerifyDnsName redeclared",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameqwen3.5-9b-udq4boundary_caf19f86serena3220966226/007/boundary/internal/daemon/worker/worker.go:88:2|\tother declaration of TestOverrideX509VerifyCertPool",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameqwen3.5-9b-udq4boundary_caf19f86serena3220966226/007/boundary/internal/daemon/worker/controller_connection.go:77:35|cannot use w.WorkerAuthStorage (variable of struct type WorkerAuthStorage) as nodeenrollment.Storage value in argument to protocol.Dial: WorkerAuthStorage does not implement nodeenrollment.Storage (missing method List)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameqwen3.5-9b-udq4boundary_caf19f86serena3220966226/007/boundary/internal/daemon/worker/listeners.go:145:3|cannot use w.WorkerAuthStorage (variable of struct type WorkerAuthStorage) as nodeenrollment.Storage value in argument to handlers.NewMultihopServiceServer: WorkerAuthStorage does not implement nodeenrollment.Storage (missing method List)"
+ ],
+ "op_mix": {},
+ "pass": false,
+ "predicate": true,
+ "profile": "qwen3.5-9b-udq4",
+ "prompt": "Rename some variables to remove Nodee\n\nSpecifically, rename: nodeeSplitListener -\u003e workerAuthSplitListener; NodeeFileStorage -\u003e WorkerAuthStorage; NodeeCurrentKeyId -\u003e WorkerAuthCurrentKeyId; NodeeRegistrationRequest -\u003e WorkerAuthRegistrationRequest",
+ "rejects_total": 0,
+ "repairs_offered": 0,
+ "resends": 0,
+ "specs": [
+  {
+   "baseline_refs": 11,
+   "new_refs": 11,
+   "ok": true,
+   "old_refs_left": 0,
+   "sym": "github.com/hashicorp/boundary/internal/daemon/worker.Worker.nodeeSplitListener",
+   "to": "workerAuthSplitListener"
+  },
+  {
+   "baseline_refs": 7,
+   "new_refs": 7,
+   "ok": true,
+   "old_refs_left": 0,
+   "sym": "github.com/hashicorp/boundary/internal/daemon/worker.Worker.NodeeFileStorage",
+   "to": "WorkerAuthStorage"
+  },
+  {
+   "baseline_refs": 4,
+   "new_refs": 4,
+   "ok": true,
+   "old_refs_left": 0,
+   "sym": "github.com/hashicorp/boundary/internal/daemon/worker.Worker.NodeeCurrentKeyId",
+   "to": "WorkerAuthCurrentKeyId"
+  },
+  {
+   "baseline_refs": 4,
+   "new_refs": 4,
+   "ok": true,
+   "old_refs_left": 0,
+   "sym": "github.com/hashicorp/boundary/internal/daemon/worker.Worker.NodeeRegistrationRequest",
+   "to": "WorkerAuthRegistrationRequest"
+  }
+ ],
+ "steps": 115,
+ "task": "boundary_caf19f86",
+ "tests": false,
+ "tests_baseline": true,
+ "tokens_in": 63580,
+ "tokens_out": 14035,
+ "tokens_reasoning": 0,
+ "typecheck": false,
+ "wall_s": 359.181185291
+}

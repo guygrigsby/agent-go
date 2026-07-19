@@ -1,0 +1,88 @@
+{
+ "agent_done": "2026-07-19T12:16:19.931367667Z",
+ "agent_started": "2026-07-19T12:13:39.043451Z",
+ "cache_read": 272013,
+ "cache_write": 0,
+ "capped": false,
+ "failure_kind": "scored_fail",
+ "intermediate_states": 4,
+ "invalid_intermediate_rate": 0,
+ "invalid_intermediates": 0,
+ "iter": 0,
+ "kind": "rename",
+ "mode": "semantic",
+ "new_errors": null,
+ "op_mix": {
+  "query": {
+   "ok": 4,
+   "rejected": 1
+  },
+  "rename": {
+   "ok": 4,
+   "rejected": 6
+  },
+  "status": {
+   "ok": 1,
+   "rejected": 0
+  },
+  "test": {
+   "ok": 1,
+   "rejected": 0
+  },
+  "view": {
+   "ok": 1,
+   "rejected": 0
+  }
+ },
+ "pass": false,
+ "predicate": false,
+ "profile": "qwen3.5-9b-udq4",
+ "prompt": "Rename some variables to remove Nodee\n\nSpecifically, rename: nodeeSplitListener -\u003e workerAuthSplitListener; NodeeFileStorage -\u003e WorkerAuthStorage; NodeeCurrentKeyId -\u003e WorkerAuthCurrentKeyId; NodeeRegistrationRequest -\u003e WorkerAuthRegistrationRequest",
+ "rejects_total": 7,
+ "repairs_offered": 3,
+ "resends": 0,
+ "specs": [
+  {
+   "baseline_refs": 11,
+   "new_refs": 11,
+   "ok": true,
+   "old_refs_left": 0,
+   "sym": "github.com/hashicorp/boundary/internal/daemon/worker.Worker.nodeeSplitListener",
+   "to": "workerAuthSplitListener"
+  },
+  {
+   "baseline_refs": 7,
+   "new_refs": 7,
+   "ok": true,
+   "old_refs_left": 0,
+   "sym": "github.com/hashicorp/boundary/internal/daemon/worker.Worker.NodeeFileStorage",
+   "to": "WorkerAuthStorage"
+  },
+  {
+   "baseline_refs": 4,
+   "new_refs": 0,
+   "ok": false,
+   "old_refs_left": 0,
+   "sym": "github.com/hashicorp/boundary/internal/daemon/worker.Worker.NodeeCurrentKeyId",
+   "to": "WorkerAuthCurrentKeyId"
+  },
+  {
+   "baseline_refs": 4,
+   "new_refs": 4,
+   "ok": true,
+   "old_refs_left": 0,
+   "sym": "github.com/hashicorp/boundary/internal/daemon/worker.Worker.NodeeRegistrationRequest",
+   "to": "WorkerAuthRegistrationRequest"
+  }
+ ],
+ "steps": 25,
+ "task": "boundary_caf19f86",
+ "tests": false,
+ "tests_baseline": true,
+ "time_to_first_mutation_s": 23.221792,
+ "tokens_in": 13636,
+ "tokens_out": 2989,
+ "tokens_reasoning": 0,
+ "typecheck": true,
+ "wall_s": 160.887916667
+}

@@ -1,0 +1,76 @@
+{
+ "agent_done": "2026-07-19T08:44:11.033359958Z",
+ "agent_started": "2026-07-19T08:40:52.230024Z",
+ "cache_read": 1425349,
+ "cache_write": 0,
+ "capped": false,
+ "failure_kind": "scored_fail",
+ "intermediate_states": 2,
+ "invalid_intermediate_rate": 0,
+ "invalid_intermediates": 0,
+ "iter": 1,
+ "kind": "move",
+ "mode": "semantic",
+ "new_errors": null,
+ "op_mix": {
+  "help": {
+   "ok": 1,
+   "rejected": 0
+  },
+  "patch": {
+   "ok": 2,
+   "rejected": 7
+  },
+  "query": {
+   "ok": 31,
+   "rejected": 3
+  },
+  "status": {
+   "ok": 3,
+   "rejected": 0
+  },
+  "upsert": {
+   "ok": 2,
+   "rejected": 5
+  },
+  "view": {
+   "ok": 5,
+   "rejected": 18
+  }
+ },
+ "pass": false,
+ "predicate": false,
+ "profile": "qwen3.5-9b-udq4",
+ "prompt": "move user variables into globals\n\nSpecifically: move AnyAuthenticatedUserId from github.com/hashicorp/boundary/internal/perms to github.com/hashicorp/boundary/globals; move RecoveryUserId from github.com/hashicorp/boundary/internal/perms to github.com/hashicorp/boundary/globals",
+ "rejects_total": 33,
+ "repairs_offered": 22,
+ "resends": 3,
+ "specs": [
+  {
+   "in_target": true,
+   "ok": false,
+   "still_in_source": true,
+   "sym": "github.com/hashicorp/boundary/internal/perms.AnyAuthenticatedUserId",
+   "to_name": "",
+   "to_pkg": "github.com/hashicorp/boundary/globals"
+  },
+  {
+   "in_target": true,
+   "ok": false,
+   "still_in_source": true,
+   "sym": "github.com/hashicorp/boundary/internal/perms.RecoveryUserId",
+   "to_name": "",
+   "to_pkg": "github.com/hashicorp/boundary/globals"
+  }
+ ],
+ "steps": 79,
+ "task": "boundary_b26814a3",
+ "tests": false,
+ "tests_baseline": true,
+ "time_to_first_mutation_s": 41.093882,
+ "tokens_in": 72488,
+ "tokens_out": 7542,
+ "tokens_reasoning": 0,
+ "typecheck": true,
+ "wall_s": 198.803335958
+}

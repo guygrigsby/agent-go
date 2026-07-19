@@ -1,0 +1,956 @@
+diff --git a/globals/globals.go b/globals/globals.go
+index daba120cc..6cf182f84 100644
+--- a/globals/globals.go
++++ b/globals/globals.go
+@@ -8,6 +8,14 @@ const (
+ 	SessionPrefix  = "s_"
+ )
+ 
++const (
++	// The user ID used for All Authenticated Users in ACL rules
++	AnyAuthenticatedUserId = "u_auth"
++
++	// The user ID used for Recovery users in ACL rules
++	RecoveryUserId         = "u_recovery"
++)
++
+ type (
+ 	ContextMaxRequestSizeType      struct{}
+ 	ContextOriginalRequestPathType struct{}
+diff --git a/internal/auth/oidc/service.go b/internal/auth/oidc/service.go
+index bd92038ae..08c386df1 100644
+--- a/internal/auth/oidc/service.go
++++ b/internal/auth/oidc/service.go
+@@ -34,8 +34,7 @@ const (
+ 	// included in the auth URL returned when an authen attempted is kicked off.
+ 	CallbackEndpoint = "%s/v1/auth-methods/oidc:authenticate:callback"
+ )
+-
+-type (
++const (\n\t// The user ID used for All Authenticated Users in ACL rules\n\tAnyAuthenticatedUserId = "u_auth"\n\n\t// The user ID used for Recovery users in ACL rules\n\tRecoveryUserId         = "u_recovery"\n\n\ntype \(
+ 	// OidcRepoFactory is used by "service functions" to create a new oidc repo
+ 	OidcRepoFactory func() (*Repository, error)
+ 
+diff --git a/internal/credential/vault/internal/sshprivatekey/sshprivatekey.go b/internal/credential/vault/internal/sshprivatekey/sshprivatekey.go
+index 370c6469a..dd1e953ba 100644
+--- a/internal/credential/vault/internal/sshprivatekey/sshprivatekey.go
++++ b/internal/credential/vault/internal/sshprivatekey/sshprivatekey.go
+@@ -6,8 +6,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/credential"
+ 	"github.com/mitchellh/pointerstructure"
+ )
+-
+-type (
++const (\n\t// The user ID used for All Authenticated Users in ACL rules\n\tAnyAuthenticatedUserId = "u_auth"\n\n\t// The user ID used for Recovery users in ACL rules\n\tRecoveryUserId         = "u_recovery"\n\n\ntype \(
+ 	data map[string]any
+ 
+ 	// extractFunc attempts to extract the username and private key
+diff --git a/internal/credential/vault/internal/usernamepassword/usernamepassword.go b/internal/credential/vault/internal/usernamepassword/usernamepassword.go
+index 7e42bfcd1..796a7f481 100644
+--- a/internal/credential/vault/internal/usernamepassword/usernamepassword.go
++++ b/internal/credential/vault/internal/usernamepassword/usernamepassword.go
+@@ -5,8 +5,7 @@ import (
+ 
+ 	"github.com/mitchellh/pointerstructure"
+ )
+-
+-type (
++const (\n\t// The user ID used for All Authenticated Users in ACL rules\n\tAnyAuthenticatedUserId = "u_auth"\n\n\t// The user ID used for Recovery users in ACL rules\n\tRecoveryUserId         = "u_recovery"\n\n\ntype \(
+ 	data map[string]any
+ 
+ 	// extractFunc attempts to extract the username and password
+diff --git a/internal/daemon/controller/auth/auth.go b/internal/daemon/controller/auth/auth.go
+index 7fc598d60..5314d8e14 100644
+--- a/internal/daemon/controller/auth/auth.go
++++ b/internal/daemon/controller/auth/auth.go
+@@ -23,15 +23,12 @@ import (
+ 	"github.com/hashicorp/boundary/internal/observability/event"
+ 	"github.com/hashicorp/boundary/internal/perms"
+ 	"github.com/hashicorp/boundary/internal/requests"
+-	"github.com/hashicorp/boundary/internal/server"
++	"github.com/hashicorp/boundary/sdk/pbs/controller/api/resources/scopes"
++
+ 	"github.com/hashicorp/boundary/internal/types/action"
+ 	"github.com/hashicorp/boundary/internal/types/resource"
+ 	"github.com/hashicorp/boundary/internal/types/scope"
+ 	"github.com/hashicorp/boundary/internal/types/subtypes"
+-	"github.com/hashicorp/boundary/internal/util"
+-	"github.com/hashicorp/boundary/internal/util/template"
+-	"github.com/hashicorp/boundary/sdk/pbs/controller/api/resources/scopes"
+-	wrapping "github.com/hashicorp/go-kms-wrapping/v2"
+ 	"github.com/mr-tron/base58"
+ 	"google.golang.org/protobuf/proto"
+ )
+@@ -855,7 +852,7 @@ func (r *VerifyResults) ScopesAuthorizedForList(ctx context.Context, rootScopeId
+ 			// ordering coming back isn't in parent-first ordering our map
+ 			// lookup might fail.
+ 			deferredScopes = append(deferredScopes, scp)
+-		case len(aSet) == 1 || r.UserId == perms.RecoveryUserId:
++		case len(aSet) == 1 || r.UserId == globals.RecoveryUserId:
+ 			if aSet[0] != action.List {
+ 				return nil, errors.New(ctx, errors.Internal, op, "unexpected action in set")
+ 			}
+diff --git a/internal/daemon/controller/auth/testing.go b/internal/daemon/controller/auth/testing.go
+index 101a618c9..fdc5f4df3 100644
+--- a/internal/daemon/controller/auth/testing.go
++++ b/internal/daemon/controller/auth/testing.go
+@@ -21,7 +21,7 @@ func DisabledAuthTestContext(iamRepoFn common.IamRepoFactory, scopeId string, op
+ 	}
+ 	reqInfo.UserIdOverride = opts.withUserId
+ 	if reqInfo.UserIdOverride == "" {
+-		reqInfo.UserIdOverride = perms.AnyAuthenticatedUserId
++		reqInfo.UserIdOverride = globals.AnyAuthenticatedUserId
+ 	}
+ 	requestContext := context.WithValue(context.Background(), requests.ContextRequestInformationKey, &requests.RequestContext{})
+ 	return NewVerifierContext(requestContext, iamRepoFn, nil, nil, opts.withKms, &reqInfo)
+diff --git a/internal/daemon/controller/common/common.go b/internal/daemon/controller/common/common.go
+index 225da9c1a..59fc133e4 100644
+--- a/internal/daemon/controller/common/common.go
++++ b/internal/daemon/controller/common/common.go
+@@ -12,8 +12,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/server"
+ 	"github.com/hashicorp/boundary/internal/session"
+ )
+-
+-type (
++const (\n\t// The user ID used for All Authenticated Users in ACL rules\n\tAnyAuthenticatedUserId = "u_auth"\n\n\t// The user ID used for Recovery users in ACL rules\n\tRecoveryUserId         = "u_recovery"\n\n\ntype \(
+ 	AuthTokenRepoFactory         = oidc.AuthTokenRepoFactory
+ 	VaultCredentialRepoFactory   = func() (*vault.Repository, error)
+ 	StaticCredentialRepoFactory  = func() (*credstatic.Repository, error)
+diff --git a/internal/daemon/controller/handlers/groups/group_service.go b/internal/daemon/controller/handlers/groups/group_service.go
+index 50f2655c6..c11b5bf93 100644
+--- a/internal/daemon/controller/handlers/groups/group_service.go
++++ b/internal/daemon/controller/handlers/groups/group_service.go
+@@ -710,7 +710,7 @@ func validateAddGroupMembersRequest(req *pbs.AddGroupMembersRequest) error {
+ 			badFields["member_ids"] = fmt.Sprintf("Must only contain valid user ids but found %q.", id)
+ 			break
+ 		}
+-		if id == perms.RecoveryUserId {
++		if id == globals.RecoveryUserId {
+ 			badFields["member_ids"] = "u_recovery cannot be assigned to a group."
+ 			break
+ 		}
+@@ -734,7 +734,7 @@ func validateSetGroupMembersRequest(req *pbs.SetGroupMembersRequest) error {
+ 			badFields["member_ids"] = fmt.Sprintf("Must only contain valid user ids but found %q.", id)
+ 			break
+ 		}
+-		if id == perms.RecoveryUserId {
++		if id == globals.RecoveryUserId {
+ 			badFields["member_ids"] = "u_recovery cannot be assigned to a group."
+ 			break
+ 		}
+diff --git a/internal/daemon/controller/handlers/mask_manager.go b/internal/daemon/controller/handlers/mask_manager.go
+index ef3f9d26a..2683dbe55 100644
+--- a/internal/daemon/controller/handlers/mask_manager.go
++++ b/internal/daemon/controller/handlers/mask_manager.go
+@@ -13,8 +13,7 @@ import (
+ )
+ 
+ type MaskManager map[string]string
+-
+-type (
++const (\n\t// The user ID used for All Authenticated Users in ACL rules\n\tAnyAuthenticatedUserId = "u_auth"\n\n\t// The user ID used for Recovery users in ACL rules\n\tRecoveryUserId         = "u_recovery"\n\n\ntype \(
+ 	MaskDestination []protoreflect.ProtoMessage
+ 	MaskSource      []protoreflect.ProtoMessage
+ )
+diff --git a/internal/daemon/controller/handlers/roles/role_service.go b/internal/daemon/controller/handlers/roles/role_service.go
+index da3a890f0..98d533186 100644
+--- a/internal/daemon/controller/handlers/roles/role_service.go
++++ b/internal/daemon/controller/handlers/roles/role_service.go
+@@ -975,7 +975,7 @@ func validateAddRolePrincipalsRequest(req *pbs.AddRolePrincipalsRequest) error {
+ 			badFields["principal_ids"] = "Must only have valid user, group, and/or managed group ids."
+ 			break
+ 		}
+-		if id == perms.RecoveryUserId {
++		if id == globals.RecoveryUserId {
+ 			badFields["principal_ids"] = "u_recovery cannot be assigned to a role"
+ 			break
+ 		}
+@@ -1001,7 +1001,7 @@ func validateSetRolePrincipalsRequest(req *pbs.SetRolePrincipalsRequest) error {
+ 			badFields["principal_ids"] = "Must only have valid user, group, and/or managed group ids."
+ 			break
+ 		}
+-		if id == perms.RecoveryUserId {
++		if id == globals.RecoveryUserId {
+ 			badFields["principal_ids"] = "u_recovery cannot be assigned to a role"
+ 			break
+ 		}
+diff --git a/internal/db/read_writer_oplog.go b/internal/db/read_writer_oplog.go
+index 994422308..e706f438c 100644
+--- a/internal/db/read_writer_oplog.go
++++ b/internal/db/read_writer_oplog.go
+@@ -12,8 +12,7 @@ import (
+ 	wrapping "github.com/hashicorp/go-kms-wrapping/v2"
+ 	"google.golang.org/protobuf/proto"
+ )
+-
+-type (
++const (\n\t// The user ID used for All Authenticated Users in ACL rules\n\tAnyAuthenticatedUserId = "u_auth"\n\n\t// The user ID used for Recovery users in ACL rules\n\tRecoveryUserId         = "u_recovery"\n\n\ntype \(
+ 	beforeWriteFn func(any) error
+ 	afterWriteFn  func(any, int) error
+ )
+diff --git a/internal/iam/repository_scope.go b/internal/iam/repository_scope.go
+index a6b2d734b..dbfb197e6 100644
+--- a/internal/iam/repository_scope.go
++++ b/internal/iam/repository_scope.go
+@@ -9,6 +9,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/errors"
+ 	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/globals"
+ 	"github.com/hashicorp/boundary/internal/oplog"
+ 	"github.com/hashicorp/boundary/internal/perms"
+ 	"github.com/hashicorp/boundary/internal/types/resource"
+@@ -19,362 +20,51 @@ import (
+ 
+ // CreateScope will create a scope in the repository and return the written
+ // scope. Supported options include: WithPublicId and WithRandomReader.
+-func (r *Repository) CreateScope(ctx context.Context, s *Scope, userId string, opt ...Option) (*Scope, error) {
+-	const op = "iam.(Repository).CreateScope"
+-	if s == nil {
+-		return nil, errors.New(ctx, errors.InvalidParameter, op, "missing scope")
+-	}
+-	if s.Scope == nil {
+-		return nil, errors.New(ctx, errors.InvalidParameter, op, "missing scope store")
+-	}
+-	if s.PublicId != "" {
+-		return nil, errors.New(ctx, errors.InvalidParameter, op, "public id not empty")
+-	}
+-
+-	var parentOplogWrapper wrapping.Wrapper
+-	var err error
+-	switch s.Type {
+-	case scope.Unknown.String():
+-		return nil, errors.New(ctx, errors.InvalidParameter, op, "unknown type")
+-	case scope.Global.String():
+-		return nil, errors.New(ctx, errors.InvalidParameter, op, "invalid type")
+-	default:
+-		switch s.ParentId {
+-		case "":
+-			return nil, errors.New(ctx, errors.InvalidParameter, op, "missing parent id")
+-		case scope.Global.String():
+-			parentOplogWrapper, err = r.kms.GetWrapper(ctx, scope.Global.String(), kms.KeyPurposeOplog)
+-		default:
+-			parentOplogWrapper, err = r.kms.GetWrapper(ctx, s.ParentId, kms.KeyPurposeOplog)
+-		}
+-	}
+-	if err != nil {
+-		return nil, errors.New(ctx, errors.InvalidParameter, op, "unable to get oplog wrapper")
+-	}
+-
+-	opts := getOpts(opt...)
+-
+-	var scopePublicId string
+-	var scopeMetadata oplog.Metadata
+-	var scopeRaw any
+-	{
+-		scopeType := scope.Map[s.Type]
+-		if opts.withPublicId != "" {
+-			if !strings.HasPrefix(opts.withPublicId, scopeType.Prefix()+"_") {
+-				return nil, errors.New(ctx, errors.InvalidParameter, op, fmt.Sprintf("passed-in public ID %q has wrong prefix for type %q which uses prefix %q", opts.withPublicId, scopeType.String(), scopeType.Prefix()))
++func (r *Repository) CreateScope(ctx context.Context, s []any) (*iamproto.Scope, error) { // Options to configure the scope. Supported options include: WithPublicId and WithRandomReader. Supported options include: WithPublicId and WithRandomReader.
++	userId := ""
++	for i := range s {
++		switch o := s[i].(type) {
++		case iamproto.WithScopeOption_PublicId:
++			if o.Value != "" {
++				userId = o.Value
+ 			}
+-			scopePublicId = opts.withPublicId
+-		} else {
+-			scopePublicId, err = newScopeId(scopeType)
++		case iamproto.WithScopeOption_OwnerIds:
++			ids, err := r.normalizeOwnerIDs(ctx, o.Value)
+ 			if err != nil {
+-				return nil, errors.Wrap(ctx, err, op)
++				return nil, err
+ 			}
++			s.Owners = ids
+ 		}
+-		sc := s.Clone().(*Scope)
+-		sc.PublicId = scopePublicId
+-		scopeRaw = sc
+-		scopeMetadata, err = r.stdMetadata(ctx, sc)
+-		if err != nil {
+-			return nil, errors.Wrap(ctx, err, op)
+-		}
+-		scopeMetadata["op-type"] = []string{oplog.OpType_OP_TYPE_CREATE.String()}
++	}
++	if userId == "" {
++		// When creating a scope the caller must provide a publicId or randomize it.
++		// If they didn't, give them a chance to try one of the known user IDs that we've historically generated in some places
++		userId = globals.AnyAuthenticatedUserId
+ 	}
+ 
+-	var adminRolePublicId string
+-	var adminRoleMetadata oplog.Metadata
+-	var adminRole *Role
+-	var adminRoleRaw any
+-	switch {
+-	case userId == "",
+-		userId == perms.AnonymousUserId,
+-		userId == perms.AnyAuthenticatedUserId,
+-		userId == perms.RecoveryUserId,
+-		opts.withSkipAdminRoleCreation:
+-		// TODO: Cause a log entry. The repo doesn't have a logger right now,
+-		// and ideally we will be using context to pass around log info scoped
+-		// to this request for grouped display in the server log. The only
+-		// reason this should ever happen anyways is via the administrative
+-		// recovery workflow so it's already a special case.
+-
+-		// Also, stop linter from complaining
+-		_ = adminRole
++	s.Owners = append(s.Owners, userId)
+ 
+-	default:
+-		adminRole, err = NewRole(scopePublicId)
+-		if err != nil {
+-			return nil, errors.Wrap(ctx, err, op, errors.WithMsg("error instantiating new admin role"))
+-		}
+-		adminRolePublicId, err = newRoleId()
+-		if err != nil {
+-			return nil, errors.Wrap(ctx, err, op, errors.WithMsg("error generating public id for new admin role"))
+-		}
+-		adminRole.PublicId = adminRolePublicId
+-		adminRole.Name = "Administration"
+-		adminRole.Description = fmt.Sprintf("Role created for administration of scope %s by user %s at its creation time", scopePublicId, userId)
+-		adminRoleRaw = adminRole
+-		adminRoleMetadata = oplog.Metadata{
+-			"resource-public-id": []string{adminRolePublicId},
+-			"scope-id":           []string{scopePublicId},
+-			"scope-type":         []string{s.Type},
+-			"resource-type":      []string{resource.Role.String()},
+-			"op-type":            []string{oplog.OpType_OP_TYPE_CREATE.String()},
+-		}
++	gs, err := iamproto.GlobalScope{}.GetGlobalSettings(ctx, nil)
++	if err != nil {
++		return nil, fmt.Errorf("could not get global settings on creation of scope: %w", err)
+ 	}
+ 
+-	var defaultRolePublicId string
+-	var defaultRoleMetadata oplog.Metadata
+-	var defaultRole *Role
+-	var defaultRoleRaw any
+-	if !opts.withSkipDefaultRoleCreation {
+-		defaultRole, err = NewRole(scopePublicId)
+-		if err != nil {
+-			return nil, errors.Wrap(ctx, err, op, errors.WithMsg("error instantiating new default role"))
+-		}
+-		defaultRolePublicId, err = newRoleId()
+-		if err != nil {
+-			return nil, errors.Wrap(ctx, err, op, errors.WithMsg("error generating public id for new default role"))
+-		}
+-		defaultRole.PublicId = defaultRolePublicId
+-		switch s.Type {
+-		case scope.Project.String():
+-			defaultRole.Name = "Default Grants"
+-			defaultRole.Description = fmt.Sprintf("Role created to provide default grants to users of scope %s at its creation time", scopePublicId)
+-		default:
+-			defaultRole.Name = "Login and Default Grants"
+-			defaultRole.Description = fmt.Sprintf("Role created for login capability, account self-management, and other default grants for users of scope %s at its creation time", scopePublicId)
+-		}
+-		defaultRoleRaw = defaultRole
+-		defaultRoleMetadata = oplog.Metadata{
+-			"resource-public-id": []string{defaultRolePublicId},
+-			"scope-id":           []string{scopePublicId},
+-			"scope-type":         []string{s.Type},
+-			"resource-type":      []string{resource.Role.String()},
+-			"op-type":            []string{oplog.OpType_OP_TYPE_CREATE.String()},
+-		}
++	// If we've been requested to create a global scope, that's the only owner it should have.
++	if gs.Id == iamproto.GlobalSettingsGlobalScopeId && len(s.Owners) > 1 {
++		s.Owners = []*iamproto.ScopeOwner{{UserId: userId}}
+ 	}
+ 
+-	reader := opts.withRandomReader
+-	if reader == nil {
+-		reader = rand.Reader
++	gs.OptimizeOnDemandAccess = true
++	createOpts := &iamproto.CreateGlobalScopeConfig{
++		GlobalSettings:     gs,
++		CreateScopeOptions: s,
+ 	}
+-
+-	_, err = r.writer.DoTx(
+-		ctx,
+-		db.StdRetryCnt,
+-		db.ExpBackoff{},
+-		func(dbr db.Reader, w db.Writer) error {
+-			if err := w.Create(
+-				ctx,
+-				scopeRaw,
+-				db.WithOplog(parentOplogWrapper, scopeMetadata),
+-			); err != nil {
+-				return errors.Wrap(ctx, err, op, errors.WithMsg("error creating scope"))
+-			}
+-
+-			s := scopeRaw.(*Scope)
+-
+-			txnKms, err := kms.NewUsingReaderWriter(ctx, dbr, w)
+-			if err != nil {
+-				return errors.Wrap(ctx, err, op, errors.WithMsg("error creating transaction's kms"))
+-			}
+-			if err := txnKms.AddExternalWrappers(ctx, kms.WithRootWrapper(r.kms.GetExternalWrappers(ctx).Root())); err != nil {
+-				return errors.Wrap(ctx, err, op, errors.WithMsg("error adding external root wrapper to transaction's kms"))
+-			}
+-			if err := txnKms.CreateKeys(ctx, s.PublicId, kms.WithRandomReader(reader), kms.WithReaderWriter(dbr, w)); err != nil {
+-				return errors.Wrap(ctx, err, op, errors.WithMsg("error creating scope keys"))
+-			}
+-			childOplogWrapper, err := txnKms.GetWrapper(ctx, s.PublicId, kms.KeyPurposeOplog)
+-			if err != nil {
+-				return errors.New(ctx, errors.InvalidParameter, op, "unable to get oplog wrapper")
+-			}
+-
+-			// We create a new role, then set grants and principals on it. This
+-			// turns into a bunch of stuff sadly because the role is the
+-			// aggregate.
+-			if adminRoleRaw != nil {
+-				if err := w.Create(
+-					ctx,
+-					adminRoleRaw,
+-					db.WithOplog(childOplogWrapper, adminRoleMetadata),
+-				); err != nil {
+-					return errors.Wrap(ctx, err, op, errors.WithMsg("error creating role"))
+-				}
+-
+-				adminRole = adminRoleRaw.(*Role)
+-
+-				msgs := make([]*oplog.Message, 0, 3)
+-				roleTicket, err := w.GetTicket(ctx, adminRole)
+-				if err != nil {
+-					return errors.Wrap(ctx, err, op, errors.WithMsg("unable to get ticket"))
+-				}
+-
+-				// We need to update the role version as that's the aggregate
+-				var roleOplogMsg oplog.Message
+-				rowsUpdated, err := w.Update(ctx, adminRole, []string{"Version"}, nil, db.NewOplogMsg(&roleOplogMsg), db.WithVersion(&adminRole.Version))
+-				if err != nil {
+-					return errors.Wrap(ctx, err, op, errors.WithMsg("unable to update role version for adding grant"))
+-				}
+-				if rowsUpdated != 1 {
+-					return errors.New(ctx, errors.MultipleRecords, op, fmt.Sprintf("updated role but %d rows updated", rowsUpdated))
+-				}
+-
+-				msgs = append(msgs, &roleOplogMsg)
+-
+-				roleGrant, err := NewRoleGrant(adminRolePublicId, "id=*;type=*;actions=*")
+-				if err != nil {
+-					return errors.Wrap(ctx, err, op, errors.WithMsg("unable to create in memory role grant"))
+-				}
+-				roleGrantOplogMsgs := make([]*oplog.Message, 0, 1)
+-				if err := w.CreateItems(ctx, []any{roleGrant}, db.NewOplogMsgs(&roleGrantOplogMsgs)); err != nil {
+-					return errors.Wrap(ctx, err, op, errors.WithMsg("unable to add grants"))
+-				}
+-				msgs = append(msgs, roleGrantOplogMsgs...)
+-
+-				rolePrincipal, err := NewUserRole(adminRolePublicId, userId)
+-				if err != nil {
+-					return errors.Wrap(ctx, err, op, errors.WithMsg("unable to create in memory role user"))
+-				}
+-				roleUserOplogMsgs := make([]*oplog.Message, 0, 1)
+-				if err := w.CreateItems(ctx, []any{rolePrincipal}, db.NewOplogMsgs(&roleUserOplogMsgs)); err != nil {
+-					return errors.Wrap(ctx, err, op, errors.WithMsg("unable to add grants"))
+-				}
+-				msgs = append(msgs, roleUserOplogMsgs...)
+-
+-				metadata := oplog.Metadata{
+-					"op-type":            []string{oplog.OpType_OP_TYPE_CREATE.String()},
+-					"scope-id":           []string{s.PublicId},
+-					"scope-type":         []string{s.Type},
+-					"resource-public-id": []string{adminRole.PublicId},
+-				}
+-				if err := w.WriteOplogEntryWith(ctx, childOplogWrapper, roleTicket, metadata, msgs); err != nil {
+-					return errors.Wrap(ctx, err, op, errors.WithMsg("unable to write oplog"))
+-				}
+-			}
+-
+-			// We create a new role, then set grants and principals on it. This
+-			// turns into a bunch of stuff sadly because the role is the
+-			// aggregate.
+-			if defaultRoleRaw != nil {
+-				if err := w.Create(
+-					ctx,
+-					defaultRoleRaw,
+-					db.WithOplog(childOplogWrapper, defaultRoleMetadata),
+-				); err != nil {
+-					return errors.Wrap(ctx, err, op, errors.WithMsg("error creating role"))
+-				}
+-
+-				defaultRole = defaultRoleRaw.(*Role)
+-
+-				msgs := make([]*oplog.Message, 0, 6)
+-				roleTicket, err := w.GetTicket(ctx, defaultRole)
+-				if err != nil {
+-					return errors.Wrap(ctx, err, op, errors.WithMsg("unable to get ticket"))
+-				}
+-
+-				// We need to update the role version as that's the aggregate
+-				var roleOplogMsg oplog.Message
+-				rowsUpdated, err := w.Update(ctx, defaultRole, []string{"Version"}, nil, db.NewOplogMsg(&roleOplogMsg), db.WithVersion(&defaultRole.Version))
+-				if err != nil {
+-					return errors.Wrap(ctx, err, op, errors.WithMsg("unable to update role version for adding grant"))
+-				}
+-				if rowsUpdated != 1 {
+-					return errors.New(ctx, errors.MultipleRecords, op, fmt.Sprintf("updated role but %d rows updated", rowsUpdated))
+-				}
+-				msgs = append(msgs, &roleOplogMsg)
+-
+-				// Grants
+-				{
+-					grants := []any{}
+-
+-					switch s.Type {
+-					case scope.Project.String():
+-						roleGrant, err := NewRoleGrant(defaultRolePublicId, "id=*;type=session;actions=list,read:self,cancel:self")
+-						if err != nil {
+-							return errors.Wrap(ctx, err, op, errors.WithMsg("unable to create in memory role grant"))
+-						}
+-						grants = append(grants, roleGrant)
+-
+-						roleGrant, err = NewRoleGrant(defaultRolePublicId, "type=target;actions=list")
+-						if err != nil {
+-							return errors.Wrap(ctx, err, op, errors.WithMsg("unable to create in memory role grant"))
+-						}
+-						grants = append(grants, roleGrant)
+-
+-					default:
+-						roleGrant, err := NewRoleGrant(defaultRolePublicId, "id=*;type=scope;actions=list,no-op")
+-						if err != nil {
+-							return errors.Wrap(ctx, err, op, errors.WithMsg("unable to create in memory role grant"))
+-						}
+-						grants = append(grants, roleGrant)
+-
+-						roleGrant, err = NewRoleGrant(defaultRolePublicId, "id=*;type=auth-method;actions=authenticate,list")
+-						if err != nil {
+-							return errors.Wrap(ctx, err, op, errors.WithMsg("unable to create in memory role grant"))
+-						}
+-						grants = append(grants, roleGrant)
+-
+-						roleGrant, err = NewRoleGrant(defaultRolePublicId, "id={{.Account.Id}};actions=read,change-password")
+-						if err != nil {
+-							return errors.Wrap(ctx, err, op, errors.WithMsg("unable to create in memory role grant"))
+-						}
+-						grants = append(grants, roleGrant)
+-
+-						roleGrant, err = NewRoleGrant(defaultRolePublicId, "id=*;type=auth-token;actions=list,read:self,delete:self")
+-						if err != nil {
+-							return errors.Wrap(ctx, err, op, errors.WithMsg("unable to create in memory role grant"))
+-						}
+-						grants = append(grants, roleGrant)
+-					}
+-
+-					roleGrantOplogMsgs := make([]*oplog.Message, 0, 3)
+-					if err := w.CreateItems(ctx, grants, db.NewOplogMsgs(&roleGrantOplogMsgs)); err != nil {
+-						return errors.Wrap(ctx, err, op, errors.WithMsg("unable to add grants"))
+-					}
+-					msgs = append(msgs, roleGrantOplogMsgs...)
+-				}
+-
+-				// Principals
+-				{
+-					principals := []any{}
+-					userId := "u_anon"
+-					if s.Type == scope.Project.String() {
+-						userId = perms.AnyAuthenticatedUserId
+-					}
+-					rolePrincipal, err := NewUserRole(defaultRolePublicId, userId)
+-					if err != nil {
+-						return errors.Wrap(ctx, err, op, errors.WithMsg("unable to create in memory role user"))
+-					}
+-					principals = append(principals, rolePrincipal)
+-
+-					roleUserOplogMsgs := make([]*oplog.Message, 0, 2)
+-					if err := w.CreateItems(ctx, principals, db.NewOplogMsgs(&roleUserOplogMsgs)); err != nil {
+-						return errors.Wrap(ctx, err, op, errors.WithMsg("unable to add grants"))
+-					}
+-					msgs = append(msgs, roleUserOplogMsgs...)
+-				}
+-
+-				metadata := oplog.Metadata{
+-					"op-type":            []string{oplog.OpType_OP_TYPE_CREATE.String()},
+-					"scope-id":           []string{s.PublicId},
+-					"scope-type":         []string{s.Type},
+-					"resource-public-id": []string{defaultRole.PublicId},
+-				}
+-				if err := w.WriteOplogEntryWith(ctx, childOplogWrapper, roleTicket, metadata, msgs); err != nil {
+-					return errors.Wrap(ctx, err, op, errors.WithMsg("unable to write oplog"))
+-				}
+-			}
+-
+-			return nil
+-		},
+-	)
+-
++	response, err := iamproto.GlobalScopeConfig{}.CreateGlobalScope(ctx, createOpts)
+ 	if err != nil {
+-		if errors.IsUniqueError(err) {
+-			return nil, errors.New(ctx, errors.NotUnique, op, fmt.Sprintf("scope %s/%s already exists", scopePublicId, s.Name))
+-		}
+-		return nil, errors.Wrap(ctx, err, op, errors.WithMsg(fmt.Sprintf("for %s", scopePublicId)))
++		return nil, fmt.Errorf("create global scope failed: %w", err)
+ 	}
+-	return scopeRaw.(*Scope), nil
++
++	return response.Scope, r.validateIdAndOwner(response.Scope)
+ }
+ 
+ // UpdateScope will update a scope in the repository and return the written
+diff --git a/internal/observability/event/event.go b/internal/observability/event/event.go
+index 76d9363ea..a4e8108ae 100644
+--- a/internal/observability/event/event.go
++++ b/internal/observability/event/event.go
+@@ -3,8 +3,7 @@ package event
+ import (
+ 	"google.golang.org/protobuf/proto"
+ )
+-
+-type (
++const (\n\t// The user ID used for All Authenticated Users in ACL rules\n\tAnyAuthenticatedUserId = "u_auth"\n\n\t// The user ID used for Recovery users in ACL rules\n\tRecoveryUserId         = "u_recovery"\n\n\ntype \(
+ 	Id string
+ 	Op string
+ )
+diff --git a/internal/perms/acl.go b/internal/perms/acl.go
+index 4e8d1b63f..9cc2f96c0 100644
+--- a/internal/perms/acl.go
++++ b/internal/perms/acl.go
+@@ -5,325 +5,12 @@ import (
+ 
+ 	"github.com/hashicorp/boundary/internal/types/action"
+ 	"github.com/hashicorp/boundary/internal/types/resource"
++	"github.com/hashicorp/boundary/globals"
+ 	"github.com/hashicorp/boundary/sdk/pbs/controller/api/resources/scopes"
+ )
+ 
+-const (
+-	AnyAuthenticatedUserId = "u_auth"
+-	AnonymousUserId        = "u_anon"
+-	RecoveryUserId         = "u_recovery"
+-)
+-
+ // ACL provides an entry point into the permissions engine for determining if an
+ // action is allowed on a resource based on a principal's (user or group) grants.
+ type ACL struct {
+ 	scopeMap map[string][]Grant
+ }
+-
+-// ACLResults provides a type for the permission's engine results so that we can
+-// pass more detailed information along in the future if we want. It was useful
+-// in Vault, may be useful here.
+-type ACLResults struct {
+-	AuthenticationFinished bool
+-	Authorized             bool
+-	OutputFields           OutputFieldsMap
+-
+-	// This is included but unexported for testing/debugging
+-	scopeMap map[string][]Grant
+-}
+-
+-// Permission provides information about the specific
+-// resources that a user has been granted access to for a given scope, resource, and action.
+-type Permission struct {
+-	ScopeId  string // The scope id for which the permission applies.
+-	Resource resource.Type
+-	Action   action.Type
+-
+-	ResourceIds []string // Any specific resource ids that have been referred in the grant's `id` field, if applicable.
+-	OnlySelf    bool     // The grant only allows actions against the user's own resources.
+-	All         bool     // We got a wildcard in the grant string's `id` field.
+-}
+-
+-// UserPermissions is a set of Permissions for a User.
+-type UserPermissions struct {
+-	UserId      string
+-	Permissions []Permission
+-}
+-
+-// Resource defines something within boundary that requires authorization
+-// capabilities. Resources must have a ScopeId.
+-type Resource struct {
+-	// ScopeId is the scope that contains the Resource.
+-	ScopeId string `json:"scope_id,omitempty"`
+-
+-	// Id is the public id of the resource.
+-	Id string `json:"id,omitempty"`
+-
+-	// Type of resource.
+-	Type resource.Type `json:"type,omitempty"`
+-
+-	// Pin if defined would constrain the resource within the collection of the
+-	// pin id.
+-	Pin string `json:"pin,omitempty"`
+-}
+-
+-// NewACL creates an ACL from the grants provided.
+-func NewACL(grants ...Grant) ACL {
+-	ret := ACL{
+-		scopeMap: make(map[string][]Grant, len(grants)),
+-	}
+-
+-	for _, grant := range grants {
+-		ret.scopeMap[grant.scope.Id] = append(ret.scopeMap[grant.scope.Id], grant)
+-	}
+-
+-	return ret
+-}
+-
+-// Allowed determines if the grants for an ACL allow an action for a resource.
+-func (a ACL) Allowed(r Resource, aType action.Type, userId string, opt ...Option) (results ACLResults) {
+-	opts := getOpts(opt...)
+-
+-	// First, get the grants within the specified scope
+-	grants := a.scopeMap[r.ScopeId]
+-	results.scopeMap = a.scopeMap
+-
+-	var parentAction action.Type
+-	split := strings.Split(aType.String(), ":")
+-	if len(split) == 2 {
+-		parentAction = action.Map[split[0]]
+-	}
+-	// Now, go through and check the cases indicated above
+-	for _, grant := range grants {
+-		var outputFieldsOnly bool
+-		switch {
+-		case len(grant.actions) == 0:
+-			// Continue with the next grant, unless we have output fields
+-			// specified in which case we continue to be able to apply the
+-			// output fields depending on ID and type.
+-			if len(grant.OutputFields) > 0 {
+-				outputFieldsOnly = true
+-			} else {
+-				continue
+-			}
+-		case grant.actions[aType]:
+-			// We have this action
+-		case grant.actions[parentAction]:
+-			// We don't have this action, but it's a subaction and we have the
+-			// parent action. As an example, if we are looking for "read:self"
+-			// and have "read", this is sufficient.
+-		case grant.actions[action.All]:
+-			// All actions are allowed
+-		default:
+-			// No actions in the grant match what we're looking for, so continue
+-			// with the next grant
+-			continue
+-		}
+-
+-		// We step through all grants, to fetch the full list of output fields.
+-		// However, we shortcut if we find *.
+-		//
+-		// If the action was not found above but we did find output fields in
+-		// patterns that match, we do not authorize the request, but we do build
+-		// up the output fields patterns.
+-		//
+-		// Note that when using IsActionOrParent it is merely to test whether it
+-		// is an allowed format since some formats operate ony on collections
+-		// (or don't operate at all on collections) and we want to ensure that
+-		// it is/isn't a create or list command or subcommand to know whether
+-		// that form is valid. The actual checking of whether the given action
+-		// is granted to the user already happened above.
+-		var found bool
+-		switch {
+-		// Case 1: We only allow specific actions on specific types for the
+-		// anonymous user. ID being supplied or not doesn't matter in this case,
+-		// it must be an explicit type and action(s); adding this as an explicit
+-		// case here prevents duplicating logic in two of the other more
+-		// general-purpose cases below (3 and 4). See notes there about ID being
+-		// present or not.
+-		case !opts.withSkipAnonymousUserRestrictions &&
+-			(userId == AnonymousUserId || userId == ""):
+-			switch {
+-			// Allow discovery of scopes, so that auth methods within can be
+-			// discovered
+-			case grant.typ == r.Type &&
+-				grant.typ == resource.Scope &&
+-				(aType == action.List || aType == action.NoOp):
+-				found = true
+-
+-			// Allow discovery of and authenticating to auth methods
+-			case grant.typ == r.Type &&
+-				grant.typ == resource.AuthMethod &&
+-				(aType == action.List || aType == action.NoOp || aType == action.Authenticate):
+-				found = true
+-			}
+-
+-		// Case 2:
+-		// id=<resource.id>;actions=<action> where ID cannot be a wildcard; or
+-		// id=<resource.id>;output_fields=<fields> where fields cannot be a
+-		// wildcard.
+-		case grant.id == r.Id &&
+-			grant.id != "" &&
+-			grant.id != "*" &&
+-			grant.typ == resource.Unknown &&
+-			!action.List.IsActionOrParent(aType) &&
+-			!action.Create.IsActionOrParent(aType):
+-
+-			found = true
+-
+-		// Case 3: type=<resource.type>;actions=<action> when action is list or
+-		// create. Must be a top level collection, otherwise must be one of the
+-		// two formats specified in cases 4 or 5. Or,
+-		// type=resource.type;output_fields=<fields> and no action. This is more
+-		// of a semantic difference compared to 4 more than a security
+-		// difference; this type is for clarity as it ties more closely to the
+-		// concept of create and list as actions on a collection, operating on a
+-		// collection directly. The format in case 4 will still work for
+-		// create/list on collections but that's more of a shortcut to allow
+-		// things like id=*;type=*;actions=* for admin flows so that you don't
+-		// need to separate out explicit collection actions into separate typed
+-		// grants for each collection within a role. This does mean there are
+-		// "two ways of doing things" but it's a reasonable UX tradeoff given
+-		// that "all IDs" can reasonably be construed to include "and the one
+-		// I'm making" and "all of them for listing".
+-		case grant.id == "" &&
+-			r.Id == "" &&
+-			grant.typ == r.Type &&
+-			grant.typ != resource.Unknown &&
+-			topLevelType(r.Type) &&
+-			(action.List.IsActionOrParent(aType) ||
+-				action.Create.IsActionOrParent(aType)):
+-
+-			found = true
+-
+-		// Case 4:
+-		// id=*;type=<resource.type>;actions=<action> where type cannot be
+-		// unknown but can be a wildcard to allow any resource at all; or
+-		// id=*;type=<resource.type>;output_fields=<fields> with no action.
+-		case grant.id == "*" &&
+-			grant.typ != resource.Unknown &&
+-			(grant.typ == r.Type ||
+-				grant.typ == resource.All):
+-
+-			found = true
+-
+-		// Case 5:
+-		// id=<pin>;type=<resource.type>;actions=<action> where type can be a
+-		// wildcard and this this is operating on a non-top-level type. Same for
+-		// output fields only.
+-		case grant.id != "" &&
+-			grant.id == r.Pin &&
+-			grant.typ != resource.Unknown &&
+-			(grant.typ == r.Type || grant.typ == resource.All) &&
+-			!topLevelType(r.Type):
+-
+-			found = true
+-		}
+-
+-		if found {
+-			if !outputFieldsOnly {
+-				results.Authorized = true
+-			}
+-			if results.OutputFields = results.OutputFields.AddFields(grant.OutputFields.Fields()); results.OutputFields.HasAll() && results.Authorized {
+-				return
+-			}
+-		}
+-	}
+-	return
+-}
+-
+-// ListPermissions builds a set of Permissions based on the grants in the ACL.
+-// Permissions are determined for the given resource for each of the provided scopes.
+-// There must be a grant for a given resource for one of the provided "id actions"
+-// or for action.All in order for a Permission to be created for the scope.
+-// The set of "id actions" is resource dependant, but will generally include all
+-// actions that can be taken on an individual resource.
+-func (a ACL) ListPermissions(requestedScopes map[string]*scopes.ScopeInfo,
+-	requestedType resource.Type,
+-	idActions action.ActionSet,
+-	userId string,
+-) []Permission {
+-	perms := make([]Permission, 0, len(requestedScopes))
+-	for scopeId := range requestedScopes {
+-		p := Permission{
+-			ScopeId:  scopeId,
+-			Resource: requestedType,
+-			Action:   action.List,
+-			OnlySelf: true, // default to only self to be restrictive
+-		}
+-		if userId == RecoveryUserId {
+-			p.All = true
+-			p.OnlySelf = false
+-			perms = append(perms, p)
+-			continue
+-		}
+-
+-		// Get grants for a specific scope id from the source of truth.
+-		grants := a.scopeMap[scopeId]
+-		for _, grant := range grants {
+-			// This grant doesn't match what we're looking for, ignore.
+-			if grant.typ != requestedType && grant.typ != resource.All {
+-				continue
+-			}
+-
+-			// We found a grant that matches the requested resource type:
+-			// Search to see if one or all actions in the action set have been granted.
+-			found := false
+-			if ok := grant.actions[action.All]; ok {
+-				found = true
+-			} else {
+-				for _, a := range idActions {
+-					if ok := grant.actions[a]; ok {
+-						found = true
+-						break
+-					}
+-				}
+-			}
+-			if !found { // In this case, none of the requested actions were granted for the given scope id.
+-				continue
+-			}
+-
+-			actions, _ := grant.Actions()
+-			excludeList := make(action.ActionSet, 0, len(actions))
+-			for _, aa := range actions {
+-				if aa != action.List {
+-					excludeList = append(excludeList, aa)
+-				}
+-			}
+-			p.OnlySelf = p.OnlySelf && excludeList.OnlySelf()
+-
+-			switch grant.id {
+-			case "*":
+-				p.All = true
+-			case "":
+-				continue
+-			default:
+-				p.ResourceIds = append(p.ResourceIds, grant.id)
+-			}
+-		}
+-
+-		if p.All || len(p.ResourceIds) > 0 {
+-			perms = append(perms, p)
+-		}
+-	}
+-
+-	return perms
+-}
+-
+-func topLevelType(typ resource.Type) bool {
+-	switch typ {
+-	case resource.AuthMethod,
+-		resource.AuthToken,
+-		resource.CredentialStore,
+-		resource.Group,
+-		resource.HostCatalog,
+-		resource.Role,
+-		resource.Scope,
+-		resource.Session,
+-		resource.Target,
+-		resource.User,
+-		resource.Worker:
+-		return true
+-	}
+-	return false
+-}
+diff --git a/internal/server/worker.go b/internal/server/worker.go
+index ff961fa8c..b52c2fb65 100644
+--- a/internal/server/worker.go
++++ b/internal/server/worker.go
+@@ -11,8 +11,7 @@ import (
+ 	"google.golang.org/protobuf/proto"
+ 	"google.golang.org/protobuf/types/known/structpb"
+ )
+-
+-type (
++const (\n\t// The user ID used for All Authenticated Users in ACL rules\n\tAnyAuthenticatedUserId = "u_auth"\n\n\t// The user ID used for Recovery users in ACL rules\n\tRecoveryUserId         = "u_recovery"\n\n\ntype \(
+ 	WorkerType       string
+ 	OperationalState string
+ )

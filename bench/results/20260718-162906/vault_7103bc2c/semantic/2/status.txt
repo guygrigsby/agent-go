@@ -1,0 +1,14 @@
+ M audit/format.go
+ M audit/format_json_test.go
+ M audit/format_jsonx_test.go
+ M audit/format_test.go
+ M builtin/audit/file/backend.go
+ M builtin/audit/socket/backend.go
+ M builtin/audit/syslog/backend.go
+ M helper/testhelpers/corehelpers/corehelpers.go
+ M internal/observability/event/node_formatter_audit_json.go
+ M vault/audit.go
+ M vault/audit_broker.go
+ M vault/audit_test.go
+ M vault/core.go
+?? opencode.json

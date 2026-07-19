@@ -1,0 +1,59 @@
+diff --git a/internal/credential/vault/repository.go b/internal/credential/vault/repository.go
+index 1f32016dd..7dec11cc0 100644
+--- a/internal/credential/vault/repository.go
++++ b/internal/credential/vault/repository.go
+@@ -1,6 +1,8 @@
+ package vault
+ 
+ import (
++	"context"
++
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/errors"
+ 	"github.com/hashicorp/boundary/internal/kms"
+@@ -23,9 +25,11 @@ type Repository struct {
+ // only be used for one transaction and it is not safe for concurrent go
+ // routines to access it. WithLimit option is used as a repo wide default
+ // limit applied to all ListX methods.
+-func NewRepository(r db.Reader, w db.Writer, kms *kms.Kms, scheduler *scheduler.Scheduler, opt ...Option) (*Repository, error) {
++func NewRepository(ctx context.Context, r db.Reader, w db.Writer, kms *kms.Kms, scheduler *scheduler.Scheduler, opt ...Option) (*Repository, error) {
+ 	const op = "vault.NewRepository"
+ 	switch {
++	case ctx == nil:
++		return nil, errors.NewDeprecated(errors.InvalidParameter, op, "context")
+ 	case r == nil:
+ 		return nil, errors.NewDeprecated(errors.InvalidParameter, op, "db.Reader")
+ 	case w == nil:
+diff --git a/internal/host/plugin/repository.go b/internal/host/plugin/repository.go
+index 7c0f4d885..a4e2f1576 100644
+--- a/internal/host/plugin/repository.go
++++ b/internal/host/plugin/repository.go
+@@ -4,6 +4,8 @@
+ package plugin
+ 
+ import (
++	"context"
++
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/errors"
+ 	"github.com/hashicorp/boundary/internal/host"
+@@ -31,9 +33,11 @@ type Repository struct {
+ // only be used for one transaction and it is not safe for concurrent go
+ // routines to access it. WithLimit option is used as a repo wide default
+ // limit applied to all ListX methods.
+-func NewRepository(r db.Reader, w db.Writer, kms *kms.Kms, sched *scheduler.Scheduler, plgm map[string]plgpb.HostPluginServiceClient, opt ...host.Option) (*Repository, error) {
++func NewRepository(ctx context.Context, r db.Reader, w db.Writer, kms *kms.Kms, sched *scheduler.Scheduler, plgm map[string]plgpb.HostPluginServiceClient, opt ...host.Option) (*Repository, error) {
+ 	const op = "plugin.NewRepository"
+ 	switch {
++	case ctx == nil:
++		return nil, errors.NewDeprecated(errors.InvalidParameter, op, "context")
+ 	case r == nil:
+ 		return nil, errors.NewDeprecated(errors.InvalidParameter, op, "db.Reader")
+ 	case w == nil:
+@@ -68,4 +72,4 @@ func NewRepository(r db.Reader, w db.Writer, kms *kms.Kms, sched *scheduler.Sche
+ 		plugins:      plgs,
+ 		defaultLimit: opts.WithLimit,
+ 	}, nil
+-}
++}
+\ No newline at end of file

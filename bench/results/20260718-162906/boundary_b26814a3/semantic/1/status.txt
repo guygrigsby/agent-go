@@ -1,0 +1,3 @@
+ M globals/fields.go
+?? globals/agent.go
+?? opencode.json

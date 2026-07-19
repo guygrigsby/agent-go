@@ -1,0 +1,159 @@
+diff --git a/internal/auth/oidc/repository.go b/internal/auth/oidc/repository.go
+index b9304ff6f..cd3087734 100644
+--- a/internal/auth/oidc/repository.go
++++ b/internal/auth/oidc/repository.go
+@@ -21,6 +21,7 @@ type Repository struct {
+ // NewRepository creates a new oidc Repository. Supports the options: WithLimit
+ // which sets a default limit on results returned by repo operations.
+ func NewRepository(ctx context.Context, r db.Reader, w db.Writer, kms *kms.Kms, opt ...Option) (*Repository, error) {
++	const op = "auth.oidc.NewRepository"
+ 	const op = "oidc.NewRepository"
+ 	if r == nil {
+ 		return nil, errors.New(ctx, errors.InvalidParameter, op, "reader is nil")
+diff --git a/internal/auth/password/repository.go b/internal/auth/password/repository.go
+index c5d78e65b..1b333e624 100644
+--- a/internal/auth/password/repository.go
++++ b/internal/auth/password/repository.go
+@@ -1,11 +1,11 @@
+ package password
+ 
+ import (
+-	"strings"
+-
++	"context"
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/errors"
+ 	"github.com/hashicorp/boundary/internal/kms"
++	"strings"
+ )
+ 
+ // A Repository stores and retrieves the persistent types in the password
+@@ -22,7 +22,7 @@ type Repository struct {
+ // only be used for one transaction and it is not safe for concurrent go
+ // routines to access it.  WithLimit option is used as a repo wide default
+ // limit applied to all ListX methods.
+-func NewRepository(r db.Reader, w db.Writer, kms *kms.Kms, opt ...Option) (*Repository, error) {
++func NewRepository(ctx context.Context, r db.Reader, w db.Writer, kms *kms.Kms, opt ...Option) (*Repository, error) {
+ 	const op = "password.NewRepository"
+ 	switch {
+ 	case r == nil:
+diff --git a/internal/authtoken/repository.go b/internal/authtoken/repository.go
+index 6f59dd416..715c39355 100644
+--- a/internal/authtoken/repository.go
++++ b/internal/authtoken/repository.go
+@@ -31,7 +31,7 @@ type Repository struct {
+ 
+ // NewRepository creates a new Repository. The returned repository is not safe for concurrent go
+ // routines to access it.
+-func NewRepository(r db.Reader, w db.Writer, kms *kms.Kms, opt ...Option) (*Repository, error) {
++func NewRepository(ctx context.Context, r db.Reader, w db.Writer, kms *kms.Kms, opt ...Option) (*Repository, error) {
+ 	const op = "authtoken.NewRepository"
+ 	switch {
+ 	case r == nil:
+diff --git a/internal/credential/vault/repository.go b/internal/credential/vault/repository.go
+index 1f32016dd..111f40b83 100644
+--- a/internal/credential/vault/repository.go
++++ b/internal/credential/vault/repository.go
+@@ -23,7 +23,7 @@ type Repository struct {
+ // only be used for one transaction and it is not safe for concurrent go
+ // routines to access it. WithLimit option is used as a repo wide default
+ // limit applied to all ListX methods.
+-func NewRepository(r db.Reader, w db.Writer, kms *kms.Kms, scheduler *scheduler.Scheduler, opt ...Option) (*Repository, error) {
++func NewRepository(ctx context.Context, r db.Reader, w db.Writer, kms *kms.Kms, scheduler *scheduler.Scheduler, opt ...Option) (*Repository, error) {
+ 	const op = "vault.NewRepository"
+ 	switch {
+ 	case r == nil:
+diff --git a/internal/host/static/repository.go b/internal/host/static/repository.go
+index ed4bca656..f30be39e0 100644
+--- a/internal/host/static/repository.go
++++ b/internal/host/static/repository.go
+@@ -1,6 +1,7 @@
+ package static
+ 
+ import (
++	"context"
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/errors"
+ 	"github.com/hashicorp/boundary/internal/kms"
+@@ -21,7 +22,7 @@ type Repository struct {
+ // only be used for one transaction and it is not safe for concurrent go
+ // routines to access it. WithLimit option is used as a repo wide default
+ // limit applied to all ListX methods.
+-func NewRepository(r db.Reader, w db.Writer, kms *kms.Kms, opt ...Option) (*Repository, error) {
++func NewRepository(ctx context.Context, r db.Reader, w db.Writer, kms *kms.Kms, opt ...Option) (*Repository, error) {
+ 	const op = "static.NewRepository"
+ 	switch {
+ 	case r == nil:
+diff --git a/internal/iam/repository.go b/internal/iam/repository.go
+index 17cf4db87..770d42799 100644
+--- a/internal/iam/repository.go
++++ b/internal/iam/repository.go
+@@ -26,7 +26,7 @@ type Repository struct {
+ 
+ // NewRepository creates a new iam Repository. Supports the options: WithLimit
+ // which sets a default limit on results returned by repo operations.
+-func NewRepository(r db.Reader, w db.Writer, kms *kms.Kms, opt ...Option) (*Repository, error) {
++func NewRepository(ctx context.Context, r db.Reader, w db.Writer, kms *kms.Kms, opt ...Option) (*Repository, error) {
+ 	const op = "iam.NewRepository"
+ 	if r == nil {
+ 		return nil, errors.NewDeprecated(errors.InvalidParameter, op, "nil reader")
+diff --git a/internal/plugin/host/repository.go b/internal/plugin/host/repository.go
+index f07c0bd72..193e65845 100644
+--- a/internal/plugin/host/repository.go
++++ b/internal/plugin/host/repository.go
+@@ -1,6 +1,7 @@
+ package host
+ 
+ import (
++	"context"
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/errors"
+ 	"github.com/hashicorp/boundary/internal/kms"
+@@ -21,7 +22,7 @@ type Repository struct {
+ // only be used for one transaction and it is not safe for concurrent go
+ // routines to access it. WithLimit option is used as a repo wide default
+ // limit applied to all ListX methods.
+-func NewRepository(r db.Reader, w db.Writer, kms *kms.Kms, opt ...Option) (*Repository, error) {
++func NewRepository(ctx context.Context, r db.Reader, w db.Writer, kms *kms.Kms, opt ...Option) (*Repository, error) {
+ 	const op = "static.NewRepository"
+ 	switch {
+ 	case r == nil:
+diff --git a/internal/scheduler/job/repository.go b/internal/scheduler/job/repository.go
+index 4e79b9449..f5d4b0807 100644
+--- a/internal/scheduler/job/repository.go
++++ b/internal/scheduler/job/repository.go
+@@ -22,7 +22,7 @@ type Repository struct {
+ // only be used for one transaction and it is not safe for concurrent go
+ // routines to access it.  WithLimit option is used as a repo wide default
+ // limit applied to all ListX methods.
+-func NewRepository(r db.Reader, w db.Writer, kms *kms.Kms, opt ...Option) (*Repository, error) {
++func NewRepository(ctx context.Context, r db.Reader, w db.Writer, kms *kms.Kms, opt ...Option) (*Repository, error) {
+ 	const op = "job.NewRepository"
+ 	switch {
+ 	case r == nil:
+diff --git a/internal/server/repository.go b/internal/server/repository.go
+index a7df5afff..ff1a61c11 100644
+--- a/internal/server/repository.go
++++ b/internal/server/repository.go
+@@ -32,7 +32,7 @@ type Repository struct {
+ 
+ // NewRepository creates a new server Repository. Supports the options: WithLimit
+ // which sets a default limit on results returned by repo operations.
+-func NewRepository(r db.Reader, w db.Writer, kms *kms.Kms, opt ...Option) (*Repository, error) {
++func NewRepository(ctx context.Context, r db.Reader, w db.Writer, kms *kms.Kms, opt ...Option) (*Repository, error) {
+ 	const op = "server.NewRepository"
+ 	if r == nil {
+ 		return nil, errors.NewDeprecated(errors.InvalidParameter, op, "nil reader")
+diff --git a/internal/target/repository.go b/internal/target/repository.go
+index 7ec5d1b2d..83105dd6f 100644
+--- a/internal/target/repository.go
++++ b/internal/target/repository.go
+@@ -48,7 +48,7 @@ type Repository struct {
+ // - WithLimit: sets a limit on the number of results returned by various repo operations.
+ // - WithPermissions: defines the permissions the user has to perform different
+ // actions and access resources within the created repo object.
+-func NewRepository(r db.Reader, w db.Writer, kms *kms.Kms, opt ...Option) (*Repository, error) {
++func NewRepository(ctx context.Context, r db.Reader, w db.Writer, kms *kms.Kms, opt ...Option) (*Repository, error) {
+ 	const op = "target.NewRepository"
+ 	if r == nil {
+ 		return nil, errors.NewDeprecated(errors.InvalidParameter, op, "nil reader")

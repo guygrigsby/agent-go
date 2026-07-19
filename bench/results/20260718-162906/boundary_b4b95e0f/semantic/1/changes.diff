@@ -1,0 +1,164 @@
+diff --git a/internal/credential/vault/credential_store.go b/internal/credential/vault/credential_store.go
+index a796ee5ce..7f787c4e5 100644
+--- a/internal/credential/vault/credential_store.go
++++ b/internal/credential/vault/credential_store.go
+@@ -1,6 +1,7 @@
+ package vault
+ 
+ import (
++	"context"
+ 	"strings"
+ 
+ 	"github.com/hashicorp/boundary/internal/credential/vault/store"
+@@ -183,7 +184,7 @@ func (cs *CredentialStore) client() (*client, error) {
+ 		clientConfig.ClientKey = cs.clientCert.GetCertificateKey()
+ 	}
+ 
+-	c, err := newClient(clientConfig)
++	c, err := newClient(clientConfig, context.Background())
+ 	if err != nil {
+ 		return nil, errors.WrapDeprecated(err, op)
+ 	}
+diff --git a/internal/credential/vault/private_credential.go b/internal/credential/vault/private_credential.go
+index 657669bdd..869705e2f 100644
+--- a/internal/credential/vault/private_credential.go
++++ b/internal/credential/vault/private_credential.go
+@@ -95,7 +95,7 @@ func (pc *privateCredential) client() (*client, error) {
+ 		clientConfig.ClientKey = pc.ClientKey
+ 	}
+ 
+-	client, err := newClient(clientConfig)
++	client, err := newClient(clientConfig, context.Background())
+ 	if err != nil {
+ 		return nil, errors.WrapDeprecated(err, op, errors.WithMsg("unable to create vault client"))
+ 	}
+diff --git a/internal/credential/vault/private_library.go b/internal/credential/vault/private_library.go
+index 8531e4a69..37593c9d9 100644
+--- a/internal/credential/vault/private_library.go
++++ b/internal/credential/vault/private_library.go
+@@ -273,7 +273,7 @@ func (pl *privateLibrary) client() (*client, error) {
+ 		clientConfig.ClientKey = pl.ClientKey
+ 	}
+ 
+-	client, err := newClient(clientConfig)
++	client, err := newClient(clientConfig, context.Background())
+ 	if err != nil {
+ 		return nil, errors.WrapDeprecated(err, op, errors.WithMsg("unable to create vault client"))
+ 	}
+diff --git a/internal/credential/vault/private_store.go b/internal/credential/vault/private_store.go
+index 0194b547b..b354621ed 100644
+--- a/internal/credential/vault/private_store.go
++++ b/internal/credential/vault/private_store.go
+@@ -198,7 +198,7 @@ func (ps *privateStore) client() (*client, error) {
+ 		clientConfig.ClientKey = ps.ClientKey
+ 	}
+ 
+-	client, err := newClient(clientConfig)
++	client, err := newClient(clientConfig, context.Background())
+ 	if err != nil {
+ 		return nil, errors.WrapDeprecated(err, op, errors.WithMsg("unable to create vault client"))
+ 	}
+diff --git a/internal/credential/vault/testing.go b/internal/credential/vault/testing.go
+index 3a17a9a0f..9f3160b6e 100644
+--- a/internal/credential/vault/testing.go
++++ b/internal/credential/vault/testing.go
+@@ -636,7 +636,7 @@ func (v *TestVaultServer) clientUsingToken(t testing.TB, token string) *client {
+ 		ClientKey:  v.ClientKey,
+ 	}
+ 
+-	client, err := newClient(conf)
++	client, err := newClient(conf, context.Background())
+ 	require.NoError(err)
+ 	require.NotNil(client)
+ 	require.NoError(client.ping())
+diff --git a/internal/credential/vault/testing_test.go b/internal/credential/vault/testing_test.go
+index ed244434c..f0dab6922 100644
+--- a/internal/credential/vault/testing_test.go
++++ b/internal/credential/vault/testing_test.go
+@@ -1,6 +1,7 @@
+ package vault
+ 
+ import (
++	"context"
+ 	"crypto/ecdsa"
+ 	"crypto/elliptic"
+ 	"crypto/rand"
+@@ -237,7 +238,7 @@ func TestNewVaultServer(t *testing.T) {
+ 			Token: TokenSecret(v.RootToken),
+ 		}
+ 
+-		client, err := newClient(conf)
++		client, err := newClient(conf, context.Background())
+ 		require.NoError(err)
+ 		require.NotNil(client)
+ 		require.NoError(client.ping())
+@@ -257,7 +258,7 @@ func TestNewVaultServer(t *testing.T) {
+ 			CaCert: v.CaCert,
+ 		}
+ 
+-		client, err := newClient(conf)
++		client, err := newClient(conf, context.Background())
+ 		require.NoError(err)
+ 		require.NotNil(client)
+ 		require.NoError(client.ping())
+@@ -281,7 +282,7 @@ func TestNewVaultServer(t *testing.T) {
+ 			ClientKey:  v.ClientKey,
+ 		}
+ 
+-		client, err := newClient(conf)
++		client, err := newClient(conf, context.Background())
+ 		require.NoError(err)
+ 		require.NotNil(client)
+ 		require.NoError(client.ping())
+@@ -313,7 +314,7 @@ func TestNewVaultServer(t *testing.T) {
+ 			ClientKey:  v.ClientKey,
+ 		}
+ 
+-		client, err := newClient(conf)
++		client, err := newClient(conf, context.Background())
+ 		require.NoError(err)
+ 		require.NotNil(client)
+ 		require.NoError(client.ping())
+@@ -469,7 +470,7 @@ func TestTestVaultServer_LookupLease(t *testing.T) {
+ 		Token:      TokenSecret(v.RootToken),
+ 	}
+ 
+-	client, err := newClient(conf)
++	client, err := newClient(conf, context.Background())
+ 	require.NoError(err)
+ 	require.NotNil(client)
+ 	assert.NoError(client.ping())
+diff --git a/internal/credential/vault/vault.go b/internal/credential/vault/vault.go
+index b9c6baf5b..921bae156 100644
+--- a/internal/credential/vault/vault.go
++++ b/internal/credential/vault/vault.go
+@@ -44,7 +44,7 @@ type client struct {
+ 	token TokenSecret
+ }
+ 
+-func newClient(c *clientConfig) (*client, error) {
++func newClient(c *clientConfig, ctx context.Context) (*client, error) {
+ 	const op = "vault.newClient"
+ 	if !c.isValid() {
+ 		return nil, errors.NewDeprecated(errors.InvalidParameter, op, "invalid configuration")
+diff --git a/internal/credential/vault/vault_test.go b/internal/credential/vault/vault_test.go
+index 1d2cf4744..51168c809 100644
+--- a/internal/credential/vault/vault_test.go
++++ b/internal/credential/vault/vault_test.go
+@@ -1,6 +1,7 @@
+ package vault
+ 
+ import (
++	"context"
+ 	"fmt"
+ 	"net/http"
+ 	"path"
+@@ -52,7 +53,7 @@ func Test_newClient(t *testing.T) {
+ 		tt := tt
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			assert, require := assert.New(t), require.New(t)
+-			client, err := newClient(tt.clientConfig)
++			client, err := newClient(tt.clientConfig, context.Background())
+ 			if tt.wantErr {
+ 				require.Error(err)
+ 				assert.Nil(client)

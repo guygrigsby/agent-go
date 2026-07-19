@@ -1,0 +1,41 @@
+{
+ "agent_done": "2026-07-18T22:38:18.024441709Z",
+ "agent_started": "2026-07-18T22:35:13.224261Z",
+ "cache_read": 609989,
+ "cache_write": 0,
+ "capped": false,
+ "failure_kind": "scored_fail",
+ "first_invalid_s": 50.039497167,
+ "intermediate_states": 9,
+ "invalid_intermediate_rate": 0.8888888888888888,
+ "invalid_intermediates": 8,
+ "iter": 1,
+ "kind": "add-param",
+ "mode": "raw",
+ "new_errors": null,
+ "op_mix": {},
+ "pass": false,
+ "predicate": false,
+ "profile": "qwen3.5-9b-udq4",
+ "prompt": "Pass both the control and data context into handle\n\nSpecifically: add parameter controlCtx context.Context to handleProxy",
+ "rejects_total": 0,
+ "repairs_offered": 0,
+ "resends": 0,
+ "specs": [
+  {
+   "ok": false,
+   "param": "controlCtx context.Context",
+   "signature": "func(ctx context.Context, _ github.com/hashicorp/boundary/internal/daemon/worker/proxy.DecryptFn, conn net.Conn, out *github.com/hashicorp/boundary/internal/daemon/worker/proxy.ProxyDialer, connId string, _ *google.golang.org/protobuf/types/known/anypb.Any, _ github.com/hashicorp/boundary/internal/daemon/worker/proxy.RecordingManager) (github.com/hashicorp/boundary/internal/daemon/worker/proxy.ProxyConnFn, error)",
+   "sym": "github.com/hashicorp/boundary/internal/daemon/worker/proxy/tcp.handleProxy"
+  }
+ ],
+ "steps": 35,
+ "task": "boundary_fb1ea92a",
+ "tests": false,
+ "tests_baseline": true,
+ "tokens_in": 53348,
+ "tokens_out": 8749,
+ "tokens_reasoning": 0,
+ "typecheck": true,
+ "wall_s": 184.800180709
+}

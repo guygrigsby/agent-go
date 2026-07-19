@@ -1,0 +1,10 @@
+ M internal/cmd/base/initial_resources.go
+ M internal/daemon/cluster/handlers/worker_service.go
+ M internal/daemon/controller/controller.go
+ M internal/daemon/controller/handlers/sessions/session_service.go
+ M internal/daemon/controller/handlers/targets/target_service.go
+ M internal/daemon/controller/tickers.go
+ M internal/session/repository.go
+ M internal/session/testing.go
+ M internal/target/repository.go
+?? opencode.json

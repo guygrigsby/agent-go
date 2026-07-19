@@ -1,0 +1,12 @@
+{"ms":1227,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-19T01:08:04.604854Z"}
+{"ms":1407,"op":"query","outcome":"ok","pkg":"github.com/guygrigsby/boundary/internal/boundary","req_sha":"e50281735195f8d0","sym":"NewRepository","ts":"2026-07-19T01:08:17.237293Z"}
+{"ms":9,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-19T01:08:22.042708Z"}
+{"ms":18,"op":"query","outcome":"ok","pkg":"github.com/guygrigsby/boundary/internal/","req_sha":"a197f859ac3f8d6f","sym":"repo go","ts":"2026-07-19T01:08:24.080277Z"}
+{"ms":19,"op":"query","outcome":"ok","pkg":"github.com/guygrigsby/boundary","req_sha":"80b44f9b1eb4408c","sym":"repo go repo.go","ts":"2026-07-19T01:08:26.072938Z"}
+{"ms":22,"op":"query","outcome":"ok","pkg":"github.com/guygrigsby/boundary","req_sha":"801d8f9de87aa7f3","sym":"boundary","ts":"2026-07-19T01:08:28.084466Z"}
+{"ms":7,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/auth/password","req_sha":"8864b9c8c35a4b09","sym":"NewRepository","ts":"2026-07-19T01:08:32.208414Z"}
+{"ms":43,"op":"query","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/auth/password","req_sha":"687adc842bd46803","sym":"NewRepository","ts":"2026-07-19T01:08:39.209702Z"}
+{"ms":30,"op":"query","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/auth/password","req_sha":"c80567b8d983991d","sym":"NewRepository","ts":"2026-07-19T01:08:48.020215Z"}
+{"ms":2280,"op":"add-param","outcome":"accepted","pkg":"github.com/hashicorp/boundary/internal/auth/password","req_sha":"c28424db1d7d0bf8","sym":"NewRepository","ts":"2026-07-19T01:08:59.759376Z"}
+{"ms":1240,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/target","req_sha":"99bc0be32cae62c2","sym":"NewRepository","ts":"2026-07-19T01:09:29.813749Z"}
+{"ms":5,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-19T01:09:31.077005Z"}

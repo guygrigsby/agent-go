@@ -1,0 +1,17 @@
+{"ms":1634,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/cmd/config","req_sha":"e6432d133dbe39e3","sym":"Controller.ApiRateLimiterMaxEntries","ts":"2026-07-19T12:57:43.37236Z"}
+{"ms":23,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/ratelimit","req_sha":"7b7c3633e76c6da7","sym":"DefaultLimiterMaxEntries","ts":"2026-07-19T12:57:45.011673Z"}
+{"ms":23,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/ratelimit","req_sha":"c8ff40cce022f72f","sym":"defaultLimiterMaxEntries","ts":"2026-07-19T12:57:45.039856Z"}
+{"ms":23,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/ratelimit","req_sha":"4cfad39fc637d5af","sym":"initDefaultLimiterMaxEntries","ts":"2026-07-19T12:57:45.067767Z"}
+{"ms":23,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/ratelimit","req_sha":"7acf57950b55b4fb","sym":"TestDefaulLimiterMaxEntries","ts":"2026-07-19T12:57:45.095297Z"}
+{"ms":5,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-19T12:57:45.123523Z"}
+{"ms":1163,"op":"refs","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/cmd/config","reason":"method or field not found","repairs":1,"req_sha":"e6432d133dbe39e3","sym":"Controller.ApiRateLimiterMaxEntries","ts":"2026-07-19T13:01:06.48352Z"}
+{"ms":25,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/cmd/config","req_sha":"8f6dc90482502960","sym":"Controller.ApiRateLimiterMaxQuotas","ts":"2026-07-19T13:01:07.652328Z"}
+{"ms":3,"op":"refs","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/ratelimit","reason":"symbol not found","repairs":2,"req_sha":"7b7c3633e76c6da7","sym":"DefaultLimiterMaxEntries","ts":"2026-07-19T13:01:07.682104Z"}
+{"ms":22,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/ratelimit","req_sha":"8ae97676990d0a85","sym":"DefaultLimiterMaxQuotas","ts":"2026-07-19T13:01:07.689935Z"}
+{"ms":3,"op":"refs","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/ratelimit","reason":"symbol not found","repairs":2,"req_sha":"c8ff40cce022f72f","sym":"defaultLimiterMaxEntries","ts":"2026-07-19T13:01:07.717585Z"}
+{"ms":22,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/ratelimit","req_sha":"2ab4a6f05eddf5fd","sym":"defaultLimiterMaxQuotas","ts":"2026-07-19T13:01:07.724862Z"}
+{"ms":3,"op":"refs","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/ratelimit","reason":"symbol not found","repairs":2,"req_sha":"4cfad39fc637d5af","sym":"initDefaultLimiterMaxEntries","ts":"2026-07-19T13:01:07.751621Z"}
+{"ms":22,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/ratelimit","req_sha":"b8ecd5e49311f277","sym":"initDefaultLimiterMaxQuotas","ts":"2026-07-19T13:01:07.75891Z"}
+{"ms":3,"op":"refs","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/ratelimit","reason":"symbol not found","repairs":2,"req_sha":"7acf57950b55b4fb","sym":"TestDefaulLimiterMaxEntries","ts":"2026-07-19T13:01:07.7854Z"}
+{"ms":21,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/ratelimit","req_sha":"db57cd155aabe135","sym":"TestDefaulLimiterMaxQuotas","ts":"2026-07-19T13:01:07.792272Z"}
+{"ms":4,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-19T13:01:07.818004Z"}

@@ -1,0 +1,43 @@
+{
+ "agent_done": "2026-07-19T09:15:15.777837125Z",
+ "agent_started": "2026-07-19T09:12:06.719095Z",
+ "cache_read": 1643707,
+ "cache_write": 0,
+ "capped": false,
+ "failure_kind": "scored_fail",
+ "first_invalid_s": 61.928476709,
+ "intermediate_states": 6,
+ "invalid_intermediate_rate": 0.16666666666666666,
+ "invalid_intermediates": 1,
+ "iter": 4,
+ "kind": "rename",
+ "mode": "serena",
+ "new_errors": null,
+ "op_mix": {},
+ "pass": false,
+ "predicate": true,
+ "profile": "qwen3.5-9b-udq4",
+ "prompt": "Rename traefik.docker.* labels for Docker Swarm to traefik.swarm.*\n\nSpecifically, rename: extractLabels -\u003e extractSwarmLabels",
+ "rejects_total": 0,
+ "repairs_offered": 0,
+ "resends": 0,
+ "specs": [
+  {
+   "baseline_refs": 6,
+   "new_refs": 6,
+   "ok": true,
+   "old_refs_left": 0,
+   "sym": "github.com/traefik/traefik/v3/pkg/provider/docker.Shared.extractLabels",
+   "to": "extractSwarmLabels"
+  }
+ ],
+ "steps": 71,
+ "task": "traefik_51491463",
+ "tests": false,
+ "tests_baseline": true,
+ "tokens_in": 25754,
+ "tokens_out": 8255,
+ "tokens_reasoning": 0,
+ "typecheck": true,
+ "wall_s": 189.058742125
+}

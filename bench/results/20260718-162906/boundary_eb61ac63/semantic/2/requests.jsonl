@@ -1,0 +1,14 @@
+{"ms":1310,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-19T02:39:49.351857Z"}
+{"ms":1504,"op":"query","outcome":"ok","req_sha":"7d67a1f1d3a4382f","sym":"NewRepository","ts":"2026-07-19T02:39:58.87216Z"}
+{"ms":20,"op":"query","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/auth/password","req_sha":"687adc842bd46803","sym":"NewRepository","ts":"2026-07-19T02:40:04.504241Z"}
+{"ms":2,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/auth/password","req_sha":"8864b9c8c35a4b09","sym":"NewRepository","ts":"2026-07-19T02:40:09.30895Z"}
+{"ms":21,"op":"add-param","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/auth/password","reason":"default expression required","repairs":0,"req_sha":"b0bcbb7c32c2ac2a","sym":"NewRepository","ts":"2026-07-19T02:40:11.929284Z"}
+{"ms":315,"op":"upsert","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/auth/password","reason":"declaration does not typecheck","repairs":0,"req_sha":"4aaa4e89926e8220","ts":"2026-07-19T02:40:18.140789Z"}
+{"ms":1085,"op":"add-param","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/auth/password","reason":"default expression required","repairs":0,"req_sha":"b0bcbb7c32c2ac2a","sym":"NewRepository","ts":"2026-07-19T02:40:28.224413Z"}
+{"ms":16,"op":"add-param","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/auth/password","reason":"default expression required","repairs":0,"req_sha":"b0bcbb7c32c2ac2a","sym":"NewRepository","ts":"2026-07-19T02:40:31.73812Z"}
+{"ms":273,"op":"upsert","outcome":"accepted","pkg":"github.com/hashicorp/boundary/internal/auth/password","req_sha":"9c9ad7ce59ec428c","ts":"2026-07-19T02:40:37.466893Z"}
+{"ms":2,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/auth/oidc","req_sha":"e90046a52de35193","sym":"NewRepository","ts":"2026-07-19T02:40:40.830579Z"}
+{"ms":5,"op":"rename","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/auth/password","reason":"new name is not a valid identifier","repairs":0,"req_sha":"9fab4b8b51b9b7d1","sym":"NewRepository","ts":"2026-07-19T02:40:46.408952Z"}
+{"ms":6,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/auth/password","req_sha":"8864b9c8c35a4b09","sym":"NewRepository","ts":"2026-07-19T02:40:49.706365Z"}
+{"ms":1037,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/session","req_sha":"cb414bc565d3aeed","sym":"NewRepository","ts":"2026-07-19T02:40:50.754929Z"}
+{"ms":4,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-19T02:40:51.806508Z"}

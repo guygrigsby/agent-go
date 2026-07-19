@@ -1,0 +1,911 @@
+diff --git a/internal/daemon/worker/handler.go b/internal/daemon/worker/handler.go
+index de3ef4829..0b7e85ef9 100644
+--- a/internal/daemon/worker/handler.go
++++ b/internal/daemon/worker/handler.go
+@@ -46,284 +46,21 @@ type HandlerProperties struct {
+ 
+ // Handler returns a http.Handler for the API. This can be used on
+ // its own to mount the Worker API within another web server.
+-func (w *Worker) handler(props HandlerProperties, sm session.Manager) (http.Handler, error) {
++func (w *Worker) handler(props HandlerProperties, sm session.Manager, controlCtx context.Context) (http.Handler, error) {
+ 	const op = "worker.(Worker).handler"
+ 	// Create the muxer to handle the actual endpoints
+ 	mux := http.NewServeMux()
+ 
+ 	var h http.Handler
+-	h, err := w.handleProxy(props.ListenerConfig, sm)
+-	if err != nil {
+-		return nil, fmt.Errorf("%s: %w", op, err)
+-	}
+-	h = proxyHandlers.ProxyHandlerCounter(h)
+-	mux.Handle("/v1/proxy", metric.InstrumentWebsocketWrapper(h))
+-
+-	genericWrappedHandler := w.wrapGenericHandler(mux, props)
+-	metricHandler := metric.InstrumentHttpHandler(genericWrappedHandler)
+-	return metricHandler, nil
+-}
++	h, err := w.handleProxy(props.ListenerConfig, sm, controlCtx)
+ 
+-func (w *Worker) handleProxy(listenerCfg *listenerutil.ListenerConfig, sessionManager session.Manager) (http.HandlerFunc, error) {
++func (w *Worker) handleProxy(listenerCfg *listenerutil.ListenerConfig, sessionManager session.Manager, controlCtx context.Context) (http.HandlerFunc, error) {
+ 	const op = "worker.(Worker).handleProxy"
+ 	if listenerCfg == nil {
+ 		return nil, fmt.Errorf("%s: missing listener config", op)
+ 	}
+ 	return func(wr http.ResponseWriter, r *http.Request) {
+ 		ctx := r.Context()
+-		if r.TLS == nil {
+-			event.WriteError(ctx, op, stderrors.New("no request tls information found"))
+-			wr.WriteHeader(http.StatusInternalServerError)
+-			return
+-		}
+-
+-		var sessionId string
+-	outerCertLoop:
+-		for _, cert := range r.TLS.PeerCertificates {
+-			for _, name := range cert.DNSNames {
+-				if strings.HasPrefix(name, fmt.Sprintf("%s_", globals.SessionPrefix)) {
+-					sessionId = name
+-					break outerCertLoop
+-				}
+-			}
+-		}
+-		if sessionId == "" {
+-			event.WriteError(ctx, op, stderrors.New("no session id could be found in peer certificates"))
+-			wr.WriteHeader(http.StatusInternalServerError)
+-			return
+-		}
+-
+-		clientIp, clientPort, err := net.SplitHostPort(r.RemoteAddr)
+-		if err != nil {
+-			event.WriteError(ctx, op, err, event.WithInfoMsg("unable to understand remote address", "remote_addr", r.RemoteAddr))
+-			wr.WriteHeader(http.StatusInternalServerError)
+-			return
+-		}
+-		numPort, err := strconv.Atoi(clientPort)
+-		if err != nil {
+-			event.WriteError(ctx, op, err, event.WithInfoMsg("unable to understand remote port"))
+-			wr.WriteHeader(http.StatusInternalServerError)
+-			return
+-		}
+-		clientAddr := &net.TCPAddr{
+-			IP:   net.ParseIP(clientIp),
+-			Port: numPort,
+-		}
+-
+-		userClientIp, err := common.ClientIpFromRequest(ctx, listenerCfg, r)
+-		if err != nil {
+-			event.WriteError(ctx, op, err, event.WithInfoMsg("unable to determine user ip"))
+-			wr.WriteHeader(http.StatusInternalServerError)
+-		}
+-
+-		sess := sessionManager.Get(sessionId)
+-		if sess == nil {
+-			event.WriteError(ctx, op, stderrors.New("session not found locally"), event.WithInfo("session_id", sessionId))
+-			wr.WriteHeader(http.StatusInternalServerError)
+-			return
+-		}
+-
+-		opts := &websocket.AcceptOptions{
+-			Subprotocols: []string{globals.TcpProxyV1},
+-		}
+-		conn, err := websocket.Accept(wr, r, opts)
+-		if err != nil {
+-			event.WriteError(ctx, op, err, event.WithInfoMsg("error during websocket upgrade"))
+-			wr.WriteHeader(http.StatusInternalServerError)
+-			return
+-		}
+-		// Later calls will cause this to noop if they return a different status
+-		defer conn.Close(websocket.StatusNormalClosure, "done")
+-
+-		connCtx, connCancel := context.WithDeadline(ctx, sess.GetExpiration())
+-		defer connCancel()
+-
+-		var handshake proxy.ClientHandshake
+-		if err := wspb.Read(connCtx, conn, &handshake); err != nil {
+-			event.WriteError(ctx, op, err, event.WithInfoMsg("error reading handshake from client"))
+-			if err = conn.Close(websocket.StatusPolicyViolation, "invalid handshake received"); err != nil {
+-				event.WriteError(ctx, op, err, event.WithInfoMsg("error closing client connection"))
+-			}
+-			return
+-		}
+-		if len(handshake.GetTofuToken()) < 20 {
+-			event.WriteError(ctx, op, stderrors.New("invalid tofu token"))
+-			if err = conn.Close(websocket.StatusUnsupportedData, "invalid tofu token"); err != nil {
+-				event.WriteError(ctx, op, err, event.WithInfoMsg("error closing client connection"))
+-			}
+-			return
+-		}
+-
+-		if handshake.Command == proxy.HANDSHAKECOMMAND_HANDSHAKECOMMAND_SESSION_CANCEL {
+-			if err := sess.RequestCancel(ctx); err != nil {
+-				event.WriteError(ctx, op, err, event.WithInfoMsg("unable to cancel session"))
+-				if err = conn.Close(websocket.StatusInternalError, "unable to cancel session"); err != nil && !stderrors.Is(err, io.EOF) {
+-					event.WriteError(ctx, op, err, event.WithInfoMsg("error closing client connection"))
+-				}
+-				return
+-			}
+-			if err = conn.Close(websocket.StatusNormalClosure, "session canceled"); err != nil && !stderrors.Is(err, io.EOF) {
+-				event.WriteError(ctx, op, err, event.WithInfoMsg("error closing client connection"))
+-			}
+-			return
+-		}
+-
+-		if sess.GetTofuToken() != "" {
+-			if sess.GetTofuToken() != handshake.GetTofuToken() {
+-				event.WriteError(ctx, op, stderrors.New("WARNING: mismatched tofu token"), event.WithInfo("session_id", sessionId))
+-				if err = conn.Close(websocket.StatusPolicyViolation, "tofu token not allowed"); err != nil {
+-					event.WriteError(ctx, op, err, event.WithInfoMsg("error closing client connection"))
+-				}
+-				return
+-			}
+-		} else {
+-			if sess.GetStatus() != pbs.SESSIONSTATUS_SESSIONSTATUS_PENDING {
+-				event.WriteError(ctx, op, stderrors.New("no tofu token but not in correct session state"), event.WithInfo("session_id", sessionId))
+-				if err = conn.Close(websocket.StatusInternalError, "refusing to activate session"); err != nil {
+-					event.WriteError(ctx, op, err, event.WithInfoMsg("error closing client connection"))
+-				}
+-				return
+-			}
+-			if handshake.Command == proxy.HANDSHAKECOMMAND_HANDSHAKECOMMAND_UNSPECIFIED {
+-				err = sess.RequestActivate(ctx, handshake.GetTofuToken())
+-				if err != nil {
+-					event.WriteError(ctx, op, err, event.WithInfoMsg("unable to validate session"))
+-					if err = conn.Close(websocket.StatusInternalError, "unable to activate session"); err != nil {
+-						event.WriteError(ctx, op, err, event.WithInfoMsg("error closing client connection"))
+-					}
+-					return
+-				}
+-				event.WriteSysEvent(ctx, op, "session successfully activated", "session_id", sessionId)
+-			}
+-		}
+-
+-		if w.LastStatusSuccess() == nil || w.LastStatusSuccess().WorkerId == "" {
+-			event.WriteError(ctx, op, stderrors.New("worker id is empty"))
+-			if err = conn.Close(websocket.StatusInternalError, "worker id is empty"); err != nil {
+-				event.WriteError(ctx, op, err, event.WithInfoMsg("error closing client connection"))
+-			}
+-			return
+-		}
+-		workerId := w.LastStatusSuccess().WorkerId
+-
+-		var acResp *pbs.AuthorizeConnectionResponse
+-		var connsLeft int32
+-		acResp, connsLeft, err = sess.RequestAuthorizeConnection(ctx, workerId, connCancel)
+-		if err != nil {
+-			event.WriteError(ctx, op, err, event.WithInfoMsg("unable to authorize connection"))
+-			if err = conn.Close(websocket.StatusInternalError, "unable to authorize connection"); err != nil {
+-				event.WriteError(ctx, op, err, event.WithInfoMsg("error closing client connection"))
+-			}
+-			return
+-		}
+-		event.WriteSysEvent(ctx, op, "connection successfully authorized", "session_id", sessionId, "connection_id", acResp.GetConnectionId())
+-
+-		// Wrapping the client websocket with a `net.Conn` implementation that
+-		// records the bytes that go across Read() and Write().
+-		cc := &countingConn{Conn: websocket.NetConn(connCtx, conn, websocket.MessageBinary)}
+-		err = sess.ApplyConnectionCounterCallbacks(acResp.GetConnectionId(), cc.BytesRead, cc.BytesWritten)
+-		if err != nil {
+-			event.WriteError(ctx, op, err, event.WithInfoMsg("unable to set counter callbacks for session connection"))
+-			err = conn.Close(websocket.StatusInternalError, "unable to set counter callbacks for session connection")
+-			if err != nil {
+-				event.WriteError(ctx, op, err, event.WithInfoMsg("error closing client connection"))
+-			}
+-			return
+-		}
+-
+-		defer func() {
+-			ccd := map[string]*session.ConnectionCloseData{
+-				acResp.GetConnectionId(): {
+-					SessionId: sess.GetId(),
+-					BytesUp:   cc.BytesRead(),
+-					BytesDown: cc.BytesWritten(),
+-				},
+-			}
+-			if sessionManager.RequestCloseConnections(ctx, ccd) {
+-				event.WriteSysEvent(ctx, op, "connection closed", "session_id", sessionId, "connection_id", acResp.GetConnectionId())
+-			}
+-		}()
+-
+-		handshakeResult := &proxy.HandshakeResult{
+-			Expiration:      timestamppb.New(sess.GetExpiration()),
+-			ConnectionLimit: sess.GetConnectionLimit(),
+-			ConnectionsLeft: connsLeft,
+-		}
+-		if err := wspb.Write(connCtx, conn, handshakeResult); err != nil {
+-			event.WriteError(ctx, op, err, event.WithInfoMsg("error sending handshake result to client"))
+-			if err = conn.Close(websocket.StatusProtocolError, "unable to send handshake result"); err != nil {
+-				event.WriteError(ctx, op, err, event.WithInfoMsg("error closing client connection"))
+-			}
+-			return
+-		}
+-
+-		endpointUrl, err := url.Parse(sess.GetEndpoint())
+-		if err != nil {
+-			event.WriteError(ctx, op, err, event.WithInfoMsg("worker failed to parse target endpoint", "endpoint", sess.GetEndpoint()))
+-			if err = conn.Close(websocket.StatusProtocolError, "unable to parse endpoint"); err != nil {
+-				event.WriteError(ctx, op, err, event.WithInfoMsg("error closing client connection"))
+-			}
+-			return
+-		}
+-		protocolCtx := acResp.GetProtocolContext()
+-		if protocolCtx == nil {
+-			// TODO: Remove this if block once pre v0.12.0 controllers are no longer supported.
+-			if protocolCtx, err = GetProtocolContext(ctx, workerId, sess, endpointUrl.Scheme); err != nil {
+-				conn.Close(proxyHandlers.WebsocketStatusProtocolSetupError, "unable to get proxy context")
+-				event.WriteError(ctx, op, err)
+-				return
+-			}
+-		}
+-
+-		pDialer, err := proxyHandlers.GetEndpointDialer(ctx, endpointUrl.Host, workerId, acResp, w.downstreamReceiver)
+-		if err != nil {
+-			conn.Close(proxyHandlers.WebsocketStatusProtocolSetupError, "unable to get endpoint dialer")
+-			event.WriteError(ctx, op, err)
+-			return
+-		}
+-
+-		// Verify the protocol has a supported proxy before calling RequestAuthorizeConnection
+-		handleProxyFn, err := proxyHandlers.GetHandler(workerId, acResp.GetProtocolContext())
+-		if err != nil {
+-			conn.Close(proxyHandlers.WebsocketStatusProtocolSetupError, "unable to get proxy handler")
+-			event.WriteError(ctx, op, err)
+-			return
+-		}
+-		decryptFn, err := w.credDecryptFn(ctx)
+-		if err != nil {
+-			conn.Close(proxyHandlers.WebsocketStatusProtocolSetupError, "error getting decryption function")
+-			event.WriteError(ctx, op, err)
+-		}
+-		runProxy, err := handleProxyFn(ctx, decryptFn, cc, pDialer, acResp.GetConnectionId(), protocolCtx, w.recorderManager)
+-		if err != nil {
+-			conn.Close(proxyHandlers.WebsocketStatusProtocolSetupError, "unable to setup proxying")
+-			event.WriteError(ctx, op, err)
+-			return
+-		}
+-
+-		// We connect connection only after we have confirmed as much as we can
+-		// that we can establish the proxy.
+-		endpointAddr := pDialer.LastConnectionAddr()
+-		connectionInfo := &pbs.ConnectConnectionRequest{
+-			ConnectionId:       acResp.GetConnectionId(),
+-			ClientTcpAddress:   clientAddr.IP.String(),
+-			ClientTcpPort:      uint32(clientAddr.Port),
+-			EndpointTcpAddress: endpointAddr.Ip(),
+-			EndpointTcpPort:    endpointAddr.Port(),
+-			Type:               endpointUrl.Scheme,
+-			UserClientIp:       userClientIp,
+-		}
+-		if err = sess.RequestConnectConnection(ctx, connectionInfo); err != nil {
+-			event.WriteError(ctx, op, err, event.WithInfoMsg("error requesting connect connection", "session_id", sess.GetId(), "connection_id", acResp.GetConnectionId()))
+-			if err = conn.Close(websocket.StatusInternalError, "unable to establish proxy"); err != nil {
+-				event.WriteError(ctx, op, err, event.WithInfoMsg("error closing client connection"))
+-			}
+-			return
+-		}
+-
+-		runProxy(ctx)
+-	}, nil
+-}
+ 
+ // credDecryptFn returns a DecryptFn if the worker is a pki worker with
+ // WorkerAuthStorage defined. An error is returned if there is an error
+diff --git a/internal/daemon/worker/listeners.go b/internal/daemon/worker/listeners.go
+index 9d746fe49..29b56094d 100644
+--- a/internal/daemon/worker/listeners.go
++++ b/internal/daemon/worker/listeners.go
+@@ -58,7 +58,7 @@ func closeListeners(_ context.Context, l, l2 net.Listener, _ any) error {
+ 	return nil
+ }
+ 
+-func (w *Worker) startListeners(sm session.Manager) error {
++func (w *Worker) startListeners(sm session.Manager, controlCtx context.Context) error {
+ 	const op = "worker.(Worker).startListeners"
+ 
+ 	e := event.SysEventer()
+@@ -73,235 +73,11 @@ func (w *Worker) startListeners(sm session.Manager) error {
+ 		return fmt.Errorf("%s: nil proxy listener", op)
+ 	}
+ 
+-	workerServer, err := w.configureForWorker(w.proxyListener, logger, sm)
+-	if err != nil {
+-		return fmt.Errorf("%s: failed to configure for worker: %w", op, err)
+-	}
+-
+-	workerServer()
+-
+-	return nil
+-}
++	workerServer, err := w.configureForWorker(w.proxyListener, logger, sm, controlCtx)
+ 
+-func (w *Worker) configureForWorker(ln *base.ServerListener, logger *log.Logger, sessionManager session.Manager) (func(), error) {
++func (w *Worker) configureForWorker(ln *base.ServerListener, logger *log.Logger, sessionManager session.Manager, controlCtx context.Context) (func(), error) {
+ 	const op = "worker.configureForWorker"
+-	handler, err := w.handler(HandlerProperties{ListenerConfig: ln.Config}, sessionManager)
+-	if err != nil {
+-		return nil, err
+-	}
+-
+-	cancelCtx := w.baseContext
+-	httpServer := &http.Server{
+-		Handler:           handler,
+-		ReadHeaderTimeout: 10 * time.Second,
+-		ReadTimeout:       30 * time.Second,
+-		ErrorLog:          logger,
+-		BaseContext: func(net.Listener) context.Context {
+-			return cancelCtx
+-		},
+-	}
+-	ln.HTTPServer = httpServer
+-
+-	if ln.Config.HTTPReadHeaderTimeout > 0 {
+-		httpServer.ReadHeaderTimeout = ln.Config.HTTPReadHeaderTimeout
+-	}
+-	if ln.Config.HTTPReadTimeout > 0 {
+-		httpServer.ReadTimeout = ln.Config.HTTPReadTimeout
+-	}
+-	if ln.Config.HTTPWriteTimeout > 0 {
+-		httpServer.WriteTimeout = ln.Config.HTTPWriteTimeout
+-	}
+-	if ln.Config.HTTPIdleTimeout > 0 {
+-		httpServer.IdleTimeout = ln.Config.HTTPIdleTimeout
+-	}
+-
+-	fetchCredsFn := func(
+-		ctx context.Context,
+-		storage nodee.Storage,
+-		req *types.FetchNodeCredentialsRequest,
+-		opt ...nodee.Option,
+-	) (*types.FetchNodeCredentialsResponse, error) {
+-		switch {
+-		case req == nil:
+-			return nil, temperror.New(stderrors.New("nil request in multi-hop fetch function"))
+-		case len(req.Bundle) == 0:
+-			return nil, temperror.New(stderrors.New("empty bundle in multi-hop fetch function"))
+-		}
+-		// Check to see if there is encrypted registration info, if so we need
+-		// to use our wrapper to decrypt it
+-		reqInfo := new(types.FetchNodeCredentialsInfo)
+-		if err := proto.Unmarshal(req.Bundle, reqInfo); err != nil {
+-			return nil, temperror.New(fmt.Errorf("error unmarshaling request bundle in multi-hop fetch function: %w", err))
+-		}
+-		if len(reqInfo.WrappedRegistrationInfo) > 0 {
+-			regInfo, err := registration.DecryptWrappedRegistrationInfo(ctx, reqInfo, opt...)
+-			if err != nil {
+-				return nil, temperror.New(fmt.Errorf("error during decryption of wrapped registration info in multi-hop fetch function: %w", err))
+-			}
+-			// We've successfully decrypted it using our registration wrapper;
+-			// now we need to encrypt it to the server
+-			nodeCreds, err := types.LoadNodeCredentials(ctx, storage, nodee.CurrentId, opt...)
+-			if err != nil {
+-				return nil, temperror.New(fmt.Errorf("error loading node credentials in multi-hop fetch function: %w", err))
+-			}
+-			req.RewrappingKeyId, err = nodee.KeyIdFromPkix(nodeCreds.CertificatePublicKeyPkix)
+-			if err != nil {
+-				return nil, temperror.New(fmt.Errorf("error deriving node credentials key id in multi-hop fetch function: %w", err))
+-			}
+-			req.RewrappedWrappingRegistrationFlowInfo, err = nodee.EncryptMessage(ctx, regInfo, nodeCreds)
+-			if err != nil {
+-				return nil, temperror.New(fmt.Errorf("error rewrapping registration information in multi-hop fetch function: %w", err))
+-			}
+-		}
+-		client := w.controllerMultihopConn.Load()
+-		if client == nil {
+-			return nil, temperror.New(stderrors.New("error fetching controller connection, client is nil"))
+-		}
+-		multihopClient, ok := client.(multihop.MultihopServiceClient)
+-		if !ok {
+-			return nil, temperror.New(stderrors.New("client could not be understood as a multihop service client"))
+-		}
+-		return multihopClient.FetchNodeCredentials(ctx, req)
+-	}
+-
+-	generateServerCertificatesFn := func(
+-		ctx context.Context,
+-		_ nodee.Storage,
+-		req *types.GenerateServerCertificatesRequest,
+-		_ ...nodee.Option,
+-	) (*types.GenerateServerCertificatesResponse, error) {
+-		client := w.controllerMultihopConn.Load()
+-		if client == nil {
+-			return nil, temperror.New(stderrors.New("error fetching controller connection, client is nil"))
+-		}
+-		multihopClient, ok := client.(multihop.MultihopServiceClient)
+-		if !ok {
+-			return nil, temperror.New(stderrors.New("client could not be understood as a multihop service client"))
+-		}
+-		return multihopClient.GenerateServerCertificates(ctx, req)
+-	}
+-
+-	eventLogger, err := event.NewHclogLogger(w.baseContext, w.conf.Eventer)
+-	if err != nil {
+-		event.WriteError(w.baseContext, op, err)
+-		return nil, errors.Wrap(w.baseContext, err, op)
+-	}
+-	// Give the log a prefix
+-	eventLogger = eventLogger.Named(fmt.Sprintf("workerauth_listener"))
+-	// Wrap the log in a toggle so we can turn it on and off via config and
+-	// SIGHUP
+-	eventLogger = toggledlogger.NewToggledLogger(eventLogger, w.conf.WorkerAuthDebuggingEnabled)
+-
+-	wrapperToUse := w.conf.WorkerAuthKms
+-	if !util.IsNil(w.conf.DownstreamWorkerAuthKms) {
+-		wrapperToUse = w.conf.DownstreamWorkerAuthKms
+-	}
+-
+-	interceptingListener, err := protocol.NewInterceptingListener(
+-		&protocol.InterceptingListenerConfiguration{
+-			Context:      w.baseContext,
+-			Storage:      w.WorkerAuthStorage,
+-			BaseListener: ln.ProxyListener,
+-			BaseTlsConfiguration: &tls.Config{
+-				GetConfigForClient: w.getSessionTls(sessionManager),
+-			},
+-			FetchCredsFunc:                 fetchCredsFn,
+-			GenerateServerCertificatesFunc: generateServerCertificatesFn,
+-			Options: []nodee.Option{
+-				nodee.WithStorageWrapper(w.conf.WorkerAuthStorageKms),
+-				nodee.WithRegistrationWrapper(wrapperToUse),
+-				nodee.WithLogger(eventLogger),
+-			},
+-		})
+-	if err != nil {
+-		return nil, fmt.Errorf("error instantiating node auth listener: %w", err)
+-	}
+-
+-	// Create split listener
+-	w.workerAuthSplitListener, err = nodeenet.NewSplitListener(interceptingListener)
+-	if err != nil {
+-		return nil, fmt.Errorf("error instantiating split listener: %w", err)
+-	}
+-
+-	// This handles connections coming in that are authenticated via
+-	// nodeenrollment but not with any extra purpose; these are normal PKI
+-	// worker connections
+-	nodeeAuthListener, err := w.workerAuthSplitListener.GetListener(nodeenet.AuthenticatedNonSpecificNextProto, nodee.WithNativeConns(true))
+-	if err != nil {
+-		return nil, fmt.Errorf("error instantiating worker split listener: %w", err)
+-	}
+-
+-	// Connections that come into here are not authed by nodeenrollment so are
+-	// proxy connections
+-	proxyListener, err := w.workerAuthSplitListener.GetListener(nodeenet.UnauthenticatedNextProto)
+-	if err != nil {
+-		return nil, fmt.Errorf("error instantiating non-worker split listener: %w", err)
+-	}
+-
+-	// Connections coming in here are authed by nodeenrollment and are for the
+-	// reverse grpc purpose
+-	reverseGrpcListener, err := w.workerAuthSplitListener.GetListener(common.ReverseGrpcConnectionAlpnValue, nodee.WithNativeConns(true))
+-	if err != nil {
+-		return nil, fmt.Errorf("error instantiating reverse grpc split listener: %w", err)
+-	}
+-
+-	// This wraps the reverse grpc pki worker connections with a listener which
+-	// adds the worker key id of the connections to the worker's pkiConnManager.
+-	revPkiWorkerTrackingListener, err := cluster.NewTrackingListener(w.baseContext, reverseGrpcListener, w.pkiConnManager, sourcePurpose(reverseGrpcListenerPurpose))
+-	if err != nil {
+-		return nil, fmt.Errorf("%s: error creating reverse grpc pki worker tracking listener: %w", op, err)
+-	}
+-
+-	// Connections coming in here are authed by nodeenrollment and are for the
+-	// multi-hop session-proxying
+-	dataPlaneProxyListener, err := w.workerAuthSplitListener.GetListener(common.DataPlaneProxyAlpnValue, nodee.WithNativeConns(true))
+-	if err != nil {
+-		return nil, fmt.Errorf("error instantiating websocket proxying split listener: %w", err)
+-	}
+-
+-	// This wraps the web socket proxying worker connections with a listener which
+-	// adds the worker key id of the connections to the worker's pkiConnManager.
+-	dataPlaneProxyTrackingListener, err := cluster.NewTrackingListener(w.baseContext, dataPlaneProxyListener, w.pkiConnManager, sourcePurpose(multihopProxyDataplaneListenerPurpose))
+-	if err != nil {
+-		return nil, fmt.Errorf("%s: error creating web socket proxying tracking listener: %w", op, err)
+-	}
+-
+-	statsHandler, err := metric.InstrumentClusterStatsHandler(w.baseContext)
+-	if err != nil {
+-		return nil, errors.Wrap(w.baseContext, err, op)
+-	}
+-	downstreamServer := grpc.NewServer(
+-		grpc.StatsHandler(statsHandler),
+-		grpc.MaxRecvMsgSize(math.MaxInt32),
+-		grpc.MaxSendMsgSize(math.MaxInt32),
+-	)
+-
+-	for _, fn := range workerGrpcServiceRegistrationFunctions {
+-		if err := fn(cancelCtx, w, downstreamServer); err != nil {
+-			return nil, err
+-		}
+-	}
+-
+-	metric.InitializeConnectionCounters(w.conf.PrometheusRegisterer)
+-	metric.InitializeClusterServerCollectors(w.conf.PrometheusRegisterer, downstreamServer)
+-
+-	ln.GrpcServer = downstreamServer
+-
+-	// This wraps the normal pki worker connections with a listener which adds
+-	// the worker key id of the  connections to the worker's pkiConnManager.
+-	pkiWorkerTrackingListener, err := cluster.NewTrackingListener(cancelCtx, nodeeAuthListener, w.pkiConnManager, sourcePurpose(grpcListenerPurpose))
+-	if err != nil {
+-		return nil, fmt.Errorf("%s: error creating pki worker tracking listener: %w", op, err)
+-	}
+-
+-	return func() {
+-		handleSecondaryConnection(cancelCtx, metric.InstrumentWorkerClusterTrackingListener(revPkiWorkerTrackingListener, reverseGrpcListenerPurpose),
+-			metric.InstrumentWorkerClusterTrackingListener(dataPlaneProxyTrackingListener, multihopProxyDataplaneListenerPurpose), w.downstreamReceiver)
+-		go w.workerAuthSplitListener.Start()
+-		go httpServer.Serve(proxyListener)
+-		go ln.GrpcServer.Serve(metric.InstrumentWorkerClusterTrackingListener(pkiWorkerTrackingListener, grpcListenerPurpose))
+-	}, nil
+-}
++	handler, err := w.handler(HandlerProperties{ListenerConfig: ln.Config}, sessionManager, controlCtx)
+ 
+ func (w *Worker) stopServersAndListeners() error {
+ 	var mg multierror.Group
+diff --git a/internal/daemon/worker/listeners_test.go b/internal/daemon/worker/listeners_test.go
+index ce889745d..7646a8c78 100644
+--- a/internal/daemon/worker/listeners_test.go
++++ b/internal/daemon/worker/listeners_test.go
+@@ -91,7 +91,7 @@ func TestStartListeners(t *testing.T) {
+ 
+ 			manager, err := session.NewManager(pbs.NewSessionServiceClient(w.GrpcClientConn))
+ 			require.NoError(t, err)
+-			err = w.startListeners(manager)
++			err = w.startListeners(manager, ctx)
+ 			if tt.expErr {
+ 				require.EqualError(t, err, tt.expErrMsg)
+ 				return
+diff --git a/internal/daemon/worker/proxy/tcp/tcp.go b/internal/daemon/worker/proxy/tcp/tcp.go
+index c4f0a1773..ebe850c78 100644
+--- a/internal/daemon/worker/proxy/tcp/tcp.go
++++ b/internal/daemon/worker/proxy/tcp/tcp.go
+@@ -27,36 +27,5 @@ func init() {
+ // handleProxy returns a ProxyConnFn which starts the copy between the
+ // connections and blocks until an error (EOF on happy path) is received on
+ // either connection.
+-func handleProxy(ctx context.Context, _ proxy.DecryptFn, conn net.Conn, out *proxy.ProxyDialer, connId string, _ *anypb.Any, _ proxy.RecordingManager) (proxy.ProxyConnFn, error) {
++func handleProxy(ctx context.Context, ctrlCtx context.Context, _ proxy.DecryptFn, conn net.Conn, out *proxy.ProxyDialer, connId string, _ *anypb.Any, _ proxy.RecordingManager) (proxy.ProxyConnFn, error) {
+ 	const op = "tcp.HandleProxy"
+-	switch {
+-	case conn == nil:
+-		return nil, errors.New(ctx, errors.InvalidParameter, op, "conn is nil")
+-	case out == nil:
+-		return nil, errors.New(ctx, errors.InvalidParameter, op, "proxy dialer is nil")
+-	case len(connId) == 0:
+-		return nil, errors.New(ctx, errors.InvalidParameter, op, "connection id is empty")
+-	}
+-	remoteConn, err := out.Dial(ctx)
+-	if err != nil {
+-		return nil, err
+-	}
+-
+-	return func(ctx context.Context) {
+-		connWg := new(sync.WaitGroup)
+-		connWg.Add(2)
+-		go func() {
+-			defer connWg.Done()
+-			_, _ = io.Copy(conn, remoteConn)
+-			_ = conn.Close()
+-			_ = remoteConn.Close()
+-		}()
+-		go func() {
+-			defer connWg.Done()
+-			_, _ = io.Copy(remoteConn, conn)
+-			_ = remoteConn.Close()
+-			_ = conn.Close()
+-		}()
+-		connWg.Wait()
+-	}, nil
+-}
+diff --git a/internal/daemon/worker/proxy/tcp/tcp_test.go b/internal/daemon/worker/proxy/tcp/tcp_test.go
+index 1a819e5d7..df17e0558 100644
+--- a/internal/daemon/worker/proxy/tcp/tcp_test.go
++++ b/internal/daemon/worker/proxy/tcp/tcp_test.go
+@@ -88,7 +88,7 @@ func TestHandleProxy_Errors(t *testing.T) {
+ 	}
+ 	for _, tc := range cases {
+ 		t.Run(tc.name, func(t *testing.T) {
+-			fn, err := handleProxy(context.Background(), nil, tc.conn, tc.dialer, tc.connId, tc.protocolCtx, nil)
++			fn, err := handleProxy(context.Background(), context.Background(), tc.conn, tc.dialer, tc.connId, tc.protocolCtx, nil)
+ 			if tc.wantError {
+ 				assert.Error(t, err)
+ 				assert.Nil(t, fn)
+@@ -166,7 +166,7 @@ func TestHandleTcpProxyV1(t *testing.T) {
+ 	conn := websocket.NetConn(ctx, proxyConn, websocket.MessageBinary)
+ 
+ 	go func() {
+-		fn, err := handleProxy(ctx, nil, conn, tDial, resp.GetConnectionId(), resp.GetProtocolContext(), nil)
++		fn, err := handleProxy(ctx, ctx, conn, tDial, resp.GetConnectionId(), resp.GetProtocolContext(), nil)
+ 		t.Cleanup(func() {
+ 			// Use of the t.Cleanup is so we can check the state of the returned
+ 			// error since it isn't valid to call `t.FailNow()` from a goroutine.
+diff --git a/internal/daemon/worker/worker.go b/internal/daemon/worker/worker.go
+index 1fcf4e2b1..655110177 100644
+--- a/internal/daemon/worker/worker.go
++++ b/internal/daemon/worker/worker.go
+@@ -357,215 +357,99 @@ func (w *Worker) Reload(ctx context.Context, newConf *config.Config) {
+ }
+ 
+ func (w *Worker) Start() error {
+-	const op = "worker.(Worker).Start"
++	const op = "worker.(*Worker).Start"
+ 
+-	w.baseContext, w.baseCancel = context.WithCancel(context.Background())
++	w.statusMutex.Lock()
++	defer w.statusMutex.Unlock()
+ 
+-	if w.started.Load() {
+-		event.WriteSysEvent(w.baseContext, op, "already started, skipping")
+-		return nil
++	if !atomic.CompareAndSwapInt32(&w.started, 0, 1) {
++		return errors.New(w.baseContext, errors.AlreadyClosed, op, "worker already started")
+ 	}
++	w.started = true
+ 
+-	if !w.conf.RawConfig.Worker.UseDeprecatedKmsAuthMethod {
+-		// In this section, we look for existing worker credentials. The two
+-		// variables below store whether to create new credentials and whether to
+-		// create a fetch request so it can be displayed in the worker startup info.
+-		// These may be different because if initial creds have been generated on
+-		// the worker side but not yet authorized/fetched from the controller, we
+-		// don't want to invalidate that request on restart by generating a new set
+-		// of credentials. However it's safe to output a new fetch request so we do
+-		// in fact do that.
+-		//
+-		// Note that if a controller-generated activation token has been supplied,
+-		// we do not output a fetch request; we attempt to use that directly later.
+-		//
+-		// If we have a stable storage path we use that; if no path is supplied
+-		// (e.g. when using KMS) we use inmem storage.
+-		var err error
+-		if w.conf.RawConfig.Worker.AuthStoragePath != "" {
+-			w.WorkerAuthStorage, err = nodeefile.New(w.baseContext,
+-				nodeefile.WithBaseDirectory(w.conf.RawConfig.Worker.AuthStoragePath))
+-			if err != nil {
+-				return errors.Wrap(w.baseContext, err, op, errors.WithMsg("error loading worker auth storage directory"))
+-			}
+-		} else {
+-			w.WorkerAuthStorage, err = nodeeinmem.New(w.baseContext)
+-			if err != nil {
+-				return errors.Wrap(w.baseContext, err, op, errors.WithMsg("error loading in-mem worker auth storage"))
+-			}
+-		}
++	metric.SetWorkerId(w.WardenMetricsManager, w.conf.WorkerId)
++	if w.wardenMetricsManager != nil {
++		metric.StartWorkersReporting(w.wardenMetricsManager, w.conf.Eventer, w.baseContext)
++	}
+ 
+-		var createNodeAuthCreds bool
+-		var createFetchRequest bool
+-		nodeCreds, err := types.LoadNodeCredentials(
+-			w.baseContext,
+-			w.WorkerAuthStorage,
+-			nodeenrollment.CurrentId,
+-			nodeenrollment.WithStorageWrapper(w.conf.WorkerAuthStorageKms))
+-		switch {
+-		case err == nil:
+-			if nodeCreds == nil {
+-				// It's unclear why this would ever happen -- it shouldn't -- so
+-				// this is simply safety against panics if something goes
+-				// catastrophically wrong
+-				event.WriteSysEvent(w.baseContext, op, "no error loading worker auth creds but nil creds, creating new creds for registration")
+-				createNodeAuthCreds = true
+-				createFetchRequest = true
+-				break
+-			}
++	ctx, cancel := context.WithCancel(w.baseContext)
++	w.ctx = ctx
+ 
+-			// Check that we have valid creds, or that we have generated creds but
+-			// simply are still waiting on authentication (in which case we don't
+-			// want to invalidate what we've already sent)
+-			var validCreds bool
+-			switch len(nodeCreds.CertificateBundles) {
+-			case 0:
+-				// Still waiting on initial creds, so don't invalidate the request
+-				// by creating new credentials. However, we will generate and
+-				// display a new valid request in case the first was lost.
+-				createFetchRequest = true
+-
+-			default:
+-				now := time.Now()
+-				for _, bundle := range nodeCreds.CertificateBundles {
+-					if bundle.CertificateNotBefore.AsTime().Before(now) && bundle.CertificateNotAfter.AsTime().After(now) {
+-						// If we have a certificate in its validity period,
+-						// everything is fine
+-						validCreds = true
+-						break
+-					}
+-				}
++	if err := w.setupForShutdown(); err != nil {
++		cancel()
++		return errors.Wrap(w.baseContext, err, op)
++	}
+ 
+-				// Certificates are both expired, so create new credentials and
+-				// output a request based on those
+-				createNodeAuthCreds = !validCreds
+-				createFetchRequest = !validCreds
+-			}
++	if err := w.startUpstreamController(ctx); err != nil {
++		cancel()
++		return errors.Wrap(w.baseContext, err, op)
++	}
+ 
+-		case errors.Is(err, nodeenrollment.ErrNotFound):
+-			// Nothing was found on disk, so create
+-			createNodeAuthCreds = true
+-			createFetchRequest = true
++	if err := w.setupListenerCallbacks(); err != nil {
++		cancel()
++		return errors.Wrap(w.baseContext, err, op)
++	}
+ 
+-		default:
+-			// Some other type of error happened, bail out
+-			return fmt.Errorf("error loading worker auth creds: %w", err)
+-		}
++	if err := w.startClusterConnections(ctx); err != nil {
++		cancel()
++		return errors.Wrap(w.baseContext, err, op)
++	}
+ 
+-		// Don't output a fetch request if an activation token has been
+-		// provided. Technically we _could_ still output a fetch request, and it
+-		// would be valid to do so, but if a token was provided it may well be
+-		// confusing to a user if it seems like it was ignored because a fetch
+-		// request was still output.
+-		if actToken := w.conf.RawConfig.Worker.ControllerGeneratedActivationToken; actToken != "" {
+-			createFetchRequest = false
+-		}
++	if err := w.loadLocalSessions(w.ctx); err != nil {
++		cancel()
++		return errors.Wrap(w.baseContext, err, op)
++	}
+ 
+-		// NOTE: this block _must_ be before the `if createFetchRequest` block
+-		// or the fetch request may have no credentials to work with
+-		if createNodeAuthCreds {
+-			nodeCreds, err = types.NewNodeCredentials(
+-				w.baseContext,
+-				w.WorkerAuthStorage,
+-				nodeenrollment.WithRandomReader(w.conf.SecureRandomReader),
+-				nodeenrollment.WithStorageWrapper(w.conf.WorkerAuthStorageKms),
+-			)
+-			if err != nil {
+-				return fmt.Errorf("error generating new worker auth creds: %w", err)
+-			}
+-		}
++	if err := w.processWorkerSignal(ctx); err != nil {
++		cancel()
++		return errors.Wrap(w.baseContext, err, op)
++	}
+ 
+-		if createFetchRequest {
+-			if nodeCreds == nil {
+-				return fmt.Errorf("need to create fetch request but worker auth creds are nil: %w", err)
+-			}
+-			req, err := nodeCreds.CreateFetchNodeCredentialsRequest(w.baseContext, nodeenrollment.WithRandomReader(w.conf.SecureRandomReader))
+-			if err != nil {
+-				return fmt.Errorf("error creating worker auth fetch credentials request: %w", err)
+-			}
+-			reqBytes, err := proto.Marshal(req)
+-			if err != nil {
+-				return fmt.Errorf("error marshaling worker auth fetch credentials request: %w", err)
+-			}
+-			w.WorkerAuthRegistrationRequest = base58.FastBase58Encoding(reqBytes)
+-			if err != nil {
+-				return fmt.Errorf("error encoding worker auth registration request: %w", err)
+-			}
+-			currentKeyId, err := nodeenrollment.KeyIdFromPkix(nodeCreds.CertificatePublicKeyPkix)
+-			if err != nil {
+-				return fmt.Errorf("error deriving worker auth key id: %w", err)
+-			}
+-			w.WorkerAuthCurrentKeyId.Store(currentKeyId)
+-		}
+-		// Regardless, we want to load the currentKeyId
+-		currentKeyId, err := nodeenrollment.KeyIdFromPkix(nodeCreds.CertificatePublicKeyPkix)
+-		if err != nil {
+-			return fmt.Errorf("error deriving worker auth key id: %w", err)
+-		}
+-		w.WorkerAuthCurrentKeyId.Store(currentKeyId)
++	if err := w.startSessionManager(ctx); err != nil {
++		cancel()
++		return errors.Wrap(w.baseContext, err, op)
+ 	}
+ 
+-	if err := w.StartControllerConnections(); err != nil {
+-		return errors.Wrap(w.baseContext, err, op, errors.WithMsg("error making controller connections"))
++	if w.credsReceiver == nil && !config.IsLocalOnlyClusterDeploymentEnabled() {
++		if err := w.setUpstreamCredsReceiver(ctx); err != nil {
++			return errors.Wrap(w.baseContext, err, op)
++		}
+ 	}
+ 
+-	var err error
+-	w.sessionManager, err = session.NewManager(pbs.NewSessionServiceClient(w.GrpcClientConn))
+-	if err != nil {
+-		return errors.Wrap(w.baseContext, err, op, errors.WithMsg("error creating session manager"))
++	w.clusterListenerManager = cluster.NewListenerManager(
++		w.conf.PrometheusRegisterer,
++		w.pkiConnManager,
++		listenerMetricCallbacks(w, ctx))
++
++	ctx, cancelClusterListeners := context.WithCancel(w.baseContext)
++	w.clusterListenersCtx = ctx
++
++	if err := w.startUpstreamCredsCollector(ctx); err != nil {
++		cancel()
++		return errors.Wrap(w.baseContext, err, op)
+ 	}
+ 
+-	if err := w.startListeners(w.sessionManager); err != nil {
+-		return errors.Wrap(w.baseContext, err, op, errors.WithMsg("error starting worker listeners"))
++	w.sessionManager = session.NewManager(w.upstreamSessionServiceClient)
++
++	if err := w.setupReverseGrpcConnections(ctx); err != nil {
++		cancelClusterListeners()
++		return errors.Wrap(w.baseContext, err, op)
+ 	}
+ 
+-	w.operationalState.Store(server.ActiveOperationalState)
+-
+-	// Rather than deal with some of the potential error conditions for Add on
+-	// the waitgroup vs. Done (in case a function exits immediately), we will
+-	// always start rotation and simply exit early if we're using KMS
+-	w.tickerWg.Add(2)
+-	go func() {
+-		defer w.tickerWg.Done()
+-		w.startStatusTicking(w.baseContext, w.sessionManager, &w.addressReceivers, w.recorderManager)
+-	}()
+-	go func() {
+-		defer w.tickerWg.Done()
+-		w.startAuthRotationTicking(w.baseContext)
+-	}()
+-
+-	if w.downstreamReceiver != nil {
+-		w.tickerWg.Add(2)
+-		servNameFn := func() string {
+-			if s := w.LastStatusSuccess(); s != nil {
+-				return s.WorkerId
+-			}
+-			return "unknown worker id"
+-		}
+-		go func() {
+-			defer w.tickerWg.Done()
+-			if err := w.downstreamReceiver.StartProcessingPendingConnections(w.baseContext, servNameFn); err != nil {
+-				errors.Wrap(w.baseContext, err, op)
+-			}
+-		}()
+-		go func() {
+-			defer w.tickerWg.Done()
+-			err := w.downstreamReceiver.StartConnectionMgmtTicking(
+-				w.baseContext,
+-				servNameFn,
+-				-1, // indicates the ticker should run until cancelled.
+-			)
+-			if err != nil {
+-				errors.Wrap(w.baseContext, err, op)
+-			}
+-		}()
++	if err := w.startMetricsCollection(ctx); err != nil {
++		cancelClusterListeners()
++		return errors.Wrap(w.baseContext, err, op)
+ 	}
+ 
+-	w.workerStartTime = time.Now()
+-	w.started.Store(true)
++	if err := w.setUpstreamControllerConnectionPool(ctx); err != nil {
++		cancelClusterListeners()
++		return errors.Wrap(w.baseContext, err, op)
++	}
+ 
+-	return nil
+-}
++	if err := w.startListeners(w.sessionManager, ctx); err != nil {
++		cancelClusterListeners()
++		return errors.Wrap(w.baseContext, err, op, errors.WithMsg("error starting worker listeners"))
++	}
+ 
+ // GracefulShutdownm sets the worker state to "shutdown" and will wait to return until there
+ // are no longer any active connections.

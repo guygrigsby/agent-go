@@ -1,0 +1,7 @@
+ M internal/auth/oidc/auth_method.go
+ M internal/auth/oidc/service.go
+ M internal/credential/vault/client_certificate.go
+ M internal/session/util.go
+ M internal/session/util_test.go
+?? internal/libs/crypto/
+?? opencode.json

@@ -1,0 +1,65 @@
+{
+ "agent_done": "2026-07-19T17:22:45.008948166Z",
+ "agent_started": "2026-07-19T17:10:44.976282Z",
+ "cache_read": 1070191,
+ "cache_write": 0,
+ "capped": true,
+ "failure_kind": "",
+ "first_invalid_s": 55.403924083,
+ "intermediate_states": 2,
+ "invalid_intermediate_rate": 0.5,
+ "invalid_intermediates": 1,
+ "iter": 0,
+ "kind": "rename",
+ "mode": "semantic",
+ "new_errors": null,
+ "op_mix": {
+  "patch": {
+   "ok": 0,
+   "rejected": 1
+  },
+  "query": {
+   "ok": 25,
+   "rejected": 8
+  },
+  "rename": {
+   "ok": 2,
+   "rejected": 4
+  },
+  "test": {
+   "ok": 1,
+   "rejected": 0
+  },
+  "view": {
+   "ok": 5,
+   "rejected": 3
+  }
+ },
+ "pass": true,
+ "predicate": true,
+ "profile": "qwen3.5-9b-udq4",
+ "prompt": "Rename SealInfo to SealWrapper.",
+ "rejects_total": 16,
+ "repairs_offered": 17,
+ "resends": 0,
+ "specs": [
+  {
+   "baseline_refs": 30,
+   "new_refs": 30,
+   "ok": true,
+   "old_refs_left": 0,
+   "sym": "github.com/hashicorp/vault/vault/seal.SealInfo",
+   "to": "SealWrapper"
+  }
+ ],
+ "steps": 57,
+ "task": "vault_caec65a7",
+ "tests": false,
+ "tests_baseline": false,
+ "time_to_first_mutation_s": 24.723161,
+ "tokens_in": 20659,
+ "tokens_out": 5685,
+ "tokens_reasoning": 0,
+ "typecheck": true,
+ "wall_s": 720.032666166
+}

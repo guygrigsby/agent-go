@@ -1,0 +1,19 @@
+diff --git a/internal/daemon/worker/worker.go b/internal/daemon/worker/worker.go
+index b4d5d417c..703628953 100644
+--- a/internal/daemon/worker/worker.go
++++ b/internal/daemon/worker/worker.go
+@@ -75,10 +75,10 @@ type Worker struct {
+ 	updateTags *ua.Bool
+ 
+ 	// PoC: Testing bits for BYOW
+-	NodeeFileStorage         *nodeefile.FileStorage
+-	NodeeCurrentKeyId        string
+-	NodeeRegistrationRequest string
+-	nodeeSplitListener       *splitlistener.SplitListener
++	WorkerAuthStorage        *nodeefile.FileStorage
++	WorkerAuthCurrentKeyId   string
++	WorkerAuthRegistrationRequest string
++	workerAuthSplitListener  *splitlistener.SplitListener
+ 
+ 	// Test-specific options
+ 	TestOverrideX509VerifyDnsName  string

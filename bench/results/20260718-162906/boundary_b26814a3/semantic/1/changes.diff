@@ -1,0 +1,37 @@
+diff --git a/globals/fields.go b/globals/fields.go
+index edaf5f902..148deccd7 100644
+--- a/globals/fields.go
++++ b/globals/fields.go
+@@ -1,18 +1,20 @@
+ package globals
+ 
+ const (
+-	IdField                                     = "id"
+-	VersionField                                = "version"
+-	NameField                                   = "name"
+-	DescriptionField                            = "description"
+-	CreatedTimeField                            = "created_time"
+-	UpdatedTimeField                            = "updated_time"
+-	TypeField                                   = "type"
+-	AttributesField                             = "attributes"
+-	ScopeIdField                                = "scope_id"
+-	ScopeField                                  = "scope"
+-	AuthMethodIdField                           = "auth_method_id"
+-	AccountIdField                              = "account_id"
++	IdField           = "id"
++	VersionField      = "version"
++	NameField         = "name"
++	DescriptionField  = "description"
++	CreatedTimeField  = "created_time"
++	UpdatedTimeField  = "updated_time"
++	TypeField         = "type"
++	AttributesField   = "attributes"
++	ScopeIdField      = "scope_id"
++	ScopeField        = "scope"
++	AuthMethodIdField = "auth_method_id"
++	// AccountIdField is the field name for account IDs in API types.
++	AccountIdField = "account_id"
++	// UserIdField is the field name for user IDs in API types.
+ 	UserIdField                                 = "user_id"
+ 	IsPrimaryField                              = "is_primary"
+ 	AuthorizedActionsField                      = "authorized_actions"

@@ -1,0 +1,36 @@
+{"ms":3157,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/vault/vault/seal","req_sha":"2496537c080ba56e","sym":"SealInfo","ts":"2026-07-19T18:35:39.207311Z"}
+{"ms":5,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-19T18:35:42.371044Z"}
+{"ms":3231,"op":"query","outcome":"ok","req_sha":"21bd0a6628616012","sym":"SealInfo","ts":"2026-07-19T18:35:53.319586Z"}
+{"ms":47,"op":"query","outcome":"ok","pkg":"github.com/hashicorp/vault/vault/seal","req_sha":"cbc9a704fbb223eb","sym":"SealInfo","ts":"2026-07-19T18:35:59.628923Z"}
+{"ms":0,"op":"query","outcome":"rejected","pkg":"github.com/hashicorp/vault/vault/seal","reason":"unknown query kind","repairs":0,"req_sha":"cff27a037c52b5d4","sym":"NewAccessFromSealInfo","ts":"2026-07-19T18:36:03.875027Z"}
+{"ms":0,"op":"query","outcome":"rejected","pkg":"github.com/hashicorp/vault/vault/seal","reason":"unknown query kind","repairs":0,"req_sha":"1fa6554f5fa86d4c","sym":"access.GetAllSealInfoByPriority","ts":"2026-07-19T18:36:05.097191Z"}
+{"ms":0,"op":"query","outcome":"rejected","pkg":"github.com/hashicorp/vault/vault/seal","reason":"unknown query kind","repairs":0,"req_sha":"16debeb792b0b41e","sym":"access.GetEnabledSealInfoByPriority","ts":"2026-07-19T18:36:06.242009Z"}
+{"ms":7,"op":"query","outcome":"ok","pkg":"github.com/hashicorp/vault/vault/seal","req_sha":"0f864f8c6542b97d","sym":"access.GetAllSealInfoByPriority","ts":"2026-07-19T18:36:08.472029Z"}
+{"ms":400,"op":"rename","outcome":"accepted","pkg":"github.com/hashicorp/vault/vault/seal","req_sha":"5677a042d9098845","sym":"SealInfo","ts":"2026-07-19T18:36:10.910686Z"}
+{"ms":624548,"op":"test","outcome":"ok","req_sha":"12ef5d31bdb89522","ts":"2026-07-19T18:36:12.83642Z"}
+{"ms":3069,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-19T18:46:37.492461Z"}
+{"ms":14,"op":"query","outcome":"ok","req_sha":"45819cea0a7cab86","sym":"SealWrapper","ts":"2026-07-19T18:46:40.562002Z"}
+{"ms":1,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/vault/vault/seal","req_sha":"113f234a19033bd3","sym":"NewAccessFromSealInfo","ts":"2026-07-19T18:46:40.576508Z"}
+{"ms":13,"op":"query","outcome":"ok","req_sha":"6f60ed1f67236951","sym":"\"SealInfo\"","ts":"2026-07-19T18:46:40.578365Z"}
+{"ms":1,"op":"query","outcome":"ok","pkg":"github.com/hashicorp/vault/vault/seal","req_sha":"113f6418a1e577ac","sym":"NewAccessFromSealInfo","ts":"2026-07-19T18:46:40.591823Z"}
+{"ms":13,"op":"query","outcome":"ok","pkg":"github.com/hashicorp/vault/vault/seal","req_sha":"9cd196e2d74f8a70","sym":"SealWrapper","ts":"2026-07-19T18:46:40.593576Z"}
+{"ms":3,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-19T18:46:40.607431Z"}
+{"ms":1,"op":"view","outcome":"rejected","pkg":"github.com/hashicorp/vault/vault/seal","reason":"symbol not found","repairs":3,"req_sha":"71832d0de0fbf6ad","sym":"SealInfo","ts":"2026-07-19T18:46:40.610973Z"}
+{"ms":13,"op":"query","outcome":"ok","req_sha":"45819cea0a7cab86","sym":"SealWrapper","ts":"2026-07-19T18:46:40.612563Z"}
+{"ms":14,"op":"query","outcome":"ok","req_sha":"45819cea0a7cab86","sym":"SealWrapper","ts":"2026-07-19T18:46:40.626448Z"}
+{"ms":32,"op":"query","outcome":"ok","req_sha":"96c361c1f7ef51e3","sym":"GetAllSealInfoByPriority","ts":"2026-07-19T18:46:43.530418Z"}
+{"ms":31,"op":"query","outcome":"ok","req_sha":"21bd0a6628616012","sym":"SealInfo","ts":"2026-07-19T18:46:46.182315Z"}
+{"ms":12,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-19T18:46:50.66064Z"}
+{"ms":7,"op":"query","outcome":"ok","pkg":"github.com/hashicorp/vault/vault/seal","req_sha":"5fec2c0b18eb29fe","sym":"copySealInfos","ts":"2026-07-19T18:46:53.050601Z"}
+{"ms":7,"op":"query","outcome":"ok","pkg":"github.com/hashicorp/vault/vault/seal","req_sha":"0f864f8c6542b97d","sym":"access.GetAllSealInfoByPriority","ts":"2026-07-19T18:46:55.615086Z"}
+{"ms":6,"op":"query","outcome":"ok","pkg":"github.com/hashicorp/vault/vault/seal","req_sha":"113f6418a1e577ac","sym":"NewAccessFromSealInfo","ts":"2026-07-19T18:46:58.141473Z"}
+{"ms":7,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-19T18:47:00.083691Z"}
+{"ms":33,"op":"query","outcome":"ok","pkg":"github.com/hashicorp/vault/vault/seal","req_sha":"13186f17c07ea72a","sym":"SealInfo","ts":"2026-07-19T18:47:01.810867Z"}
+{"ms":22,"op":"query","outcome":"ok","pkg":"github.com/hashicorp/vault/vault","req_sha":"5cf45aa197dfc412","sym":"SealInfo","ts":"2026-07-19T18:47:05.111889Z"}
+{"ms":15,"op":"query","outcome":"rejected","pkg":"github.com/hashicorp/vault/command","reason":"symbol not found","repairs":1,"req_sha":"0463e294a7e06fed","sym":"UnsealServerCommand","ts":"2026-07-19T18:47:07.65682Z"}
+{"ms":6,"op":"query","outcome":"ok","pkg":"github.com/hashicorp/vault/vault","req_sha":"154dbf7cae76fccb","sym":"autoSeal.GetEnabledSealInfoByPriority","ts":"2026-07-19T18:47:09.876732Z"}
+{"ms":12,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-19T18:47:12.09197Z"}
+{"ms":8,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/vault/vault/seal","req_sha":"51a2b0b83e024321","sym":"SealWrapper","ts":"2026-07-19T18:47:13.631665Z"}
+{"ms":2953,"op":"refs","outcome":"rejected","pkg":"github.com/hashicorp/vault/vault/seal","reason":"symbol not found","repairs":3,"req_sha":"2496537c080ba56e","sym":"SealInfo","ts":"2026-07-19T18:47:17.105944Z"}
+{"ms":24,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/vault/vault/seal","req_sha":"52ba8dab1c4e96fe","sym":"SealWrapper","ts":"2026-07-19T18:47:20.064404Z"}
+{"ms":4,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-19T18:47:20.09343Z"}

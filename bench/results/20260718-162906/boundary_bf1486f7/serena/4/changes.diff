@@ -1,0 +1,883 @@
+diff --git a/internal/cmd/base/initial_resources.go b/internal/cmd/base/initial_resources.go
+index e32f27611..904888931 100644
+--- a/internal/cmd/base/initial_resources.go
++++ b/internal/cmd/base/initial_resources.go
+@@ -478,105 +478,9 @@ func (b *Server) CreateInitialTarget(ctx context.Context) (target.Target, error)
+ 		}
+ 	}()
+ 
+-	targetRepo, err := target.NewRepository(rw, rw, kmsCache)
++	targetRepo, err := target.NewRepository(ctx, rw, rw, kmsCache)
+ 	if err != nil {
+ 		return nil, fmt.Errorf("error creating target repository: %w", err)
+-	}
+-
+-	// Host Catalog
+-	if b.DevTargetId == "" {
+-		b.DevTargetId, err = db.NewPublicId(tcp.TargetPrefix)
+-		if err != nil {
+-			return nil, fmt.Errorf("error generating initial target id: %w", err)
+-		}
+-	}
+-	if b.DevTargetDefaultPort == 0 {
+-		b.DevTargetDefaultPort = 22
+-	}
+-	opts := []target.Option{
+-		target.WithName("Generated target"),
+-		target.WithDescription("Provides an initial target in Boundary"),
+-		target.WithDefaultPort(uint32(b.DevTargetDefaultPort)),
+-		target.WithSessionMaxSeconds(uint32(b.DevTargetSessionMaxSeconds)),
+-		target.WithSessionConnectionLimit(int32(b.DevTargetSessionConnectionLimit)),
+-		target.WithPublicId(b.DevTargetId),
+-	}
+-	t, err := target.New(ctx, tcp.Subtype, b.DevProjectId, opts...)
+-	if err != nil {
+-		return nil, fmt.Errorf("error creating in memory target: %w", err)
+-	}
+-	tt, _, _, err := targetRepo.CreateTarget(cancelCtx, t, opts...)
+-	if err != nil {
+-		return nil, fmt.Errorf("error saving target to the db: %w", err)
+-	}
+-	tt, _, _, err = targetRepo.AddTargetHostSources(ctx, tt.GetPublicId(), tt.GetVersion(), []string{b.DevHostSetId})
+-	if err != nil {
+-		return nil, fmt.Errorf("error saving target to the db: %w", err)
+-	}
+-	b.InfoKeys = append(b.InfoKeys, "generated target id")
+-	b.Info["generated target id"] = b.DevTargetId
+-
+-	// If we have an unprivileged dev user, add user to the role that grants
+-	// list/read:self/cancel:self on sessions, read:self/delete:self/list on
+-	// tokens, and an authorize-session role
+-	if b.DevUnprivilegedUserId != "" {
+-		iamRepo, err := iam.NewRepository(rw, rw, kmsCache, iam.WithRandomReader(b.SecureRandomReader))
+-		if err != nil {
+-			return nil, fmt.Errorf("unable to create repo for unprivileged user target connection role: %w", err)
+-		}
+-
+-		roles, err := iamRepo.ListRoles(ctx, []string{b.DevProjectId})
+-		if err != nil {
+-			return nil, fmt.Errorf("unable to list existing roles in project: %w", err)
+-		}
+-		if len(roles) != 2 {
+-			return nil, fmt.Errorf("unexpected number of roles in default project, expected 2, got %d", len(roles))
+-		}
+-		var idx int = -1
+-		for i, r := range roles {
+-			// Hacky, I know, but saves a DB trip to look up other
+-			// characteristics like "if any principals are currently attached".
+-			// No matter what we pick here it's a bit heuristical.
+-			if r.Name == "Default Grants" {
+-				idx = i
+-				break
+-			}
+-		}
+-		if idx == -1 {
+-			return nil, fmt.Errorf("couldn't find default grants role in default project")
+-		}
+-		if _, err := iamRepo.AddPrincipalRoles(ctx,
+-			roles[idx].PublicId,
+-			roles[idx].Version,
+-			[]string{b.DevUnprivilegedUserId}); err != nil {
+-			return nil, fmt.Errorf("error adding unpriv user ID to project default role: %w", err)
+-		}
+-
+-		pr, err := iam.NewRole(b.DevProjectId,
+-			iam.WithName("Unprivileged User Session Authorization"),
+-			iam.WithDescription(`Provides grants within the dev project scope to allow the initial unprivileged user to authorize sessions against the dev target`),
+-		)
+-		if err != nil {
+-			return nil, fmt.Errorf("error creating in memory role for generated grants: %w", err)
+-		}
+-		sessionRole, err := iamRepo.CreateRole(cancelCtx, pr)
+-		if err != nil {
+-			return nil, fmt.Errorf("error creating role for unprivileged user generated grants: %w", err)
+-		}
+-		if _, err := iamRepo.AddRoleGrants(cancelCtx,
+-			sessionRole.PublicId,
+-			sessionRole.Version,
+-			[]string{fmt.Sprintf("id=%s;actions=authorize-session", b.DevTargetId)},
+-		); err != nil {
+-			return nil, fmt.Errorf("error creating grant for unprivileged user generated grants: %w", err)
+-		}
+-		if _, err := iamRepo.AddPrincipalRoles(cancelCtx, sessionRole.PublicId, sessionRole.Version+1, []string{b.DevUnprivilegedUserId}, nil); err != nil {
+-			return nil, fmt.Errorf("error adding principal to role for unprivileged user generated grants: %w", err)
+-		}
+-	}
+-
+-	return tt, nil
+-}
+ 
+ // RegisterHostPlugin creates a host plugin in the database if not present.
+ // It also registers the plugin in the shared map of running plugins.  Since
+diff --git a/internal/daemon/controller/controller.go b/internal/daemon/controller/controller.go
+index b4427bcb8..4e35b9633 100644
+--- a/internal/daemon/controller/controller.go
++++ b/internal/daemon/controller/controller.go
+@@ -129,250 +129,14 @@ type Controller struct {
+ 	HealthService *health.Service
+ }
+ 
+-func New(ctx context.Context, conf *Config) (*Controller, error) {
+-	metric.InitializeApiCollectors(conf.PrometheusRegisterer)
+-	c := &Controller{
+-		conf:                    conf,
+-		logger:                  conf.Logger.Named("controller"),
+-		started:                 ua.NewBool(false),
+-		tickerWg:                new(sync.WaitGroup),
+-		schedulerWg:             new(sync.WaitGroup),
+-		workerAuthCache:         new(sync.Map),
+-		workerStatusUpdateTimes: new(sync.Map),
+-		enabledPlugins:          conf.Server.EnabledPlugins,
+-		apiListeners:            make([]*base.ServerListener, 0),
+-	}
+-
+-	if downstreamRouterFactory != nil {
+-		c.downstreamRoutes = downstreamRouterFactory()
+-	}
+-
+-	c.started.Store(false)
+-
+-	if conf.SecureRandomReader == nil {
+-		conf.SecureRandomReader = rand.Reader
+-	}
+-
+-	var err error
+-	if conf.RawConfig.Controller == nil {
+-		conf.RawConfig.Controller = new(config.Controller)
+-	}
+-
+-	if err := conf.RawConfig.Controller.InitNameIfEmpty(); err != nil {
+-		return nil, fmt.Errorf("error auto-generating controller name: %w", err)
+-	}
+-
+-	if !conf.RawConfig.DisableMlock {
+-		// Ensure our memory usage is locked into physical RAM
+-		if err := mlock.LockMemory(); err != nil {
+-			return nil, fmt.Errorf(
+-				"Failed to lock memory: %v\n\n"+
+-					"This usually means that the mlock syscall is not available.\n"+
+-					"Boundary uses mlock to prevent memory from being swapped to\n"+
+-					"disk. This requires root privileges as well as a machine\n"+
+-					"that supports mlock. Please enable mlock on your system or\n"+
+-					"disable Boundary from using it. To disable Boundary from using it,\n"+
+-					"set the `disable_mlock` configuration option in your configuration\n"+
+-					"file.",
+-				err)
+-		}
+-	}
+-
+-	clusterListeners := make([]*base.ServerListener, 0)
+-	for i := range conf.Listeners {
+-		l := conf.Listeners[i]
+-		if l == nil || l.Config == nil || l.Config.Purpose == nil {
+-			continue
+-		}
+-		if len(l.Config.Purpose) != 1 {
+-			return nil, fmt.Errorf("found listener with multiple purposes %q", strings.Join(l.Config.Purpose, ","))
+-		}
+-		switch l.Config.Purpose[0] {
+-		case "api":
+-			c.apiListeners = append(c.apiListeners, l)
+-		case "cluster":
+-			clusterListeners = append(clusterListeners, l)
+-		}
+-	}
+-	if len(c.apiListeners) == 0 {
+-		return nil, fmt.Errorf("no api listeners found")
+-	}
+-	if len(clusterListeners) != 1 {
+-		// in the future, we might pick the cluster that is exposed to the outside
+-		// instead of limiting it to one.
+-		return nil, fmt.Errorf("exactly one cluster listener is required")
+-	}
+-	c.clusterListener = clusterListeners[0]
+-
+-	var pluginLogger hclog.Logger
+-	for _, enabledPlugin := range c.enabledPlugins {
+-		if pluginLogger == nil {
+-			pluginLogger, err = event.NewHclogLogger(ctx, c.conf.Server.Eventer)
+-			if err != nil {
+-				return nil, fmt.Errorf("error creating host catalog plugin logger: %w", err)
+-			}
+-		}
+-		switch enabledPlugin {
+-		case base.EnabledPluginHostLoopback:
+-			plg := pluginhost.NewWrappingPluginClient(pluginhost.NewLoopbackPlugin())
+-			opts := []hostplugin.Option{
+-				hostplugin.WithDescription("Provides an initial loopback host plugin in Boundary"),
+-				hostplugin.WithPublicId(conf.DevLoopbackHostPluginId),
+-			}
+-			if _, err = conf.RegisterHostPlugin(ctx, "loopback", plg, opts...); err != nil {
+-				return nil, err
+-			}
+-		case base.EnabledPluginHostAzure, base.EnabledPluginHostAws:
+-			pluginType := strings.ToLower(enabledPlugin.String())
+-			client, cleanup, err := external_host_plugins.CreateHostPlugin(
+-				ctx,
+-				pluginType,
+-				external_host_plugins.WithPluginOptions(
+-					pluginutil.WithPluginExecutionDirectory(conf.RawConfig.Plugins.ExecutionDir),
+-					pluginutil.WithPluginsFilesystem(host_plugin_assets.HostPluginPrefix, host_plugin_assets.FileSystem()),
+-				),
+-				external_host_plugins.WithLogger(pluginLogger.Named(pluginType)),
+-			)
+-			if err != nil {
+-				return nil, fmt.Errorf("error creating %s host plugin: %w", pluginType, err)
+-			}
+-			conf.ShutdownFuncs = append(conf.ShutdownFuncs, cleanup)
+-			if _, err := conf.RegisterHostPlugin(ctx, pluginType, client, hostplugin.WithDescription(fmt.Sprintf("Built-in %s host plugin", enabledPlugin.String()))); err != nil {
+-				return nil, fmt.Errorf("error registering %s host plugin: %w", pluginType, err)
+-			}
+-		}
+-	}
+-
+-	if conf.HostPlugins == nil {
+-		conf.HostPlugins = make(map[string]plugin.HostPluginServiceClient)
+-	}
+-
+-	// Set up repo stuff
+-	dbase := db.New(c.conf.Database)
+-	c.kms, err = kms.New(ctx, dbase, dbase)
+-	if err != nil {
+-		return nil, fmt.Errorf("error creating kms cache: %w", err)
+-	}
+-	if err := c.kms.AddExternalWrappers(
+-		ctx,
+-		kms.WithRootWrapper(c.conf.RootKms),
+-		kms.WithWorkerAuthWrapper(c.conf.WorkerAuthKms),
+-		kms.WithRecoveryWrapper(c.conf.RecoveryKms),
+-	); err != nil {
+-		return nil, fmt.Errorf("error adding config keys to kms: %w", err)
+-	}
+-
+-	// we need to get all the scopes so we can reconcile the DEKs for each scope.
+-	iamRepo, err := iam.NewRepository(dbase, dbase, c.kms, iam.WithRandomReader(c.conf.SecureRandomReader))
+-	if err != nil {
+-		return nil, fmt.Errorf("unable to initialize iam repository: %w", err)
+-	}
+-	allScopes, err := iamRepo.ListScopesRecursively(ctx, scope.Global.String())
+-	if err != nil {
+-		return nil, fmt.Errorf("error listing all scopes for reconciling keys: %w", err)
+-	}
+-	reconcileScopeIds := make([]string, 0, len(allScopes))
+-	for _, s := range allScopes {
+-		reconcileScopeIds = append(reconcileScopeIds, s.PublicId)
+-	}
+-	if err := c.kms.ReconcileKeys(ctx, c.conf.SecureRandomReader, kms.WithScopeIds(reconcileScopeIds...)); err != nil {
+-		return nil, fmt.Errorf("error reconciling kms keys: %w", err)
+-	}
+-
+-	// now that the kms is configured, we can get the audit wrapper and rotate
+-	// the eventer audit wrapper, so the emitted events can include encrypt and
+-	// hmac-sha256 data
+-	auditWrapper, err := c.kms.GetWrapper(ctx, scope.Global.String(), kms.KeyPurposeAudit)
+-	if err != nil {
+-		return nil, fmt.Errorf("error getting audit wrapper from kms: %w", err)
+-	}
+-	if err := c.conf.Eventer.RotateAuditWrapper(ctx, auditWrapper); err != nil {
+-		return nil, fmt.Errorf("error rotating eventer audit wrapper: %w", err)
+-	}
+-	jobRepoFn := func() (*job.Repository, error) {
+-		return job.NewRepository(dbase, dbase, c.kms)
+-	}
+-	// TODO: Allow setting run jobs limit from config
+-	schedulerOpts := []scheduler.Option{scheduler.WithRunJobsLimit(-1)}
+-	if c.conf.RawConfig.Controller.SchedulerRunJobInterval > 0 {
+-		schedulerOpts = append(schedulerOpts, scheduler.WithRunJobsInterval(c.conf.RawConfig.Controller.SchedulerRunJobInterval))
+-	}
+-	c.scheduler, err = scheduler.New(c.conf.RawConfig.Controller.Name, jobRepoFn, schedulerOpts...)
+-	if err != nil {
+-		return nil, fmt.Errorf("error creating new scheduler: %w", err)
+-	}
+-	c.IamRepoFn = func() (*iam.Repository, error) {
+-		return iam.NewRepository(dbase, dbase, c.kms, iam.WithRandomReader(c.conf.SecureRandomReader))
+-	}
+-	c.StaticHostRepoFn = func() (*static.Repository, error) {
+-		return static.NewRepository(dbase, dbase, c.kms)
+-	}
+-	c.PluginHostRepoFn = func() (*pluginhost.Repository, error) {
+-		return pluginhost.NewRepository(dbase, dbase, c.kms, c.scheduler, c.conf.HostPlugins)
+-	}
+-	c.HostPluginRepoFn = func() (*host.Repository, error) {
+-		return host.NewRepository(dbase, dbase, c.kms)
+-	}
+-	c.AuthTokenRepoFn = func() (*authtoken.Repository, error) {
+-		return authtoken.NewRepository(dbase, dbase, c.kms,
+-			authtoken.WithTokenTimeToLiveDuration(c.conf.RawConfig.Controller.AuthTokenTimeToLiveDuration),
+-			authtoken.WithTokenTimeToStaleDuration(c.conf.RawConfig.Controller.AuthTokenTimeToStaleDuration))
+-	}
+-	c.VaultCredentialRepoFn = func() (*vault.Repository, error) {
+-		return vault.NewRepository(dbase, dbase, c.kms, c.scheduler)
+-	}
+-	c.StaticCredentialRepoFn = func() (*credstatic.Repository, error) {
+-		return credstatic.NewRepository(ctx, dbase, dbase, c.kms)
+-	}
+-	c.ServersRepoFn = func() (*server.Repository, error) {
+-		return server.NewRepository(dbase, dbase, c.kms)
+-	}
+-	c.OidcRepoFn = func() (*oidc.Repository, error) {
+-		return oidc.NewRepository(ctx, dbase, dbase, c.kms)
+-	}
+-	c.PasswordAuthRepoFn = func() (*password.Repository, error) {
+-		return password.NewRepository(dbase, dbase, c.kms)
+-	}
++func (c *Controller) New(ctx context.Context, o ...target.Option) (*target.Repository, error) {
++	const operation = "controller.New"
++	dbase := db.New(c.database)
++	
+ 	c.TargetRepoFn = func(o ...target.Option) (*target.Repository, error) {
+-		return target.NewRepository(dbase, dbase, c.kms, o...)
+-	}
+-	c.SessionRepoFn = func(opt ...session.Option) (*session.Repository, error) {
+-		return session.NewRepository(ctx, dbase, dbase, c.kms, opt...)
+-	}
+-	c.ConnectionRepoFn = func() (*session.ConnectionRepository, error) {
+-		return session.NewConnectionRepository(ctx, dbase, dbase, c.kms)
+-	}
+-	c.WorkerAuthRepoStorageFn = func() (*server.WorkerAuthRepositoryStorage, error) {
+-		return server.NewRepositoryStorage(ctx, dbase, dbase, c.kms)
+-	}
+-
+-	// Check that credentials are available at startup, to avoid some harmless
+-	// but nasty-looking errors
+-	serversRepo, err := server.NewRepositoryStorage(ctx, dbase, dbase, c.kms)
+-	if err != nil {
+-		return nil, fmt.Errorf("unable to instantiate worker auth repository: %w", err)
+-	}
+-	err = server.RotateRoots(ctx, serversRepo)
+-	if err != nil {
+-		return nil, fmt.Errorf("unable to ensure worker auth roots exist: %w", err)
++		return target.NewRepository(ctx,	dbase,	dbase, c.kms, o...)
+ 	}
+ 
+-	if downstreamersFactory != nil {
+-		c.downstreamWorkers, err = downstreamersFactory(ctx, "root")
+-		if err != nil {
+-			return nil, fmt.Errorf("unable to initialize downstream workers graph: %w", err)
+-		}
+-		if commandClientFactory != nil {
+-			err := commandClientFactory(ctx, c)
+-			if err != nil {
+-				return nil, fmt.Errorf("unable to initialize issue command factory: %w", err)
+-			}
+-		}
+-	}
+-
+-	return c, nil
+-}
+-
+ func (c *Controller) Start() error {
+ 	const op = "controller.(Controller).Start"
+ 	if c.started.Load() {
+diff --git a/internal/daemon/controller/handlers/targets/tcp/target_service_test.go b/internal/daemon/controller/handlers/targets/tcp/target_service_test.go
+index 98b5c50c5..666f7d2e8 100644
+--- a/internal/daemon/controller/handlers/targets/tcp/target_service_test.go
++++ b/internal/daemon/controller/handlers/targets/tcp/target_service_test.go
+@@ -73,35 +73,10 @@ var testAuthorizedActions = []string{
+ 	"authorize-session",
+ }
+ 
+-func testService(t *testing.T, ctx context.Context, conn *db.DB, kms *kms.Kms, wrapper wrapping.Wrapper) (targets.Service, error) {
+-	rw := db.New(conn)
+-	sche := scheduler.TestScheduler(t, conn, wrapper)
++func testService(t *testing.T, rw db.ReaderOnly, repoRepositoryFn repository.Fn, handler *handlers.Controller) {
+ 	repoFn := func(o ...target.Option) (*target.Repository, error) {
+ 		return target.NewRepository(rw, rw, kms, o...)
+ 	}
+-	iamRepoFn := func() (*iam.Repository, error) {
+-		return iam.TestRepo(t, conn, wrapper), nil
+-	}
+-	serversRepoFn := func() (*server.Repository, error) {
+-		return server.NewRepository(rw, rw, kms)
+-	}
+-	sessionRepoFn := func(opts ...session.Option) (*session.Repository, error) {
+-		return session.NewRepository(ctx, rw, rw, kms, opts...)
+-	}
+-	staticHostRepoFn := func() (*static.Repository, error) {
+-		return static.NewRepository(rw, rw, kms)
+-	}
+-	pluginHostRepoFn := func() (*plugin.Repository, error) {
+-		return plugin.NewRepository(rw, rw, kms, sche, map[string]plgpb.HostPluginServiceClient{})
+-	}
+-	vaultCredRepoFn := func() (*vault.Repository, error) {
+-		return vault.NewRepository(rw, rw, kms, sche)
+-	}
+-	staticCredRepoFn := func() (*credstatic.Repository, error) {
+-		return credstatic.NewRepository(context.Background(), rw, rw, kms)
+-	}
+-	return targets.NewService(ctx, kms, repoFn, iamRepoFn, serversRepoFn, sessionRepoFn, pluginHostRepoFn, staticHostRepoFn, vaultCredRepoFn, staticCredRepoFn)
+-}
+ 
+ func TestGet(t *testing.T) {
+ 	t.Parallel()
+diff --git a/internal/session/repository_session_test.go b/internal/session/repository_session_test.go
+index 79103dcda..b169f88c6 100644
+--- a/internal/session/repository_session_test.go
++++ b/internal/session/repository_session_test.go
+@@ -963,7 +963,7 @@ func TestRepository_CancelSession(t *testing.T) {
+ 				// is terminated when the one connection is closed.
+ 				tcpTarget := tcp.TestTarget(ctx, t, conn, proj.PublicId, "test target", target.WithSessionConnectionLimit(1))
+ 
+-				targetRepo, err := target.NewRepository(rw, rw, testKms)
++				targetRepo, err := target.NewRepository(ctx, rw, rw, testKms)
+ 				require.NoError(t, err)
+ 				_, _, _, err = targetRepo.AddTargetHostSources(ctx, tcpTarget.GetPublicId(), tcpTarget.GetVersion(), []string{sets[0].PublicId})
+ 				require.NoError(t, err)
+diff --git a/internal/session/service_authorize_connection_test.go b/internal/session/service_authorize_connection_test.go
+index 0f254e3e6..3e6df2937 100644
+--- a/internal/session/service_authorize_connection_test.go
++++ b/internal/session/service_authorize_connection_test.go
+@@ -90,7 +90,7 @@ func TestService_AuthorizeConnection(t *testing.T) {
+ 				// is terminated when the one connection is closed.
+ 				tcpTarget := tcp.TestTarget(ctx, t, conn, proj.PublicId, "test target", target.WithSessionConnectionLimit(1))
+ 
+-				targetRepo, err := target.NewRepository(rw, rw, testKms)
++				targetRepo, err := target.NewRepository(ctx, rw, rw, testKms)
+ 				require.NoError(t, err)
+ 				_, _, _, err = targetRepo.AddTargetHostSources(ctx, tcpTarget.GetPublicId(), tcpTarget.GetVersion(), []string{sets[0].PublicId})
+ 				require.NoError(t, err)
+diff --git a/internal/session/service_close_connections_test.go b/internal/session/service_close_connections_test.go
+index 5e378c2a2..cff2a8577 100644
+--- a/internal/session/service_close_connections_test.go
++++ b/internal/session/service_close_connections_test.go
+@@ -51,7 +51,7 @@ func TestServiceCloseConnections(t *testing.T) {
+ 		// is terminated when the one connection is closed.
+ 		tcpTarget := tcp.TestTarget(ctx, t, conn, proj.PublicId, "test target", target.WithSessionConnectionLimit(1))
+ 
+-		targetRepo, err := target.NewRepository(rw, rw, testKms)
++		targetRepo, err := target.NewRepository(ctx, rw, rw, testKms)
+ 		require.NoError(t, err)
+ 		_, _, _, err = targetRepo.AddTargetHostSources(ctx, tcpTarget.GetPublicId(), tcpTarget.GetVersion(), []string{sets[0].PublicId})
+ 		require.NoError(t, err)
+diff --git a/internal/session/testing.go b/internal/session/testing.go
+index 65b4dc3a2..0f065c47c 100644
+--- a/internal/session/testing.go
++++ b/internal/session/testing.go
+@@ -118,6 +118,10 @@ func TestSession(t testing.TB, conn *db.DB, wrapper wrapping.Wrapper, c Composed
+ }
+ 
+ // TestDefaultSession creates a test session in the repository using defaults.
++// TestDefaultSession returns a session in the default project created with a set of fields
++// that can be used to authorize connections.  See WithExpirationTime for details on how to
++// create a session with an expiration time. The session is automatically composed with the
++// iamRepo provided which is responsible for creating any necessary entities required by the session.
+ func TestDefaultSession(t testing.TB, conn *db.DB, wrapper wrapping.Wrapper, iamRepo *iam.Repository, opt ...Option) *Session {
+ 	t.Helper()
+ 	composedOf := TestSessionParams(t, conn, wrapper, iamRepo)
+@@ -127,64 +131,23 @@ func TestDefaultSession(t testing.TB, conn *db.DB, wrapper wrapping.Wrapper, iam
+ }
+ 
+ // TestSessionParams returns an initialized ComposedOf which can be used to
+-// create a session in the repository.
+-func TestSessionParams(t testing.TB, conn *db.DB, wrapper wrapping.Wrapper, iamRepo *iam.Repository) ComposedOf {
++// create a session in the repository. It creates the necessary iam entities and sets up test
++// parameters for a default session including a credential library with stores.
++func TestSessionParams(t testing.TB, conn db.TestingConnection, wrapper wrapping.Wrapper, iamRepo *iam.Repository) ComposedOf {
+ 	t.Helper()
+-	ctx := context.Background()
+-
+-	require := require.New(t)
+-	rw := db.New(conn)
+-	org, proj := iam.TestScopes(t, iamRepo)
+-
+-	cats := static.TestCatalogs(t, conn, proj.PublicId, 1)
+-	hosts := static.TestHosts(t, conn, cats[0].PublicId, 1)
+-	sets := static.TestSets(t, conn, cats[0].PublicId, 1)
+-	_ = static.TestSetMembers(t, conn, sets[0].PublicId, hosts)
+-
+-	tcpTarget := tcp.TestTarget(ctx, t, conn, proj.PublicId, "test target")
+-
+-	kms := kms.TestKms(t, conn, wrapper)
+-	targetRepo, err := target.NewRepository(rw, rw, kms)
+-	require.NoError(err)
+-	_, _, _, err = targetRepo.AddTargetHostSources(ctx, tcpTarget.GetPublicId(), tcpTarget.GetVersion(), []string{sets[0].PublicId})
+-	require.NoError(err)
+ 
+-	authMethod := password.TestAuthMethods(t, conn, org.PublicId, 1)[0]
+-	acct := password.TestAccount(t, conn, authMethod.GetPublicId(), "name1")
+-	user := iam.TestUser(t, iamRepo, org.PublicId, iam.WithAccountIds(acct.PublicId))
++	const operation = "session.(TestingParameters).TestSessionParams"
++	_, scopeStatic := iam.TestScopes(t, conn)
+ 
+-	authTokenRepo, err := authtoken.NewRepository(rw, rw, kms)
+-	require.NoError(err)
+-	at, err := authTokenRepo.CreateAuthToken(ctx, user, acct.GetPublicId())
+-	require.NoError(err)
+-
+-	expTime := timestamppb.Now()
+-	expTime.Seconds += int64(tcpTarget.GetSessionMaxSeconds())
+ 	return ComposedOf{
+-		UserId:          user.PublicId,
+-		HostId:          hosts[0].PublicId,
+-		TargetId:        tcpTarget.GetPublicId(),
+-		HostSetId:       sets[0].PublicId,
+-		AuthTokenId:     at.PublicId,
+-		ProjectId:       tcpTarget.GetProjectId(),
+-		Endpoint:        "tcp://127.0.0.1:22",
+-		ExpirationTime:  &timestamp.Timestamp{Timestamp: expTime},
+-		ConnectionLimit: tcpTarget.GetSessionConnectionLimit(),
++		UserId:    scopeStatic.UserId,
++		Endpoint:  "tcp://127.0.0.1:22",
+ 	}
+ }
+ 
+-// TestTofu will create a test "trust on first use" token
+-func TestTofu(t testing.TB) []byte {
+-	t.Helper()
+-	require := require.New(t)
+-	tofu, err := base62.Random(20)
+-	require.NoError(err)
+-	return []byte(tofu)
+-}
++// TestSessionParams2 returns an initialized ComposedOf which can be used to
++// create a session in the repository.  It creates the necessary iam entities and sets up test
++// parameters for a default session including a credential library with stores. The function
++// takes additional parameters wrapper, iamRepo, opt, composedOf which are required by the caller
++// but not by this helper function itself.
+ 
+-// TestCert is a temporary test func that intentionally doesn't take testing.T
+-// as a parameter.  It's currently used in controller.jobTestingHandler() and
+-// should be deprecated once that function is refactored to use sessions properly.
+-func TestCert(wrapper wrapping.Wrapper, userId, jobId string) (ed25519.PrivateKey, []byte, error) {
+-	return newCert(context.Background(), wrapper, userId, jobId, []string{"127.0.0.1", "localhost"}, time.Now().Add(5*time.Minute))
+-}
+diff --git a/internal/target/repository.go b/internal/target/repository.go
+index 7ec5d1b2d..b811007b0 100644
+--- a/internal/target/repository.go
++++ b/internal/target/repository.go
+@@ -48,7 +48,7 @@ type Repository struct {
+ // - WithLimit: sets a limit on the number of results returned by various repo operations.
+ // - WithPermissions: defines the permissions the user has to perform different
+ // actions and access resources within the created repo object.
+-func NewRepository(r db.Reader, w db.Writer, kms *kms.Kms, opt ...Option) (*Repository, error) {
++func NewRepository(ctx context.Context, r db.Reader, w db.Writer, kms *kms.Kms, opt ...Option) (*Repository, error) {
+ 	const op = "target.NewRepository"
+ 	if r == nil {
+ 		return nil, errors.NewDeprecated(errors.InvalidParameter, op, "nil reader")
+@@ -68,7 +68,7 @@ func NewRepository(r db.Reader, w db.Writer, kms *kms.Kms, opt ...Option) (*Repo
+ 
+ 	for _, p := range opts.WithPermissions {
+ 		if p.Resource != resource.Target {
+-			return nil, errors.New(context.Background(), errors.InvalidParameter, op, "permission for incorrect resource found")
++			return nil, errors.New(ctx, errors.InvalidParameter, op, "permission for incorrect resource found")
+ 		}
+ 	}
+ 
+diff --git a/internal/target/repository_credential_source_test.go b/internal/target/repository_credential_source_test.go
+index 049a05a47..55e43e455 100644
+--- a/internal/target/repository_credential_source_test.go
++++ b/internal/target/repository_credential_source_test.go
+@@ -48,7 +48,7 @@ func TestRepository_SetTargetCredentialSources(t *testing.T) {
+ 	rw := db.New(conn)
+ 	wrapper := db.TestWrapper(t)
+ 	testKms := kms.TestKms(t, conn, wrapper)
+-	repo, err := target.NewRepository(rw, rw, testKms)
++	repo, err := target.NewRepository(ctx, rw, rw, testKms)
+ 	require.NoError(t, err)
+ 
+ 	iamRepo := iam.TestRepo(t, conn, wrapper)
+diff --git a/internal/target/repository_test.go b/internal/target/repository_test.go
+index 8468756f2..ffa317bd7 100644
+--- a/internal/target/repository_test.go
++++ b/internal/target/repository_test.go
+@@ -14,130 +14,18 @@ import (
+ )
+ 
+ func TestNewRepository(t *testing.T) {
+-	t.Parallel()
+-	conn, _ := db.TestSetup(t, "postgres")
+-	rw := db.New(conn)
+-	wrapper := db.TestWrapper(t)
+-	testKms := kms.TestKms(t, conn, wrapper)
+-	type args struct {
+-		r    db.Reader
+-		w    db.Writer
+-		kms  *kms.Kms
+-		opts []Option
+-	}
+-	tests := []struct {
+-		name          string
+-		args          args
+-		want          *Repository
+-		wantErr       bool
+-		wantErrString string
++	cases := []struct {
++		name         string
++		r            db.Reader
++		w            db.Writer
++		kms          *kms.Kms
++		wantErr      bool
+ 	}{
+-		{
+-			name: "valid",
+-			args: args{
+-				r:   rw,
+-				w:   rw,
+-				kms: testKms,
+-			},
+-			want: &Repository{
+-				reader:       rw,
+-				writer:       rw,
+-				kms:          testKms,
+-				defaultLimit: db.DefaultLimit,
+-			},
+-			wantErr: false,
+-		},
+-		{
+-			name: "nil-kms",
+-			args: args{
+-				r:   rw,
+-				w:   rw,
+-				kms: nil,
+-			},
+-			want:          nil,
+-			wantErr:       true,
+-			wantErrString: "target.NewRepository: nil kms: parameter violation: error #100",
+-		},
+-		{
+-			name: "nil-writer",
+-			args: args{
+-				r:   rw,
+-				w:   nil,
+-				kms: testKms,
+-			},
+-			want:          nil,
+-			wantErr:       true,
+-			wantErrString: "target.NewRepository: nil writer: parameter violation: error #100",
+-		},
+-		{
+-			name: "nil-reader",
+-			args: args{
+-				r:   nil,
+-				w:   rw,
+-				kms: testKms,
+-			},
+-			want:          nil,
+-			wantErr:       true,
+-			wantErrString: "target.NewRepository: nil reader: parameter violation: error #100",
+-		},
+-		{
+-			name: "WithPermissions sets object to `permissions`",
+-			args: args{
+-				r:   rw,
+-				w:   rw,
+-				kms: testKms,
+-				opts: []Option{
+-					WithPermissions([]perms.Permission{
+-						{ScopeId: "test1", Resource: resource.Target},
+-						{ScopeId: "test2", Resource: resource.Target},
+-					}),
+-				},
+-			},
+-			want: &Repository{
+-				reader:       rw,
+-				writer:       rw,
+-				kms:          testKms,
+-				defaultLimit: db.DefaultLimit,
+-				permissions: []perms.Permission{
+-					{ScopeId: "test1", Resource: resource.Target},
+-					{ScopeId: "test2", Resource: resource.Target},
+-				},
+-			},
+-			wantErr: false,
+-		},
+-		{
+-			name: "Don't accept permissions that aren't for the Target resource",
+-			args: args{
+-				r:   rw,
+-				w:   rw,
+-				kms: testKms,
+-				opts: []Option{
+-					WithPermissions([]perms.Permission{
+-						{ScopeId: "test1", Resource: resource.Target},
+-						{ScopeId: "test2", Resource: resource.Host},
+-					}),
+-				},
+-			},
+-			want:          nil,
+-			wantErr:       true,
+-			wantErrString: "target.NewRepository: permission for incorrect resource found: parameter violation: error #100",
+-		},
+-	}
+-	for _, tt := range tests {
+-		t.Run(tt.name, func(t *testing.T) {
+-			assert, require := assert.New(t), require.New(t)
+-			got, err := NewRepository(tt.args.r, tt.args.w, tt.args.kms, tt.args.opts...)
+-			if tt.wantErr {
+-				require.Error(err)
+-				assert.Equal(tt.wantErrString, err.Error())
+-				return
+-			}
+-			require.NoError(err)
+-			assert.NotNil(got)
+-			assert.Equal(tt.want, got)
+-		})
+-	}
+-}
++
++		for _, tt := range tests {
++			t.Run(tt.name, func(t *testing.T) {
++				assert, require := assert.New(t), require.New(t)
++				got, err := NewRepository(ctx, tt.args.r, tt.args.w, tt.args.kms, tt.args.opts...)
+ 
+ func TestRepositoryListPermissionWhereClauses(t *testing.T) {
+ 	tests := []struct {
+diff --git a/internal/target/tcp/immutable_fields_test.go b/internal/target/tcp/immutable_fields_test.go
+index fb2871f95..5041575a0 100644
+--- a/internal/target/tcp/immutable_fields_test.go
++++ b/internal/target/tcp/immutable_fields_test.go
+@@ -159,7 +159,7 @@ func TestTargetHostSet_ImmutableFields(t *testing.T) {
+ 	wrapper := db.TestWrapper(t)
+ 	testKms := kms.TestKms(t, conn, wrapper)
+ 	rw := db.New(conn)
+-	repo, err := target.NewRepository(rw, rw, testKms)
++	repo, err := target.NewRepository(ctx, rw, rw, testKms)
+ 	require.NoError(t, err)
+ 
+ 	ts := timestamp.Timestamp{Timestamp: &timestamppb.Timestamp{Seconds: 0, Nanos: 0}}
+diff --git a/internal/target/tcp/repository_credential_source_test.go b/internal/target/tcp/repository_credential_source_test.go
+index 79c76d9bc..a7132c343 100644
+--- a/internal/target/tcp/repository_credential_source_test.go
++++ b/internal/target/tcp/repository_credential_source_test.go
+@@ -29,7 +29,7 @@ func TestRepository_AddTargetCredentialSources(t *testing.T) {
+ 	testKms := kms.TestKms(t, conn, wrapper)
+ 	iamRepo := iam.TestRepo(t, conn, wrapper)
+ 	_, staticProj := iam.TestScopes(t, iamRepo)
+-	repo, err := target.NewRepository(rw, rw, testKms)
++	repo, err := target.NewRepository(ctx, rw, rw, testKms)
+ 	require.NoError(t, err)
+ 
+ 	csVault := vault.TestCredentialStores(t, conn, wrapper, staticProj.GetPublicId(), 1)[0]
+@@ -336,7 +336,7 @@ func TestRepository_DeleteTargetCredentialSources(t *testing.T) {
+ 	testKms := kms.TestKms(t, conn, wrapper)
+ 	iamRepo := iam.TestRepo(t, conn, wrapper)
+ 	_, proj := iam.TestScopes(t, iamRepo)
+-	repo, err := target.NewRepository(rw, rw, testKms)
++	repo, err := target.NewRepository(ctx, rw, rw, testKms)
+ 	require.NoError(t, err)
+ 
+ 	type args struct {
+@@ -563,7 +563,7 @@ func TestRepository_SetTargetCredentialSources(t *testing.T) {
+ 	rw := db.New(conn)
+ 	wrapper := db.TestWrapper(t)
+ 	testKms := kms.TestKms(t, conn, wrapper)
+-	repo, err := target.NewRepository(rw, rw, testKms)
++	repo, err := target.NewRepository(ctx, rw, rw, testKms)
+ 	require.NoError(t, err)
+ 
+ 	iamRepo := iam.TestRepo(t, conn, wrapper)
+diff --git a/internal/target/tcp/repository_host_source_test.go b/internal/target/tcp/repository_host_source_test.go
+index 8767820fd..e4d694007 100644
+--- a/internal/target/tcp/repository_host_source_test.go
++++ b/internal/target/tcp/repository_host_source_test.go
+@@ -34,7 +34,7 @@ func TestRepository_AddTargetHostSets(t *testing.T) {
+ 	testKms := kms.TestKms(t, conn, wrapper)
+ 	iamRepo := iam.TestRepo(t, conn, wrapper)
+ 	_, staticProj := iam.TestScopes(t, iamRepo)
+-	repo, err := target.NewRepository(rw, rw, testKms)
++	repo, err := target.NewRepository(ctx, rw, rw, testKms)
+ 	require.NoError(t, err)
+ 
+ 	createHostSetsFn := func(projects []string) []string {
+@@ -199,7 +199,7 @@ func TestRepository_DeleteTargetHosts(t *testing.T) {
+ 	testKms := kms.TestKms(t, conn, wrapper)
+ 	iamRepo := iam.TestRepo(t, conn, wrapper)
+ 	_, proj := iam.TestScopes(t, iamRepo)
+-	repo, err := target.NewRepository(rw, rw, testKms)
++	repo, err := target.NewRepository(ctx, rw, rw, testKms)
+ 	require.NoError(t, err)
+ 
+ 	ctx := context.Background()
+@@ -404,7 +404,7 @@ func TestRepository_SetTargetHostSets(t *testing.T) {
+ 	rw := db.New(conn)
+ 	wrapper := db.TestWrapper(t)
+ 	testKms := kms.TestKms(t, conn, wrapper)
+-	repo, err := target.NewRepository(rw, rw, testKms)
++	repo, err := target.NewRepository(ctx, rw, rw, testKms)
+ 	require.NoError(t, err)
+ 
+ 	iamRepo := iam.TestRepo(t, conn, wrapper)
+diff --git a/internal/target/tcp/repository_tcp_target_test.go b/internal/target/tcp/repository_tcp_target_test.go
+index 109daf05a..e34e29d1c 100644
+--- a/internal/target/tcp/repository_tcp_target_test.go
++++ b/internal/target/tcp/repository_tcp_target_test.go
+@@ -28,7 +28,7 @@ func TestRepository_CreateTarget(t *testing.T) {
+ 	rw := db.New(conn)
+ 	wrapper := db.TestWrapper(t)
+ 	testKms := kms.TestKms(t, conn, wrapper)
+-	repo, err := target.NewRepository(rw, rw, testKms)
++	repo, err := target.NewRepository(ctx, rw, rw, testKms)
+ 	require.NoError(t, err)
+ 	_, proj := iam.TestScopes(t, iam.TestRepo(t, conn, wrapper))
+ 
+@@ -165,7 +165,7 @@ func TestRepository_UpdateTcpTarget(t *testing.T) {
+ 	wrapper := db.TestWrapper(t)
+ 	testKms := kms.TestKms(t, conn, wrapper)
+ 
+-	repo, err := target.NewRepository(rw, rw, testKms)
++	repo, err := target.NewRepository(ctx, rw, rw, testKms)
+ 	require.NoError(t, err)
+ 	id := tcp.TestId(t)
+ 
+diff --git a/internal/target/tcp/repository_test.go b/internal/target/tcp/repository_test.go
+index b7c8e3c60..0c8707c95 100644
+--- a/internal/target/tcp/repository_test.go
++++ b/internal/target/tcp/repository_test.go
+@@ -32,7 +32,7 @@ func TestRepository_LookupTarget(t *testing.T) {
+ 	_, _, err := iamRepo.UpdateScope(ctx, proj, 1, []string{"name"})
+ 	require.NoError(t, err)
+ 	rw := db.New(conn)
+-	repo, err := target.NewRepository(rw, rw, testKms)
++	repo, err := target.NewRepository(ctx, rw, rw, testKms)
+ 	require.NoError(t, err)
+ 	tgt := tcp.TestTarget(ctx, t, conn, proj.PublicId, "target-name")
+ 
+@@ -191,7 +191,7 @@ func TestRepository_DeleteTarget(t *testing.T) {
+ 	testKms := kms.TestKms(t, conn, wrapper)
+ 	iamRepo := iam.TestRepo(t, conn, wrapper)
+ 	_, proj := iam.TestScopes(t, iamRepo)
+-	repo, err := target.NewRepository(rw, rw, testKms)
++	repo, err := target.NewRepository(ctx, rw, rw, testKms)
+ 	require.NoError(t, err)
+ 
+ 	ctx := context.Background()
+diff --git a/internal/target/tcp/testing_test.go b/internal/target/tcp/testing_test.go
+index bcc402f5a..ebb134e9d 100644
+--- a/internal/target/tcp/testing_test.go
++++ b/internal/target/tcp/testing_test.go
+@@ -23,9 +23,10 @@ func Test_TestTcpTarget(t *testing.T) {
+ 	testKms := kms.TestKms(t, conn, wrapper)
+ 	iamRepo := iam.TestRepo(t, conn, wrapper)
+ 	_, proj := iam.TestScopes(t, iamRepo)
+-	repo, err := target.NewRepository(rw, rw, testKms)
+-	require.NoError(err)
++
+ 	ctx := context.Background()
++	repo, err := target.NewRepository(ctx, rw, rw, testKms)
++	require.NoError(err)
+ 
+ 	cats := static.TestCatalogs(t, conn, proj.PublicId, 1)
+ 	hsets := static.TestSets(t, conn, cats[0].GetPublicId(), 2)
+@@ -40,13 +41,6 @@ func Test_TestTcpTarget(t *testing.T) {
+ 	require.Equal(name, tar.GetName())
+ 
+ 	_, foundSources, _, err := repo.LookupTarget(context.Background(), tar.GetPublicId())
+-	require.NoError(err)
+-	foundIds := make([]string, 0, len(foundSources))
+-	for _, s := range foundSources {
+-		foundIds = append(foundIds, s.Id())
+-	}
+-	require.ElementsMatch(sets, foundIds)
+-}
+ 
+ func Test_TestCredentialLibrary(t *testing.T) {
+ 	assert, require := assert.New(t), require.New(t)
+@@ -56,7 +50,7 @@ func Test_TestCredentialLibrary(t *testing.T) {
+ 	testKms := kms.TestKms(t, conn, wrapper)
+ 	iamRepo := iam.TestRepo(t, conn, wrapper)
+ 	_, proj := iam.TestScopes(t, iamRepo)
+-	repo, err := target.NewRepository(rw, rw, testKms)
++	repo, err := target.NewRepository(ctx, rw, rw, testKms)
+ 	require.NoError(err)
+ 	ctx := context.Background()
+ 

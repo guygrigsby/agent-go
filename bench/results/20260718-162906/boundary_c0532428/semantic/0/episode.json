@@ -1,0 +1,92 @@
+{
+ "agent_done": "2026-07-19T11:04:56.468119167Z",
+ "agent_started": "2026-07-19T10:57:25.672142Z",
+ "cache_read": 1943655,
+ "cache_write": 0,
+ "capped": false,
+ "failure_kind": "",
+ "intermediate_states": 9,
+ "invalid_intermediate_rate": 0,
+ "invalid_intermediates": 0,
+ "iter": 0,
+ "kind": "rename",
+ "mode": "semantic",
+ "new_errors": null,
+ "op_mix": {
+  "help": {
+   "ok": 3,
+   "rejected": 0
+  },
+  "patch": {
+   "ok": 1,
+   "rejected": 10
+  },
+  "query": {
+   "ok": 34,
+   "rejected": 6
+  },
+  "rename": {
+   "ok": 3,
+   "rejected": 6
+  },
+  "set-body": {
+   "ok": 0,
+   "rejected": 1
+  },
+  "status": {
+   "ok": 3,
+   "rejected": 0
+  },
+  "upsert": {
+   "ok": 0,
+   "rejected": 3
+  },
+  "view": {
+   "ok": 17,
+   "rejected": 17
+  }
+ },
+ "pass": true,
+ "predicate": true,
+ "profile": "qwen3.5-9b-udq4",
+ "prompt": "Rename the UI passthrough dir flag/env var\n\nSpecifically, rename: flagPassthroughDirectory -\u003e flagUiPassthroughDir; devPassthroughHandler -\u003e devUiPassthroughHandler; PassthroughDirectory -\u003e DevUiPassthroughDir",
+ "rejects_total": 43,
+ "repairs_offered": 42,
+ "resends": 11,
+ "specs": [
+  {
+   "baseline_refs": 3,
+   "new_refs": 3,
+   "ok": true,
+   "old_refs_left": 0,
+   "sym": "github.com/hashicorp/boundary/internal/cmd/commands/dev.Command.flagPassthroughDirectory",
+   "to": "flagUiPassthroughDir"
+  },
+  {
+   "baseline_refs": 2,
+   "new_refs": 2,
+   "ok": true,
+   "old_refs_left": 0,
+   "sym": "github.com/hashicorp/boundary/internal/servers/controller.devPassthroughHandler",
+   "to": "devUiPassthroughHandler"
+  },
+  {
+   "baseline_refs": 4,
+   "new_refs": 4,
+   "ok": true,
+   "old_refs_left": 0,
+   "sym": "github.com/hashicorp/boundary/internal/cmd/config.Config.PassthroughDirectory",
+   "to": "DevUiPassthroughDir"
+  }
+ ],
+ "steps": 111,
+ "task": "boundary_c0532428",
+ "tests": false,
+ "tests_baseline": false,
+ "time_to_first_mutation_s": 209.74794,
+ "tokens_in": 144479,
+ "tokens_out": 20897,
+ "tokens_reasoning": 0,
+ "typecheck": true,
+ "wall_s": 450.795977167
+}

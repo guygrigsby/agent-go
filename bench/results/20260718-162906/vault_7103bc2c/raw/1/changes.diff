@@ -1,0 +1,94 @@
+diff --git a/audit/audit.go b/audit/audit.go
+index 35a3d38a05..e4bed032d2 100644
+--- a/audit/audit.go
++++ b/audit/audit.go
+@@ -56,6 +56,9 @@ type BackendConfig struct {
+ 
+ 	// Config is the opaque user configuration provided when mounting
+ 	Config map[string]string
++
++	// UseEventLogger enables event logger functionality in the backend
++	UseEventLogger bool
+ }
+ 
+ // Factory is the factory function to create an audit backend.
+diff --git a/builtin/audit/file/backend.go b/builtin/audit/file/backend.go
+index d4471f1a9a..d62cc98c44 100644
+--- a/builtin/audit/file/backend.go
++++ b/builtin/audit/file/backend.go
+@@ -108,11 +108,12 @@ func Factory(ctx context.Context, conf *audit.BackendConfig) (audit.Backend, err
+ 	}
+ 
+ 	b := &Backend{
+-		path:       path,
+-		mode:       mode,
+-		saltConfig: conf.SaltConfig,
+-		saltView:   conf.SaltView,
+-		salt:       new(atomic.Value),
++		path:             path,
++		mode:             mode,
++		useEventLogger:   conf.UseEventLogger,
++		saltConfig:       conf.SaltConfig,
++		saltView:         conf.SaltView,
++		salt:             new(atomic.Value),
+ 		formatConfig: audit.FormatterConfig{
+ 			Raw:                logRaw,
+ 			HMACAccessor:       hmacAccessor,
+@@ -164,10 +165,11 @@ func Factory(ctx context.Context, conf *audit.BackendConfig) (audit.Backend, err
+ // It doesn't do anything more at the moment to assist with rotation
+ // or reset the write cursor, this should be done in the future.
+ type Backend struct {
+-	path string
++	path             string
+ 
+ 	formatter    *audit.AuditFormatterWriter
+ 	formatConfig audit.FormatterConfig
++	useEventLogger bool
+ 
+ 	fileLock sync.RWMutex
+ 	f        *os.File
+diff --git a/builtin/audit/syslog/backend.go b/builtin/audit/syslog/backend.go
+index 19059b86cc..c166d7d201 100644
+--- a/builtin/audit/syslog/backend.go
++++ b/builtin/audit/syslog/backend.go
+@@ -82,14 +82,15 @@ func Factory(ctx context.Context, conf *audit.BackendConfig) (audit.Backend, err
+ 	}
+ 
+ 	b := &Backend{
+-		logger:     logger,
+-		saltConfig: conf.SaltConfig,
+-		saltView:   conf.SaltView,
++		logger:        logger,
+ 		formatConfig: audit.FormatterConfig{
+ 			Raw:                logRaw,
+ 			HMACAccessor:       hmacAccessor,
+ 			ElideListResponses: elideListResponses,
+ 		},
++		saltMutex:  sync.RWMutex{},
++		salt:       new(atomic.Value),
++		mode:       0,
+ 	}
+ 
+ 	// Configure the formatter for either case.
+diff --git a/vault/audit.go b/vault/audit.go
+index 4078edbee2..43fa9d5bad 100644
+--- a/vault/audit.go
++++ b/vault/audit.go
+@@ -156,7 +156,7 @@ func (c *Core) enableAudit(ctx context.Context, entry *MountEntry, updateStorage
+ 	c.audit = newTable
+ 
+ 	// Register the backend
+-	c.auditBroker.Register(entry.Path, backend, entry.Local, c.IsExperimentEnabled(experiments.VaultExperimentCoreAuditEventsAlpha1))
++	c.auditBroker.Register(entry.Path, backend, entry.Local, false)
+ 	if c.logger.IsInfo() {
+ 		c.logger.Info("enabled audit backend", "path", entry.Path, "type", entry.Type)
+ 	}
+@@ -417,7 +417,7 @@ func (c *Core) setupAudits(ctx context.Context) error {
+ 		}
+ 
+ 		// Mount the backend
+-		broker.Register(entry.Path, backend, entry.Local, c.IsExperimentEnabled(experiments.VaultExperimentCoreAuditEventsAlpha1))
++		broker.Register(entry.Path, backend, entry.Local, false)
+ 
+ 		successCount++
+ 	}

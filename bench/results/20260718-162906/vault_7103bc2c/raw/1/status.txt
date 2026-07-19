@@ -1,0 +1,6 @@
+ M audit/audit.go
+ M builtin/audit/file/backend.go
+ M builtin/audit/syslog/backend.go
+ M vault/audit.go
+?? factory_test.go
+?? opencode.json

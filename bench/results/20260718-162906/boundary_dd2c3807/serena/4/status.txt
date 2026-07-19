@@ -1,0 +1,10 @@
+ M internal/auth/oidc/auth_method.go
+ M internal/auth/oidc/service.go
+ M internal/credential/vault/client_certificate.go
+ M internal/kms/kms.go
+ M internal/kms/kms_test.go
+ M internal/session/util.go
+ M internal/session/util_test.go
+?? .serena/
+?? internal/libs/crypto/
+?? opencode.json

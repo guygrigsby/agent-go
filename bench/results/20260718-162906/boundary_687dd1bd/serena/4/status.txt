@@ -1,0 +1,4 @@
+?? .serena/
+?? internal/session/job.go
+?? internal/session/job_test.go
+?? opencode.json

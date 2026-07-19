@@ -1,0 +1,2 @@
+ M globals/globals.go
+?? opencode.json

@@ -1,0 +1,122 @@
+diff --git a/testing/internal/e2e/boundary/credential.go b/testing/internal/e2e/boundary/credential.go
+index 5bcd8b3a6..da9d2893a 100644
+--- a/testing/internal/e2e/boundary/credential.go
++++ b/testing/internal/e2e/boundary/credential.go
+@@ -202,10 +202,9 @@ func CreateStaticCredentialPrivateKeyCli(t testing.TB, ctx context.Context, cred
+ 	return credentialId, nil
+ }
+ 
+-// CreateStaticCredentialPasswordCli uses the cli to create a new password credential in the
+-// provided static credential store.
+-// Returns the id of the new credential
+-func CreateStaticCredentialPasswordCli(t testing.TB, ctx context.Context, credentialStoreId string, user string, password string) (string, error) {
++// CreateStaticCredentialUsernamePasswordCli uses the cli to create a new username/password credential in the
++
++func CreateStaticCredentialUsernamePasswordCli(t testing.TB, ctx context.Context, credentialStoreId string, user string, password string) (string, error) {
+ 	name, err := base62.Random(16)
+ 	if err != nil {
+ 		return "", err
+diff --git a/testing/internal/e2e/tests/base/credential_store_test.go b/testing/internal/e2e/tests/base/credential_store_test.go
+index 70cf4fec8..ff70c571c 100644
+--- a/testing/internal/e2e/tests/base/credential_store_test.go
++++ b/testing/internal/e2e/tests/base/credential_store_test.go
+@@ -77,7 +77,7 @@ func TestCliStaticCredentialStore(t *testing.T) {
+ 	require.NoError(t, err)
+ 	privateKeyCredentialsId, err := boundary.CreateStaticCredentialPrivateKeyCli(t, ctx, storeId, c.TargetSshUser, testPemFile)
+ 	require.NoError(t, err)
+-	pwCredentialId, err := boundary.CreateStaticCredentialPasswordCli(t, ctx, storeId, c.TargetSshUser, testPassword)
++	pwCredentialId, err := boundary.CreateStaticCredentialUsernamePasswordCli(t, ctx, storeId, c.TargetSshUser, testPassword)
+ 	require.NoError(t, err)
+ 	jsonCredentialId, err := boundary.CreateStaticCredentialJsonCli(t, ctx, storeId, testCredentialsFile)
+ 	require.NoError(t, err)
+diff --git a/testing/internal/e2e/tests/base/paginate_credential_test.go b/testing/internal/e2e/tests/base/paginate_credential_test.go
+index c97fb0bfc..bcc9875df 100644
+--- a/testing/internal/e2e/tests/base/paginate_credential_test.go
++++ b/testing/internal/e2e/tests/base/paginate_credential_test.go
+@@ -88,7 +88,7 @@ func TestCliPaginateCredentials(t *testing.T) {
+ 	assert.Empty(t, initialCredentials.ListToken)
+ 
+ 	// Create a new credential and destroy one of the other credentials
+-	credentialId, err := boundary.CreateStaticCredentialPasswordCli(t, ctx, storeId, "user", "password")
++	credentialId, err := boundary.CreateStaticCredentialUsernamePasswordCli(t, ctx, storeId, "user", "password")
+ 	require.NoError(t, err)
+ 	output = e2e.RunCommand(ctx, "boundary",
+ 		e2e.WithArgs(
+diff --git a/testing/internal/e2e/tests/base/target_tcp_connect_cassandra_test.go b/testing/internal/e2e/tests/base/target_tcp_connect_cassandra_test.go
+index 9fd07626a..5951624ff 100644
+--- a/testing/internal/e2e/tests/base/target_tcp_connect_cassandra_test.go
++++ b/testing/internal/e2e/tests/base/target_tcp_connect_cassandra_test.go
+@@ -82,7 +82,7 @@ func TestCliTcpTargetConnectCassandra(t *testing.T) {
+ 	storeId, err := boundary.CreateCredentialStoreStaticCli(t, ctx, projectId)
+ 	require.NoError(t, err)
+ 
+-	credentialId, err := boundary.CreateStaticCredentialPasswordCli(
++	credentialId, err := boundary.CreateStaticCredentialUsernamePasswordCli(
+ 		t,
+ 		ctx,
+ 		storeId,
+diff --git a/testing/internal/e2e/tests/base/target_tcp_connect_mongo_test.go b/testing/internal/e2e/tests/base/target_tcp_connect_mongo_test.go
+index fd999df50..1492dc412 100644
+--- a/testing/internal/e2e/tests/base/target_tcp_connect_mongo_test.go
++++ b/testing/internal/e2e/tests/base/target_tcp_connect_mongo_test.go
+@@ -83,7 +83,7 @@ func TestCliTcpTargetConnectMongo(t *testing.T) {
+ 	storeId, err := boundary.CreateCredentialStoreStaticCli(t, ctx, projectId)
+ 	require.NoError(t, err)
+ 
+-	credentialId, err := boundary.CreateStaticCredentialPasswordCli(
++	credentialId, err := boundary.CreateStaticCredentialUsernamePasswordCli(
+ 		t,
+ 		ctx,
+ 		storeId,
+diff --git a/testing/internal/e2e/tests/base/target_tcp_connect_mysql_test.go b/testing/internal/e2e/tests/base/target_tcp_connect_mysql_test.go
+index 6b306fd23..475ad5ad3 100644
+--- a/testing/internal/e2e/tests/base/target_tcp_connect_mysql_test.go
++++ b/testing/internal/e2e/tests/base/target_tcp_connect_mysql_test.go
+@@ -82,7 +82,7 @@ func TestCliTcpTargetConnectMysql(t *testing.T) {
+ 	storeId, err := boundary.CreateCredentialStoreStaticCli(t, ctx, projectId)
+ 	require.NoError(t, err)
+ 
+-	credentialId, err := boundary.CreateStaticCredentialPasswordCli(
++	credentialId, err := boundary.CreateStaticCredentialUsernamePasswordCli(
+ 		t,
+ 		ctx,
+ 		storeId,
+diff --git a/testing/internal/e2e/tests/base/target_tcp_connect_redis_test.go b/testing/internal/e2e/tests/base/target_tcp_connect_redis_test.go
+index bc07eed55..6455e6c63 100644
+--- a/testing/internal/e2e/tests/base/target_tcp_connect_redis_test.go
++++ b/testing/internal/e2e/tests/base/target_tcp_connect_redis_test.go
+@@ -84,7 +84,7 @@ func TestCliTcpTargetConnectRedis(t *testing.T) {
+ 	storeId, err := boundary.CreateCredentialStoreStaticCli(t, ctx, projectId)
+ 	require.NoError(t, err)
+ 
+-	credentialId, err := boundary.CreateStaticCredentialPasswordCli(
++	credentialId, err := boundary.CreateStaticCredentialUsernamePasswordCli(
+ 		t,
+ 		ctx,
+ 		storeId,
+diff --git a/testing/internal/e2e/tests/base_plus/target_tcp_connect_postgres_test.go b/testing/internal/e2e/tests/base_plus/target_tcp_connect_postgres_test.go
+index b3679ad66..04d5e7c96 100644
+--- a/testing/internal/e2e/tests/base_plus/target_tcp_connect_postgres_test.go
++++ b/testing/internal/e2e/tests/base_plus/target_tcp_connect_postgres_test.go
+@@ -47,7 +47,7 @@ func TestCliTcpTargetConnectPostgres(t *testing.T) {
+ 	require.NoError(t, err)
+ 	storeId, err := boundary.CreateCredentialStoreStaticCli(t, ctx, projectId)
+ 	require.NoError(t, err)
+-	credentialId, err := boundary.CreateStaticCredentialPasswordCli(
++	credentialId, err := boundary.CreateStaticCredentialUsernamePasswordCli(
+ 		t,
+ 		ctx,
+ 		storeId,
+diff --git a/testing/internal/e2e/tests/database/migration_test.go b/testing/internal/e2e/tests/database/migration_test.go
+index 447b34a20..cf1746993 100644
+--- a/testing/internal/e2e/tests/database/migration_test.go
++++ b/testing/internal/e2e/tests/database/migration_test.go
+@@ -268,7 +268,7 @@ func populateBoundaryDatabase(t testing.TB, ctx context.Context, c *config, te T
+ 	// Create static credentials
+ 	storeId, err := boundary.CreateCredentialStoreStaticCli(t, ctx, projectId)
+ 	require.NoError(t, err)
+-	_, err = boundary.CreateStaticCredentialPasswordCli(t, ctx, storeId, c.TargetSshUser, "password")
++	_, err = boundary.CreateStaticCredentialUsernamePasswordCli(t, ctx, storeId, c.TargetSshUser, "password")
+ 	require.NoError(t, err)
+ 	_, err = boundary.CreateStaticCredentialJsonCli(t, ctx, storeId, "testdata/credential.json")
+ 	require.NoError(t, err)

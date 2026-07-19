@@ -1,0 +1,81 @@
+diff --git a/internal/daemon/worker/handler.go b/internal/daemon/worker/handler.go
+index de3ef4829..57f024e7d 100644
+--- a/internal/daemon/worker/handler.go
++++ b/internal/daemon/worker/handler.go
+@@ -46,23 +46,28 @@ type HandlerProperties struct {
+ 
+ // Handler returns a http.Handler for the API. This can be used on
+ // its own to mount the Worker API within another web server.
+-func (w *Worker) handler(props HandlerProperties, sm session.Manager) (http.Handler, error) {
+-	const op = "worker.(Worker).handler"
+-	// Create the muxer to handle the actual endpoints
+-	mux := http.NewServeMux()
++// Verify the protocol has a supported proxy before calling RequestAuthorizeConnection
++	handleProxyFn, controlCtx := proxyHandlers.GetHandler(workerId, acResp.GetProtocolContext())
++	if err != nil {
++		conn.Close(proxyHandlers.WebsocketStatusProtocolSetupError, "unable to get proxy handler")
++		event.WriteError(ctx, op, err)
++		return
++	}
+ 
+-	var h http.Handler
+-	h, err := w.handleProxy(props.ListenerConfig, sm)
++	decryptFn, err := w.credDecryptFn(ctx)
+ 	if err != nil {
+-		return nil, fmt.Errorf("%s: %w", op, err)
++		conn.Close(proxyHandlers.WebsocketStatusProtocolSetupError, "error getting decryption function")
++		event.WriteError(ctx, op, err)
++	}
++	runProxy, err := handleProxyFn(controlCtx, ctx, decryptFn, cc, pDialer, acResp.GetConnectionId(), protocolCtx, w.recorderManager)
++	if err != nil {
++		conn.Close(proxyHandlers.WebsocketStatusProtocolSetupError, "unable to setup proxying")
++		event.WriteError(ctx, op, err)
++		return
+ 	}
+-	h = proxyHandlers.ProxyHandlerCounter(h)
+-	mux.Handle("/v1/proxy", metric.InstrumentWebsocketWrapper(h))
+ 
+-	genericWrappedHandler := w.wrapGenericHandler(mux, props)
+-	metricHandler := metric.InstrumentHttpHandler(genericWrappedHandler)
+-	return metricHandler, nil
+-}
++	runProxy(ctx)
++}, nil
+ 
+ func (w *Worker) handleProxy(listenerCfg *listenerutil.ListenerConfig, sessionManager session.Manager) (http.HandlerFunc, error) {
+ 	const op = "worker.(Worker).handleProxy"
+diff --git a/internal/daemon/worker/proxy/tcp/tcp.go b/internal/daemon/worker/proxy/tcp/tcp.go
+index c4f0a1773..fe69c4bbd 100644
+--- a/internal/daemon/worker/proxy/tcp/tcp.go
++++ b/internal/daemon/worker/proxy/tcp/tcp.go
+@@ -27,7 +27,7 @@ func init() {
+ // handleProxy returns a ProxyConnFn which starts the copy between the
+ // connections and blocks until an error (EOF on happy path) is received on
+ // either connection.
+-func handleProxy(ctx context.Context, _ proxy.DecryptFn, conn net.Conn, out *proxy.ProxyDialer, connId string, _ *anypb.Any, _ proxy.RecordingManager) (proxy.ProxyConnFn, error) {
++func handleProxy(controlCtx context.Context, ctx context.Context, _ proxy.DecryptFn, conn net.Conn, out *proxy.ProxyDialer, connId string, _ *anypb.Any, _ proxy.RecordingManager) (proxy.ProxyConnFn, error) {
+ 	const op = "tcp.HandleProxy"
+ 	switch {
+ 	case conn == nil:
+diff --git a/internal/daemon/worker/proxy/tcp/tcp_test.go b/internal/daemon/worker/proxy/tcp/tcp_test.go
+index 1a819e5d7..16af2018d 100644
+--- a/internal/daemon/worker/proxy/tcp/tcp_test.go
++++ b/internal/daemon/worker/proxy/tcp/tcp_test.go
+@@ -88,7 +88,7 @@ func TestHandleProxy_Errors(t *testing.T) {
+ 	}
+ 	for _, tc := range cases {
+ 		t.Run(tc.name, func(t *testing.T) {
+-			fn, err := handleProxy(context.Background(), nil, tc.conn, tc.dialer, tc.connId, tc.protocolCtx, nil)
++			fn, err := handleProxy(nil, context.Background(), nil, tc.conn, tc.dialer, tc.connId, tc.protocolCtx, nil)
+ 			if tc.wantError {
+ 				assert.Error(t, err)
+ 				assert.Nil(t, fn)
+@@ -166,7 +166,7 @@ func TestHandleTcpProxyV1(t *testing.T) {
+ 	conn := websocket.NetConn(ctx, proxyConn, websocket.MessageBinary)
+ 
+ 	go func() {
+-		fn, err := handleProxy(ctx, nil, conn, tDial, resp.GetConnectionId(), resp.GetProtocolContext(), nil)
++		fn, err := handleProxy(nil, ctx, nil, conn, tDial, resp.GetConnectionId(), resp.GetProtocolContext(), nil)
+ 		t.Cleanup(func() {
+ 			// Use of the t.Cleanup is so we can check the state of the returned
+ 			// error since it isn't valid to call `t.FailNow()` from a goroutine.

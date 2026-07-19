@@ -1,0 +1,337 @@
+diff --git a/internal/cmd/base/initial_resources.go b/internal/cmd/base/initial_resources.go
+index e32f27611..38218c293 100644
+--- a/internal/cmd/base/initial_resources.go
++++ b/internal/cmd/base/initial_resources.go
+@@ -478,7 +478,7 @@ func (b *Server) CreateInitialTarget(ctx context.Context) (target.Target, error)
+ 		}
+ 	}()
+ 
+-	targetRepo, err := target.NewRepository(rw, rw, kmsCache)
++	targetRepo, err := target.NewRepository(ctx, rw, rw, kmsCache)
+ 	if err != nil {
+ 		return nil, fmt.Errorf("error creating target repository: %w", err)
+ 	}
+diff --git a/internal/daemon/cluster/handlers/worker_service.go b/internal/daemon/cluster/handlers/worker_service.go
+index 50fc98af8..25ae5104b 100644
+--- a/internal/daemon/cluster/handlers/worker_service.go
++++ b/internal/daemon/cluster/handlers/worker_service.go
+@@ -160,7 +160,7 @@ func (ws *workerServiceServer) Status(ctx context.Context, req *pbs.StatusReques
+ 		}
+ 	}
+ 
+-	sessRepo, err := ws.sessionRepoFn()
++	sessRepo, err := ws.sessionRepoFn(ctx)
+ 	if err != nil {
+ 		event.WriteError(ctx, op, err, event.WithInfoMsg("error getting sessions repo"))
+ 		return &pbs.StatusResponse{}, status.Errorf(codes.Internal, "Error acquiring repo to query session status: %v", err)
+@@ -240,7 +240,7 @@ func (ws *workerServiceServer) ListHcpbWorkers(ctx context.Context, req *pbs.Lis
+ func (ws *workerServiceServer) LookupSession(ctx context.Context, req *pbs.LookupSessionRequest) (*pbs.LookupSessionResponse, error) {
+ 	const op = "workers.(workerServiceServer).LookupSession"
+ 
+-	sessRepo, err := ws.sessionRepoFn()
++	sessRepo, err := ws.sessionRepoFn(ctx)
+ 	if err != nil {
+ 		return nil, status.Errorf(codes.Internal, "Error getting session repo: %v", err)
+ 	}
+@@ -353,7 +353,7 @@ func (ws *workerServiceServer) LookupSession(ctx context.Context, req *pbs.Looku
+ func (ws *workerServiceServer) CancelSession(ctx context.Context, req *pbs.CancelSessionRequest) (*pbs.CancelSessionResponse, error) {
+ 	const op = "workers.(workerServiceServer).CancelSession"
+ 
+-	sessRepo, err := ws.sessionRepoFn()
++	sessRepo, err := ws.sessionRepoFn(ctx)
+ 	if err != nil {
+ 		return nil, status.Errorf(codes.Internal, "error getting session repo: %v", err)
+ 	}
+@@ -376,7 +376,7 @@ func (ws *workerServiceServer) CancelSession(ctx context.Context, req *pbs.Cance
+ func (ws *workerServiceServer) ActivateSession(ctx context.Context, req *pbs.ActivateSessionRequest) (*pbs.ActivateSessionResponse, error) {
+ 	const op = "workers.(workerServiceServer).ActivateSession"
+ 
+-	sessRepo, err := ws.sessionRepoFn()
++	sessRepo, err := ws.sessionRepoFn(ctx)
+ 	if err != nil {
+ 		return nil, status.Errorf(codes.Internal, "error getting session repo: %v", err)
+ 	}
+@@ -404,7 +404,7 @@ func (ws *workerServiceServer) AuthorizeConnection(ctx context.Context, req *pbs
+ 		return nil, status.Errorf(codes.Internal, "error getting session repo: %v", err)
+ 	}
+ 
+-	sessionRepo, err := ws.sessionRepoFn()
++	sessionRepo, err := ws.sessionRepoFn(ctx)
+ 	if err != nil {
+ 		return nil, status.Errorf(codes.Internal, "error getting session repo: %v", err)
+ 	}
+@@ -495,7 +495,7 @@ func (ws *workerServiceServer) CloseConnection(ctx context.Context, req *pbs.Clo
+ 		return nil, status.Errorf(codes.Internal, "error getting connection repo: %v", err)
+ 	}
+ 
+-	sessRepo, err := ws.sessionRepoFn()
++	sessRepo, err := ws.sessionRepoFn(ctx)
+ 	if err != nil {
+ 		return nil, status.Errorf(codes.Internal, "error getting session repo: %v", err)
+ 	}
+diff --git a/internal/daemon/controller/controller.go b/internal/daemon/controller/controller.go
+index b4427bcb8..85d640a89 100644
+--- a/internal/daemon/controller/controller.go
++++ b/internal/daemon/controller/controller.go
+@@ -333,11 +333,11 @@ func New(ctx context.Context, conf *Config) (*Controller, error) {
+ 	c.PasswordAuthRepoFn = func() (*password.Repository, error) {
+ 		return password.NewRepository(dbase, dbase, c.kms)
+ 	}
+-	c.TargetRepoFn = func(o ...target.Option) (*target.Repository, error) {
+-		return target.NewRepository(dbase, dbase, c.kms, o...)
++	c.TargetRepoFn = func(ctx context.Context, opts ...target.Option) (*target.Repository, error) {
++		return target.NewRepository(ctx, dbase, dbase, c.kms, opts...)
+ 	}
+-	c.SessionRepoFn = func(opt ...session.Option) (*session.Repository, error) {
+-		return session.NewRepository(ctx, dbase, dbase, c.kms, opt...)
++	c.SessionRepoFn = func(ctx context.Context, opts ...session.Option) (*session.Repository, error) {
++		return session.NewRepository(ctx, dbase, dbase, c.kms, opts...)
+ 	}
+ 	c.ConnectionRepoFn = func() (*session.ConnectionRepository, error) {
+ 		return session.NewConnectionRepository(ctx, dbase, dbase, c.kms)
+diff --git a/internal/daemon/controller/handlers/sessions/session_service.go b/internal/daemon/controller/handlers/sessions/session_service.go
+index 9a7375058..f9e650b54 100644
+--- a/internal/daemon/controller/handlers/sessions/session_service.go
++++ b/internal/daemon/controller/handlers/sessions/session_service.go
+@@ -150,7 +150,7 @@ func (s Service) ListSessions(ctx context.Context, req *pbs.ListSessionsRequest)
+ 
+ 	listPerms := authResults.ACL().ListPermissions(scopeIds, resource.Session, IdActions)
+ 
+-	repo, err := s.repoFn(session.WithPermissions(&perms.UserPermissions{
++	repo, err := s.repoFn(ctx,session.WithPermissions(&perms.UserPermissions{
+ 		UserId:      authResults.UserId,
+ 		Permissions: listPerms,
+ 	}))
+@@ -277,7 +277,7 @@ func (s Service) CancelSession(ctx context.Context, req *pbs.CancelSessionReques
+ }
+ 
+ func (s Service) getFromRepo(ctx context.Context, id string) (*session.Session, error) {
+-	repo, err := s.repoFn()
++	repo, err := s.repoFn(ctx,)
+ 	if err != nil {
+ 		return nil, err
+ 	}
+@@ -296,7 +296,7 @@ func (s Service) getFromRepo(ctx context.Context, id string) (*session.Session,
+ 
+ func (s Service) cancelInRepo(ctx context.Context, id string, version uint32) (*session.Session, error) {
+ 	const op = "sessions.(Service).cancelInRepo"
+-	repo, err := s.repoFn()
++	repo, err := s.repoFn(ctx,)
+ 	if err != nil {
+ 		return nil, err
+ 	}
+@@ -330,7 +330,7 @@ func (s Service) authResult(ctx context.Context, id string, a action.Type) auth.
+ 			return res
+ 		}
+ 	case action.Read, action.ReadSelf, action.Cancel, action.CancelSelf:
+-		repo, err := s.repoFn()
++		repo, err := s.repoFn(ctx,)
+ 		if err != nil {
+ 			res.Error = err
+ 			return res
+diff --git a/internal/daemon/controller/handlers/targets/target_service.go b/internal/daemon/controller/handlers/targets/target_service.go
+index f2b603e83..ecec8ebe5 100644
+--- a/internal/daemon/controller/handlers/targets/target_service.go
++++ b/internal/daemon/controller/handlers/targets/target_service.go
+@@ -783,7 +783,7 @@ func (s Service) AuthorizeSession(ctx context.Context, req *pbs.AuthorizeSession
+ 	}
+ 
+ 	// Get the target information
+-	repo, err := s.repoFn()
++	repo, err := s.repoFn(ctx)
+ 	if err != nil {
+ 		return nil, err
+ 	}
+@@ -799,7 +799,7 @@ func (s Service) AuthorizeSession(ctx context.Context, req *pbs.AuthorizeSession
+ 	}
+ 
+ 	// Instantiate some repos
+-	sessionRepo, err := s.sessionRepoFn()
++	sessionRepo, err := s.sessionRepoFn(ctx)
+ 	if err != nil {
+ 		return nil, err
+ 	}
+@@ -1093,7 +1093,7 @@ func (s Service) AuthorizeSession(ctx context.Context, req *pbs.AuthorizeSession
+ }
+ 
+ func (s Service) getFromRepo(ctx context.Context, id string) (target.Target, []target.HostSource, []target.CredentialSource, error) {
+-	repo, err := s.repoFn()
++	repo, err := s.repoFn(ctx)
+ 	if err != nil {
+ 		return nil, nil, nil, err
+ 	}
+@@ -1136,7 +1136,7 @@ func (s Service) createInRepo(ctx context.Context, item *pb.Target) (target.Targ
+ 	if err != nil {
+ 		return nil, nil, nil, handlers.ApiErrorWithCodeAndMessage(codes.Internal, "Unable to build target for creation: %v.", err)
+ 	}
+-	repo, err := s.repoFn()
++	repo, err := s.repoFn(ctx)
+ 	if err != nil {
+ 		return nil, nil, nil, err
+ 	}
+@@ -1196,7 +1196,7 @@ func (s Service) updateInRepo(ctx context.Context, scopeId, id string, mask []st
+ 	if len(dbMask) == 0 {
+ 		return nil, nil, nil, handlers.InvalidArgumentErrorf("No valid fields included in the update mask.", map[string]string{"update_mask": "No valid paths provided in the update mask."})
+ 	}
+-	repo, err := s.repoFn()
++	repo, err := s.repoFn(ctx)
+ 	if err != nil {
+ 		return nil, nil, nil, err
+ 	}
+@@ -1212,7 +1212,7 @@ func (s Service) updateInRepo(ctx context.Context, scopeId, id string, mask []st
+ 
+ func (s Service) deleteFromRepo(ctx context.Context, id string) (bool, error) {
+ 	const op = "targets.(Service).deleteFromRepo"
+-	repo, err := s.repoFn()
++	repo, err := s.repoFn(ctx)
+ 	if err != nil {
+ 		return false, err
+ 	}
+@@ -1227,7 +1227,7 @@ func (s Service) deleteFromRepo(ctx context.Context, id string) (bool, error) {
+ }
+ 
+ func (s Service) listFromRepo(ctx context.Context, perms []perms.Permission) ([]target.Target, error) {
+-	repo, err := s.repoFn(target.WithPermissions(perms))
++	repo, err := s.repoFn(ctx, target.WithPermissions(perms))
+ 	if err != nil {
+ 		return nil, err
+ 	}
+@@ -1239,7 +1239,7 @@ func (s Service) listFromRepo(ctx context.Context, perms []perms.Permission) ([]
+ }
+ 
+ func (s Service) addHostSourcesInRepo(ctx context.Context, targetId string, hostSourceIds []string, version uint32) (target.Target, []target.HostSource, []target.CredentialSource, error) {
+-	repo, err := s.repoFn()
++	repo, err := s.repoFn(ctx)
+ 	if err != nil {
+ 		return nil, nil, nil, err
+ 	}
+@@ -1256,7 +1256,7 @@ func (s Service) addHostSourcesInRepo(ctx context.Context, targetId string, host
+ 
+ func (s Service) setHostSourcesInRepo(ctx context.Context, targetId string, hostSourceIds []string, version uint32) (target.Target, []target.HostSource, []target.CredentialSource, error) {
+ 	const op = "targets.(Service).setSourcesInRepo"
+-	repo, err := s.repoFn()
++	repo, err := s.repoFn(ctx)
+ 	if err != nil {
+ 		return nil, nil, nil, err
+ 	}
+@@ -1278,7 +1278,7 @@ func (s Service) setHostSourcesInRepo(ctx context.Context, targetId string, host
+ 
+ func (s Service) removeHostSourcesInRepo(ctx context.Context, targetId string, hostSourceIds []string, version uint32) (target.Target, []target.HostSource, []target.CredentialSource, error) {
+ 	const op = "targets.(Service).removeHostSourcesInRepo"
+-	repo, err := s.repoFn()
++	repo, err := s.repoFn(ctx)
+ 	if err != nil {
+ 		return nil, nil, nil, err
+ 	}
+@@ -1298,7 +1298,7 @@ func (s Service) removeHostSourcesInRepo(ctx context.Context, targetId string, h
+ }
+ 
+ func (s Service) addCredentialSourcesInRepo(ctx context.Context, targetId string, brokeredIds []string, injectedAppIds []string, version uint32) (target.Target, []target.HostSource, []target.CredentialSource, error) {
+-	repo, err := s.repoFn()
++	repo, err := s.repoFn(ctx)
+ 	if err != nil {
+ 		return nil, nil, nil, err
+ 	}
+@@ -1324,7 +1324,7 @@ func (s Service) addCredentialSourcesInRepo(ctx context.Context, targetId string
+ 
+ func (s Service) setCredentialSourcesInRepo(ctx context.Context, targetId string, brokeredIds []string, injectedAppIds []string, version uint32) (target.Target, []target.HostSource, []target.CredentialSource, error) {
+ 	const op = "targets.(Service).setCredentialSourcesInRepo"
+-	repo, err := s.repoFn()
++	repo, err := s.repoFn(ctx)
+ 	if err != nil {
+ 		return nil, nil, nil, err
+ 	}
+@@ -1355,7 +1355,7 @@ func (s Service) setCredentialSourcesInRepo(ctx context.Context, targetId string
+ 
+ func (s Service) removeCredentialSourcesInRepo(ctx context.Context, targetId string, brokeredIds []string, injectedAppIds []string, version uint32) (target.Target, []target.HostSource, []target.CredentialSource, error) {
+ 	const op = "targets.(Service).removeCredentialSourcesInRepo"
+-	repo, err := s.repoFn()
++	repo, err := s.repoFn(ctx)
+ 	if err != nil {
+ 		return nil, nil, nil, err
+ 	}
+@@ -1406,7 +1406,7 @@ func (s Service) authResult(ctx context.Context, id string, a action.Type, looku
+ 			return res
+ 		}
+ 	default:
+-		repo, err := s.repoFn()
++		repo, err := s.repoFn(ctx)
+ 		if err != nil {
+ 			res.Error = err
+ 			return res
+diff --git a/internal/daemon/controller/tickers.go b/internal/daemon/controller/tickers.go
+index 5ccc02b61..72876ca8a 100644
+--- a/internal/daemon/controller/tickers.go
++++ b/internal/daemon/controller/tickers.go
+@@ -104,7 +104,7 @@ func (c *Controller) startTerminateCompletedSessionsTicking(cancelCtx context.Co
+ 			return
+ 
+ 		case <-timer.C:
+-			repo, err := c.SessionRepoFn()
++			repo, err := c.SessionRepoFn(cancelCtx)
+ 			if err != nil {
+ 				event.WriteError(cancelCtx, op, err, event.WithInfoMsg("error fetching repository for terminating completed sessions"))
+ 			} else {
+diff --git a/internal/session/repository.go b/internal/session/repository.go
+index c09ed4b33..fd9f2fc28 100644
+--- a/internal/session/repository.go
++++ b/internal/session/repository.go
+@@ -34,7 +34,7 @@ type Repository struct {
+ }
+ 
+ // RepositoryFactory is a function that creates a Repository.
+-type RepositoryFactory func(opt ...Option) (*Repository, error)
++type RepositoryFactory func(ctx context.Context, opt ...Option) (*Repository, error)
+ 
+ // NewRepository creates a new session Repository. Supports the options: WithLimit
+ // which sets a default limit on results returned by repo operations.
+diff --git a/internal/session/testing.go b/internal/session/testing.go
+index 65b4dc3a2..09857b634 100644
+--- a/internal/session/testing.go
++++ b/internal/session/testing.go
+@@ -144,7 +144,7 @@ func TestSessionParams(t testing.TB, conn *db.DB, wrapper wrapping.Wrapper, iamR
+ 	tcpTarget := tcp.TestTarget(ctx, t, conn, proj.PublicId, "test target")
+ 
+ 	kms := kms.TestKms(t, conn, wrapper)
+-	targetRepo, err := target.NewRepository(rw, rw, kms)
++	targetRepo, err := target.NewRepository(ctx, rw, rw, kms)
+ 	require.NoError(err)
+ 	_, _, _, err = targetRepo.AddTargetHostSources(ctx, tcpTarget.GetPublicId(), tcpTarget.GetVersion(), []string{sets[0].PublicId})
+ 	require.NoError(err)
+diff --git a/internal/target/repository.go b/internal/target/repository.go
+index 7ec5d1b2d..129406b19 100644
+--- a/internal/target/repository.go
++++ b/internal/target/repository.go
+@@ -20,7 +20,7 @@ import (
+ 
+ // RepositoryFactory enables `target.Repository` object instantiation,
+ // and is used by the various service packages/controller object to do so.
+-type RepositoryFactory func(...Option) (*Repository, error)
++type RepositoryFactory func(ctx context.Context, opt ...Option) (*Repository, error)
+ 
+ // Cloneable provides a cloning interface
+ type Cloneable interface {
+@@ -48,16 +48,19 @@ type Repository struct {
+ // - WithLimit: sets a limit on the number of results returned by various repo operations.
+ // - WithPermissions: defines the permissions the user has to perform different
+ // actions and access resources within the created repo object.
+-func NewRepository(r db.Reader, w db.Writer, kms *kms.Kms, opt ...Option) (*Repository, error) {
++func NewRepository(ctx context.Context, r db.Reader, w db.Writer, kms *kms.Kms, opt ...Option) (*Repository, error) {
+ 	const op = "target.NewRepository"
++	if ctx == nil {
++		return nil, errors.NewDeprecated(errors.InvalidParameter, op, "nil context")
++	}
+ 	if r == nil {
+-		return nil, errors.NewDeprecated(errors.InvalidParameter, op, "nil reader")
++		return nil, errors.New(ctx, errors.InvalidParameter, op, "nil reader")
+ 	}
+ 	if w == nil {
+-		return nil, errors.NewDeprecated(errors.InvalidParameter, op, "nil writer")
++		return nil, errors.New(ctx, errors.InvalidParameter, op, "nil writer")
+ 	}
+ 	if kms == nil {
+-		return nil, errors.NewDeprecated(errors.InvalidParameter, op, "nil kms")
++		return nil, errors.New(ctx, errors.InvalidParameter, op, "nil kms")
+ 	}
+ 
+ 	opts := GetOpts(opt...)

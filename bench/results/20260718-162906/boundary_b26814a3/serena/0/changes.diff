@@ -1,0 +1,133 @@
+diff --git a/internal/daemon/controller/auth/auth.go b/internal/daemon/controller/auth/auth.go
+index 7fc598d60..33ca21ee9 100644
+--- a/internal/daemon/controller/auth/auth.go
++++ b/internal/daemon/controller/auth/auth.go
+@@ -1,6 +1,21 @@
+ package auth
+ 
+ import (
++	"github.com/hashicorp/boundary/api/recovery"
++	"github.com/hashicorp/boundary/globals"
++	"github.com/hashicorp/boundary/internal/auth"
++	"github.com/hashicorp/boundary/internal/auth/oidc"
++	"github.com/hashicorp/boundary/internal/auth/password"
++	"github.com/hashicorp/boundary/internal/daemon/controller/common"
++	"github.com/hashicorp/boundary/internal/daemon/controller/handlers"
++	"github.com/hashicorp/boundary/internal/errors"
++	authpb "github.com/hashicorp/boundary/internal/gen/controller/auth"
++	"github.com/hashicorp/boundary/internal/gen/controller/tokens"
++	"github.com/hashicorp/boundary/internal/iam"
++	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/observability/event"
++	"github.com/hashicorp/boundary/internal/requests"
++	"github.com/hashicorp/boundary/internal/server"
+ 	"context"
+ 	stderrors "errors"
+ 	"fmt"
+@@ -21,8 +36,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/iam"
+ 	"github.com/hashicorp/boundary/internal/kms"
+ 	"github.com/hashicorp/boundary/internal/observability/event"
+-	"github.com/hashicorp/boundary/internal/perms"
+-	"github.com/hashicorp/boundary/internal/requests"
++		"github.com/hashicorp/boundary/internal/requests"
+ 	"github.com/hashicorp/boundary/internal/server"
+ 	"github.com/hashicorp/boundary/internal/types/action"
+ 	"github.com/hashicorp/boundary/internal/types/resource"
+@@ -855,7 +869,7 @@ func (r *VerifyResults) ScopesAuthorizedForList(ctx context.Context, rootScopeId
+ 			// ordering coming back isn't in parent-first ordering our map
+ 			// lookup might fail.
+ 			deferredScopes = append(deferredScopes, scp)
+-		case len(aSet) == 1 || r.UserId == perms.RecoveryUserId:
++		case len(aSet) == 1 || r.UserId == globals.RecoveryUserId:
+ 			if aSet[0] != action.List {
+ 				return nil, errors.New(ctx, errors.Internal, op, "unexpected action in set")
+ 			}
+diff --git a/internal/daemon/controller/auth/testing.go b/internal/daemon/controller/auth/testing.go
+index 101a618c9..333bdaef1 100644
+--- a/internal/daemon/controller/auth/testing.go
++++ b/internal/daemon/controller/auth/testing.go
+@@ -5,7 +5,7 @@ import (
+ 
+ 	"github.com/hashicorp/boundary/internal/daemon/controller/common"
+ 	authpb "github.com/hashicorp/boundary/internal/gen/controller/auth"
+-	"github.com/hashicorp/boundary/internal/perms"
++	""github.com/hashicorp/boundary/globals""
+ 	"github.com/hashicorp/boundary/internal/requests"
+ )
+ 
+@@ -21,7 +21,7 @@ func DisabledAuthTestContext(iamRepoFn common.IamRepoFactory, scopeId string, op
+ 	}
+ 	reqInfo.UserIdOverride = opts.withUserId
+ 	if reqInfo.UserIdOverride == "" {
+-		reqInfo.UserIdOverride = perms.AnyAuthenticatedUserId
++		reqInfo.UserIdOverride = globals.AnyAuthenticatedUserId
+ 	}
+ 	requestContext := context.WithValue(context.Background(), requests.ContextRequestInformationKey, &requests.RequestContext{})
+ 	return NewVerifierContext(requestContext, iamRepoFn, nil, nil, opts.withKms, &reqInfo)
+diff --git a/internal/iam/repository_scope.go b/internal/iam/repository_scope.go
+index a6b2d734b..943758fa0 100644
+--- a/internal/iam/repository_scope.go
++++ b/internal/iam/repository_scope.go
+@@ -10,7 +10,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/errors"
+ 	"github.com/hashicorp/boundary/internal/kms"
+ 	"github.com/hashicorp/boundary/internal/oplog"
+-	"github.com/hashicorp/boundary/internal/perms"
++	"github.com/hashicorp/boundary/globals"
+ 	"github.com/hashicorp/boundary/internal/types/resource"
+ 	"github.com/hashicorp/boundary/internal/types/scope"
+ 	"github.com/hashicorp/go-dbw"
+@@ -86,9 +86,9 @@ func (r *Repository) CreateScope(ctx context.Context, s *Scope, userId string, o
+ 	var adminRoleRaw any
+ 	switch {
+ 	case userId == "",
+-		userId == perms.AnonymousUserId,
+-		userId == perms.AnyAuthenticatedUserId,
+-		userId == perms.RecoveryUserId,
++			userId == globals.AnonymousUserId,
++		userId == globals.AnyAuthenticatedUserId,
++			userId == globals.RecoveryUserId,
+ 		opts.withSkipAdminRoleCreation:
+ 		// TODO: Cause a log entry. The repo doesn't have a logger right now,
+ 		// and ideally we will be using context to pass around log info scoped
+@@ -338,7 +338,7 @@ func (r *Repository) CreateScope(ctx context.Context, s *Scope, userId string, o
+ 					principals := []any{}
+ 					userId := "u_anon"
+ 					if s.Type == scope.Project.String() {
+-						userId = perms.AnyAuthenticatedUserId
++						userId = "u_auth"
+ 					}
+ 					rolePrincipal, err := NewUserRole(defaultRolePublicId, userId)
+ 					if err != nil {
+diff --git a/internal/perms/acl_test.go b/internal/perms/acl_test.go
+index d3e54612f..69722c948 100644
+--- a/internal/perms/acl_test.go
++++ b/internal/perms/acl_test.go
+@@ -5,7 +5,7 @@ import (
+ 	"fmt"
+ 	"testing"
+ 
+-	"github.com/hashicorp/boundary/internal/intglobals"
++	""github.com/hashicorp/boundary/globals""
+ 	"github.com/hashicorp/boundary/internal/types/action"
+ 	"github.com/hashicorp/boundary/internal/types/resource"
+ 	"github.com/hashicorp/boundary/internal/types/scope"
+@@ -723,7 +723,7 @@ func TestACL_ListPermissions(t *testing.T) {
+ 		},
+ 		{
+ 			name:         "Allow recovery user full access to sessions",
+-			userId:       RecoveryUserId,
++			userId:       globals.RecoveryUserId,
+ 			scopes:       map[string]*scopes.ScopeInfo{"o_1": nil, "o_2": nil},
+ 			resourceType: resource.Session,
+ 			actionSet:    action.ActionSet{action.List, action.Read, action.Create, action.Delete},
+@@ -748,7 +748,7 @@ func TestACL_ListPermissions(t *testing.T) {
+ 		},
+ 		{
+ 			name:         "Allow recovery user full access to targets",
+-			userId:       RecoveryUserId,
++			userId:       globals.RecoveryUserId,
+ 			scopes:       map[string]*scopes.ScopeInfo{"o_1": nil, "o_2": nil},
+ 			resourceType: resource.Target,
+ 			actionSet:    action.ActionSet{action.List, action.Read, action.Create, action.Delete},

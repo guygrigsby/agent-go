@@ -1,0 +1,175 @@
+diff --git a/internal/daemon/controller/rate_limiter_test.go b/internal/daemon/controller/rate_limiter_test.go
+index 704ac3976..dbea39926 100644
+--- a/internal/daemon/controller/rate_limiter_test.go
++++ b/internal/daemon/controller/rate_limiter_test.go
+@@ -60,14 +60,9 @@ func Test_newRateLimiterConfig(t *testing.T) {
+ 		{
+ 			"defaults",
+ 			nil,
+-			ratelimit.DefaultLimiterMaxEntries(),
++			ratelimit.DefaultLimiterMaxQuotas(),
+ 			false,
+-			&rateLimiterConfig{
+-				maxSize:  296148,
+-				configs:  nil,
+-				disabled: false,
+-				limits:   defaultLimits,
+-			},
++		},
+ 			nil,
+ 		},
+ 		{
+@@ -216,7 +211,7 @@ func TestControllerReloadRateLimiter(t *testing.T) {
+ 			func() *Controller {
+ 				conf := &config.Config{
+ 					Controller: &config.Controller{
+-						ApiRateLimiterMaxEntries: ratelimit.DefaultLimiterMaxEntries(),
++						ApiRateLimiterMaxQuotas: ratelimit.DefaultLimiterMaxQuotas(),
+ 					},
+ 				}
+ 				c := &Controller{
+@@ -252,7 +247,7 @@ func TestControllerReloadRateLimiter(t *testing.T) {
+ 			func() *Controller {
+ 				conf := &config.Config{
+ 					Controller: &config.Controller{
+-						ApiRateLimiterMaxEntries: ratelimit.DefaultLimiterMaxEntries(),
++						ApiRateLimiterMaxQuotas: ratelimit.DefaultLimiterMaxQuotas(),
+ 					},
+ 				}
+ 				c := &Controller{
+@@ -278,7 +273,7 @@ func TestControllerReloadRateLimiter(t *testing.T) {
+ 			func() *Controller {
+ 				conf := &config.Config{
+ 					Controller: &config.Controller{
+-						ApiRateLimiterMaxEntries: ratelimit.DefaultLimiterMaxEntries(),
++						ApiRateLimiterMaxQuotas: ratelimit.DefaultLimiterMaxQuotas(),
+ 					},
+ 				}
+ 				c := &Controller{
+@@ -330,7 +325,7 @@ func TestControllerReloadRateLimiter(t *testing.T) {
+ 			func() *Controller {
+ 				conf := &config.Config{
+ 					Controller: &config.Controller{
+-						ApiRateLimiterMaxEntries: ratelimit.DefaultLimiterMaxEntries(),
++						ApiRateLimiterMaxQuotas: ratelimit.DefaultLimiterMaxQuotas(),
+ 					},
+ 				}
+ 				c := &Controller{
+@@ -367,7 +362,7 @@ func TestControllerReloadRateLimiter(t *testing.T) {
+ 			func() *Controller {
+ 				conf := &config.Config{
+ 					Controller: &config.Controller{
+-						ApiRateLimiterMaxEntries: ratelimit.DefaultLimiterMaxEntries(),
++						ApiRateLimiterMaxQuotas: ratelimit.DefaultLimiterMaxQuotas(),
+ 					},
+ 				}
+ 				c := &Controller{
+@@ -403,7 +398,7 @@ func TestControllerReloadRateLimiter(t *testing.T) {
+ 			func() *Controller {
+ 				conf := &config.Config{
+ 					Controller: &config.Controller{
+-						ApiRateLimiterMaxEntries: ratelimit.DefaultLimiterMaxEntries(),
++						ApiRateLimiterMaxQuotas: ratelimit.DefaultLimiterMaxQuotas(),
+ 					},
+ 				}
+ 				c := &Controller{
+@@ -429,7 +424,7 @@ func TestControllerReloadRateLimiter(t *testing.T) {
+ 			func() *Controller {
+ 				conf := &config.Config{
+ 					Controller: &config.Controller{
+-						ApiRateLimiterMaxEntries: ratelimit.DefaultLimiterMaxEntries(),
++						ApiRateLimiterMaxQuotas: ratelimit.DefaultLimiterMaxQuotas(),
+ 					},
+ 				}
+ 				c := &Controller{
+@@ -453,7 +448,7 @@ func TestControllerReloadRateLimiter(t *testing.T) {
+ 			func() *Controller {
+ 				conf := &config.Config{
+ 					Controller: &config.Controller{
+-						ApiRateLimiterMaxEntries: ratelimit.DefaultLimiterMaxEntries(),
++						ApiRateLimiterMaxQuotas: ratelimit.DefaultLimiterMaxQuotas(),
+ 					},
+ 				}
+ 				c := &Controller{
+diff --git a/internal/daemon/controller/testing.go b/internal/daemon/controller/testing.go
+index ac3bb7d22..b0fe41379 100644
+--- a/internal/daemon/controller/testing.go
++++ b/internal/daemon/controller/testing.go
+@@ -657,7 +657,7 @@ func TestControllerConfig(t testing.TB, ctx context.Context, tc *TestController,
+ 		}
+ 	}
+ 	opts.Config.Controller.Scheduler.JobRunIntervalDuration = opts.SchedulerRunJobInterval
+-	opts.Config.Controller.ApiRateLimiterMaxEntries = ratelimit.DefaultLimiterMaxEntries()
++	opts.Config.Controller.ApiRateLimiterMaxEntries = ratelimit.DefaultLimiterMaxQuotas()
+ 
+ 	if opts.EnableEventing {
+ 		opts.Config.Eventing = &event.EventerConfig{
+diff --git a/internal/ratelimit/config.go b/internal/ratelimit/config.go
+index 9162d5c2f..f7d356eaf 100644
+--- a/internal/ratelimit/config.go
++++ b/internal/ratelimit/config.go
+@@ -50,17 +50,23 @@ const (
+ 	DefaultListPeriod                = time.Second * 30
+ )
+ 
+-// defaultLimiterMaxEntries is the default maximum number of quotas that
++// defaultLimiterMaxQuotas is the default maximum number of quotas that
+ // can be tracked by the rate limiter.
+ // This is determined at initialization time based on the number of endpoints.
+-var defaultLimiterMaxEntries int
++var defaultLimiterMaxQuotas int
+ 
+-var initDefaultLimiterMaxEntries sync.Once
++var initDefaultLimiterMaxQuotas sync.Once
+ 
+-// DefaultLimiterMaxEntries returns the default maximum number of quotas that
+-// can be tracked by the rate limiter.
++// DefaultLimiterMaxEntries is the default maximum number of quotas that
++// can be tracked by the rate limiter. Deprecated, use DefaultLimiterMaxQuotas instead.
+ func DefaultLimiterMaxEntries() int {
+-	initDefaultLimiterMaxEntries.Do(func() {
++	return DefaultLimiterMaxQuotas()
++}
++
++// DefaultLimiterMaxQuotas returns the default maximum number of quotas that
++// can be tracked by the rate limiter.
++func DefaultLimiterMaxQuotas() int {
++	initDefaultLimiterMaxQuotas.Do(func() {
+ 		// Calculate the default max number of quotas that the rate limiter can
+ 		// store. This is calculated based on the number of endpoints and a
+ 		// static number of quotas per endpoint. This seems like a reasonable
+@@ -86,11 +92,11 @@ func DefaultLimiterMaxEntries() int {
+ 			endpointCount += len(actions)
+ 		}
+ 
+-		defaultLimiterMaxEntries = (endpointCount * quotasPerInTotal) +
++		defaultLimiterMaxQuotas = (endpointCount * quotasPerInTotal) +
+ 			(endpointCount * quotasPerAuthToken) +
+ 			(endpointCount * quotasPerIpAddress)
+ 	})
+-	return defaultLimiterMaxEntries
++	return defaultLimiterMaxQuotas
+ }
+ 
+ // Config is used to configure rate limits. Each config is used to specify
+diff --git a/internal/ratelimit/config_test.go b/internal/ratelimit/config_test.go
+index 54c4f20b3..3493a40f0 100644
+--- a/internal/ratelimit/config_test.go
++++ b/internal/ratelimit/config_test.go
+@@ -779,7 +779,7 @@ func TestConfigsLimits(t *testing.T) {
+ 	}
+ }
+ 
+-func TestDefaulLimiterMaxEntries(t *testing.T) {
++func TestDefaulLimiterMaxQuotas(t *testing.T) {
+ 	var want int
+ 
+ 	var endpointCount int
+@@ -795,6 +795,6 @@ func TestDefaulLimiterMaxEntries(t *testing.T) {
+ 	}
+ 	want = endpointCount*2000 + endpointCount
+ 
+-	got := DefaultLimiterMaxEntries()
++	got := DefaultLimiterMaxQuotas()
+ 	assert.Equal(t, want, got)
+ }

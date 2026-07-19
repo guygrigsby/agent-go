@@ -1,0 +1,21 @@
+diff --git a/helper/testhelpers/seal/sealhelper.go b/helper/testhelpers/seal/sealhelper.go
+index 458056b630..58c33fed71 100644
+--- a/helper/testhelpers/seal/sealhelper.go
++++ b/helper/testhelpers/seal/sealhelper.go
+@@ -68,14 +68,14 @@ func (tss *TransitSealServer) MakeSeal(t testing.T, key string) (vault.Seal, err
+ 		"key_name":    key,
+ 		"tls_ca_cert": tss.CACertPEMFile,
+ 	}
+-	transitSealWrapper, _, err := configutil.GetTransitKMSFunc(&configutil.KMS{Config: wrapperConfig})
++	transitSealInfo, _, err := configutil.GetTransitKMSFunc(&configutil.KMS{Config: wrapperConfig})
+ 	if err != nil {
+ 		t.Fatalf("error setting wrapper config: %v", err)
+ 	}
+ 
+ 	access, err := seal.NewAccessFromSealInfo(tss.Logger, 1, true, []seal.SealInfo{
+ 		{
+-			Wrapper:  transitSealWrapper,
++			Wrapper:  transitSealInfo,
+ 			Priority: 1,
+ 			Name:     "transit",
+ 		},

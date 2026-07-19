@@ -1,0 +1,37 @@
+diff --git a/internal/credential/vault/testing.go b/internal/credential/vault/testing.go
+index 3a17a9a0f..423f73ae7 100644
+--- a/internal/credential/vault/testing.go
++++ b/internal/credential/vault/testing.go
+@@ -620,12 +620,12 @@ func TestRenewableToken(b bool) TestOption {
+ 	}
+ }
+ 
+-func (v *TestVaultServer) client(t testing.TB) *client {
++func (v *TestVaultServer) client(ctx context.Context, t testing.TB) *client {
+ 	t.Helper()
+-	return v.clientUsingToken(t, v.RootToken)
++	return v.clientUsingToken(ctx, t, v.RootToken)
+ }
+ 
+-func (v *TestVaultServer) clientUsingToken(t testing.TB, token string) *client {
++func (v *TestVaultServer) clientUsingToken(ctx context.Context, t testing.TB, token string) *client {
+ 	t.Helper()
+ 	require := require.New(t)
+ 	conf := &clientConfig{
+@@ -637,9 +637,14 @@ func (v *TestVaultServer) clientUsingToken(t testing.TB, token string) *client {
+ 	}
+ 
+ 	client, err := newClient(conf)
+-	require.NoError(err)
++	if err != nil {
++		t.Fatalf("failed to create client from config: %v", err)
++	}
+ 	require.NotNil(client)
+-	require.NoError(client.ping())
++	err = client.ping(ctx)
++	if err != nil {
++		t.Fatalf("failed to ping vault server: %v", err)
++	}
+ 	return client
+ }
+ 

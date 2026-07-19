@@ -1,0 +1,3 @@
+ M internal/cmd/config/config.go
+ M internal/cmd/config/config_load_test.go
+?? opencode.json

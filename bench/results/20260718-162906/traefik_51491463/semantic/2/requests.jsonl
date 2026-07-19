@@ -1,0 +1,14 @@
+{"ms":2018,"op":"refs","outcome":"ok","pkg":"github.com/traefik/traefik/v3/pkg/provider/docker","req_sha":"6882b4641729f188","sym":"Shared.extractLabels","ts":"2026-07-19T09:22:30.365112Z"}
+{"ms":3,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-19T09:22:32.388782Z"}
+{"ms":2145,"op":"rename","outcome":"rejected","pkg":"github.com/guygrigsby/traefik/tools/traefik","reason":"package not found","repairs":1,"req_sha":"b5d6a5734a0f8a19","sym":"extractLabels","ts":"2026-07-19T09:22:40.637286Z"}
+{"ms":17,"op":"query","outcome":"ok","req_sha":"6c967fa0813c87f4","sym":"extractLabels","ts":"2026-07-19T09:22:44.777368Z"}
+{"ms":3,"op":"query","outcome":"rejected","reason":"package not found","repairs":1,"req_sha":"25ccdb2ee059745a","sym":"Provider.extractLabels","ts":"2026-07-19T09:22:46.77408Z"}
+{"ms":4,"op":"rename","outcome":"rejected","pkg":"github.com/traefik/traefik/v3/pkg/provider/docker","reason":"symbol not found","repairs":3,"req_sha":"58a58fb1db48a6c8","sym":"extractLabels","ts":"2026-07-19T09:22:48.996689Z"}
+{"ms":82,"op":"rename","outcome":"accepted","pkg":"github.com/traefik/traefik/v3/pkg/provider/docker","req_sha":"603ec423fa298bef","sym":"DynConfBuilder.extractLabels","ts":"2026-07-19T09:22:51.716952Z"}
+{"ms":4,"op":"rename","outcome":"rejected","pkg":"github.com/traefik/traefik/v3/pkg/provider/docker","reason":"method or field not found","repairs":4,"req_sha":"658a7306d7ef7ce9","sym":"Provider.extractLabels","ts":"2026-07-19T09:22:53.738283Z"}
+{"ms":5,"op":"rename","outcome":"rejected","pkg":"github.com/traefik/traefik/v3/pkg/provider/docker","reason":"symbol already has that name","repairs":0,"req_sha":"5e2b3178b0a9d180","sym":"Shared.extractSwarmLabels","ts":"2026-07-19T09:22:55.643335Z"}
+{"ms":108598,"op":"test","outcome":"rejected","reason":"tests could not run","repairs":0,"req_sha":"12ef5d31bdb89522","ts":"2026-07-19T09:22:56.466375Z"}
+{"ms":51,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-19T09:24:45.065175Z"}
+{"ms":2213,"op":"refs","outcome":"rejected","pkg":"github.com/traefik/traefik/v3/pkg/provider/docker","reason":"method or field not found","repairs":4,"req_sha":"6882b4641729f188","sym":"Shared.extractLabels","ts":"2026-07-19T09:24:48.204118Z"}
+{"ms":20,"op":"refs","outcome":"ok","pkg":"github.com/traefik/traefik/v3/pkg/provider/docker","req_sha":"32f9c5b3be964d9a","sym":"Shared.extractSwarmLabels","ts":"2026-07-19T09:24:50.427267Z"}
+{"ms":5,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-19T09:24:50.453785Z"}
