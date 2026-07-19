@@ -89,6 +89,9 @@ func Run(ctx context.Context, c Client, tools Tools, defs []ToolDef, system, tas
 			return res, err
 		}
 		res.Steps++
+		if len(m.ToolCalls) == 0 && m.Content == "" {
+			m.ToolCalls = recoverToolCalls(m.Reasoning)
+		}
 		msgs = append(msgs, m)
 		record(m)
 		if len(m.ToolCalls) == 0 {
