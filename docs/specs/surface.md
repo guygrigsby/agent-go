@@ -28,7 +28,7 @@ live help catalog appears here, so shipped rows cannot drift. Statuses:
 | `rename` | shipped | capture-proof, atomic multi-rename |
 | `set_body` | shipped | |
 | `add_param` | shipped | inserts before a variadic tail (spread sites included); ceiling: func-as-value |
-| `upsert_decl` | shipped | manages imports; creates packages on demand |
+| `upsert_decl` | shipped | manages imports; creates packages on demand, including the first package of an empty module (module identity from go.mod); a first decl of `func main` names the package main; bare package names reject with the module-prefixed completion |
 | `delete_decl` | shipped | |
 | `set_doc` | shipped | |
 | `add_field` | shipped | |

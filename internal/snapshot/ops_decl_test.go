@@ -774,3 +774,81 @@ func TestPatchDeleteDeclTypeMigrationBatch(t *testing.T) {
 		t.Errorf("surviving caller lost: %v", err)
 	}
 }
+
+// An empty module is where authoring starts: upsert_decl must create the
+// first package when the workspace has zero loaded packages, resolving
+// the module from go.mod directly.
+func TestUpsertDeclIntoEmptyModule(t *testing.T) {
+	dir := t.TempDir()
+	os.WriteFile(filepath.Join(dir, "go.mod"), []byte("module scratch.local/kvd\n\ngo 1.24\n"), 0o644)
+	s := New(dir)
+	if _, err := s.UpsertDecl("scratch.local/kvd/kv", "func Get(k string) string { return k }"); err != nil {
+		t.Fatal(err)
+	}
+	b, err := os.ReadFile(filepath.Join(dir, "kv", "agent.go"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.HasPrefix(string(b), "package kv\n") {
+		t.Fatalf("created file:\n%s", b)
+	}
+	// The package exists now; the next decl takes the normal path.
+	if _, err := s.UpsertDecl("scratch.local/kvd/kv", "func Put(k string) string { return Get(k) }"); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestUpsertDeclEmptyModuleBareNameSuggestsModulePath(t *testing.T) {
+	dir := t.TempDir()
+	os.WriteFile(filepath.Join(dir, "go.mod"), []byte("module scratch.local/kvd\n\ngo 1.24\n"), 0o644)
+	s := New(dir)
+	_, err := s.UpsertDecl("kv", "func Get() {}")
+	rej, ok := err.(*Reject)
+	if !ok || rej.Reason != "package not found" {
+		t.Fatalf("got %v", err)
+	}
+	found := false
+	for _, c := range rej.DidYouMean {
+		if c == "scratch.local/kvd/kv" {
+			found = true
+		}
+	}
+	if !found {
+		t.Fatalf("did_you_mean = %v, want module-prefixed completion", rej.DidYouMean)
+	}
+}
+
+// A brand-new package whose first declaration is func main is a command;
+// the package clause must be main, not the directory name.
+func TestUpsertDeclFuncMainNamesPackageMain(t *testing.T) {
+	dir := t.TempDir()
+	os.WriteFile(filepath.Join(dir, "go.mod"), []byte("module scratch.local/kvd\n\ngo 1.24\n"), 0o644)
+	s := New(dir)
+	if _, err := s.UpsertDecl("scratch.local/kvd/cmd/kvd", "func main() {}"); err != nil {
+		t.Fatal(err)
+	}
+	b, err := os.ReadFile(filepath.Join(dir, "cmd", "kvd", "agent.go"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.HasPrefix(string(b), "package main\n") {
+		t.Fatalf("created file:\n%s", b)
+	}
+}
+
+func TestPatchUpsertDeclIntoEmptyModule(t *testing.T) {
+	dir := t.TempDir()
+	os.WriteFile(filepath.Join(dir, "go.mod"), []byte("module scratch.local/kvd\n\ngo 1.24\n"), 0o644)
+	s := New(dir)
+	res, err := s.Patch([]byte(`{"pkg":"scratch.local/kvd/kv",
+		"ops":[{"op":"upsert_decl","text":"func Get(k string) string { return k }"}]}`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if res["status"] != "accepted" {
+		t.Fatalf("got %v", res)
+	}
+	if _, err := os.Stat(filepath.Join(dir, "kv", "agent.go")); err != nil {
+		t.Fatal(err)
+	}
+}

@@ -156,3 +156,30 @@ func TestLoopStopsAfterConsecutiveEmptyMessages(t *testing.T) {
 		t.Fatalf("nudged forever: %d calls", client.calls)
 	}
 }
+
+type errClient struct{ err error }
+
+func (c *errClient) Complete(ctx context.Context, msgs []Message, defs []ToolDef) (Message, error) {
+	return Message{}, c.err
+}
+
+func TestLoopDeadlineMidCompletionStopsClean(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	client := &deadlineClient{cancel: cancel}
+	res, err := Run(ctx, client, &recordingTools{}, nil, "sys", "task", Config{MaxSteps: 5})
+	if err != nil {
+		t.Fatalf("wall cap must not surface as an error: %v", err)
+	}
+	if res.Stopped != "ctx" {
+		t.Fatalf("res = %+v", res)
+	}
+}
+
+// deadlineClient cancels the context during the completion, the shape a
+// wall-cap expiry takes mid HTTP request.
+type deadlineClient struct{ cancel context.CancelFunc }
+
+func (c *deadlineClient) Complete(ctx context.Context, msgs []Message, defs []ToolDef) (Message, error) {
+	c.cancel()
+	return Message{}, context.Canceled
+}

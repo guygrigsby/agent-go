@@ -91,22 +91,11 @@ func (upsertDeclOp) apply(ctx *patchCtx, raw json.RawMessage) *Reject {
 	if ctx.s.primary(pkg) == nil {
 		// Brand-new package: mirror upsertNewPackage (upsert.go) inside the
 		// patch via the same write-and-reload path a brand-new file takes.
-		s := ctx.s
-		if len(s.pkgs) == 0 || s.pkgs[0].Module == nil {
-			return &Reject{Reason: "package not found", Detail: pkg,
-				DidYouMean: s.suggestPackages(pkg)}
+		file, pkgName, rej := ctx.s.newPackageFile(pkg, a.Text)
+		if rej != nil {
+			return rej
 		}
-		mod := s.pkgs[0].Module
-		rel, ok := strings.CutPrefix(pkg, mod.Path+"/")
-		if !ok {
-			return &Reject{Reason: "package is outside the module",
-				Detail: pkg + " not under " + mod.Path}
-		}
-		file := filepath.Join(mod.Dir, rel, "agent.go")
-		if _, err := os.Stat(file); err == nil {
-			return &Reject{Reason: "package exists but did not load", Detail: pkg}
-		}
-		src := "package " + filepath.Base(rel) + "\n\n" + importBlock + strings.TrimSpace(a.Text) + "\n"
+		src := "package " + pkgName + "\n\n" + importBlock + strings.TrimSpace(a.Text) + "\n"
 		return createFileInPatch(ctx, pkg, file, src, sym)
 	}
 	testDecl := testFuncDecl(a.Text)

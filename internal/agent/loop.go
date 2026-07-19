@@ -86,6 +86,12 @@ func Run(ctx context.Context, c Client, tools Tools, defs []ToolDef, system, tas
 		}
 		m, err := c.Complete(ctx, msgs, defs)
 		if err != nil {
+			// A wall-cap expiry mid completion is a clean stop, not a
+			// failure; the transcript up to here is intact.
+			if ctx.Err() != nil {
+				res.Stopped = "ctx"
+				return res, nil
+			}
 			return res, err
 		}
 		res.Steps++

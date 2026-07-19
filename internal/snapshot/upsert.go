@@ -7,11 +7,65 @@ import (
 	"go/token"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 
+	"golang.org/x/mod/modfile"
 	"golang.org/x/tools/go/packages"
 	"golang.org/x/tools/imports"
 )
+
+// moduleInfo resolves the module identity even when the workspace has no
+// packages yet: an empty module being authored from scratch still has a
+// go.mod naming it.
+func (s *Snapshot) moduleInfo() (path, dir string, ok bool) {
+	if len(s.pkgs) > 0 && s.pkgs[0].Module != nil {
+		m := s.pkgs[0].Module
+		return m.Path, m.Dir, true
+	}
+	b, err := os.ReadFile(filepath.Join(s.dir, "go.mod"))
+	if err != nil {
+		return "", "", false
+	}
+	if p := modfile.ModulePath(b); p != "" {
+		return p, s.dir, true
+	}
+	return "", "", false
+}
+
+var mainFuncRe = regexp.MustCompile(`(?m)^func main\(`)
+
+// newPackageFile resolves where a not-yet-loaded package's first file
+// lands and what its package clause is. A bare name rejects with the
+// module-prefixed completion as did_you_mean; text declaring func main
+// names the package main (a first decl that is not main leaves a command
+// directory with a library clause; named ceiling, split the patch to put
+// main first).
+func (s *Snapshot) newPackageFile(pkgPath, text string) (file, pkgName string, rej *Reject) {
+	modPath, modDir, ok := s.moduleInfo()
+	if !ok {
+		return "", "", &Reject{Reason: "package not found", Detail: pkgPath,
+			DidYouMean: s.suggestPackages(pkgPath)}
+	}
+	rel, ok := strings.CutPrefix(pkgPath, modPath+"/")
+	if !ok {
+		if !strings.Contains(pkgPath, "/") {
+			return "", "", &Reject{Reason: "package not found", Detail: pkgPath,
+				DidYouMean: []string{modPath + "/" + pkgPath}}
+		}
+		return "", "", &Reject{Reason: "package is outside the module",
+			Detail: pkgPath + " not under " + modPath}
+	}
+	file = filepath.Join(modDir, rel, "agent.go")
+	if _, err := os.Stat(file); err == nil {
+		return "", "", &Reject{Reason: "package exists but did not load", Detail: pkgPath}
+	}
+	pkgName = filepath.Base(rel)
+	if mainFuncRe.MatchString(text) {
+		pkgName = "main"
+	}
+	return file, pkgName, nil
+}
 
 // upsertDeclEdit locates where text's declaration belongs in an
 // already-loaded pkgPath: an existing standalone declaration's range to
@@ -282,21 +336,12 @@ func (s *Snapshot) UpsertDecl(pkgPath, text string) (map[string]any, error) {
 // upsertNewPackage creates pkgPath under the module with the declaration as
 // its first file.
 func (s *Snapshot) upsertNewPackage(pkgPath, text, sym string, loadMS int64) (map[string]any, error) {
-	if len(s.pkgs) == 0 || s.pkgs[0].Module == nil {
-		return nil, &Reject{Reason: "package not found", Detail: pkgPath}
+	file, pkgName, rej := s.newPackageFile(pkgPath, text)
+	if rej != nil {
+		return nil, rej
 	}
-	mod := s.pkgs[0].Module
-	rel, ok := strings.CutPrefix(pkgPath, mod.Path+"/")
-	if !ok {
-		return nil, &Reject{Reason: "package is outside the module",
-			Detail: pkgPath + " not under " + mod.Path}
-	}
-	dir := filepath.Join(mod.Dir, rel)
-	file := filepath.Join(dir, "agent.go")
-	if _, err := os.Stat(file); err == nil {
-		return nil, &Reject{Reason: "package exists but did not load", Detail: pkgPath}
-	}
-	src := "package " + filepath.Base(rel) + "\n\n" + strings.TrimSpace(text) + "\n"
+	dir := filepath.Dir(file)
+	src := "package " + pkgName + "\n\n" + strings.TrimSpace(text) + "\n"
 	fixed, err := imports.Process(file, []byte(src), nil)
 	if err != nil {
 		return nil, &Reject{Reason: "declaration does not parse", Detail: err.Error()}
