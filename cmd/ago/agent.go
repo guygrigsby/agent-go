@@ -143,8 +143,10 @@ func runAgent(dir, task, profile, endpoint, model string, maxSteps int, cap time
 	if res.Final != "" {
 		fmt.Println(res.Final)
 	}
-	// Best-effort change summary; not every workspace is a git repo.
-	if out, err := exec.Command("git", "-C", dir, "diff", "--stat").Output(); err == nil && len(out) > 0 {
+	// Best-effort change summary; not every workspace is a git repo, and
+	// greenfield episodes are mostly untracked files, which diff --stat
+	// misses; status covers both.
+	if out, err := exec.Command("git", "-C", dir, "status", "--short").Output(); err == nil && len(out) > 0 {
 		fmt.Printf("\n%s", out)
 	}
 	fmt.Printf("transcript: %s\n", transcript.Name())
