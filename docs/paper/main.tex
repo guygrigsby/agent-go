@@ -33,15 +33,17 @@ diagnostics and paste-ready repairs (the corrected call, verbatim), and
 resending a rejected call unchanged escalates. An oracle replays each
 task's ground-truth commit through the protocol before any model
 attempts it, so a task enters the benchmark only once it is proven
-solvable; tasks are mined from real commits in traefik, vault,
-boundary, and cobra. Across \EpisodeCount{} recorded episodes, the
-semantic mode passes \SemanticPassRate{} versus \RawPassRate{} for raw
-file editing under identical prompts and budgets, and the gap widens as
-models shrink: a quantized 9B model passes 75\% of episodes through the
-protocol against 45\% raw, with raw at zero on five of eleven tasks the
-protocol completes. All code, per-episode evidence (transcripts,
-request logs, serving configurations), and analysis tooling are
-released.
+solvable; tasks are mined from real commits in traefik, vault, and
+boundary. The evaluation is a three-arm grid, raw file editing, LSP
+symbol addressing with advisory validation (Serena), and the protocol,
+run against a frozen engine so the benchmark cannot chase the tasks.
+% Frozen qwen round 20260718-162906; refresh when the grid completes.
+On the first frozen round, a quantized 9B model passes 41\% of episodes
+through the protocol against 32\% with symbol addressing alone and
+24\% raw; sampled on-disk states during editing fail to compile 86\% of
+the time in both text-editing arms and 2.5\% in the semantic arm. All
+code, per-episode evidence (transcripts, request logs, serving
+configurations), and analysis tooling are released.
 \end{abstract}
 
 \section{Introduction}
@@ -105,18 +107,46 @@ and the oracle transcripts double as a training corpus.
 
 \section{Benchmark}
 Same model, same harness, same prompts (token parity is enforced by
-test), same time cap. One arm edits files with shell tools; the other
-sees only the protocol. Scoring is a goal predicate plus a clean
-typecheck plus scoped tests, and the test gate is voided where a
-pristine worktree also fails it. Serving configurations are pinned per
-run: GLM-4.7-Flash (MoE) at UD-Q4\_K\_XL, roughly 20 GiB with a q8\_0
-K/V cache at 128k context; gpt-oss-20b at MXFP4, 11.28 GiB of weights
-before KV; Qwen3.5-9B at Q4\_K\_M, 5.28 GiB, deliberately not the
-larger UD quant because its 8 GB card also hosts an embedding server.
-Local serving is part of the experiment, constraints included.
-Every episode records its transcript, diff, score, token usage,
-failure kind, and the daemon's request log; the evidence is the
-contribution as much as the numbers.
+test), same time cap, three arms. Raw edits files with shell tools.
+Serena addresses symbols through the language server (a pinned
+revision of the Serena MCP server) but validation stays advisory:
+diagnostics are available on request and nothing blocks a broken write
+from landing. Semantic sees only the protocol. The middle arm is the
+ablation that separates the two variables the protocol bundles: symbol
+addressing and mandatory validation. Scoring is a goal predicate plus
+a clean typecheck plus scoped tests, and the test gate is voided where
+a pristine worktree also fails it. Serving configurations are pinned
+per run: GLM-4.7-Flash (MoE) at UD-Q4\_K\_XL, roughly 20 GiB with a
+q8\_0 K/V cache at 128k context; gpt-oss-20b at MXFP4, 11.28 GiB of
+weights before KV; Qwen3.5-9B at UD-Q4\_K\_XL, its card's embedding
+server evicted to fit the larger quant. Local serving is part of the
+experiment, constraints included. Every episode records its
+transcript, diff, score, token usage, failure kind, and the daemon's
+request log; the evidence is the contribution as much as the numbers.
+
+\subsection{Evaluation freeze}
+Every run before the freeze tag is development data: rejections became
+repairs and oracle failures became engine fixes, a loop that is a
+contribution but cannot also be the headline evidence. The engine is
+frozen at a tagged revision (\texttt{eval-freeze-1}); every episode
+records the engine revision it ran under, so the split is auditable.
+Headline tables come only from frozen-tag runs over the development
+set of 20 oracle-certified tasks. A held-out set mined from etcd,
+caddy, and hugo is extracted and certified only after the tag, with
+the frozen engine; a certification failure there is reported as a
+protocol ceiling, not fixed.
+
+\subsection{Invalid intermediate states}
+The mechanism claim is that validation before disk changes what a
+repository passes through, not just where an episode ends. A watcher
+samples each worktree during the agent's editing window: when the
+mtime fingerprint of the Go files changes and then holds still for one
+interval, the settled state gets a \texttt{go build ./...} verdict.
+The oracle runs as the control and measures the sampler itself. Raw
+and advisory arms pass through whatever the model writes; the semantic
+arm cannot land a declaration that does not typecheck, so its measured
+rate bounds the leakage of everything outside the protocol (host tool
+writes, dependency restore windows) rather than the protocol itself.
 
 \section{Results}
 \begin{table}[h]
@@ -129,11 +159,14 @@ episodes.}
 Semantic passed \SemanticPassCount{} episodes; raw passed
 \RawPassCount{}. The per-task table tells the sharper story: raw wins
 only where grep suffices, and goes to zero on the tasks that need
-whole-workspace consistency.
-TODO: repair-uptake analysis (the 9B model recovers through rejections
-it is offered no repairs for; the 30B-class model ignores repairs it
-is offered), ablation arm, floor-model section, the cfff8d42 case
-study (discovery-primitive gap found and fixed).
+whole-workspace consistency. On the frozen 9B round the arm ordering
+held throughout: semantic over serena over raw, so addressing helps
+and mandatory validation helps again on top of it.
+TODO: regenerate tables from the frozen grid when all three model
+rounds complete; repair-uptake analysis (the 9B model recovers through
+rejections it is offered no repairs for; the 30B-class model ignores
+repairs it is offered), floor-model section, the cfff8d42 case study
+(discovery-primitive gap found and fixed).
 
 \section{Limitations}
 One language. Contamination is held constant across arms but inflates
