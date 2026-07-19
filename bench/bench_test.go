@@ -826,9 +826,13 @@ func writeOpencodeConfig(b testing.TB, c config, wt, mode string) {
 		for _, t := range []string{"bash", "edit", "write", "patch", "read", "grep", "glob", "list", "webfetch"} {
 			tools[t] = false
 		}
+		// Headless: no dashboard browser tab, no GUI log window; an episode
+		// spawn must never steal focus from the machine running the round.
 		mcp["serena"] = map[string]any{"type": "local", "enabled": true,
 			"command": []string{"uvx", "--from", "git+https://github.com/oraios/serena@" + serenaRev,
-				"serena", "start-mcp-server", "--project", wt}}
+				"serena", "start-mcp-server", "--project", wt,
+				"--enable-web-dashboard", "false", "--open-web-dashboard", "false",
+				"--enable-gui-log-window", "false"}}
 		prompt += promptSerena
 		// Shell breaks the no-validation premise; the memory and onboarding
 		// suite burns turns on state that dies with the worktree.
