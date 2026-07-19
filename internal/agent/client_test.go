@@ -112,3 +112,34 @@ func TestClientGivesUpAfterMaxRetries(t *testing.T) {
 		t.Fatal("expected error after retries exhausted")
 	}
 }
+
+func TestClientDecodesReasoningContent(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte(`{"choices":[{"message":{"role":"assistant","content":"4",
+			"reasoning_content":"thinking about arithmetic"}}]}`))
+	}))
+	defer srv.Close()
+	c := NewClient(Options{Endpoint: srv.URL + "/v1", Model: "m"})
+	got, err := c.Complete(context.Background(), []Message{{Role: "user", Content: "2+2"}}, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got.Reasoning != "thinking about arithmetic" || got.Content != "4" {
+		t.Fatalf("got = %+v", got)
+	}
+	// Reasoning stays out of the wire format: it is transcript data, not
+	// something to feed back to the model.
+	var body map[string]any
+	srv2 := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		json.NewDecoder(r.Body).Decode(&body)
+		w.Write([]byte(`{"choices":[{"message":{"role":"assistant","content":"ok"}}]}`))
+	}))
+	defer srv2.Close()
+	c2 := NewClient(Options{Endpoint: srv2.URL + "/v1", Model: "m"})
+	if _, err := c2.Complete(context.Background(), []Message{got}, nil); err != nil {
+		t.Fatal(err)
+	}
+	if _, present := body["messages"].([]any)[0].(map[string]any)["reasoning_content"]; present {
+		t.Fatal("reasoning leaked into the wire")
+	}
+}

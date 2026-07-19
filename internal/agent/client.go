@@ -148,6 +148,7 @@ func decodeCompletion(resp *http.Response) (Message, error) {
 			Message struct {
 				Role      string  `json:"role"`
 				Content   *string `json:"content"`
+				Reasoning string  `json:"reasoning_content"`
 				ToolCalls []struct {
 					ID       string `json:"id"`
 					Function struct {
@@ -171,7 +172,7 @@ func decodeCompletion(resp *http.Response) (Message, error) {
 		return Message{}, fmt.Errorf("completion returned no choices")
 	}
 	cm := got.Choices[0].Message
-	m := Message{Role: cm.Role}
+	m := Message{Role: cm.Role, Reasoning: cm.Reasoning}
 	if cm.Content != nil {
 		m.Content = *cm.Content
 	}
