@@ -70,6 +70,7 @@ func Run(ctx context.Context, c Client, tools Tools, defs []ToolDef, system, tas
 			json.NewEncoder(cfg.Transcript).Encode(m)
 		}
 	}
+	empties := 0
 	msgs := []Message{{Role: "system", Content: system}, {Role: "user", Content: task}}
 	record(msgs[0])
 	record(msgs[1])
@@ -90,10 +91,25 @@ func Run(ctx context.Context, c Client, tools Tools, defs []ToolDef, system, tas
 		msgs = append(msgs, m)
 		record(m)
 		if len(m.ToolCalls) == 0 {
+			// Weak local models emit empty messages mid-task; an empty
+			// "final" is almost never a completion, so nudge before
+			// believing it. Two empties in a row means it has stalled.
+			if m.Content == "" {
+				empties++
+				if empties >= 2 {
+					res.Stopped = "empty"
+					return res, nil
+				}
+				nudge := Message{Role: "user", Content: "Continue with the task using the tools. When it is complete, answer with a short summary of what changed."}
+				msgs = append(msgs, nudge)
+				record(nudge)
+				continue
+			}
 			res.Stopped = "final"
 			res.Final = m.Content
 			return res, nil
 		}
+		empties = 0
 		for _, tc := range m.ToolCalls {
 			out, _ := tools.Call(tc.Name, tc.Args)
 			tm := Message{Role: "tool", Content: out, ToolCallID: tc.ID}

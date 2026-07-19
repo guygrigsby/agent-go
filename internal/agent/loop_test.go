@@ -120,3 +120,39 @@ func TestLoopTranscriptIsJSONL(t *testing.T) {
 		}
 	}
 }
+
+func TestLoopNudgesOnEmptyMessage(t *testing.T) {
+	client := &scriptClient{script: []Message{
+		{Role: "assistant"}, // empty: no content, no tool calls
+		{Role: "assistant", ToolCalls: []ToolCall{{ID: "1", Name: "status", Args: map[string]any{}}}},
+		{Role: "assistant", Content: "done"},
+	}}
+	tools := &recordingTools{results: []string{"ok"}}
+	res, err := Run(context.Background(), client, tools, nil, "sys", "task", Config{MaxSteps: 10})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if res.Stopped != "final" || res.Final != "done" {
+		t.Fatalf("res = %+v", res)
+	}
+	// The empty message must be followed by a user nudge, not an exit.
+	second := client.seen[1]
+	tail := second[len(second)-1]
+	if tail.Role != "user" || tail.Content == "" {
+		t.Fatalf("expected nudge after empty message, tail = %+v", tail)
+	}
+}
+
+func TestLoopStopsAfterConsecutiveEmptyMessages(t *testing.T) {
+	client := &scriptClient{script: []Message{{Role: "assistant"}}}
+	res, err := Run(context.Background(), client, &recordingTools{}, nil, "sys", "task", Config{MaxSteps: 10})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if res.Stopped != "empty" {
+		t.Fatalf("res = %+v", res)
+	}
+	if client.calls > 3 {
+		t.Fatalf("nudged forever: %d calls", client.calls)
+	}
+}
