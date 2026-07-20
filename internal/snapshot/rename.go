@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"golang.org/x/tools/go/packages"
+	"golang.org/x/tools/imports"
 )
 
 // edit is one byte-range replacement in a file: replace length bytes at
@@ -333,4 +334,17 @@ func spliceBody(src []byte, lbrace, rbrace int, body string) ([]byte, error) {
 	buf.WriteString("\n}")
 	buf.Write(src[rbrace+1:])
 	return format.Source([]byte(buf.String()))
+}
+
+// spliceBodyImports is spliceBody through goimports: the single-op
+// set_body path uses it so a body's new package references import
+// themselves and dropped last uses un-import, exactly like upsert_decl.
+func spliceBodyImports(filename string, src []byte, lbrace, rbrace int, body string) ([]byte, error) {
+	var buf strings.Builder
+	buf.Write(src[:lbrace])
+	buf.WriteString("{\n")
+	buf.WriteString(body)
+	buf.WriteString("\n}")
+	buf.Write(src[rbrace+1:])
+	return imports.Process(filename, []byte(buf.String()), nil)
 }

@@ -852,3 +852,28 @@ func TestPatchUpsertDeclIntoEmptyModule(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+
+// The set_body sugar must manage imports like the composable path does:
+// a body referencing a new stdlib package imports it, and a body dropping
+// an import's last use removes it (agent-go-pq6, found when a dogfood
+// model planted a dummy function to justify an import set_body could not
+// add).
+func TestSetBodyManagesImports(t *testing.T) {
+	s := demo(t)
+	if _, err := s.UpsertDecl("demo/lib", "func Shout(v string) string { return v }"); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := s.SetBody("demo/lib", "Shout", `return strings.ToUpper(v)`); err != nil {
+		t.Fatalf("body with new import rejected: %v", err)
+	}
+	src := readLibFile(t, s, "Shout")
+	if !strings.Contains(src, `"strings"`) {
+		t.Fatalf("strings import not added:\n%s", src)
+	}
+	if _, err := s.SetBody("demo/lib", "Shout", `return v + "!"`); err != nil {
+		t.Fatalf("body dropping the import rejected: %v", err)
+	}
+	if src := readLibFile(t, s, "Shout"); strings.Contains(src, `"strings"`) {
+		t.Fatalf("unused strings import kept:\n%s", src)
+	}
+}

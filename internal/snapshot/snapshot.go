@@ -1262,7 +1262,11 @@ func (s *Snapshot) SetBody(pkgPath, sym, body string) (map[string]any, error) {
 	if err != nil {
 		return nil, err
 	}
-	formatted, ferr := spliceBody(src, lbrace, rbrace, body)
+	// imports.Process, not format.Source: a new body may reference a
+	// package the file does not import yet, or drop an import's last use;
+	// goimports settles both, matching the composable path's end-of-list
+	// pass (and upsert_decl).
+	formatted, ferr := spliceBodyImports(filename, src, lbrace, rbrace, body)
 	if ferr != nil {
 		return nil, &Reject{Reason: "new body does not parse", Detail: ferr.Error()}
 	}
