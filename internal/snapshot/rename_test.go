@@ -87,3 +87,61 @@ func TestRenameBadIdentifier(t *testing.T) {
 		t.Fatalf("got %v", err)
 	}
 }
+
+// Go convention ties a doc comment's leading identifier to the decl name;
+// rename must carry it (agent-go-1z3, found by the first driver dogfood
+// episode: rename left "// Greet returns..." above func Hello).
+func TestRenameCarriesDocCommentLeadingIdentifier(t *testing.T) {
+	s := demo(t)
+	if _, err := s.UpsertDecl("demo/lib", "// Greet returns a greeting.\nfunc Greet(name string) string { return name }"); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := s.Rename("demo/lib", "Greet", "Hello"); err != nil {
+		t.Fatal(err)
+	}
+	src := readLibFile(t, s, "Hello")
+	if strings.Contains(src, "// Greet returns") {
+		t.Fatalf("doc comment kept the old name:\n%s", src)
+	}
+	if !strings.Contains(src, "// Hello returns a greeting.") {
+		t.Fatalf("doc comment not carried:\n%s", src)
+	}
+}
+
+// A doc mentioning the old name beyond the leading identifier is prose;
+// only the convention-bound leading word moves.
+func TestRenameLeavesDocProseAlone(t *testing.T) {
+	s := demo(t)
+	if _, err := s.UpsertDecl("demo/lib", "// Wave waves. Unlike Greet it is silent.\nfunc Wave() {}"); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := s.UpsertDecl("demo/lib", "// Greet returns a greeting.\nfunc Greet(name string) string { return name }"); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := s.Rename("demo/lib", "Greet", "Hello"); err != nil {
+		t.Fatal(err)
+	}
+	src := readLibFile(t, s, "Wave")
+	if !strings.Contains(src, "Unlike Greet it is silent") {
+		t.Fatalf("prose mention rewritten:\n%s", src)
+	}
+}
+
+func readLibFile(t *testing.T, s *Snapshot, sym string) string {
+	t.Helper()
+	entries, err := os.ReadDir(filepath.Join(s.dir, "lib"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, e := range entries {
+		b, err := os.ReadFile(filepath.Join(s.dir, "lib", e.Name()))
+		if err != nil {
+			t.Fatal(err)
+		}
+		if strings.Contains(string(b), sym+"(") {
+			return string(b)
+		}
+	}
+	t.Fatalf("no lib file declares %s", sym)
+	return ""
+}
