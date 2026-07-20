@@ -145,8 +145,10 @@ interval, the settled state gets a \texttt{go build ./...} verdict.
 The oracle runs as the control and measures the sampler itself. Raw
 and advisory arms pass through whatever the model writes; the semantic
 arm cannot land a declaration that does not typecheck, so its measured
-rate bounds the leakage of everything outside the protocol (host tool
-writes, dependency restore windows) rather than the protocol itself.
+rate is the write window itself: a mutation touching dozens of call
+sites writes files sequentially, and a sample can catch the half-written
+state. Replaying every accepted mutation from the flagged episodes shows
+each settled state compiles; no host tool wrote Go in any of them.
 
 \section{Results}
 \begin{table}[h]
