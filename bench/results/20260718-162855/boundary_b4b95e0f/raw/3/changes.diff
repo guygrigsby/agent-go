@@ -1,0 +1,31 @@
+diff --git a/internal/credential/vault/vault.go b/internal/credential/vault/vault.go
+index b9c6baf5b..c1591b29d 100644
+--- a/internal/credential/vault/vault.go
++++ b/internal/credential/vault/vault.go
+@@ -44,7 +44,7 @@ type client struct {
+ 	token TokenSecret
+ }
+ 
+-func newClient(c *clientConfig) (*client, error) {
++func newClient(ctx context.Context, c *clientConfig) (*client, error) {
+ 	const op = "vault.newClient"
+ 	if !c.isValid() {
+ 		return nil, errors.NewDeprecated(errors.InvalidParameter, op, "invalid configuration")
+@@ -93,7 +93,7 @@ func newClient(c *clientConfig) (*client, error) {
+ // response is returned. This endpoint is accessible with the default
+ // policy in Vault 1.7.2. See
+ // https://www.vaultproject.io/api-docs/system/health#read-health-information.
+-func (c *client) ping() error {
++func (c *client) ping(ctx context.Context) error {
+ 	const op = "vault.(client).ping"
+ 	h, err := c.cl.Sys().Health()
+ 	switch {
+@@ -112,7 +112,7 @@ func (c *client) ping() error {
+ // the vault.Secret response. This endpoint is accessible with the default
+ // policy in Vault 1.7.2. See
+ // https://www.vaultproject.io/api-docs/auth/token#renew-a-token-self.
+-func (c *client) renewToken() (*vault.Secret, error) {
++func (c *client) renewToken(ctx context.Context) (*vault.Secret, error) {
+ 	const op = "vault.(client).renewToken"
+ 	t, err := c.cl.Auth().Token().RenewSelf(0)
+ 	if err != nil {

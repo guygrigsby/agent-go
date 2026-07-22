@@ -1,0 +1,184 @@
+diff --git a/internal/session/job_delete_terminated_sessions_test.go b/internal/session/job_delete_terminated_sessions_test.go
+index 40fc58d92..ae4835ab0 100644
+--- a/internal/session/job_delete_terminated_sessions_test.go
++++ b/internal/session/job_delete_terminated_sessions_test.go
+@@ -20,7 +20,7 @@ func TestDeleteTermiantedSessionsJob(t *testing.T) {
+ 	wrapper := db.TestWrapper(t)
+ 	iamRepo := iam.TestRepo(t, conn, wrapper)
+ 	kms := kms.TestKms(t, conn, wrapper)
+-	repo, err := NewRepository(rw, rw, kms)
++	repo, err := NewRepository(ctx, rw, rw, kms)
+ 	require.NoError(t, err)
+ 	composedOf := TestSessionParams(t, conn, wrapper, iamRepo)
+ 	require.NoError(t, err)
+diff --git a/internal/session/job_session_cleanup_test.go b/internal/session/job_session_cleanup_test.go
+index 8c64c3c64..8017c24f5 100644
+--- a/internal/session/job_session_cleanup_test.go
++++ b/internal/session/job_session_cleanup_test.go
+@@ -37,7 +37,7 @@ func TestSessionConnectionCleanupJob(t *testing.T) {
+ 	kms := kms.TestKms(t, conn, wrapper)
+ 	serversRepo, err := server.NewRepository(rw, rw, kms)
+ 	require.NoError(err)
+-	sessionRepo, err := NewRepository(rw, rw, kms)
++	sessionRepo, err := NewRepository(ctx, rw, rw, kms)
+ 	connectionRepo, err := NewConnectionRepository(ctx, rw, rw, kms)
+ 	require.NoError(err)
+ 
+@@ -180,7 +180,7 @@ func TestCloseConnectionsForDeadWorkers(t *testing.T) {
+ 	wrapper := db.TestWrapper(t)
+ 	iamRepo := iam.TestRepo(t, conn, wrapper)
+ 	kms := kms.TestKms(t, conn, wrapper)
+-	repo, err := NewRepository(rw, rw, kms)
++	repo, err := NewRepository(ctx, rw, rw, kms)
+ 	require.NoError(err)
+ 	gracePeriod := 1 * time.Second
+ 	connRepo, err := NewConnectionRepository(ctx, rw, rw, kms)
+@@ -443,7 +443,7 @@ func TestCloseWorkerlessConnections(t *testing.T) {
+ 	wrapper := db.TestWrapper(t)
+ 	iamRepo := iam.TestRepo(t, conn, wrapper)
+ 	kms := kms.TestKms(t, conn, wrapper)
+-	repo, err := NewRepository(rw, rw, kms)
++	repo, err := NewRepository(ctx, rw, rw, kms)
+ 	require.NoError(err)
+ 	connRepo, err := NewConnectionRepository(ctx, rw, rw, kms)
+ 	require.NoError(err)
+diff --git a/internal/session/jobs.go b/internal/session/jobs.go
+index 70f1e113b..cb4b38246 100644
+--- a/internal/session/jobs.go
++++ b/internal/session/jobs.go
+@@ -24,7 +24,7 @@ func RegisterJobs(ctx context.Context, scheduler *scheduler.Scheduler, w db.Writ
+ 		return fmt.Errorf("error registering session cleanup job: %w", err)
+ 	}
+ 
+-	repo, err := NewRepository(r, w, k)
++	repo, err := NewRepository(ctx, r, w, k)
+ 	if err != nil {
+ 		return fmt.Errorf("error creating repository: %w", err)
+ 	}
+diff --git a/internal/session/repository.go b/internal/session/repository.go
+index 8080ae56f..dc88207b5 100644
+--- a/internal/session/repository.go
++++ b/internal/session/repository.go
+@@ -38,7 +38,7 @@ type RepositoryFactory func(opt ...Option) (*Repository, error)
+ 
+ // NewRepository creates a new session Repository. Supports the options: WithLimit
+ // which sets a default limit on results returned by repo operations.
+-func NewRepository(r db.Reader, w db.Writer, kms *kms.Kms, opt ...Option) (*Repository, error) {
++func NewRepository(ctx context.Context, r db.Reader, w db.Writer, kms *kms.Kms, opt ...Option) (*Repository, error) {
+ 	const op = "session.NewRepository"
+ 	if r == nil {
+ 		return nil, errors.NewDeprecated(errors.InvalidParameter, op, "nil reader")
+diff --git a/internal/session/repository_connection_test.go b/internal/session/repository_connection_test.go
+index 8ee6f7b2c..732175306 100644
+--- a/internal/session/repository_connection_test.go
++++ b/internal/session/repository_connection_test.go
+@@ -25,7 +25,7 @@ func TestRepository_ListConnection(t *testing.T) {
+ 	iamRepo := iam.TestRepo(t, conn, wrapper)
+ 	rw := db.New(conn)
+ 	kms := kms.TestKms(t, conn, wrapper)
+-	repo, err := NewRepository(rw, rw, kms, WithLimit(testLimit))
++	repo, err := NewRepository(ctx, rw, rw, kms, WithLimit(testLimit))
+ 	require.NoError(t, err)
+ 	connRepo, err := NewConnectionRepository(ctx, rw, rw, kms, WithLimit(testLimit))
+ 	require.NoError(t, err)
+@@ -141,7 +141,7 @@ func TestRepository_ConnectConnection(t *testing.T) {
+ 	wrapper := db.TestWrapper(t)
+ 	iamRepo := iam.TestRepo(t, conn, wrapper)
+ 	kms := kms.TestKms(t, conn, wrapper)
+-	repo, err := NewRepository(rw, rw, kms)
++	repo, err := NewRepository(ctx, rw, rw, kms)
+ 	require.NoError(t, err)
+ 	connRepo, err := NewConnectionRepository(ctx, rw, rw, kms)
+ 	require.NoError(t, err)
+@@ -351,7 +351,7 @@ func TestRepository_orphanedConnections(t *testing.T) {
+ 	wrapper := db.TestWrapper(t)
+ 	iamRepo := iam.TestRepo(t, conn, wrapper)
+ 	kms := kms.TestKms(t, conn, wrapper)
+-	repo, err := NewRepository(rw, rw, kms)
++	repo, err := NewRepository(ctx, rw, rw, kms)
+ 	require.NoError(err)
+ 	connRepo, err := NewConnectionRepository(ctx, rw, rw, kms, WithWorkerStateDelay(0))
+ 	require.NoError(err)
+@@ -446,7 +446,7 @@ func TestRepository_CloseConnections(t *testing.T) {
+ 	wrapper := db.TestWrapper(t)
+ 	iamRepo := iam.TestRepo(t, conn, wrapper)
+ 	kms := kms.TestKms(t, conn, wrapper)
+-	repo, err := NewRepository(rw, rw, kms)
++	repo, err := NewRepository(ctx, rw, rw, kms)
+ 	require.NoError(t, err)
+ 	connRepo, err := NewConnectionRepository(ctx, rw, rw, kms)
+ 	require.NoError(t, err)
+diff --git a/internal/session/repository_credential_test.go b/internal/session/repository_credential_test.go
+index 832f8298b..12675df18 100644
+--- a/internal/session/repository_credential_test.go
++++ b/internal/session/repository_credential_test.go
+@@ -14,12 +14,13 @@ import (
+ 
+ func TestRepository_AddSessionCredentials(t *testing.T) {
+ 	t.Parallel()
++	ctx := context.Background()
+ 	conn, _ := db.TestSetup(t, "postgres")
+ 	wrapper := db.TestWrapper(t)
+ 	iamRepo := iam.TestRepo(t, conn, wrapper)
+ 	rw := db.New(conn)
+ 	kms := kms.TestKms(t, conn, wrapper)
+-	repo, err := NewRepository(rw, rw, kms)
++	repo, err := NewRepository(ctx, rw, rw, kms)
+ 	require.NoError(t, err)
+ 	s := TestSession(t, conn, wrapper, TestSessionParams(t, conn, wrapper, iamRepo))
+ 
+@@ -132,12 +133,13 @@ func TestRepository_AddSessionCredentials(t *testing.T) {
+ 
+ func TestRepository_ListSessionCredentials(t *testing.T) {
+ 	t.Parallel()
++	ctx := context.Background()
+ 	conn, _ := db.TestSetup(t, "postgres")
+ 	wrapper := db.TestWrapper(t)
+ 	iamRepo := iam.TestRepo(t, conn, wrapper)
+ 	rw := db.New(conn)
+ 	kms := kms.TestKms(t, conn, wrapper)
+-	repo, err := NewRepository(rw, rw, kms)
++	repo, err := NewRepository(ctx, rw, rw, kms)
+ 	require.NoError(t, err)
+ 	s1 := TestSession(t, conn, wrapper, TestSessionParams(t, conn, wrapper, iamRepo))
+ 	s2 := TestSession(t, conn, wrapper, TestSessionParams(t, conn, wrapper, iamRepo))
+diff --git a/internal/session/repository_session_test.go b/internal/session/repository_session_test.go
+index 30ef301a2..857736fee 100644
+--- a/internal/session/repository_session_test.go
++++ b/internal/session/repository_session_test.go
+@@ -147,8 +147,9 @@ func TestRepository_ListSession(t *testing.T) {
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			assert, require := assert.New(t), require.New(t)
++			ctx := context.Background()
+ 
+-			repo, err := NewRepository(rw, rw, kms, WithLimit(testLimit), WithPermissions(tt.perms))
++			repo, err := NewRepository(ctx, rw, rw, kms, WithLimit(testLimit), WithPermissions(tt.perms))
+ 			require.NoError(err)
+ 
+ 			db.TestDeleteWhere(t, conn, func() interface{} { i := AllocSession(); return &i }(), "1=1")
+@@ -193,7 +194,8 @@ func TestRepository_ListSession(t *testing.T) {
+ 			_ = TestSession(t, conn, wrapper, composedOf)
+ 		}
+ 
+-		repo, err := NewRepository(rw, rw, kms, WithLimit(testLimit), WithPermissions(listPerms))
++		ctx := context.Background()
++		repo, err := NewRepository(ctx, rw, rw, kms, WithLimit(testLimit), WithPermissions(listPerms))
+ 		require.NoError(err)
+ 
+ 		got, err := repo.ListSessions(context.Background(), WithOrderByCreateTime(db.AscendingOrderBy))
+@@ -222,11 +224,11 @@ func TestRepository_ListSession(t *testing.T) {
+ 					ScopeId:  s.ProjectId,
+ 					Resource: resource.Session,
+ 					Action:   action.List,
+-					OnlySelf: true,
+-				},
++			OnlySelf: true,
+ 			},
+ 		}
+-		repo, err := NewRepository(rw, rw, kms, WithLimit(testLimit), WithPermissions(p))
++		ctx := context.Background()
++		repo, err := NewRepository(ctx, rw, rw, kms, WithLimit(testLimit), WithPermissions(p))
+ 		require.NoError(err)
+ 		got, err := repo.ListSessions(context.Background(), WithUserId(s.UserId))
+ 		require.NoError(err)

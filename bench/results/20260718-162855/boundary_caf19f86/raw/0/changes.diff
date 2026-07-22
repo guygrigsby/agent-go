@@ -1,0 +1,197 @@
+diff --git a/internal/cmd/commands/dev/dev.go b/internal/cmd/commands/dev/dev.go
+index eccea78dd..6c123af9a 100644
+--- a/internal/cmd/commands/dev/dev.go
++++ b/internal/cmd/commands/dev/dev.go
+@@ -691,7 +691,7 @@ func (c *Command) Run(args []string) int {
+ 		}
+ 
+ 		if !c.flagUseEphemeralKmsWorkerAuthMethod {
+-			req := c.worker.NodeeRegistrationRequest
++			req := c.worker.WorkerAuthRegistrationRequest
+ 			if req == "" {
+ 				c.UI.Error("No worker registration request found at worker start time")
+ 				return base.CommandCliError
+@@ -699,7 +699,7 @@ func (c *Command) Run(args []string) int {
+ 			c.InfoKeys = append(c.InfoKeys, "worker registration request")
+ 			c.Info["worker registration request"] = req
+ 			c.InfoKeys = append(c.InfoKeys, "worker current key id")
+-			c.Info["worker current key id"] = c.worker.NodeeCurrentKeyId
++			c.Info["worker current key id"] = c.worker.WorkerAuthCurrentKeyId
+ 			go func() {
+ 				for {
+ 					select {
+@@ -772,7 +772,7 @@ func (c *Command) Run(args []string) int {
+ 
+ 			if !c.flagControllerOnly {
+ 				if !c.flagWorkerAuthStorageSkipCleanup {
+-					c.worker.NodeeFileStorage.Cleanup()
++					c.worker.WorkerAuthStorage.Cleanup()
+ 				}
+ 				if err := c.worker.Shutdown(); err != nil {
+ 					c.UI.Error(fmt.Errorf("Error shutting down worker: %w", err).Error())
+diff --git a/internal/cmd/commands/server/server.go b/internal/cmd/commands/server/server.go
+index ca17036f4..e389d39a3 100644
+--- a/internal/cmd/commands/server/server.go
++++ b/internal/cmd/commands/server/server.go
+@@ -464,7 +464,7 @@ func (c *Command) Run(args []string) int {
+ 			return base.CommandCliError
+ 		}
+ 		if c.WorkerAuthKms == nil {
+-			req := c.worker.NodeeRegistrationRequest
++			req := c.worker.WorkerAuthRegistrationRequest
+ 			if req == "" {
+ 				retErr := fmt.Errorf("No worker registration request found at worker startup time")
+ 				if err := c.worker.Shutdown(); err != nil {
+@@ -480,7 +480,7 @@ func (c *Command) Run(args []string) int {
+ 			c.InfoKeys = append(c.InfoKeys, "worker registration request")
+ 			c.Info["worker registration request"] = req
+ 			c.InfoKeys = append(c.InfoKeys, "worker current key id")
+-			c.Info["worker current key id"] = c.worker.NodeeCurrentKeyId
++			c.Info["worker current key id"] = c.worker.WorkerAuthCurrentKeyId
+ 		}
+ 	}
+ 
+diff --git a/internal/daemon/worker/controller_connection.go b/internal/daemon/worker/controller_connection.go
+index 66b5fce6b..bd87c4457 100644
+--- a/internal/daemon/worker/controller_connection.go
++++ b/internal/daemon/worker/controller_connection.go
+@@ -74,7 +74,7 @@ func (w *Worker) controllerDialerFunc() func(context.Context, string) (net.Conn,
+ 		case w.conf.WorkerAuthKms != nil:
+ 			conn, err = w.v1KmsAuthDialFn(ctx, addr)
+ 		default:
+-			conn, err = protocol.Dial(ctx, w.NodeeFileStorage, addr, nodeenrollment.WithWrapper(w.conf.WorkerAuthStorageKms))
++			conn, err = protocol.Dial(ctx, w.WorkerAuthStorage, addr, nodeenrollment.WithWrapper(w.conf.WorkerAuthStorageKms))
+ 		}
+ 
+ 		if !w.everAuthenticated.Load() && err == nil && conn != nil {
+diff --git a/internal/daemon/worker/listeners.go b/internal/daemon/worker/listeners.go
+index ed98ac843..d3a68184e 100644
+--- a/internal/daemon/worker/listeners.go
++++ b/internal/daemon/worker/listeners.go
+@@ -123,7 +123,7 @@ func (w *Worker) configureForWorker(ln *base.ServerListener, logger *log.Logger)
+ 	interceptingListener, err := protocol.NewInterceptingListener(
+ 		&protocol.InterceptingListenerConfiguration{
+ 			Context:      w.baseContext,
+-			Storage:      w.NodeeFileStorage,
++			Storage:      w.WorkerAuthStorage,
+ 			BaseListener: ln.ProxyListener,
+ 			BaseTlsConfiguration: &tls.Config{
+ 				GetConfigForClient: w.getSessionTls,
+@@ -135,14 +135,14 @@ func (w *Worker) configureForWorker(ln *base.ServerListener, logger *log.Logger)
+ 		return nil, fmt.Errorf("error instantiating node auth listener: %w", err)
+ 	}
+ 
+-	w.nodeeSplitListener = splitlistener.New(interceptingListener)
++		w.workerAuthSplitListener = splitlistener.New(interceptingListener)
+ 
+ 	downstreamServer := grpc.NewServer(
+ 		grpc.MaxRecvMsgSize(math.MaxInt32),
+ 		grpc.MaxSendMsgSize(math.MaxInt32),
+ 	)
+ 	multihopService, err := handlers.NewMultihopServiceServer(
+-		w.NodeeFileStorage,
++		w.WorkerAuthStorage,
+ 		false,
+ 		w.controllerMultihopConn,
+ 	)
+@@ -157,9 +157,9 @@ func (w *Worker) configureForWorker(ln *base.ServerListener, logger *log.Logger)
+ 	ln.GrpcServer = downstreamServer
+ 
+ 	return func() {
+-		go w.nodeeSplitListener.Start()
+-		go httpServer.Serve(w.nodeeSplitListener.OtherListener())
+-		go ln.GrpcServer.Serve(w.nodeeSplitListener.NodeEnrollmentListener())
++		go w.workerAuthSplitListener.Start()
++		go httpServer.Serve(w.workerAuthSplitListener.OtherListener())
++		go ln.GrpcServer.Serve(w.workerAuthSplitListener.NodeEnrollmentListener())
+ 	}, nil
+ }
+ 
+@@ -172,21 +172,21 @@ func (w *Worker) stopServersAndListeners() error {
+ 	// really likes to hang on closing. Maybe because it's never served a
+ 	// connection? This is a workaround to force it until I can dig in.
+ 	var cancel context.CancelFunc
+-	if w.nodeeSplitListener != nil {
++	if w.workerAuthSplitListener != nil {
+ 		var ctx context.Context
+ 		ctx, cancel = context.WithTimeout(w.baseContext, 2*time.Second)
+ 		go func() {
+ 			<-ctx.Done()
+-			w.nodeeSplitListener.Stop()
++			w.workerAuthSplitListener.Stop()
+ 			cancel()
+ 		}()
+ 	}
+ 
+ 	stopErrors := mg.Wait()
+ 
+-	if w.nodeeSplitListener != nil {
++	if w.workerAuthSplitListener != nil {
+ 		cancel()
+-		err := w.nodeeSplitListener.Stop()
++		err := w.workerAuthSplitListener.Stop()
+ 		if err != nil {
+ 			stopErrors = multierror.Append(stopErrors, err)
+ 		}
+@@ -237,8 +237,8 @@ func (w *Worker) stopAnyListeners() error {
+ 	}
+ 	var closeErrors *multierror.Error
+ 	var err error
+-	if w.nodeeSplitListener != nil {
+-		err = w.nodeeSplitListener.Stop()
++	if w.workerAuthSplitListener != nil {
++		err = w.workerAuthSplitListener.Stop()
+ 	} else if w.proxyListener.ProxyListener != nil {
+ 		err = w.proxyListener.ProxyListener.Close()
+ 	}
+diff --git a/internal/daemon/worker/worker.go b/internal/daemon/worker/worker.go
+index b4d5d417c..298d45082 100644
+--- a/internal/daemon/worker/worker.go
++++ b/internal/daemon/worker/worker.go
+@@ -75,10 +75,10 @@ type Worker struct {
+ 	updateTags *ua.Bool
+ 
+ 	// PoC: Testing bits for BYOW
+-	NodeeFileStorage         *nodeefile.FileStorage
+-	NodeeCurrentKeyId        string
+-	NodeeRegistrationRequest string
+-	nodeeSplitListener       *splitlistener.SplitListener
++	WorkerAuthStorage         *nodeefile.FileStorage
++	WorkerAuthCurrentKeyId    string
++	WorkerAuthRegistrationRequest string
++	workerAuthSplitListener    *splitlistener.SplitListener
+ 
+ 	// Test-specific options
+ 	TestOverrideX509VerifyDnsName  string
+@@ -161,7 +161,7 @@ func New(conf *Config) (*Worker, error) {
+ 		return nil, fmt.Errorf("exactly one proxy listener is required")
+ 	}
+ 
+-	w.NodeeFileStorage, err = nodeefile.NewFileStorage(w.baseContext,
++	w.WorkerAuthStorage, err = nodeefile.NewFileStorage(w.baseContext,
+ 		nodeefile.WithBaseDirectory(w.conf.RawConfig.Worker.AuthStoragePath))
+ 	if err != nil {
+ 		return nil, err
+@@ -188,7 +188,7 @@ func (w *Worker) Start() error {
+ 		return fmt.Errorf("error starting worker listeners: %w", err)
+ 	}
+ 
+-	nodeCreds, err := types.NewNodeCredentials(w.baseContext, w.NodeeFileStorage, nodeenrollment.WithWrapper(w.conf.WorkerAuthStorageKms))
++	nodeCreds, err := types.NewNodeCredentials(w.baseContext, w.WorkerAuthStorage, nodeenrollment.WithWrapper(w.conf.WorkerAuthStorageKms))
+ 	if err != nil {
+ 		return fmt.Errorf("error generating new node creds: %w", err)
+ 	}
+@@ -201,11 +201,11 @@ func (w *Worker) Start() error {
+ 	if err != nil {
+ 		return fmt.Errorf("error marshaling fetch credentials request: %w", err)
+ 	}
+-	w.NodeeRegistrationRequest = base58.FastBase58Encoding(reqBytes)
++	w.WorkerAuthRegistrationRequest = base58.FastBase58Encoding(reqBytes)
+ 	if err != nil {
+ 		return fmt.Errorf("error encoding registration request: %w", err)
+ 	}
+-	w.NodeeCurrentKeyId, err = nodeenrollment.KeyIdFromPkix(nodeCreds.CertificatePublicKeyPkix)
++	w.WorkerAuthCurrentKeyId, err = nodeenrollment.KeyIdFromPkix(nodeCreds.CertificatePublicKeyPkix)
+ 	if err != nil {
+ 		return fmt.Errorf("error deriving key id: %w", err)
+ 	}

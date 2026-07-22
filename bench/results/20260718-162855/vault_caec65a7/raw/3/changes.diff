@@ -1,0 +1,249 @@
+diff --git a/command/server.go b/command/server.go
+index aa2fd339d8..50b2babddd 100644
+--- a/command/server.go
++++ b/command/server.go
+@@ -2564,8 +2564,8 @@ func setSeal(c *ServerCommand, config *server.Config, infoKeys []string, info ma
+ 	recordSealConfigError := func(err error) {
+ 		sealConfigError = errors.Join(sealConfigError, err)
+ 	}
+-	enabledSealInfos := make([]vaultseal.SealInfo, 0)
+-	disabledSealInfos := make([]vaultseal.SealInfo, 0)
++	enabledSealInfos := make([]vaultseal.SealWrapper, 0)
++	disabledSealInfos := make([]vaultseal.SealWrapper, 0)
+ 	allSealKmsConfigs := make([]*configutil.KMS, 0)
+ 
+ 	type infoKeysAndMap struct {
+@@ -2607,7 +2607,7 @@ func setSeal(c *ServerCommand, config *server.Config, infoKeys []string, info ma
+ 			wrapper = aeadwrapper.NewShamirWrapper()
+ 		}
+ 
+-		sealInfo := vaultseal.SealInfo{
++		sealInfo := vaultseal.SealWrapper{
+ 			Wrapper:        wrapper,
+ 			Priority:       configSeal.Priority,
+ 			Name:           configSeal.Name,
+@@ -2631,7 +2631,7 @@ func setSeal(c *ServerCommand, config *server.Config, infoKeys []string, info ma
+ 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+ 	// Set the info keys, this modifies the function arguments `info` and `infoKeys`
+ 	// TODO(SEALHA): Why are we doing this? What is its use?
+-	appendWrapperInfoKeys := func(prefix string, sealInfos []vaultseal.SealInfo) {
++	appendWrapperInfoKeys := func(prefix string, sealInfos []vaultseal.SealWrapper) {
+ 		if len(sealInfos) > 0 {
+ 			useName := false
+ 			if len(sealInfos) > 1 {
+@@ -2662,7 +2662,7 @@ func setSeal(c *ServerCommand, config *server.Config, infoKeys []string, info ma
+ 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+ 	// Create the Seals
+ 
+-	containsShamir := func(sealInfos []vaultseal.SealInfo) bool {
++	containsShamir := func(sealInfos []vaultseal.SealWrapper) bool {
+ 		for _, si := range sealInfos {
+ 			if vault.SealConfigTypeShamir.IsSameAs(si.SealConfigType) {
+ 				return true
+diff --git a/vault/core.go b/vault/core.go
+index 5da2ade3bb..8454f73052 100644
+--- a/vault/core.go
++++ b/vault/core.go
+@@ -1103,7 +1103,7 @@ func CreateCore(conf *CoreConfig) (*Core, error) {
+ 		wrapper := aeadwrapper.NewShamirWrapper()
+ 		wrapper.SetConfig(context.Background(), awskms.WithLogger(c.logger.Named("shamir")))
+ 
+-		access, err := vaultseal.NewAccessFromSealInfo(c.logger, 1, true, []vaultseal.SealInfo{
++		access, err := vaultseal.NewAccessFromSealInfo(c.logger, 1, true, []vaultseal.SealWrapper{
+ 			{
+ 				Wrapper:  wrapper,
+ 				Priority: 1,
+@@ -2872,7 +2872,7 @@ func (c *Core) adjustForSealMigration(unwrapSeal Seal) error {
+ 
+ 			// See note about creating a SealGenerationInfo for the unwrap seal in
+ 			// function setSeal in server.go.
+-			sealAccess, err := vaultseal.NewAccessFromSealInfo(c.logger, 1, true, []vaultseal.SealInfo{
++			sealAccess, err := vaultseal.NewAccessFromSealInfo(c.logger, 1, true, []vaultseal.SealWrapper{
+ 				{
+ 					Wrapper:  aeadwrapper.NewShamirWrapper(),
+ 					Priority: 1,
+@@ -3100,7 +3100,7 @@ func (c *Core) unsealKeyToRootKey(ctx context.Context, seal Seal, combinedKey []
+ 		if useTestSeal {
+ 			// Note that the seal generation should not matter, since the only thing we are doing with
+ 			// this seal is calling GetStoredKeys (i.e. we are not encrypting anything).
+-			sealAccess, err := vaultseal.NewAccessFromSealInfo(c.logger, 1, true, []vaultseal.SealInfo{
++			sealAccess, err := vaultseal.NewAccessFromSealInfo(c.logger, 1, true, []vaultseal.SealWrapper{
+ 				{
+ 					Wrapper:  aeadwrapper.NewShamirWrapper(),
+ 					Priority: 1,
+diff --git a/vault/rekey.go b/vault/rekey.go
+index 2d5766c23b..8c9fc0ad48 100644
+--- a/vault/rekey.go
++++ b/vault/rekey.go
+@@ -400,11 +400,11 @@ func (c *Core) BarrierRekeyUpdate(ctx context.Context, key []byte, nonce string)
+ 		}
+ 	case c.seal.BarrierSealConfigType() == SealConfigTypeShamir:
+ 		if c.seal.StoredKeysSupported() == seal.StoredKeysSupportedShamirRoot {
+-			access, err := seal.NewAccessFromSealInfo(c.logger, c.seal.GetAccess().Generation(), true, []seal.SealInfo{
+-				{
+-					Wrapper:  aeadwrapper.NewShamirWrapper(),
+-					Priority: 1,
+-					Name:     existingConfig.Name,
++		access, err := seal.NewAccessFromSealInfo(c.logger, c.seal.GetAccess().Generation(), true, []seal.SealWrapper{
++			{
++				Wrapper:  aeadwrapper.NewShamirWrapper(),
++				Priority: 1,
++				Name:     existingConfig.Name,
+ 				},
+ 			})
+ 			if err != nil {
+diff --git a/vault/seal/seal.go b/vault/seal/seal.go
+index 0ad9ad5b7d..3a897aad53 100644
+--- a/vault/seal/seal.go
++++ b/vault/seal/seal.go
+@@ -158,7 +158,7 @@ func (sgi *SealGenerationInfo) UnmarshalJSON(b []byte) error {
+ 	return nil
+ }
+ 
+-type SealInfo struct {
++type SealWrapper struct {
+ 	wrapping.Wrapper
+ 	Priority int
+ 	Name     string
+@@ -176,7 +176,7 @@ type SealInfo struct {
+ 	Healthy         bool
+ }
+ 
+-func (si *SealInfo) keyId(ctx context.Context) string {
++func (si *SealWrapper) keyId(ctx context.Context) string {
+ 	if id, err := si.Wrapper.KeyId(ctx); err == nil {
+ 		return id
+ 	}
+@@ -216,13 +216,13 @@ type Access interface {
+ 	SetShamirSealKey([]byte) error
+ 	GetShamirKeyBytes(ctx context.Context) ([]byte, error)
+ 
+-	// GetAllSealInfoByPriority returns all the SealInfo for all the seal wrappers, including disabled ones.
+-	GetAllSealInfoByPriority() []*SealInfo
++ 	// GetAllSealInfoByPriority returns all the SealInfo for all the seal wrappers, including disabled ones.
++	GetAllSealInfoByPriority() []*SealWrapper
+ 
+-	// GetEnabledSealInfoByPriority returns the SealInfo for the enabled seal wrappers.
+-	GetEnabledSealInfoByPriority() []*SealInfo
++ 	// GetEnabledSealInfoByPriority returns the SealInfo for the enabled seal wrappers.
++	GetEnabledSealInfoByPriority() []*SealWrapper
+ 
+-	// AllSealsHealthy returns whether all enabled SealInfos are currently healthy.
++ 	// AllSealsHealthy returns whether all enabled SealInfos are currently healthy.
+ 	AllSealsHealthy() bool
+ 
+ 	GetSealGenerationInfo() *SealGenerationInfo
+@@ -230,14 +230,14 @@ type Access interface {
+ 
+ type access struct {
+ 	sealGenerationInfo *SealGenerationInfo
+-	wrappersByPriority []*SealInfo
++	wrappersByPriority []*SealWrapper
+ 	keyIdSet           keyIdSet
+ 	logger             hclog.Logger
+ }
+ 
+ var _ Access = (*access)(nil)
+ 
+-func NewAccess(logger hclog.Logger, sealGenerationInfo *SealGenerationInfo, sealInfos []SealInfo) Access {
++func NewAccess(logger hclog.Logger, sealGenerationInfo *SealGenerationInfo, sealInfos []SealWrapper) Access {
+ 	if logger == nil {
+ 		logger = hclog.NewNullLogger()
+ 	}
+@@ -251,7 +251,7 @@ func NewAccess(logger hclog.Logger, sealGenerationInfo *SealGenerationInfo, seal
+ 		sealGenerationInfo: sealGenerationInfo,
+ 		logger:             logger,
+ 	}
+-	a.wrappersByPriority = make([]*SealInfo, len(sealInfos))
++	a.wrappersByPriority = make([]*SealWrapper, len(sealInfos))
+ 	for i, sealInfo := range sealInfos {
+ 		v := sealInfo
+ 		a.wrappersByPriority[i] = &v
+@@ -264,7 +264,7 @@ func NewAccess(logger hclog.Logger, sealGenerationInfo *SealGenerationInfo, seal
+ 	return a
+ }
+ 
+-func NewAccessFromSealInfo(logger hclog.Logger, generation uint64, rewrapped bool, sealInfos []SealInfo) (Access, error) {
++func NewAccessFromSealInfo(logger hclog.Logger, generation uint64, rewrapped bool, sealInfos []SealWrapper) (Access, error) {
+ 	sealGenerationInfo := &SealGenerationInfo{
+ 		Generation: generation,
+ 	}
+@@ -284,11 +284,11 @@ func NewAccessFromSealInfo(logger hclog.Logger, generation uint64, rewrapped boo
+ 	return NewAccess(logger, sealGenerationInfo, sealInfos), nil
+ }
+ 
+-func (a *access) GetAllSealInfoByPriority() []*SealInfo {
++func (a *access) GetAllSealInfoByPriority() []*SealWrapper {
+ 	return copySealInfos(a.wrappersByPriority, false)
+ }
+ 
+-func (a *access) GetEnabledSealInfoByPriority() []*SealInfo {
++func (a *access) GetEnabledSealInfoByPriority() []*SealWrapper {
+ 	return copySealInfos(a.wrappersByPriority, true)
+ }
+ 
+@@ -307,8 +307,8 @@ func (a *access) AllSealsHealthy() bool {
+ 	return true
+ }
+ 
+-func copySealInfos(sealInfos []*SealInfo, enabledOnly bool) []*SealInfo {
+-	ret := make([]*SealInfo, 0, len(sealInfos))
++func copySealInfos(sealInfos []*SealWrapper, enabledOnly bool) []*SealWrapper {
++	ret := make([]*SealWrapper, 0, len(sealInfos))
+ 	for _, si := range sealInfos {
+ 		if enabledOnly && si.Disabled {
+ 			continue
+@@ -481,7 +481,7 @@ func (a *access) Decrypt(ctx context.Context, ciphertext *MultiWrapValue, option
+ 	return nil, false, JoinSealWrapErrors("error decrypting seal wrapped value", errs)
+ }
+ 
+-func (a *access) tryDecrypt(ctx context.Context, sealInfo *SealInfo, ciphertext *wrapping.BlobInfo, options []wrapping.Option) ([]byte, bool, error) {
++func (a *access) tryDecrypt(ctx context.Context, sealInfo *SealWrapper, ciphertext *wrapping.BlobInfo, options []wrapping.Option) ([]byte, bool, error) {
+ 	var decryptErr error
+ 	defer func(now time.Time) {
+ 		metrics.MeasureSince([]string{"seal", "decrypt", "time"}, now)
+diff --git a/vault/seal/seal_testing.go b/vault/seal/seal_testing.go
+index 2776309fdc..8553a3da31 100644
+--- a/vault/seal/seal_testing.go
++++ b/vault/seal/seal_testing.go
+@@ -43,10 +43,10 @@ func NewTestSealOpts(opts *TestSealOpts) *TestSealOpts {
+ func NewTestSeal(opts *TestSealOpts) (Access, []*ToggleableWrapper) {
+ 	opts = NewTestSealOpts(opts)
+ 	wrappers := make([]*ToggleableWrapper, opts.WrapperCount)
+-	sealInfos := make([]SealInfo, opts.WrapperCount)
++	sealInfos := make([]SealWrapper, opts.WrapperCount)
+ 	for i := 0; i < opts.WrapperCount; i++ {
+ 		wrappers[i] = &ToggleableWrapper{Wrapper: wrapping.NewTestWrapper(opts.Secret)}
+-		sealInfos[i] = SealInfo{
++		sealInfos[i] = SealWrapper{
+ 			Wrapper:  wrappers[i],
+ 			Priority: i + 1,
+ 			Name:     fmt.Sprintf("%s-%d", opts.Name, i+1),
+@@ -64,12 +64,12 @@ func NewToggleableTestSeal(opts *TestSealOpts) (Access, []func(error)) {
+ 	opts = NewTestSealOpts(opts)
+ 
+ 	wrappers := make([]*ToggleableWrapper, opts.WrapperCount)
+-	sealInfos := make([]SealInfo, opts.WrapperCount)
++	sealInfos := make([]SealWrapper, opts.WrapperCount)
+ 	funcs := make([]func(error), opts.WrapperCount)
+ 	for i := 0; i < opts.WrapperCount; i++ {
+ 		w := &ToggleableWrapper{Wrapper: wrapping.NewTestWrapper(opts.Secret)}
+ 		wrappers[i] = w
+-		sealInfos[i] = SealInfo{
++		sealInfos[i] = SealWrapper{
+ 			Wrapper:  wrappers[i],
+ 			Priority: i + 1,
+ 			Name:     fmt.Sprintf("%s-%d", opts.Name, i+1),
+diff --git a/vault/seal_testing_util.go b/vault/seal_testing_util.go
+index b1e53bfd9e..514af19288 100644
+--- a/vault/seal_testing_util.go
++++ b/vault/seal_testing_util.go
+@@ -18,7 +18,7 @@ func NewTestSeal(t testing.T, opts *seal.TestSealOpts) Seal {
+ 	switch opts.StoredKeys {
+ 	case seal.StoredKeysSupportedShamirRoot:
+ 		w := aeadwrapper.NewShamirWrapper()
+-		sealAccess, err := seal.NewAccessFromSealInfo(logger, opts.Generation, true, []seal.SealInfo{
++		sealAccess, err := seal.NewAccessFromSealInfo(logger, opts.Generation, true, []seal.SealWrapper{
+ 			{
+ 				Wrapper:  w,
+ 				Priority: 1,

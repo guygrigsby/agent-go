@@ -1,0 +1,162 @@
+diff --git a/audit/format.go b/audit/format.go
+index 5e461ef61a..38ad2226e6 100644
+--- a/audit/format.go
++++ b/audit/format.go
+@@ -52,6 +52,8 @@ var (
+ // AuditFormatter should be used to format audit requests and responses.
+ type AuditFormatter struct {
+ 	salter Salter
++
++	logger useEventLogger
+ }
+ 
+ // AuditFormatterWriter should be used to format and write out audit requests and responses.
+@@ -99,7 +101,7 @@ func (s *nonPersistentSalt) Salt(_ context.Context) (*salt.Salt, error) {
+ }
+ 
+ // NewAuditFormatter should be used to create an AuditFormatter.
+-func NewAuditFormatter(salter Salter) (*AuditFormatter, error) {
++func NewAuditFormatter(salter Salter, logger useEventLogger) (*AuditFormatter, error) {
+ 	if salter == nil {
+ 		return nil, errors.New("cannot create a new audit formatter with nil salter")
+ 	}
+@@ -678,7 +680,7 @@ func parseVaultTokenFromJWT(token string) *string {
+ // NewTemporaryFormatter creates a formatter not backed by a persistent salt
+ func NewTemporaryFormatter(format, prefix string) *AuditFormatterWriter {
+ 	// We can ignore the error from NewAuditFormatter since we are sure the salter isn't nil.
+-	f, _ := NewAuditFormatter(&nonPersistentSalt{})
++	f, _ := NewAuditFormatter(&nonPersistentSalt{}, nil)
+ 
+ 	var w Writer
+ 
+diff --git a/audit/format_json_test.go b/audit/format_json_test.go
+index 4ef0a64af0..b84d0a787d 100644
+--- a/audit/format_json_test.go
++++ b/audit/format_json_test.go
+@@ -98,7 +98,7 @@ func TestFormatJSON_formatRequest(t *testing.T) {
+ 
+ 	for name, tc := range cases {
+ 		var buf bytes.Buffer
+-		f, err := NewAuditFormatter(ss)
++		f, err := NewAuditFormatter(ss, nil)
+ 		require.NoError(t, err)
+ 		formatter := AuditFormatterWriter{
+ 			Formatter: f,
+diff --git a/audit/format_jsonx_test.go b/audit/format_jsonx_test.go
+index f70346dc53..3b4f758bb3 100644
+--- a/audit/format_jsonx_test.go
++++ b/audit/format_jsonx_test.go
+@@ -113,7 +113,7 @@ func TestFormatJSONx_formatRequest(t *testing.T) {
+ 
+ 	for name, tc := range cases {
+ 		var buf bytes.Buffer
+-		f, err := NewAuditFormatter(tempStaticSalt)
++		f, err := NewAuditFormatter(tempStaticSalt, nil)
+ 		require.NoError(t, err)
+ 		formatter := AuditFormatterWriter{
+ 			Formatter: f,
+diff --git a/audit/format_test.go b/audit/format_test.go
+index 7dbbf98a04..5ca7755814 100644
+--- a/audit/format_test.go
++++ b/audit/format_test.go
+@@ -119,7 +119,7 @@ func TestNewAuditFormatter(t *testing.T) {
+ 				s = tc.Salter
+ 			}
+ 
+-			f, err := NewAuditFormatter(s)
++			f, err := NewAuditFormatter(s, nil)
+ 			switch {
+ 			case tc.IsErrorExpected:
+ 				require.Error(t, err)
+@@ -170,7 +170,7 @@ func TestAuditFormatter_FormatRequest(t *testing.T) {
+ 		t.Run(name, func(t *testing.T) {
+ 			t.Parallel()
+ 			config := FormatterConfig{}
+-			f, err := NewAuditFormatter(newStaticSalt(t))
++			f, err := NewAuditFormatter(newStaticSalt(t), nil)
+ 			require.NoError(t, err)
+ 
+ 			var ctx context.Context
+@@ -234,7 +234,7 @@ func TestAuditFormatter_FormatResponse(t *testing.T) {
+ 		t.Run(name, func(t *testing.T) {
+ 			t.Parallel()
+ 			config := FormatterConfig{}
+-			f, err := NewAuditFormatter(newStaticSalt(t))
++			f, err := NewAuditFormatter(newStaticSalt(t), nil)
+ 			require.NoError(t, err)
+ 
+ 			var ctx context.Context
+@@ -262,7 +262,7 @@ func TestAuditFormatter_FormatResponse(t *testing.T) {
+ 
+ func TestElideListResponses(t *testing.T) {
+ 	tfw := testingFormatWriter{}
+-	f, err := NewAuditFormatter(&tfw)
++	f, err := NewAuditFormatter(&tfw, nil)
+ 	require.NoError(t, err)
+ 	formatter := AuditFormatterWriter{
+ 		Formatter: f,
+diff --git a/builtin/audit/file/backend.go b/builtin/audit/file/backend.go
+index d4471f1a9a..11bb9edbee 100644
+--- a/builtin/audit/file/backend.go
++++ b/builtin/audit/file/backend.go
+@@ -125,7 +125,7 @@ func Factory(ctx context.Context, conf *audit.BackendConfig) (audit.Backend, err
+ 	b.salt.Store((*salt.Salt)(nil))
+ 
+ 	// Configure the formatter for either case.
+-	f, err := audit.NewAuditFormatter(b)
++	f, err := audit.NewAuditFormatter(b, nil)
+ 	if err != nil {
+ 		return nil, fmt.Errorf("error creating formatter: %w", err)
+ 	}
+diff --git a/builtin/audit/socket/backend.go b/builtin/audit/socket/backend.go
+index 25077fc0ff..0aeaca2aed 100644
+--- a/builtin/audit/socket/backend.go
++++ b/builtin/audit/socket/backend.go
+@@ -100,7 +100,7 @@ func Factory(ctx context.Context, conf *audit.BackendConfig) (audit.Backend, err
+ 	}
+ 
+ 	// Configure the formatter for either case.
+-	f, err := audit.NewAuditFormatter(b)
++	f, err := audit.NewAuditFormatter(b, nil)
+ 	if err != nil {
+ 		return nil, fmt.Errorf("error creating formatter: %w", err)
+ 	}
+diff --git a/builtin/audit/syslog/backend.go b/builtin/audit/syslog/backend.go
+index 19059b86cc..8ac410e525 100644
+--- a/builtin/audit/syslog/backend.go
++++ b/builtin/audit/syslog/backend.go
+@@ -93,7 +93,7 @@ func Factory(ctx context.Context, conf *audit.BackendConfig) (audit.Backend, err
+ 	}
+ 
+ 	// Configure the formatter for either case.
+-	f, err := audit.NewAuditFormatter(b)
++	f, err := audit.NewAuditFormatter(b, nil)
+ 	if err != nil {
+ 		return nil, fmt.Errorf("error creating formatter: %w", err)
+ 	}
+diff --git a/helper/testhelpers/corehelpers/corehelpers.go b/helper/testhelpers/corehelpers/corehelpers.go
+index 8910e4fa6e..fece209d1e 100644
+--- a/helper/testhelpers/corehelpers/corehelpers.go
++++ b/helper/testhelpers/corehelpers/corehelpers.go
+@@ -246,7 +246,7 @@ func NewNoopAudit(config map[string]string) (*NoopAudit, error) {
+ 		},
+ 	}
+ 
+-	f, err := audit.NewAuditFormatter(n)
++	f, err := audit.NewAuditFormatter(n, nil)
+ 	if err != nil {
+ 		return nil, fmt.Errorf("error creating formatter: %w", err)
+ 	}
+diff --git a/internal/observability/event/node_formatter_audit_json.go b/internal/observability/event/node_formatter_audit_json.go
+index effb162340..512f9ac0f2 100644
+--- a/internal/observability/event/node_formatter_audit_json.go
++++ b/internal/observability/event/node_formatter_audit_json.go
+@@ -27,7 +27,7 @@ type AuditFormatterJSON struct {
+ func NewAuditFormatterJSON(config vaultaudit.FormatterConfig, salter vaultaudit.Salter) (*AuditFormatterJSON, error) {
+ 	const op = "event.NewAuditFormatterJSON"
+ 
+-	f, err := vaultaudit.NewAuditFormatter(salter)
++	f, err := vaultaudit.NewAuditFormatter(salter, nil)
+ 	if err != nil {
+ 		return nil, fmt.Errorf("%s: unable to create new JSON audit formatter: %w", op, err)
+ 	}

@@ -1,0 +1,13 @@
+diff --git a/internal/daemon/worker/proxy/tcp/tcp_test.go b/internal/daemon/worker/proxy/tcp/tcp_test.go
+index 1a819e5d7..75e1dce57 100644
+--- a/internal/daemon/worker/proxy/tcp/tcp_test.go
++++ b/internal/daemon/worker/proxy/tcp/tcp_test.go
+@@ -25,7 +25,7 @@ import (
+ 	"nhooyr.io/websocket"
+ )
+ 
+-func TestHandleProxy_Errors(t *testing.T) {
++func TestHandleProxy_Errors(t *testing.T, controlCtx context.Context) {
+ 	c, _ := net.Pipe()
+ 	l, err := net.Listen("tcp", "127.0.0.1:0")
+ 	require.NoError(t, err)

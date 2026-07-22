@@ -1,0 +1,59 @@
+{
+ "agent_done": "2026-07-22T03:11:30.268058084Z",
+ "agent_started": "2026-07-22T03:07:55.615675Z",
+ "cache_read": 436962,
+ "cache_write": 0,
+ "capped": false,
+ "failure_kind": "",
+ "first_invalid_s": 130.982428959,
+ "intermediate_states": 3,
+ "invalid_intermediate_rate": 0.6666666666666666,
+ "invalid_intermediates": 2,
+ "iter": 4,
+ "kind": "rename",
+ "mode": "serena",
+ "new_errors": null,
+ "op_mix": {},
+ "pass": true,
+ "predicate": true,
+ "profile": "glm-flash",
+ "prompt": "Rename the UI passthrough dir flag/env var\n\nSpecifically, rename: flagPassthroughDirectory -\u003e flagUiPassthroughDir; devPassthroughHandler -\u003e devUiPassthroughHandler; PassthroughDirectory -\u003e DevUiPassthroughDir",
+ "rejects_total": 0,
+ "repairs_offered": 0,
+ "resends": 0,
+ "specs": [
+  {
+   "baseline_refs": 3,
+   "new_refs": 3,
+   "ok": true,
+   "old_refs_left": 0,
+   "sym": "github.com/hashicorp/boundary/internal/cmd/commands/dev.Command.flagPassthroughDirectory",
+   "to": "flagUiPassthroughDir"
+  },
+  {
+   "baseline_refs": 2,
+   "new_refs": 2,
+   "ok": true,
+   "old_refs_left": 0,
+   "sym": "github.com/hashicorp/boundary/internal/servers/controller.devPassthroughHandler",
+   "to": "devUiPassthroughHandler"
+  },
+  {
+   "baseline_refs": 4,
+   "new_refs": 4,
+   "ok": true,
+   "old_refs_left": 0,
+   "sym": "github.com/hashicorp/boundary/internal/cmd/config.Config.PassthroughDirectory",
+   "to": "DevUiPassthroughDir"
+  }
+ ],
+ "steps": 26,
+ "task": "boundary_c0532428",
+ "tests": false,
+ "tests_baseline": false,
+ "tokens_in": 6665,
+ "tokens_out": 3694,
+ "tokens_reasoning": 0,
+ "typecheck": true,
+ "wall_s": 214.652383084
+}

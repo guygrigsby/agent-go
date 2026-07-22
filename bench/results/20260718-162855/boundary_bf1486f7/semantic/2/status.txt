@@ -1,0 +1,17 @@
+ M internal/cmd/base/initial_resources.go
+ M internal/daemon/controller/controller.go
+ M internal/daemon/controller/handlers/targets/tcp/target_service_test.go
+ M internal/session/repository_session_test.go
+ M internal/session/service_authorize_connection_test.go
+ M internal/session/service_close_connections_test.go
+ M internal/session/testing.go
+ M internal/target/repository.go
+ M internal/target/repository_credential_source_test.go
+ M internal/target/repository_test.go
+ M internal/target/tcp/immutable_fields_test.go
+ M internal/target/tcp/repository_credential_source_test.go
+ M internal/target/tcp/repository_host_source_test.go
+ M internal/target/tcp/repository_tcp_target_test.go
+ M internal/target/tcp/repository_test.go
+ M internal/target/tcp/testing_test.go
+?? opencode.json

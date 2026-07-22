@@ -1,0 +1,9 @@
+ M command/server.go
+ M helper/testhelpers/seal/sealhelper.go
+ M vault/core.go
+ M vault/rekey.go
+ M vault/seal/seal.go
+ M vault/seal/seal_testing.go
+ M vault/seal_testing_util.go
+?? .serena/
+?? opencode.json

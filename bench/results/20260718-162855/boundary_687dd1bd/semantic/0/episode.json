@@ -1,0 +1,74 @@
+{
+ "agent_done": "2026-07-21T10:47:11.131062708Z",
+ "agent_started": "2026-07-21T10:32:11.087923Z",
+ "cache_read": 3435740,
+ "cache_write": 0,
+ "capped": true,
+ "failure_kind": "capped",
+ "intermediate_states": 0,
+ "invalid_intermediates": 0,
+ "iter": 0,
+ "kind": "move",
+ "mode": "semantic",
+ "new_errors": null,
+ "op_mix": {
+  "query": {
+   "ok": 30,
+   "rejected": 45
+  },
+  "view": {
+   "ok": 9,
+   "rejected": 13
+  }
+ },
+ "pass": false,
+ "predicate": false,
+ "profile": "glm-flash",
+ "prompt": "Move the session cleanup job logic into the session package.\n\nSpecifically: move TestSessionConnectionCleanupJob from github.com/hashicorp/boundary/internal/servers/controller to github.com/hashicorp/boundary/internal/session; move TestSessionConnectionCleanupJobNewJobErr from github.com/hashicorp/boundary/internal/servers/controller to github.com/hashicorp/boundary/internal/session; move newSessionConnectionCleanupJob from github.com/hashicorp/boundary/internal/servers/controller to github.com/hashicorp/boundary/internal/session; move sessionConnectionCleanupJob from github.com/hashicorp/boundary/internal/servers/controller to github.com/hashicorp/boundary/internal/session",
+ "rejects_total": 58,
+ "repairs_offered": 19,
+ "resends": 50,
+ "specs": [
+  {
+   "in_target": false,
+   "ok": false,
+   "still_in_source": true,
+   "sym": "github.com/hashicorp/boundary/internal/servers/controller.TestSessionConnectionCleanupJob",
+   "to_name": "",
+   "to_pkg": "github.com/hashicorp/boundary/internal/session"
+  },
+  {
+   "in_target": false,
+   "ok": false,
+   "still_in_source": true,
+   "sym": "github.com/hashicorp/boundary/internal/servers/controller.TestSessionConnectionCleanupJobNewJobErr",
+   "to_name": "",
+   "to_pkg": "github.com/hashicorp/boundary/internal/session"
+  },
+  {
+   "in_target": false,
+   "ok": false,
+   "still_in_source": true,
+   "sym": "github.com/hashicorp/boundary/internal/servers/controller.newSessionConnectionCleanupJob",
+   "to_name": "",
+   "to_pkg": "github.com/hashicorp/boundary/internal/session"
+  },
+  {
+   "in_target": false,
+   "ok": false,
+   "still_in_source": true,
+   "sym": "github.com/hashicorp/boundary/internal/servers/controller.sessionConnectionCleanupJob",
+   "to_name": "",
+   "to_pkg": "github.com/hashicorp/boundary/internal/session"
+  }
+ ],
+ "steps": 87,
+ "task": "boundary_687dd1bd",
+ "tests": false,
+ "tests_baseline": true,
+ "tokens_in": 46557,
+ "tokens_out": 6098,
+ "tokens_reasoning": 0,
+ "typecheck": true,
+ "wall_s": 900.043139708
+}

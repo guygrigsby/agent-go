@@ -1,0 +1,7 @@
+ M internal/auth/additional_verification_test.go
+ M internal/perms/grants_test.go
+ M internal/servers/controller/handlers/targets/target_service.go
+ M internal/types/action/action.go
+ M internal/types/action/action_test.go
+ M internal/website/permstable/permstable.go
+?? opencode.json

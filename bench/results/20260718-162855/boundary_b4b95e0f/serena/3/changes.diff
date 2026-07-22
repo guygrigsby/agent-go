@@ -1,0 +1,22 @@
+diff --git a/internal/credential/vault/vault.go b/internal/credential/vault/vault.go
+index b9c6baf5b..62d0d0c59 100644
+--- a/internal/credential/vault/vault.go
++++ b/internal/credential/vault/vault.go
+@@ -112,7 +112,7 @@ func (c *client) ping() error {
+ // the vault.Secret response. This endpoint is accessible with the default
+ // policy in Vault 1.7.2. See
+ // https://www.vaultproject.io/api-docs/auth/token#renew-a-token-self.
+-func (c *client) renewToken() (*vault.Secret, error) {
++func (c *client) renewToken(ctx context.Context) (*vault.Secret, error) {
+ 	const op = "vault.(client).renewToken"
+ 	t, err := c.cl.Auth().Token().RenewSelf(0)
+ 	if err != nil {
+@@ -137,7 +137,7 @@ func (c *client) revokeToken() error {
+ // vault.Secret response. This endpoint is accessible with the default
+ // policy in Vault 1.7.2. See
+ // https://www.vaultproject.io/api-docs/system/leases#renew-lease.
+-func (c *client) renewLease(leaseId string, leaseDuration time.Duration) (*vault.Secret, error) {
++func (c *client) renewLease(ctx context.Context, leaseId string, leaseDuration time.Duration) (*vault.Secret, error) {
+ 	const op = "vault.(client).renewLease"
+ 	t, err := c.cl.Sys().Renew(leaseId, int(leaseDuration.Round(time.Second).Seconds()))
+ 	if err != nil {

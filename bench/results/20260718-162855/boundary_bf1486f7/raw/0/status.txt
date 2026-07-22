@@ -1,0 +1,5 @@
+ M internal/cmd/base/initial_resources.go
+ M internal/daemon/controller/controller.go
+ M internal/daemon/controller/handlers/targets/tcp/target_service_test.go
+ M internal/target/repository.go
+?? opencode.json

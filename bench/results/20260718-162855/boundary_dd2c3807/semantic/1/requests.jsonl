@@ -1,0 +1,188 @@
+{"ms":1021,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-21T15:08:08.033497Z"}
+{"ms":1004,"op":"query","outcome":"ok","req_sha":"b9ca9d68cf1c150c","sym":"NewDerivedReader","ts":"2026-07-21T15:09:44.566702Z"}
+{"ms":10,"op":"query","outcome":"ok","req_sha":"b2a437fbce12477a","sym":"libs/crypto","ts":"2026-07-21T15:10:04.595476Z"}
+{"ms":1,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/kms","req_sha":"87a5693b2f7bdc60","sym":"NewDerivedReader","ts":"2026-07-21T15:10:16.159317Z"}
+{"ms":2,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/kms","req_sha":"0c4665e48e7cc461","sym":"TestNewDerivedReader","ts":"2026-07-21T15:10:26.689724Z"}
+{"ms":1,"op":"query","outcome":"rejected","reason":"package not found","repairs":0,"req_sha":"267332e95b2b1444","ts":"2026-07-21T15:10:40.095616Z"}
+{"ms":16,"op":"query","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/kms","req_sha":"3dc7f2a79271cd69","sym":"NewDerivedReader","ts":"2026-07-21T15:10:48.993061Z"}
+{"ms":13,"op":"query","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/kms","req_sha":"48e344dbe94431f0","sym":"TestNewDerivedReader","ts":"2026-07-21T15:11:09.279829Z"}
+{"ms":2,"op":"view","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/kms","reason":"symbol not found","repairs":3,"req_sha":"17f6c2d4b6e378ea","ts":"2026-07-21T15:11:14.355797Z"}
+{"ms":3,"op":"view","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/kms","reason":"receiver type not found","repairs":1,"req_sha":"813b982cedfd0d2d","sym":"kms.go","ts":"2026-07-21T15:11:17.629015Z"}
+{"ms":3,"op":"view","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/kms","reason":"receiver type not found","repairs":1,"req_sha":"fb8e3bd7a2823345","sym":"kms.go:1","ts":"2026-07-21T15:11:19.879311Z"}
+{"ms":2,"op":"view","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/kms","reason":"receiver type not found","repairs":1,"req_sha":"813b982cedfd0d2d","sym":"kms.go","ts":"2026-07-21T15:11:22.313022Z"}
+{"ms":2,"op":"view","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/kms","reason":"symbol not found","repairs":3,"req_sha":"17f6c2d4b6e378ea","ts":"2026-07-21T15:11:24.740368Z"}
+{"ms":8,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:11:28.09472Z"}
+{"ms":8,"op":"query","outcome":"ok","req_sha":"7537261e54f320be","sym":"internal","ts":"2026-07-21T15:11:29.293427Z"}
+{"ms":8,"op":"query","outcome":"ok","req_sha":"f21bc6d52fd691ae","sym":"libs","ts":"2026-07-21T15:11:32.145893Z"}
+{"ms":2,"op":"view","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/auth/oidc","reason":"receiver type not found","repairs":1,"req_sha":"674d1878704146f6","sym":"auth_method.go:239","ts":"2026-07-21T15:11:35.13104Z"}
+{"ms":2,"op":"view","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/auth/oidc","reason":"receiver type not found","repairs":1,"req_sha":"24e66c3a3fa7a750","sym":"auth_method.go","ts":"2026-07-21T15:11:37.536625Z"}
+{"ms":2,"op":"view","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/auth/oidc","reason":"receiver type not found","repairs":1,"req_sha":"674d1878704146f6","sym":"auth_method.go:239","ts":"2026-07-21T15:11:40.137713Z"}
+{"ms":2,"op":"query","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/auth/oidc","reason":"symbol not found","repairs":3,"req_sha":"784b339d2bbdc901","ts":"2026-07-21T15:11:43.074555Z"}
+{"ms":11,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:11:46.74341Z"}
+{"ms":9,"op":"query","outcome":"ok","req_sha":"7537261e54f320be","sym":"internal","ts":"2026-07-21T15:11:55.950201Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"87f9bafc8d1b3884","sym":"internal/errors","ts":"2026-07-21T15:11:59.466749Z"}
+{"ms":8,"op":"query","outcome":"ok","req_sha":"b0286dcca31ac213","sym":"kms","ts":"2026-07-21T15:12:00.999457Z"}
+{"ms":2,"op":"upsert","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/libs/crypto","reason":"declaration does not parse","repairs":0,"req_sha":"3a20336fc6d4cee4","ts":"2026-07-21T15:13:02.741831Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"be2cecf1458c0546","sym":"wrapping","ts":"2026-07-21T15:13:05.154042Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"4e2823cd49e6e790","sym":"internal/wrapping","ts":"2026-07-21T15:13:09.135962Z"}
+{"ms":1,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/kms","req_sha":"87a5693b2f7bdc60","sym":"NewDerivedReader","ts":"2026-07-21T15:13:11.125598Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"9ce123c7621121c8","sym":"aead","ts":"2026-07-21T15:13:16.90314Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"95d359ad3373af31","sym":"wrapping.Wrapper","ts":"2026-07-21T15:13:18.786221Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"e66e7ff621bdaafa","sym":"multiwrapper","ts":"2026-07-21T15:13:20.366572Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"5b92fe1660b50e35","sym":"kms.go","ts":"2026-07-21T15:13:22.359444Z"}
+{"ms":2,"op":"view","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/kms","reason":"receiver type not found","repairs":1,"req_sha":"4171f25351df9c2e","sym":"kms.go:382","ts":"2026-07-21T15:13:24.52342Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"bac0b271a6b7660c","sym":"kms/internal","ts":"2026-07-21T15:13:27.89163Z"}
+{"ms":2,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-21T15:13:29.188691Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:13:30.926586Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"d7f16e57bc59fc7b","sym":"go.mod","ts":"2026-07-21T15:13:32.695571Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"d0b630941f323b08","sym":"boundary","ts":"2026-07-21T15:13:34.343903Z"}
+{"ms":2,"op":"upsert","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/libs/crypto","reason":"declaration does not parse","repairs":0,"req_sha":"edce1ca6ae4003dd","ts":"2026-07-21T15:14:15.136793Z"}
+{"ms":2,"op":"view","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/kms","reason":"receiver type not found","repairs":1,"req_sha":"5d0598595ecadc1a","sym":"kms_test.go:77","ts":"2026-07-21T15:14:18.821246Z"}
+{"ms":2,"op":"view","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/kms","reason":"receiver type not found","repairs":1,"req_sha":"b47f91b5362cee7a","sym":"kms_test.go","ts":"2026-07-21T15:14:22.147582Z"}
+{"ms":8,"op":"query","outcome":"ok","req_sha":"274478833bc7e217","sym":"internal/kms/","ts":"2026-07-21T15:14:25.612833Z"}
+{"ms":8,"op":"query","outcome":"ok","req_sha":"87f9bafc8d1b3884","sym":"internal/errors","ts":"2026-07-21T15:14:27.757667Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"974cd341069a5c9b","sym":"errors","ts":"2026-07-21T15:14:29.394897Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"4e2823cd49e6e790","sym":"internal/wrapping","ts":"2026-07-21T15:15:13.394415Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"4e2823cd49e6e790","sym":"internal/wrapping","ts":"2026-07-21T15:15:15.555924Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"7537261e54f320be","sym":"internal","ts":"2026-07-21T15:15:17.743483Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:15:22.706639Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"87f9bafc8d1b3884","sym":"internal/errors","ts":"2026-07-21T15:15:25.191445Z"}
+{"ms":2,"op":"view","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/kms","reason":"receiver type not found","repairs":1,"req_sha":"813b982cedfd0d2d","sym":"kms.go","ts":"2026-07-21T15:15:29.581391Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:15:34.316949Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"7537261e54f320be","sym":"internal","ts":"2026-07-21T15:15:36.672701Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:15:42.397243Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:15:44.888499Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:15:47.851901Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:15:50.801155Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:15:53.77656Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:15:56.760462Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:15:59.735922Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:16:02.71892Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:16:05.707135Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:16:08.706845Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:16:11.711467Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:16:14.725149Z"}
+{"ms":13,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:16:17.74551Z"}
+{"ms":8,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:16:20.788678Z"}
+{"ms":8,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:16:23.814938Z"}
+{"ms":8,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:16:26.843893Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:16:29.890125Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:16:32.943066Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:16:36.001018Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:16:39.07354Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:16:42.157911Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:16:45.235421Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:16:48.312949Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:16:51.403506Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:16:54.51133Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:16:57.621109Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:17:00.738161Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:17:03.865055Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:17:06.994327Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:17:10.140824Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:17:13.287532Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:17:16.446135Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:17:19.599812Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:17:22.755034Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:17:25.915955Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:17:29.107353Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:17:32.311626Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:17:35.511148Z"}
+{"ms":8,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:17:38.714008Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:17:41.917396Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:17:45.208698Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:17:48.445379Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:17:51.675563Z"}
+{"ms":8,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:17:54.922629Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:17:58.168589Z"}
+{"ms":8,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:18:01.415888Z"}
+{"ms":8,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:18:04.675543Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:18:07.946758Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:18:11.217436Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:18:14.491913Z"}
+{"ms":8,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:18:17.77945Z"}
+{"ms":11,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:18:21.073285Z"}
+{"ms":8,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:18:24.382071Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:18:27.692013Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:18:30.997285Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:18:34.316209Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:18:37.64932Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:18:40.984901Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:18:44.34249Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:18:47.697663Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:18:51.056691Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:18:54.424947Z"}
+{"ms":8,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:18:57.803262Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:19:01.181256Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:19:04.58081Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:19:07.980744Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:19:11.400056Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:19:14.816405Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:19:18.243666Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:19:21.670476Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:19:25.097254Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:19:28.534901Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:19:31.978095Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:19:35.482817Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:19:38.958947Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:19:42.446553Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:19:45.928394Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:19:49.416618Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:19:52.914194Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:19:56.415832Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:19:59.922518Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:20:03.443983Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:20:06.970909Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:20:10.50116Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:20:14.034376Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:20:17.572617Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:20:21.122193Z"}
+{"ms":11,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:20:24.688866Z"}
+{"ms":8,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:20:28.277321Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:20:31.859609Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:20:35.439291Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:20:39.024896Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:20:42.620355Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:20:46.217147Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:20:49.834867Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:20:53.464322Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:20:57.107548Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:21:00.753936Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:21:04.414869Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:21:08.064742Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:21:11.714202Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:21:15.376174Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:21:19.044874Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:21:22.727039Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:21:26.418268Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:21:30.119139Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:21:33.823747Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:21:37.530237Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:21:41.240737Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:21:44.977291Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:21:48.712191Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:21:52.45792Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:21:56.250488Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:22:00.012806Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:22:03.785144Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:22:07.558228Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:22:11.398573Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:22:15.188657Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:22:18.985388Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:22:22.797356Z"}
+{"ms":11,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:22:26.617329Z"}
+{"ms":8,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:22:30.455873Z"}
+{"ms":8,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:22:34.285619Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:22:38.115989Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:22:41.954791Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:22:45.806998Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:22:49.665736Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:22:53.539718Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:22:57.417812Z"}
+{"ms":8,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:23:01.29951Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T15:23:05.182355Z"}
+{"ms":872,"op":"inspect","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/libs/crypto","reason":"package not found","repairs":1,"req_sha":"4735785bc98b9d6e","sym":"NewDerivedReader","ts":"2026-07-21T15:23:09.210952Z"}
+{"ms":1,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/kms","req_sha":"06b3709f94d43a41","sym":"NewDerivedReader","ts":"2026-07-21T15:23:10.088323Z"}
+{"ms":1,"op":"inspect","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/libs/crypto","reason":"package not found","repairs":1,"req_sha":"4d400ef2f960ae93","sym":"TestNewDerivedReader","ts":"2026-07-21T15:23:10.094737Z"}
+{"ms":1,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/kms","req_sha":"45003c1614a7068f","sym":"TestNewDerivedReader","ts":"2026-07-21T15:23:10.100683Z"}
+{"ms":2,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-21T15:23:10.10578Z"}

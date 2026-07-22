@@ -1,0 +1,45 @@
+{
+ "agent_done": "2026-07-22T15:20:36.471235333Z",
+ "agent_started": "2026-07-22T15:08:36.457753Z",
+ "cache_read": 1228919,
+ "cache_write": 0,
+ "capped": true,
+ "failure_kind": "capped",
+ "first_invalid_s": 206.499203625,
+ "intermediate_states": 19,
+ "invalid_intermediate_rate": 1,
+ "invalid_intermediates": 19,
+ "iter": 4,
+ "kind": "rename",
+ "mode": "raw",
+ "new_errors": [
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashvault_caec65a7raw933835032/005/vault/command/server.go:2665:47|undefined: vaultseal.SealInfo"
+ ],
+ "op_mix": {},
+ "pass": false,
+ "predicate": false,
+ "profile": "glm-flash",
+ "prompt": "Rename SealInfo to SealWrapper.",
+ "rejects_total": 0,
+ "repairs_offered": 0,
+ "resends": 0,
+ "specs": [
+  {
+   "baseline_refs": 30,
+   "new_refs": 29,
+   "ok": false,
+   "old_refs_left": 0,
+   "sym": "github.com/hashicorp/vault/vault/seal.SealInfo",
+   "to": "SealWrapper"
+  }
+ ],
+ "steps": 44,
+ "task": "vault_caec65a7",
+ "tests": false,
+ "tests_baseline": true,
+ "tokens_in": 25253,
+ "tokens_out": 13242,
+ "tokens_reasoning": 0,
+ "typecheck": false,
+ "wall_s": 720.013482333
+}

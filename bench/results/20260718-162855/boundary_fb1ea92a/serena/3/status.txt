@@ -1,0 +1,3 @@
+ M internal/daemon/worker/proxy/tcp/tcp.go
+?? .serena/
+?? opencode.json

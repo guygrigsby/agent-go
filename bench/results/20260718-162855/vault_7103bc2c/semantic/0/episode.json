@@ -1,0 +1,74 @@
+{
+ "agent_done": "2026-07-20T12:13:10.005224708Z",
+ "agent_started": "2026-07-20T12:01:09.962223Z",
+ "cache_read": 984346,
+ "cache_write": 0,
+ "capped": true,
+ "failure_kind": "capped",
+ "intermediate_states": 1,
+ "invalid_intermediate_rate": 0,
+ "invalid_intermediates": 0,
+ "iter": 0,
+ "kind": "add-param",
+ "mode": "semantic",
+ "new_errors": null,
+ "op_mix": {
+  "query": {
+   "ok": 13,
+   "rejected": 12
+  },
+  "set-body": {
+   "ok": 0,
+   "rejected": 1
+  },
+  "status": {
+   "ok": 1,
+   "rejected": 0
+  },
+  "upsert": {
+   "ok": 1,
+   "rejected": 0
+  },
+  "view": {
+   "ok": 11,
+   "rejected": 3
+  }
+ },
+ "pass": false,
+ "predicate": false,
+ "profile": "glm-flash",
+ "prompt": "VAULT-17078: Add useEventLogger Argument to Audit Factory Functions",
+ "rejects_total": 16,
+ "repairs_offered": 27,
+ "resends": 4,
+ "specs": [
+  {
+   "ok": false,
+   "param": "useEventLogger bool",
+   "signature": "func(ctx context.Context, conf *github.com/hashicorp/vault/audit.BackendConfig) (github.com/hashicorp/vault/audit.Backend, error)",
+   "sym": "github.com/hashicorp/vault/builtin/audit/file.Factory"
+  },
+  {
+   "ok": false,
+   "param": "useEventLogger bool",
+   "signature": "func(ctx context.Context, conf *github.com/hashicorp/vault/audit.BackendConfig) (github.com/hashicorp/vault/audit.Backend, error)",
+   "sym": "github.com/hashicorp/vault/builtin/audit/socket.Factory"
+  },
+  {
+   "ok": false,
+   "param": "useEventLogger bool",
+   "signature": "func(ctx context.Context, conf *github.com/hashicorp/vault/audit.BackendConfig) (github.com/hashicorp/vault/audit.Backend, error)",
+   "sym": "github.com/hashicorp/vault/builtin/audit/syslog.Factory"
+  }
+ ],
+ "steps": 44,
+ "task": "vault_7103bc2c",
+ "tests": false,
+ "tests_baseline": true,
+ "time_to_first_mutation_s": 378.45418,
+ "tokens_in": 38206,
+ "tokens_out": 4576,
+ "tokens_reasoning": 0,
+ "typecheck": true,
+ "wall_s": 720.043001708
+}

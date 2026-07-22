@@ -1,0 +1,13 @@
+ M audit/audit.go
+ M builtin/audit/file/backend.go
+ M builtin/audit/socket/backend.go
+ M builtin/audit/syslog/backend.go
+ M command/command_test.go
+ M command/commands.go
+ M helper/testhelpers/corehelpers/corehelpers.go
+ M http/logical_test.go
+ M vault/external_tests/api/api_integration_test.go
+ M vault/external_tests/plugin/external_plugin_test.go
+ M vault/testing.go
+?? .serena/
+?? opencode.json

@@ -1,0 +1,4 @@
+ M internal/daemon/worker/handler.go
+ M internal/daemon/worker/proxy/tcp/tcp.go
+?? internal/daemon/worker/handler.go.bak
+?? opencode.json

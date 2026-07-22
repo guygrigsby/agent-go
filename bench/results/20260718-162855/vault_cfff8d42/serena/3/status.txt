@@ -1,0 +1,9 @@
+ M builtin/credential/aws/backend.go
+ M builtin/credential/aws/path_config_rotate_root.go
+ M builtin/credential/aws/path_login.go
+ M builtin/logical/aws/backend_test.go
+ M builtin/logical/aws/path_config_rotate_root.go
+ M builtin/logical/aws/path_user.go
+ M builtin/logical/aws/secret_access_keys.go
+?? .serena/
+?? opencode.json

@@ -1,0 +1,8 @@
+ M audit/audit.go
+ M builtin/audit/file/backend.go
+ M builtin/audit/socket/backend.go
+ M builtin/audit/syslog/backend.go
+ M command/commands.go
+ M vault/audit.go
+?? .serena/
+?? opencode.json

@@ -1,0 +1,2 @@
+?? internal/session/agent.go
+?? opencode.json

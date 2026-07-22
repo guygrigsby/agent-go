@@ -1,0 +1,26 @@
+diff --git a/internal/servers/controller/controller.go b/internal/servers/controller/controller.go
+index 76e80816f..c2d23f6d8 100644
+--- a/internal/servers/controller/controller.go
++++ b/internal/servers/controller/controller.go
+@@ -368,7 +368,7 @@ func (c *Controller) registerJobs() error {
+ // registerSessionConnectionCleanupJob is a helper method to abstract
+ // registering the session connection cleanup job specifically.
+ func (c *Controller) registerSessionConnectionCleanupJob() error {
+-	sessionConnectionCleanupJob, err := newSessionConnectionCleanupJob(c.ConnectionRepoFn, c.conf.StatusGracePeriodDuration)
++	sessionConnectionCleanupJob, err := session.newSessionConnectionCleanupJob(c.ConnectionRepoFn, c.conf.StatusGracePeriodDuration)
+ 	if err != nil {
+ 		return fmt.Errorf("error creating session cleanup job: %w", err)
+ 	}
+diff --git a/internal/servers/controller/session_cleanup_job_test.go b/internal/servers/controller/session_cleanup_job_test.go
+index 094a0602d..5a1784984 100644
+--- a/internal/servers/controller/session_cleanup_job_test.go
++++ b/internal/servers/controller/session_cleanup_job_test.go
+@@ -56,7 +56,7 @@ func TestSessionConnectionCleanupJob(t *testing.T) {
+ 		if i%2 == 0 {
+ 			serverId = worker2.PrivateId
+ 		}
+-		sess := session.TestDefaultSession(t, conn, wrapper, iamRepo, session.WithServerId(serverId), session.WithDbOpts(db.WithSkipVetForWrite(true)))
++		sess := session.TestDefaultSession(t, conn, wrapper, iamRepo, session.WithServerId(serverId), db.WithSkipVetForWrite(true))
+ 		sess, _, err = sessionRepo.ActivateSession(ctx, sess.GetPublicId(), sess.Version, serverId, "worker", []byte("foo"))
+ 		require.NoError(err)
+ 		c, cs, _, err := session.AuthorizeConnection(ctx, sessionRepo, connectionRepo, sess.GetPublicId(), serverId)

@@ -1,0 +1,8 @@
+{"ms":3212,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/vault/vault/seal","req_sha":"2496537c080ba56e","sym":"SealInfo","ts":"2026-07-22T18:02:15.085077Z"}
+{"ms":4,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-22T18:02:18.301859Z"}
+{"ms":3377,"op":"query","outcome":"ok","req_sha":"21bd0a6628616012","sym":"SealInfo","ts":"2026-07-22T18:02:51.703532Z"}
+{"ms":283,"op":"rename","outcome":"accepted","pkg":"github.com/hashicorp/vault/vault/seal","req_sha":"5677a042d9098845","sym":"SealInfo","ts":"2026-07-22T18:03:04.21011Z"}
+{"ms":4707,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-22T18:09:23.509446Z"}
+{"ms":3951,"op":"refs","outcome":"rejected","pkg":"github.com/hashicorp/vault/vault/seal","reason":"symbol not found","repairs":3,"req_sha":"2496537c080ba56e","sym":"SealInfo","ts":"2026-07-22T18:09:25.550052Z"}
+{"ms":28,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/vault/vault/seal","req_sha":"52ba8dab1c4e96fe","sym":"SealWrapper","ts":"2026-07-22T18:09:29.506552Z"}
+{"ms":5,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-22T18:09:29.539982Z"}

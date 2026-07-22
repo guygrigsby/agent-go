@@ -1,0 +1,76 @@
+diff --git a/internal/cmd/commands/dev/dev.go b/internal/cmd/commands/dev/dev.go
+index 8df71fd6c..da955c925 100644
+--- a/internal/cmd/commands/dev/dev.go
++++ b/internal/cmd/commands/dev/dev.go
+@@ -66,7 +66,7 @@ type Command struct {
+ 	flagWorkerAuthKey                string
+ 	flagWorkerProxyListenAddr        string
+ 	flagWorkerPublicAddr             string
+-	flagPassthroughDirectory         string
++	flagUiPassthroughDir         string
+ 	flagRecoveryKey                  string
+ 	flagDatabaseUrl                  string
+ 	flagContainerImage               string
+@@ -251,7 +251,7 @@ func (c *Command) Flags() *base.FlagSets {
+ 
+ 	f.StringVar(&base.StringVar{
+ 		Name:   "passthrough-directory",
+-		Target: &c.flagPassthroughDirectory,
++		Target: &c.flagUiPassthroughDir,
+ 		EnvVar: "BOUNDARY_DEV_PASSTHROUGH_DIRECTORY",
+ 		Usage:  "Enables a passthrough directory in the webserver at /",
+ 	})
+@@ -408,7 +408,7 @@ func (c *Command) Run(args []string) int {
+ 	c.DevTargetSessionConnectionLimit = c.flagTargetSessionConnectionLimit
+ 	c.DevHostAddress = host
+ 
+-	c.Config.PassthroughDirectory = c.flagPassthroughDirectory
++	c.Config.DevUiPassthroughDir = c.flagUiPassthroughDir
+ 
+ 	for _, l := range c.Config.Listeners {
+ 		if len(l.Purpose) != 1 {
+diff --git a/internal/cmd/config/config.go b/internal/cmd/config/config.go
+index 83e4f382c..03059c30e 100644
+--- a/internal/cmd/config/config.go
++++ b/internal/cmd/config/config.go
+@@ -98,7 +98,7 @@ type Config struct {
+ 
+ 	// Dev-related options
+ 	DevController        bool   `hcl:"-"`
+-	PassthroughDirectory string `hcl:"-"`
++	DevUiPassthroughDir string `hcl:"-"`
+ 	DevControllerKey     string `hcl:"-"`
+ 	DevWorkerAuthKey     string `hcl:"-"`
+ 	DevRecoveryKey       string `hcl:"-"`
+diff --git a/internal/servers/controller/handler_noui.go b/internal/servers/controller/handler_noui.go
+index 20bc64689..995118283 100644
+--- a/internal/servers/controller/handler_noui.go
++++ b/internal/servers/controller/handler_noui.go
+@@ -8,13 +8,13 @@ import (
+ 	"github.com/hashicorp/boundary/internal/observability/event"
+ )
+ 
+-func devPassthroughHandler(passthroughDir string) http.Handler {
+-	const op = "controller.devPassthroughHandler"
++func devUiPassthroughHandler(uiPassthroughDir string) http.Handler {
++	const op = "controller.devUiPassthroughHandler"
+ 	ctx := context.TODO()
+ 	// Panic may not be ideal but this is never a production call and it'll
+ 	// panic on startup. We could also just change the function to return
+ 	// an error.
+-	abs, err := filepath.Abs(passthroughDir)
++	abs, err := filepath.Abs(uiPassthroughDir)
+ 	if err != nil {
+ 		panic(err)
+ 	}
+@@ -26,8 +26,8 @@ func devPassthroughHandler(passthroughDir string) http.Handler {
+ }
+ 
+ var handleUi = func(c *Controller) http.Handler {
+-	if c.conf.RawConfig.PassthroughDirectory != "" {
+-		return devPassthroughHandler(c.conf.RawConfig.PassthroughDirectory)
++	if c.conf.RawConfig.DevUiPassthroughDir != "" {
++		return devUiPassthroughHandler(c.conf.RawConfig.DevUiPassthroughDir)
+ 	}
+ 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+ 		w.WriteHeader(http.StatusNotFound)

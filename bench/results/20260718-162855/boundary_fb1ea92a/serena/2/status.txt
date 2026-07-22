@@ -1,0 +1,6 @@
+ M internal/daemon/worker/handler.go
+ M internal/daemon/worker/proxy/proxy.go
+ M internal/daemon/worker/proxy/tcp/tcp.go
+ M internal/daemon/worker/proxy/tcp/tcp_test.go
+?? .serena/
+?? opencode.json

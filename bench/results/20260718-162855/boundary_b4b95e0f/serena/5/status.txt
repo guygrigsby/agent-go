@@ -1,0 +1,8 @@
+ M internal/credential/vault/credential_store.go
+ M internal/credential/vault/repository_credential_store.go
+ M internal/credential/vault/testing.go
+ M internal/credential/vault/testing_test.go
+ M internal/credential/vault/vault.go
+ M internal/credential/vault/vault_test.go
+?? .serena/
+?? opencode.json

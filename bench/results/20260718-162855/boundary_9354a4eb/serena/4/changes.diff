@@ -1,0 +1,13 @@
+diff --git a/internal/census/census_job.go b/internal/census/census_job.go
+index dcca07118..836c32d91 100644
+--- a/internal/census/census_job.go
++++ b/internal/census/census_job.go
+@@ -54,7 +54,7 @@ func (c *censusJob) Status() scheduler.JobStatus {
+ 
+ // Run performs the required work depending on the implementation.
+ // The context is used to notify the job that it should exit early.
+-func (c *censusJob) Run(ctx context.Context) error {
++func (c *censusJob) Run(ctx context.Context, statusThreshold time.Duration) error {
+ 	err := RunFn(ctx, c)
+ 	return err
+ }

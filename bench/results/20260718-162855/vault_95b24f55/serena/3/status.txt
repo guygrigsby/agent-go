@@ -1,0 +1,11 @@
+ M command/healthcheck/pki.go
+ M command/healthcheck/pki_ca_validity_period.go
+ M command/healthcheck/pki_crl_validity_period.go
+ M command/healthcheck/pki_hardware_backed_root.go
+ M command/healthcheck/pki_role_allows_glob_wildcards.go
+ M command/healthcheck/pki_role_allows_localhost.go
+ M command/healthcheck/pki_role_no_store_false.go
+ M command/healthcheck/pki_root_issued_leaves.go
+ M command/healthcheck/pki_too_many_certs.go
+?? .serena/
+?? opencode.json

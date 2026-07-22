@@ -1,0 +1,182 @@
+diff --git a/audit/audit.go b/audit/audit.go
+index 35a3d38a05..ded21679b4 100644
+--- a/audit/audit.go
++++ b/audit/audit.go
+@@ -59,4 +59,4 @@ type BackendConfig struct {
+ }
+ 
+ // Factory is the factory function to create an audit backend.
+-type Factory func(context.Context, *BackendConfig) (Backend, error)
++type func Factory(ctx context.Context, config *BackendConfig, useEventLogger bool) (Backend, error)
+diff --git a/builtin/audit/file/backend.go b/builtin/audit/file/backend.go
+index d4471f1a9a..43471f429f 100644
+--- a/builtin/audit/file/backend.go
++++ b/builtin/audit/file/backend.go
+@@ -20,7 +20,7 @@ import (
+ 	"github.com/hashicorp/vault/sdk/logical"
+ )
+ 
+-func Factory(ctx context.Context, conf *audit.BackendConfig) (audit.Backend, error) {
++func Factory(ctx context.Context, conf *audit.BackendConfig, useEventLogger bool) (audit.Backend, error) {
+ 	if conf.SaltConfig == nil {
+ 		return nil, fmt.Errorf("nil salt config")
+ 	}
+diff --git a/builtin/audit/socket/backend.go b/builtin/audit/socket/backend.go
+index 25077fc0ff..e5e0ce3fd6 100644
+--- a/builtin/audit/socket/backend.go
++++ b/builtin/audit/socket/backend.go
+@@ -19,7 +19,7 @@ import (
+ 	"github.com/hashicorp/vault/sdk/logical"
+ )
+ 
+-func Factory(ctx context.Context, conf *audit.BackendConfig) (audit.Backend, error) {
++func Factory(ctx context.Context, conf *audit.BackendConfig, useEventLogger bool) (audit.Backend, error) {
+ 	if conf.SaltConfig == nil {
+ 		return nil, fmt.Errorf("nil salt config")
+ 	}
+diff --git a/builtin/audit/syslog/backend.go b/builtin/audit/syslog/backend.go
+index 19059b86cc..4fbcfd034e 100644
+--- a/builtin/audit/syslog/backend.go
++++ b/builtin/audit/syslog/backend.go
+@@ -16,7 +16,7 @@ import (
+ 	"github.com/hashicorp/vault/sdk/logical"
+ )
+ 
+-func Factory(ctx context.Context, conf *audit.BackendConfig) (audit.Backend, error) {
++func Factory(ctx context.Context, conf *audit.BackendConfig, useEventLogger bool) (audit.Backend, error) {
+ 	if conf.SaltConfig == nil {
+ 		return nil, fmt.Errorf("nil salt config")
+ 	}
+diff --git a/command/command_test.go b/command/command_test.go
+index f1a5269b9f..edff580515 100644
+--- a/command/command_test.go
++++ b/command/command_test.go
+@@ -41,7 +41,9 @@ var (
+ 	}
+ 
+ 	defaultVaultAuditBackends = map[string]audit.Factory{
+-		"file": auditFile.Factory,
++		"file": func(ctx context.Context, config *audit.BackendConfig, useEventLogger bool) (audit.Backend, error) {
++			return auditFile.Factory(ctx, config, useEventLogger)
++		},
+ 	}
+ 
+ 	defaultVaultLogicalBackends = map[string]logical.Factory{
+diff --git a/command/commands.go b/command/commands.go
+index 68e2542b06..e4f20c2b54 100644
+--- a/command/commands.go
++++ b/command/commands.go
+@@ -165,9 +165,15 @@ const (
+ 
+ var (
+ 	auditBackends = map[string]audit.Factory{
+-		"file":   auditFile.Factory,
+-		"socket": auditSocket.Factory,
+-		"syslog": auditSyslog.Factory,
++		"file": func(ctx context.Context, config *audit.BackendConfig, useEventLogger bool) (audit.Backend, error) {
++			return auditFile.Factory(ctx, config, useEventLogger)
++		},
++		"socket": func(ctx context.Context, config *audit.BackendConfig, useEventLogger bool) (audit.Backend, error) {
++			return auditSocket.Factory(ctx, config, useEventLogger)
++		},
++		"syslog": func(ctx context.Context, config *audit.BackendConfig, useEventLogger bool) (audit.Backend, error) {
++			return auditSyslog.Factory(ctx, config, useEventLogger)
++		},
+ 	}
+ 
+ 	credentialBackends = map[string]logical.Factory{
+diff --git a/helper/testhelpers/corehelpers/corehelpers.go b/helper/testhelpers/corehelpers/corehelpers.go
+index 8910e4fa6e..e51bb26ac2 100644
+--- a/helper/testhelpers/corehelpers/corehelpers.go
++++ b/helper/testhelpers/corehelpers/corehelpers.go
+@@ -262,7 +262,7 @@ func NewNoopAudit(config map[string]string) (*NoopAudit, error) {
+ }
+ 
+ func NoopAuditFactory(records **[][]byte) audit.Factory {
+-	return func(_ context.Context, config *audit.BackendConfig) (audit.Backend, error) {
++	return func(_ context.Context, config *audit.BackendConfig, useEventLogger bool) (audit.Backend, error) {
+ 		n, err := NewNoopAudit(config.Config)
+ 		if err != nil {
+ 			return nil, err
+diff --git a/http/logical_test.go b/http/logical_test.go
+index a9ccdff052..217ae661ca 100644
+--- a/http/logical_test.go
++++ b/http/logical_test.go
+@@ -592,7 +592,9 @@ func TestLogical_AuditPort(t *testing.T) {
+ 			"kv": kv.VersionedKVFactory,
+ 		},
+ 		AuditBackends: map[string]audit.Factory{
+-			"file": auditFile.Factory,
++			"file": func(ctx context.Context, config *audit.BackendConfig, useEventLogger bool) (audit.Backend, error) {
++				return auditFile.Factory(ctx, config, useEventLogger)
++			},
+ 		},
+ 	}
+ 
+@@ -787,7 +789,9 @@ func testBuiltinPluginMetadataAuditLog(t *testing.T, log map[string]interface{},
+ func TestLogical_AuditEnabled_ShouldLogPluginMetadata_Auth(t *testing.T) {
+ 	coreConfig := &vault.CoreConfig{
+ 		AuditBackends: map[string]audit.Factory{
+-			"file": auditFile.Factory,
++			"file": func(ctx context.Context, config *audit.BackendConfig, useEventLogger bool) (audit.Backend, error) {
++				return auditFile.Factory(ctx, config, useEventLogger)
++			},
+ 		},
+ 	}
+ 
+@@ -860,7 +864,9 @@ func TestLogical_AuditEnabled_ShouldLogPluginMetadata_Secret(t *testing.T) {
+ 			"kv": kv.VersionedKVFactory,
+ 		},
+ 		AuditBackends: map[string]audit.Factory{
+-			"file": auditFile.Factory,
++			"file": func(ctx context.Context, config *audit.BackendConfig, useEventLogger bool) (audit.Backend, error) {
++				return auditFile.Factory(ctx, config, useEventLogger)
++			},
+ 		},
+ 	}
+ 
+diff --git a/vault/external_tests/api/api_integration_test.go b/vault/external_tests/api/api_integration_test.go
+index 4aaba28092..909131e489 100644
+--- a/vault/external_tests/api/api_integration_test.go
++++ b/vault/external_tests/api/api_integration_test.go
+@@ -44,7 +44,9 @@ func testVaultServerUnseal(t testing.TB) (*api.Client, []string, func()) {
+ 			"userpass": credUserpass.Factory,
+ 		},
+ 		AuditBackends: map[string]audit.Factory{
+-			"file": auditFile.Factory,
++			"file": func(ctx context.Context, config *audit.BackendConfig, useEventLogger bool) (audit.Backend, error) {
++				return auditFile.Factory(ctx, config, useEventLogger)
++			},
+ 		},
+ 		LogicalBackends: map[string]logical.Factory{
+ 			"database":       database.Factory,
+diff --git a/vault/external_tests/plugin/external_plugin_test.go b/vault/external_tests/plugin/external_plugin_test.go
+index cf8a7b9769..9415d869e4 100644
+--- a/vault/external_tests/plugin/external_plugin_test.go
++++ b/vault/external_tests/plugin/external_plugin_test.go
+@@ -40,7 +40,9 @@ func getClusterWithFileAuditBackend(t *testing.T, typ consts.PluginType, numCore
+ 			"database": database.Factory,
+ 		},
+ 		AuditBackends: map[string]audit.Factory{
+-			"file": auditFile.Factory,
++			"file": func(ctx context.Context, config *audit.BackendConfig, useEventLogger bool) (audit.Backend, error) {
++				return auditFile.Factory(ctx, config, useEventLogger)
++			},
+ 		},
+ 	}
+ 
+diff --git a/vault/testing.go b/vault/testing.go
+index 7df6f6f071..d990a7d2c7 100644
+--- a/vault/testing.go
++++ b/vault/testing.go
+@@ -134,7 +134,9 @@ func TestCoreWithSeal(t testing.T, testSeal Seal, enableRaw bool) *Core {
+ 		EnableRaw:       enableRaw,
+ 		BuiltinRegistry: corehelpers.NewMockBuiltinRegistry(),
+ 		AuditBackends: map[string]audit.Factory{
+-			"file": auditFile.Factory,
++			"file": func(ctx context.Context, config *audit.BackendConfig, useEventLogger bool) (audit.Backend, error) {
++				return auditFile.Factory(ctx, config, useEventLogger)
++			},
+ 		},
+ 	}
+ 	return TestCoreWithSealAndUI(t, conf)

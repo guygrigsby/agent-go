@@ -1,0 +1,14 @@
+diff --git a/audit/audit.go b/audit/audit.go
+index 35a3d38a05..11db6afb76 100644
+--- a/audit/audit.go
++++ b/audit/audit.go
+@@ -56,6 +56,9 @@ type BackendConfig struct {
+ 
+ 	// Config is the opaque user configuration provided when mounting
+ 	Config map[string]string
++
++	// UseEventLogger enables event logging for the audit backend
++	UseEventLogger bool
+ }
+ 
+ // Factory is the factory function to create an audit backend.

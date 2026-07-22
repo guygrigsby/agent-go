@@ -1,0 +1,13 @@
+diff --git a/internal/types/action/action.go b/internal/types/action/action.go
+index 421021e50..5c88c17d3 100644
+--- a/internal/types/action/action.go
++++ b/internal/types/action/action.go
+@@ -14,7 +14,7 @@ const (
+ 	Delete           Type = 5
+ 	Authenticate     Type = 6
+ 	All              Type = 7
+-	Authorize        Type = 8
++	AuthorizeSession  Type = 8
+ 	AddGrants        Type = 9
+ 	RemoveGrants     Type = 10
+ 	SetGrants        Type = 11

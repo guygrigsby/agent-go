@@ -1,0 +1,41 @@
+{
+ "agent_done": "2026-07-22T15:50:56.35259525Z",
+ "agent_started": "2026-07-22T15:46:41.602642Z",
+ "cache_read": 64747,
+ "cache_write": 0,
+ "capped": false,
+ "failure_kind": "scored_fail",
+ "intermediate_states": 0,
+ "invalid_intermediates": 0,
+ "iter": 0,
+ "kind": "rename",
+ "mode": "serena",
+ "new_errors": null,
+ "op_mix": {},
+ "pass": false,
+ "predicate": false,
+ "profile": "glm-flash",
+ "prompt": "Rename SealInfo to SealWrapper.",
+ "rejects_total": 0,
+ "repairs_offered": 0,
+ "resends": 0,
+ "specs": [
+  {
+   "baseline_refs": 30,
+   "new_refs": 0,
+   "ok": false,
+   "old_refs_left": 30,
+   "sym": "github.com/hashicorp/vault/vault/seal.SealInfo",
+   "to": "SealWrapper"
+  }
+ ],
+ "steps": 5,
+ "task": "vault_caec65a7",
+ "tests": false,
+ "tests_baseline": true,
+ "tokens_in": 2895,
+ "tokens_out": 365,
+ "tokens_reasoning": 0,
+ "typecheck": true,
+ "wall_s": 254.74995325
+}

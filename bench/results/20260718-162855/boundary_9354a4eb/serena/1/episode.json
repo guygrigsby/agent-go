@@ -1,0 +1,216 @@
+{
+ "agent_done": "2026-07-20T05:23:38.66727525Z",
+ "agent_started": "2026-07-20T05:11:38.646759Z",
+ "cache_read": 1347059,
+ "cache_write": 0,
+ "capped": true,
+ "failure_kind": "capped",
+ "first_invalid_s": 377.160121833,
+ "intermediate_states": 5,
+ "invalid_intermediate_rate": 1,
+ "invalid_intermediates": 5,
+ "iter": 1,
+ "kind": "add-param",
+ "mode": "serena",
+ "new_errors": [
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_9354a4ebserena1738539800/002/boundary/internal/scheduler/additional_verification_test.go:52:48|cannot use tj1 (variable of struct type testJob) as Job value in argument to sched.RegisterJob: testJob does not implement Job (wrong type for method Run)\n\t\thave Run(context.Context) error\n\t\twant Run(context.Context, \"time\".Duration) error",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_9354a4ebserena1738539800/002/boundary/internal/scheduler/additional_verification_test.go:180:31|cannot use tj2 (variable of struct type testJob) as Job value in argument to sched.RegisterJob: testJob does not implement Job (wrong type for method Run)\n\t\thave Run(context.Context) error\n\t\twant Run(context.Context, \"time\".Duration) error",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_9354a4ebserena1738539800/002/boundary/internal/scheduler/scheduler_test.go:293:50|cannot use tj (variable of struct type testJob) as Job value in argument to sched.RegisterJob: testJob does not implement Job (wrong type for method Run)\n\t\thave Run(context.Context) error\n\t\twant Run(context.Context, \"time\".Duration) error",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_9354a4ebserena1738539800/002/boundary/internal/scheduler/scheduler_test.go:304:50|cannot use tj (variable of struct type testJob) as Job value in argument to sched1.RegisterJob: testJob does not implement Job (wrong type for method Run)\n\t\thave Run(context.Context) error\n\t\twant Run(context.Context, \"time\".Duration) error",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_9354a4ebserena1738539800/002/boundary/internal/session/jobs.go:44:38|cannot use deleteTerminatedJob (variable of type *deleteTerminatedJob) as scheduler.Job value in argument to scheduler.RegisterJob: *deleteTerminatedJob does not implement scheduler.Job (wrong type for method Run)\n\t\thave Run(context.Context) error\n\t\twant Run(context.Context, \"time\".Duration) error",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_9354a4ebserena1738539800/002/boundary/internal/pagination/purge/purge.go:48:32|cannot use purgeJob (variable of type *purgeJob) as scheduler.Job value in argument to s.RegisterJob: *purgeJob does not implement scheduler.Job (wrong type for method Run)\n\t\thave Run(context.Context) error\n\t\twant Run(context.Context, \"time\".Duration) error",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_9354a4ebserena1738539800/002/boundary/internal/server/job/jobs.go:51:38|cannot use rotateRootsJob (variable of type *rotateRootsJob) as scheduler.Job value in argument to scheduler.RegisterJob: *rotateRootsJob does not implement scheduler.Job (wrong type for method Run)\n\t\thave Run(context.Context) error\n\t\twant Run(context.Context, \"time\".Duration) error",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_9354a4ebserena1738539800/002/boundary/internal/server/job/upsert_worker_storage_bucket_job.go:30:9|cannot use \u0026upsertWorkerStorageBucketJob{} (value of type *upsertWorkerStorageBucketJob) as scheduler.Job value in return statement: *upsertWorkerStorageBucketJob does not implement scheduler.Job (wrong type for method Run)\n\t\thave Run(context.Context) error\n\t\twant Run(context.Context, \"time\".Duration) error",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_9354a4ebserena1738539800/002/boundary/internal/scheduler/additional_verification_test.go:398:48|cannot use tj (variable of struct type testJob) as Job value in argument to sched.RegisterJob: testJob does not implement Job (wrong type for method Run)\n\t\thave Run(context.Context) error\n\t\twant Run(context.Context, \"time\".Duration) error",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_9354a4ebserena1738539800/002/boundary/internal/credential/vault/jobs.go:67:38|cannot use credStoreCleanup (variable of type *CredentialStoreCleanupJob) as scheduler.Job value in argument to scheduler.RegisterJob: *CredentialStoreCleanupJob does not implement scheduler.Job (wrong type for method Run)\n\t\thave Run(context.Context) error\n\t\twant Run(context.Context, \"time\".Duration) error",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_9354a4ebserena1738539800/002/boundary/internal/scheduler/cleaner/cleaner.go:25:31|cannot use newCleanerJob(w) (value of type *cleanerJob) as scheduler.Job value in argument to s.RegisterJob: *cleanerJob does not implement scheduler.Job (wrong type for method Run)\n\t\thave Run(context.Context) error\n\t\twant Run(context.Context, \"time\".Duration) error",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_9354a4ebserena1738539800/002/boundary/internal/credential/vault/jobs_test.go:888:17|not enough arguments in call to r.Run\n\thave (context.Context)\n\twant (context.Context, \"time\".Duration)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_9354a4ebserena1738539800/002/boundary/internal/scheduler/scheduler.go:263:29|not enough arguments in call to j.Run\n\thave (context.Context)\n\twant (context.Context, \"time\".Duration)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_9354a4ebserena1738539800/002/boundary/internal/credential/vault/jobs.go:60:38|cannot use credRevoke (variable of type *CredentialRevocationJob) as scheduler.Job value in argument to scheduler.RegisterJob: *CredentialRevocationJob does not implement scheduler.Job (wrong type for method Run)\n\t\thave Run(context.Context) error\n\t\twant Run(context.Context, \"time\".Duration) error",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_9354a4ebserena1738539800/002/boundary/internal/credential/vault/jobs.go:74:38|cannot use credCleanup (variable of type *CredentialCleanupJob) as scheduler.Job value in argument to scheduler.RegisterJob: *CredentialCleanupJob does not implement scheduler.Job (wrong type for method Run)\n\t\thave Run(context.Context) error\n\t\twant Run(context.Context, \"time\".Duration) error",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_9354a4ebserena1738539800/002/boundary/internal/credential/vault/jobs.go:244:32|cannot use r (variable of type *TokenRenewalJob) as scheduler.Job value in argument to nextRenewal: *TokenRenewalJob does not implement scheduler.Job (wrong type for method Run)\n\t\thave Run(context.Context) error\n\t\twant Run(context.Context, \"time\".Duration) error",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_9354a4ebserena1738539800/002/boundary/internal/credential/vault/jobs.go:627:32|cannot use r (variable of type *CredentialRenewalJob) as scheduler.Job value in argument to nextRenewal: *CredentialRenewalJob does not implement scheduler.Job (wrong type for method Run)\n\t\thave Run(context.Context) error\n\t\twant Run(context.Context, \"time\".Duration) error",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_9354a4ebserena1738539800/002/boundary/internal/recording/delete_session_recording_job.go:28:9|cannot use \u0026deleteSessionRecordingJob{} (value of type *deleteSessionRecordingJob) as scheduler.Job value in return statement: *deleteSessionRecordingJob does not implement scheduler.Job (wrong type for method Run)\n\t\thave Run(context.Context) error\n\t\twant Run(context.Context, \"time\".Duration) error",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_9354a4ebserena1738539800/002/boundary/internal/credential/vault/jobs_test.go:826:30|cannot use j (variable of type *TokenRenewalJob) as scheduler.Job value in argument to sche.RegisterJob: *TokenRenewalJob does not implement scheduler.Job (wrong type for method Run)\n\t\thave Run(context.Context) error\n\t\twant Run(context.Context, \"time\".Duration) error",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_9354a4ebserena1738539800/002/boundary/internal/credential/vault/jobs_test.go:937:17|not enough arguments in call to r.Run\n\thave (context.Context)\n\twant (context.Context, \"time\".Duration)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_9354a4ebserena1738539800/002/boundary/internal/kms/job/job.go:36:32|cannot use tableRewrappingJob (variable of type *tableRewrappingJob) as scheduler.Job value in argument to s.RegisterJob: *tableRewrappingJob does not implement scheduler.Job (wrong type for method Run)\n\t\thave Run(context.Context) error\n\t\twant Run(context.Context, \"time\".Duration) error",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_9354a4ebserena1738539800/002/boundary/internal/credential/vault/jobs_test.go:1596:30|cannot use j (variable of type *TokenRenewalJob) as scheduler.Job value in argument to sche.RegisterJob: *TokenRenewalJob does not implement scheduler.Job (wrong type for method Run)\n\t\thave Run(context.Context) error\n\t\twant Run(context.Context, \"time\".Duration) error",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_9354a4ebserena1738539800/002/boundary/internal/host/plugin/job_set_sync_test.go:156:47|cannot use r (variable of type *SetSyncJob) as scheduler.Job value in argument to sche.RegisterJob: *SetSyncJob does not implement scheduler.Job (wrong type for method Run)\n\t\thave Run(context.Context) error\n\t\twant Run(context.Context, \"time\".Duration) error",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_9354a4ebserena1738539800/002/boundary/internal/scheduler/additional_verification_test.go:125:48|cannot use tj (variable of struct type testJob) as Job value in argument to sched.RegisterJob: testJob does not implement Job (wrong type for method Run)\n\t\thave Run(context.Context) error\n\t\twant Run(context.Context, \"time\".Duration) error",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_9354a4ebserena1738539800/002/boundary/internal/scheduler/additional_verification_test.go:467:48|cannot use tj (variable of struct type testJob) as Job value in argument to sched.RegisterJob: testJob does not implement Job (wrong type for method Run)\n\t\thave Run(context.Context) error\n\t\twant Run(context.Context, \"time\".Duration) error",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_9354a4ebserena1738539800/002/boundary/internal/scheduler/scheduler_test.go:272:50|cannot use tj (variable of struct type testJob) as Job value in argument to sched.RegisterJob: testJob does not implement Job (wrong type for method Run)\n\t\thave Run(context.Context) error\n\t\twant Run(context.Context, \"time\".Duration) error",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_9354a4ebserena1738539800/002/boundary/internal/scheduler/scheduler_test.go:280:49|cannot use tj (variable of struct type testJob) as Job value in argument to sched.RegisterJob: testJob does not implement Job (wrong type for method Run)\n\t\thave Run(context.Context) error\n\t\twant Run(context.Context, \"time\".Duration) error",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_9354a4ebserena1738539800/002/boundary/internal/scheduler/scheduler_test.go:371:50|cannot use tj (variable of struct type testJob) as Job value in argument to sched.RegisterJob: testJob does not implement Job (wrong type for method Run)\n\t\thave Run(context.Context) error\n\t\twant Run(context.Context, \"time\".Duration) error",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_9354a4ebserena1738539800/002/boundary/internal/credential/vault/jobs_test.go:1354:30|cannot use j (variable of type *TokenRenewalJob) as scheduler.Job value in argument to sche.RegisterJob: *TokenRenewalJob does not implement scheduler.Job (wrong type for method Run)\n\t\thave Run(context.Context) error\n\t\twant Run(context.Context, \"time\".Duration) error",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_9354a4ebserena1738539800/002/boundary/internal/session/jobs.go:44:38|cannot use deleteTerminatedJob (variable of type *deleteTerminatedJob) as scheduler.Job value in argument to scheduler.RegisterJob: *deleteTerminatedJob does not implement scheduler.Job (wrong type for method Run)\n\t\thave Run(\"context\".Context) error\n\t\twant Run(\"context\".Context, \"time\".Duration) error",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_9354a4ebserena1738539800/002/boundary/internal/credential/vault/jobs_test.go:1276:30|cannot use j (variable of type *TokenRenewalJob) as scheduler.Job value in argument to sche.RegisterJob: *TokenRenewalJob does not implement scheduler.Job (wrong type for method Run)\n\t\thave Run(context.Context) error\n\t\twant Run(context.Context, \"time\".Duration) error",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_9354a4ebserena1738539800/002/boundary/internal/credential/vault/jobs_test.go:2027:30|cannot use r (variable of type *CredentialStoreCleanupJob) as scheduler.Job value in argument to sche.RegisterJob: *CredentialStoreCleanupJob does not implement scheduler.Job (wrong type for method Run)\n\t\thave Run(context.Context) error\n\t\twant Run(context.Context, \"time\".Duration) error",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_9354a4ebserena1738539800/002/boundary/internal/scheduler/scheduler_test.go:211:17|cannot use testJob{} (value of struct type testJob) as Job value in struct literal: testJob does not implement Job (wrong type for method Run)\n\t\thave Run(context.Context) error\n\t\twant Run(context.Context, \"time\".Duration) error",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_9354a4ebserena1738539800/002/boundary/internal/scheduler/scheduler_test.go:218:9|cannot use testJob{…} (value of struct type testJob) as Job value in struct literal: testJob does not implement Job (wrong type for method Run)\n\t\thave Run(context.Context) error\n\t\twant Run(context.Context, \"time\".Duration) error",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_9354a4ebserena1738539800/002/boundary/internal/scheduler/scheduler_test.go:227:9|cannot use testJob{…} (value of struct type testJob) as Job value in struct literal: testJob does not implement Job (wrong type for method Run)\n\t\thave Run(context.Context) error\n\t\twant Run(context.Context, \"time\".Duration) error",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_9354a4ebserena1738539800/002/boundary/internal/host/plugin/job_set_sync.go:122:29|cannot use r (variable of type *SetSyncJob) as scheduler.Job value in argument to nextSync: *SetSyncJob does not implement scheduler.Job (wrong type for method Run)\n\t\thave Run(context.Context) error\n\t\twant Run(context.Context, \"time\".Duration) error",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_9354a4ebserena1738539800/002/boundary/internal/host/plugin/jobs.go:23:38|cannot use setSyncJob (variable of type *SetSyncJob) as scheduler.Job value in argument to scheduler.RegisterJob: *SetSyncJob does not implement scheduler.Job (wrong type for method Run)\n\t\thave Run(context.Context) error\n\t\twant Run(context.Context, \"time\".Duration) error",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_9354a4ebserena1738539800/002/boundary/internal/credential/vault/jobs_test.go:1999:47|cannot use j (variable of type *TokenRenewalJob) as scheduler.Job value in argument to sche.RegisterJob: *TokenRenewalJob does not implement scheduler.Job (wrong type for method Run)\n\t\thave Run(context.Context) error\n\t\twant Run(context.Context, \"time\".Duration) error",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_9354a4ebserena1738539800/002/boundary/internal/session/jobs.go:32:38|cannot use sessionConnectionCleanupJob (variable of type *sessionConnectionCleanupJob) as scheduler.Job value in argument to scheduler.RegisterJob: *sessionConnectionCleanupJob does not implement scheduler.Job (wrong type for method Run)\n\t\thave Run(\"context\".Context) error\n\t\twant Run(\"context\".Context, \"time\".Duration) error",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_9354a4ebserena1738539800/002/boundary/internal/credential/vault/jobs.go:53:38|cannot use credRenewal (variable of type *CredentialRenewalJob) as scheduler.Job value in argument to scheduler.RegisterJob: *CredentialRenewalJob does not implement scheduler.Job (wrong type for method Run)\n\t\thave Run(context.Context) error\n\t\twant Run(context.Context, \"time\".Duration) error",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_9354a4ebserena1738539800/002/boundary/internal/credential/vault/jobs_test.go:459:30|cannot use r (variable of type *TokenRenewalJob) as scheduler.Job value in argument to sche.RegisterJob: *TokenRenewalJob does not implement scheduler.Job (wrong type for method Run)\n\t\thave Run(context.Context) error\n\t\twant Run(context.Context, \"time\".Duration) error",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_9354a4ebserena1738539800/002/boundary/internal/credential/vault/jobs_test.go:347:30|cannot use r (variable of type *TokenRenewalJob) as scheduler.Job value in argument to sche.RegisterJob: *TokenRenewalJob does not implement scheduler.Job (wrong type for method Run)\n\t\thave Run(context.Context) error\n\t\twant Run(context.Context, \"time\".Duration) error",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_9354a4ebserena1738539800/002/boundary/internal/session/job_session_cleanup_test.go:25:23|cannot convert new(sessionConnectionCleanupJob) (value of type *sessionConnectionCleanupJob) to type scheduler.Job: *sessionConnectionCleanupJob does not implement scheduler.Job (wrong type for method Run)\n\t\thave Run(\"context\".Context) error\n\t\twant Run(\"context\".Context, \"time\".Duration) error",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_9354a4ebserena1738539800/002/boundary/internal/credential/vault/jobs_test.go:1809:30|cannot use j (variable of type *TokenRenewalJob) as scheduler.Job value in argument to sche.RegisterJob: *TokenRenewalJob does not implement scheduler.Job (wrong type for method Run)\n\t\thave Run(context.Context) error\n\t\twant Run(context.Context, \"time\".Duration) error",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_9354a4ebserena1738539800/002/boundary/internal/credential/vault/jobs_test.go:1048:30|cannot use j (variable of type *TokenRenewalJob) as scheduler.Job value in argument to sche.RegisterJob: *TokenRenewalJob does not implement scheduler.Job (wrong type for method Run)\n\t\thave Run(context.Context) error\n\t\twant Run(context.Context, \"time\".Duration) error",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_9354a4ebserena1738539800/002/boundary/internal/credential/vault/jobs_test.go:1165:30|cannot use j (variable of type *TokenRenewalJob) as scheduler.Job value in argument to sche.RegisterJob: *TokenRenewalJob does not implement scheduler.Job (wrong type for method Run)\n\t\thave Run(context.Context) error\n\t\twant Run(context.Context, \"time\".Duration) error",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_9354a4ebserena1738539800/002/boundary/internal/credential/vault/jobs_test.go:2243:30|cannot use j (variable of type *TokenRenewalJob) as scheduler.Job value in argument to sche.RegisterJob: *TokenRenewalJob does not implement scheduler.Job (wrong type for method Run)\n\t\thave Run(context.Context) error\n\t\twant Run(context.Context, \"time\".Duration) error",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_9354a4ebserena1738539800/002/boundary/internal/scheduler/additional_verification_test.go:299:48|cannot use tj (variable of struct type testJob) as Job value in argument to sched.RegisterJob: testJob does not implement Job (wrong type for method Run)\n\t\thave Run(context.Context) error\n\t\twant Run(context.Context, \"time\".Duration) error",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_9354a4ebserena1738539800/002/boundary/internal/credential/vault/jobs.go:260:7|impossible type switch case: *CredentialRenewalJob\n\tj (variable of interface type scheduler.Job) cannot have dynamic type *CredentialRenewalJob (wrong type for method Run)\n\t\thave Run(context.Context) error\n\t\twant Run(context.Context, \"time\".Duration) error",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_9354a4ebserena1738539800/002/boundary/internal/credential/vault/jobs_test.go:793:19|not enough arguments in call to r.Run\n\thave (context.Context)\n\twant (context.Context, \"time\".Duration)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_9354a4ebserena1738539800/002/boundary/internal/credential/vault/jobs_test.go:925:17|not enough arguments in call to r.Run\n\thave (context.Context)\n\twant (context.Context, \"time\".Duration)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_9354a4ebserena1738539800/002/boundary/internal/credential/vault/jobs.go:39:38|cannot use tokenRenewal (variable of type *TokenRenewalJob) as scheduler.Job value in argument to scheduler.RegisterJob: *TokenRenewalJob does not implement scheduler.Job (wrong type for method Run)\n\t\thave Run(context.Context) error\n\t\twant Run(context.Context, \"time\".Duration) error",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_9354a4ebserena1738539800/002/boundary/internal/credential/vault/jobs.go:257:7|impossible type switch case: *TokenRenewalJob\n\tj (variable of interface type scheduler.Job) cannot have dynamic type *TokenRenewalJob (wrong type for method Run)\n\t\thave Run(context.Context) error\n\t\twant Run(context.Context, \"time\".Duration) error",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_9354a4ebserena1738539800/002/boundary/internal/host/plugin/job_set_sync.go:144:7|impossible type switch case: *SetSyncJob\n\tj (variable of interface type scheduler.Job) cannot have dynamic type *SetSyncJob (wrong type for method Run)\n\t\thave Run(context.Context) error\n\t\twant Run(context.Context, \"time\".Duration) error",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_9354a4ebserena1738539800/002/boundary/internal/session/jobs.go:32:38|cannot use sessionConnectionCleanupJob (variable of type *sessionConnectionCleanupJob) as scheduler.Job value in argument to scheduler.RegisterJob: *sessionConnectionCleanupJob does not implement scheduler.Job (wrong type for method Run)\n\t\thave Run(context.Context) error\n\t\twant Run(context.Context, \"time\".Duration) error",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_9354a4ebserena1738539800/002/boundary/internal/host/plugin/job_orphaned_host_cleanup_test.go:118:47|cannot use r (variable of type *OrphanedHostCleanupJob) as scheduler.Job value in argument to sche.RegisterJob: *OrphanedHostCleanupJob does not implement scheduler.Job (wrong type for method Run)\n\t\thave Run(context.Context) error\n\t\twant Run(context.Context, \"time\".Duration) error",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_9354a4ebserena1738539800/002/boundary/internal/host/plugin/repository_host_catalog_test.go:1595:31|cannot use j (variable of type *testSyncJob) as scheduler.Job value in argument to sched.RegisterJob: *testSyncJob does not implement scheduler.Job (wrong type for method Run)\n\t\thave Run(context.Context) error\n\t\twant Run(context.Context, \"time\".Duration) error",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_9354a4ebserena1738539800/002/boundary/internal/scheduler/additional_verification_test.go:66:48|cannot use tj2 (variable of struct type testJob) as Job value in argument to sched.RegisterJob: testJob does not implement Job (wrong type for method Run)\n\t\thave Run(context.Context) error\n\t\twant Run(context.Context, \"time\".Duration) error",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_9354a4ebserena1738539800/002/boundary/internal/scheduler/scheduler_test.go:346:50|cannot use tj (variable of struct type testJob) as Job value in argument to sched.RegisterJob: testJob does not implement Job (wrong type for method Run)\n\t\thave Run(context.Context) error\n\t\twant Run(context.Context, \"time\".Duration) error",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_9354a4ebserena1738539800/002/boundary/internal/credential/vault/jobs_test.go:839:17|not enough arguments in call to r.Run\n\thave (context.Context)\n\twant (context.Context, \"time\".Duration)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_9354a4ebserena1738539800/002/boundary/internal/scheduler/additional_verification_test.go:175:31|cannot use tj1 (variable of struct type testJob) as Job value in argument to sched.RegisterJob: testJob does not implement Job (wrong type for method Run)\n\t\thave Run(context.Context) error\n\t\twant Run(context.Context, \"time\".Duration) error",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_9354a4ebserena1738539800/002/boundary/internal/kms/job/job.go:28:31|cannot use dataKeyVersionDestructionMonitorJob (variable of type *dataKeyVersionDestructionMonitorJob) as scheduler.Job value in argument to s.RegisterJob: *dataKeyVersionDestructionMonitorJob does not implement scheduler.Job (wrong type for method Run)\n\t\thave Run(context.Context) error\n\t\twant Run(context.Context, \"time\".Duration) error",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_9354a4ebserena1738539800/002/boundary/internal/scheduler/additional_verification_test.go:555:48|cannot use tj (variable of struct type testJob) as Job value in argument to sched.RegisterJob: testJob does not implement Job (wrong type for method Run)\n\t\thave Run(context.Context) error\n\t\twant Run(context.Context, \"time\".Duration) error",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_9354a4ebserena1738539800/002/boundary/internal/host/plugin/jobs.go:30:38|cannot use orphanedHostCleanupJob (variable of type *OrphanedHostCleanupJob) as scheduler.Job value in argument to scheduler.RegisterJob: *OrphanedHostCleanupJob does not implement scheduler.Job (wrong type for method Run)\n\t\thave Run(context.Context) error\n\t\twant Run(context.Context, \"time\".Duration) error",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_9354a4ebserena1738539800/002/boundary/internal/snapshot/snapshot.go:33:31|cannot use snapshotJob (variable of type *snapshotJob) as scheduler.Job value in argument to s.RegisterJob: *snapshotJob does not implement scheduler.Job (wrong type for method Run)\n\t\thave Run(context.Context) error\n\t\twant Run(context.Context, \"time\".Duration) error",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_9354a4ebserena1738539800/002/boundary/internal/credential/vault/jobs_test.go:1714:30|cannot use j (variable of type *TokenRenewalJob) as scheduler.Job value in argument to sche.RegisterJob: *TokenRenewalJob does not implement scheduler.Job (wrong type for method Run)\n\t\thave Run(context.Context) error\n\t\twant Run(context.Context, \"time\".Duration) error"
+ ],
+ "op_mix": {},
+ "pass": false,
+ "predicate": false,
+ "profile": "glm-flash",
+ "prompt": "refactor(scheduler): Add statusThreshold parameter to job.Run\n\nSpecifically: add parameter _ time.Duration to censusJob.Run; add parameter _ time.Duration to TokenRevocationJob.Run; add parameter _ time.Duration to CredentialRenewalJob.Run; add parameter _ time.Duration to TokenRenewalJob.Run; add parameter _ time.Duration to CredentialCleanupJob.Run; add parameter _ time.Duration to CredentialRevocationJob.Run; add parameter _ time.Duration to CredentialStoreCleanupJob.Run; add parameter _ time.Duration to OrphanedHostCleanupJob.Run; add parameter _ time.Duration to SetSyncJob.Run; add parameter _ time.Duration to dataKeyVersionDestructionMonitorJob.Run; add parameter _ time.Duration to tableRewrappingJob.Run; add parameter _ time.Duration to purgeJob.Run; add parameter _ time.Duration to cleanerJob.Run; add parameter statusThreshold time.Duration to testJob.Run; add parameter _ time.Duration to rotateRootsJob.Run; add parameter ctx context.Context to upsertWorkerStorageBucketJob.Run; add parameter _ time.Duration to deleteTerminatedJob.Run; add parameter _ time.Duration to sessionConnectionCleanupJob.Run; add parameter _ time.Duration to snapshotJob.Run",
+ "rejects_total": 0,
+ "repairs_offered": 0,
+ "resends": 0,
+ "specs": [
+  {
+   "ok": false,
+   "param": "_ time.Duration",
+   "signature": "func(ctx context.Context, statusThreshold time.Duration) error",
+   "sym": "github.com/hashicorp/boundary/internal/census.censusJob.Run"
+  },
+  {
+   "ok": false,
+   "param": "_ time.Duration",
+   "signature": "func(ctx context.Context, statusThreshold time.Duration) error",
+   "sym": "github.com/hashicorp/boundary/internal/credential/vault.TokenRevocationJob.Run"
+  },
+  {
+   "ok": false,
+   "param": "_ time.Duration",
+   "signature": "func(ctx context.Context) error",
+   "sym": "github.com/hashicorp/boundary/internal/credential/vault.CredentialRenewalJob.Run"
+  },
+  {
+   "ok": false,
+   "param": "_ time.Duration",
+   "signature": "func(ctx context.Context) error",
+   "sym": "github.com/hashicorp/boundary/internal/credential/vault.TokenRenewalJob.Run"
+  },
+  {
+   "ok": false,
+   "param": "_ time.Duration",
+   "signature": "func(ctx context.Context) error",
+   "sym": "github.com/hashicorp/boundary/internal/credential/vault.CredentialCleanupJob.Run"
+  },
+  {
+   "ok": false,
+   "param": "_ time.Duration",
+   "signature": "func(ctx context.Context) error",
+   "sym": "github.com/hashicorp/boundary/internal/credential/vault.CredentialRevocationJob.Run"
+  },
+  {
+   "ok": false,
+   "param": "_ time.Duration",
+   "signature": "func(ctx context.Context) error",
+   "sym": "github.com/hashicorp/boundary/internal/credential/vault.CredentialStoreCleanupJob.Run"
+  },
+  {
+   "ok": false,
+   "param": "_ time.Duration",
+   "signature": "func(ctx context.Context) error",
+   "sym": "github.com/hashicorp/boundary/internal/host/plugin.OrphanedHostCleanupJob.Run"
+  },
+  {
+   "ok": false,
+   "param": "_ time.Duration",
+   "signature": "func(ctx context.Context) error",
+   "sym": "github.com/hashicorp/boundary/internal/host/plugin.SetSyncJob.Run"
+  },
+  {
+   "ok": false,
+   "param": "_ time.Duration",
+   "signature": "func(ctx context.Context) error",
+   "sym": "github.com/hashicorp/boundary/internal/kms/job.dataKeyVersionDestructionMonitorJob.Run"
+  },
+  {
+   "ok": false,
+   "param": "_ time.Duration",
+   "signature": "func(ctx context.Context) error",
+   "sym": "github.com/hashicorp/boundary/internal/kms/job.tableRewrappingJob.Run"
+  },
+  {
+   "ok": false,
+   "param": "_ time.Duration",
+   "signature": "func(ctx context.Context) error",
+   "sym": "github.com/hashicorp/boundary/internal/pagination/purge.purgeJob.Run"
+  },
+  {
+   "ok": false,
+   "param": "_ time.Duration",
+   "signature": "func(ctx context.Context) error",
+   "sym": "github.com/hashicorp/boundary/internal/scheduler/cleaner.cleanerJob.Run"
+  },
+  {
+   "ok": false,
+   "param": "statusThreshold time.Duration",
+   "signature": "func(ctx context.Context) error",
+   "sym": "github.com/hashicorp/boundary/internal/scheduler.testJob.Run"
+  },
+  {
+   "ok": false,
+   "param": "_ time.Duration",
+   "signature": "func(ctx context.Context) error",
+   "sym": "github.com/hashicorp/boundary/internal/server/job.rotateRootsJob.Run"
+  },
+  {
+   "ok": false,
+   "param": "ctx context.Context",
+   "signature": "func(_ context.Context) error",
+   "sym": "github.com/hashicorp/boundary/internal/server/job.upsertWorkerStorageBucketJob.Run"
+  },
+  {
+   "ok": false,
+   "param": "_ time.Duration",
+   "signature": "func(ctx context.Context) error",
+   "sym": "github.com/hashicorp/boundary/internal/session.deleteTerminatedJob.Run"
+  },
+  {
+   "ok": false,
+   "param": "_ time.Duration",
+   "signature": "func(ctx context.Context) error",
+   "sym": "github.com/hashicorp/boundary/internal/session.sessionConnectionCleanupJob.Run"
+  },
+  {
+   "ok": false,
+   "param": "_ time.Duration",
+   "signature": "func(ctx context.Context) error",
+   "sym": "github.com/hashicorp/boundary/internal/snapshot.snapshotJob.Run"
+  }
+ ],
+ "steps": 46,
+ "task": "boundary_9354a4eb",
+ "tests": false,
+ "tests_baseline": true,
+ "tokens_in": 36064,
+ "tokens_out": 7264,
+ "tokens_reasoning": 0,
+ "typecheck": false,
+ "wall_s": 720.02051625
+}

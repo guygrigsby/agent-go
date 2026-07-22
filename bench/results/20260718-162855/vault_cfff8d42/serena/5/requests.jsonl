@@ -1,0 +1,3 @@
+{"ms":2013,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-21T05:41:59.714713Z"}
+{"ms":1850,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/vault/builtin/credential/aws","req_sha":"60337aa18f3ae54e","sym":"backend.instanceIamRoleARN","ts":"2026-07-21T05:47:09.658267Z"}
+{"ms":3,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-21T05:47:11.515682Z"}

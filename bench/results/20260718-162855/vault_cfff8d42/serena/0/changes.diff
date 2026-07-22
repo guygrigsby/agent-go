@@ -1,0 +1,71 @@
+diff --git a/builtin/credential/aws/backend.go b/builtin/credential/aws/backend.go
+index 5e94db7b91..4e5cd2f628 100644
+--- a/builtin/credential/aws/backend.go
++++ b/builtin/credential/aws/backend.go
+@@ -312,7 +312,7 @@ func (b *backend) resolveArnToRealUniqueId(ctx context.Context, s logical.Storag
+ 
+ 	switch entity.Type {
+ 	case "user":
+-		userInfo, err := iamClient.GetUser(&iam.GetUserInput{UserName: &entity.FriendlyName})
++		userInfo, err := iamClient.GetUserWithContext(ctx, &iam.GetUserInput{UserName: &entity.FriendlyName})
+ 		if err != nil {
+ 			return "", awsutil.AppendAWSError(err)
+ 		}
+@@ -321,7 +321,7 @@ func (b *backend) resolveArnToRealUniqueId(ctx context.Context, s logical.Storag
+ 		}
+ 		return *userInfo.User.UserId, nil
+ 	case "role":
+-		roleInfo, err := iamClient.GetRole(&iam.GetRoleInput{RoleName: &entity.FriendlyName})
++		roleInfo, err := iamClient.GetRoleWithContext(ctx, &iam.GetRoleInput{RoleName: &entity.FriendlyName})
+ 		if err != nil {
+ 			return "", awsutil.AppendAWSError(err)
+ 		}
+@@ -330,7 +330,7 @@ func (b *backend) resolveArnToRealUniqueId(ctx context.Context, s logical.Storag
+ 		}
+ 		return *roleInfo.Role.RoleId, nil
+ 	case "instance-profile":
+-		profileInfo, err := iamClient.GetInstanceProfile(&iam.GetInstanceProfileInput{InstanceProfileName: &entity.FriendlyName})
++		profileInfo, err := iamClient.GetInstanceProfileWithContext(ctx, &iam.GetInstanceProfileInput{InstanceProfileName: &entity.FriendlyName})
+ 		if err != nil {
+ 			return "", awsutil.AppendAWSError(err)
+ 		}
+diff --git a/builtin/credential/aws/path_login.go b/builtin/credential/aws/path_login.go
+index 320230534a..7578e1ffee 100644
+--- a/builtin/credential/aws/path_login.go
++++ b/builtin/credential/aws/path_login.go
+@@ -340,7 +340,7 @@ func (b *backend) pathLoginResolveRoleIam(ctx context.Context, req *logical.Requ
+ 
+ // instanceIamRoleARN fetches the IAM role ARN associated with the given
+ // instance profile name
+-func (b *backend) instanceIamRoleARN(iamClient *iam.IAM, instanceProfileName string) (string, error) {
++func (b *backend) instanceIamRoleARN(ctx context.Context, iamClient *iam.IAM, instanceProfileName string) (string, error) {
+ 	if iamClient == nil {
+ 		return "", fmt.Errorf("nil iamClient")
+ 	}
+@@ -348,7 +348,7 @@ func (b *backend) instanceIamRoleARN(iamClient *iam.IAM, instanceProfileName str
+ 		return "", fmt.Errorf("missing instance profile name")
+ 	}
+ 
+-	profile, err := iamClient.GetInstanceProfile(&iam.GetInstanceProfileInput{
++	profile, err := iamClient.GetInstanceProfileWithContext(ctx, &iam.GetInstanceProfileInput{
+ 		InstanceProfileName: aws.String(instanceProfileName),
+ 	})
+ 	if err != nil {
+@@ -382,7 +382,7 @@ func (b *backend) validateInstance(ctx context.Context, s logical.Storage, insta
+ 		return nil, err
+ 	}
+ 
+-	status, err := ec2Client.DescribeInstances(&ec2.DescribeInstancesInput{
++	status, err := ec2Client.DescribeInstancesWithContext(ctx, &ec2.DescribeInstancesInput{
+ 		InstanceIds: []*string{
+ 			aws.String(instanceID),
+ 		},
+@@ -724,7 +724,7 @@ func (b *backend) verifyInstanceMeetsRoleRequirements(ctx context.Context,
+ 		} else if iamClient == nil {
+ 			return nil, fmt.Errorf("received a nil iamClient")
+ 		}
+-		iamRoleARN, err := b.instanceIamRoleARN(iamClient, iamInstanceProfileEntity.FriendlyName)
++		iamRoleARN, err := b.instanceIamRoleARN(ctx, iamClient, iamInstanceProfileEntity.FriendlyName)
+ 		if err != nil {
+ 			return nil, fmt.Errorf("IAM role ARN could not be fetched: %w", err)
+ 		}

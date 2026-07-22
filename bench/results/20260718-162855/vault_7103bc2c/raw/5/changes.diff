@@ -1,0 +1,263 @@
+diff --git a/audit/format.go b/audit/format.go
+index 5e461ef61a..23e9a2d396 100644
+--- a/audit/format.go
++++ b/audit/format.go
+@@ -99,7 +99,7 @@ func (s *nonPersistentSalt) Salt(_ context.Context) (*salt.Salt, error) {
+ }
+ 
+ // NewAuditFormatter should be used to create an AuditFormatter.
+-func NewAuditFormatter(salter Salter) (*AuditFormatter, error) {
++func NewAuditFormatter(salter Salter, useEventLogger bool) (*AuditFormatter, error) {
+ 	if salter == nil {
+ 		return nil, errors.New("cannot create a new audit formatter with nil salter")
+ 	}
+@@ -108,7 +108,7 @@ func NewAuditFormatter(salter Salter) (*AuditFormatter, error) {
+ }
+ 
+ // NewAuditFormatterWriter should be used to create a new AuditFormatterWriter.
+-func NewAuditFormatterWriter(formatter Formatter, writer Writer) (*AuditFormatterWriter, error) {
++func NewAuditFormatterWriter(formatter Formatter, writer Writer, useEventLogger bool) (*AuditFormatterWriter, error) {
+ 	switch {
+ 	case formatter == nil:
+ 		return nil, errors.New("cannot create a new audit formatter writer with nil formatter")
+@@ -678,7 +678,7 @@ func parseVaultTokenFromJWT(token string) *string {
+ // NewTemporaryFormatter creates a formatter not backed by a persistent salt
+ func NewTemporaryFormatter(format, prefix string) *AuditFormatterWriter {
+ 	// We can ignore the error from NewAuditFormatter since we are sure the salter isn't nil.
+-	f, _ := NewAuditFormatter(&nonPersistentSalt{})
++	f, _ := NewAuditFormatter(&nonPersistentSalt{}, false)
+ 
+ 	var w Writer
+ 
+@@ -691,7 +691,7 @@ func NewTemporaryFormatter(format, prefix string) *AuditFormatterWriter {
+ 
+ 	// We can ignore the error from NewAuditFormatterWriter since we are sure both
+ 	// the formatter and writer are not nil.
+-	fw, _ := NewAuditFormatterWriter(f, w)
++	fw, _ := NewAuditFormatterWriter(f, w, false)
+ 
+ 	return fw
+ }
+diff --git a/builtin/audit/file/backend.go b/builtin/audit/file/backend.go
+index d4471f1a9a..43471f429f 100644
+--- a/builtin/audit/file/backend.go
++++ b/builtin/audit/file/backend.go
+@@ -20,7 +20,7 @@ import (
+ 	"github.com/hashicorp/vault/sdk/logical"
+ )
+ 
+-func Factory(ctx context.Context, conf *audit.BackendConfig) (audit.Backend, error) {
++func Factory(ctx context.Context, conf *audit.BackendConfig, useEventLogger bool) (audit.Backend, error) {
+ 	if conf.SaltConfig == nil {
+ 		return nil, fmt.Errorf("nil salt config")
+ 	}
+diff --git a/internal/observability/event/audit_sink_file.go b/internal/observability/event/audit_sink_file.go
+index decffce3bc..2ad4f40d94 100644
+--- a/internal/observability/event/audit_sink_file.go
++++ b/internal/observability/event/audit_sink_file.go
+@@ -35,7 +35,7 @@ type AuditFileSink struct {
+ 
+ // NewAuditFileSink should be used to create a new AuditFileSink.
+ // Accepted options: WithFileMode and WithPrefix.
+-func NewAuditFileSink(path string, format auditFormat, opt ...Option) (*AuditFileSink, error) {
++func NewAuditFileSink(path string, format auditFormat, useEventLogger bool, opt ...Option) (*AuditFileSink, error) {
+ 	const op = "event.NewAuditFileSink"
+ 
+ 	// Parse and check path
+diff --git a/internal/observability/event/audit_sink_file_test.go b/internal/observability/event/audit_sink_file_test.go
+index 94f0e7bd90..68df8ab264 100644
+--- a/internal/observability/event/audit_sink_file_test.go
++++ b/internal/observability/event/audit_sink_file_test.go
+@@ -22,7 +22,7 @@ import (
+ 
+ // TestAuditFileSink_Type ensures that the node is a 'sink' type.
+ func TestAuditFileSink_Type(t *testing.T) {
+-	f, err := NewAuditFileSink(t.TempDir(), AuditFormatJSON)
++	f, err := NewAuditFileSink(t.TempDir(), AuditFormatJSON, false)
+ 	require.NoError(t, err)
+ 	require.NotNil(t, f)
+ 	require.Equal(t, eventlogger.NodeTypeSink, f.Type())
+@@ -143,7 +143,7 @@ func TestNewAuditFileSink(t *testing.T) {
+ 				tempPath = filepath.Join(tempDir, tempPath)
+ 			}
+ 
+-			sink, err := NewAuditFileSink(tempPath, tc.Format, tc.Options...)
++			sink, err := NewAuditFileSink(tempPath, tc.Format, false, tc.Options...)
+ 
+ 			switch {
+ 			case tc.IsErrorExpected:
+@@ -236,7 +236,7 @@ func TestAuditFileSink_Reopen(t *testing.T) {
+ 				}()
+ 			}
+ 
+-			sink, err := NewAuditFileSink(tempPath, AuditFormatJSON, tc.Options...)
++			sink, err := NewAuditFileSink(tempPath, AuditFormatJSON, false, tc.Options...)
+ 			require.NoError(t, err)
+ 			require.NotNil(t, sink)
+ 
+@@ -314,7 +314,7 @@ func TestAuditFileSink_Process(t *testing.T) {
+ 			require.NotNil(t, formatter)
+ 
+ 			// Setup a sink
+-			sink, err := NewAuditFileSink(tc.Path, tc.Format)
++			sink, err := NewAuditFileSink(tc.Path, tc.Format, false)
+ 			require.NoError(t, err)
+ 			require.NotNil(t, sink)
+ 
+@@ -391,7 +391,7 @@ func BenchmarkAuditFileSink_Process(b *testing.B) {
+ 	require.NotNil(b, formatter)
+ 
+ 	// Create the sink node.
+-	sink, err := NewAuditFileSink("/dev/null", AuditFormatJSON)
++	sink, err := NewAuditFileSink("/dev/null", AuditFormatJSON, false)
+ 	require.NoError(b, err)
+ 	require.NotNil(b, sink)
+ 
+diff --git a/internal/observability/event/audit_sink_socket.go b/internal/observability/event/audit_sink_socket.go
+index f76de6c634..e611f517a2 100644
+--- a/internal/observability/event/audit_sink_socket.go
++++ b/internal/observability/event/audit_sink_socket.go
+@@ -27,7 +27,7 @@ type AuditSocketSink struct {
+ 
+ // NewAuditSocketSink should be used to create a new AuditSocketSink.
+ // Accepted options: WithMaxDuration and WithSocketType.
+-func NewAuditSocketSink(format auditFormat, address string, opt ...Option) (*AuditSocketSink, error) {
++func NewAuditSocketSink(format auditFormat, address string, useEventLogger bool, opt ...Option) (*AuditSocketSink, error) {
+ 	const op = "event.NewAuditSocketSink"
+ 
+ 	opts, err := getOpts(opt...)
+diff --git a/internal/observability/event/audit_sink_syslog.go b/internal/observability/event/audit_sink_syslog.go
+index 61fbfb0873..5ab334c235 100644
+--- a/internal/observability/event/audit_sink_syslog.go
++++ b/internal/observability/event/audit_sink_syslog.go
+@@ -20,7 +20,7 @@ type AuditSyslogSink struct {
+ 
+ // NewAuditSyslogSink should be used to create a new AuditSyslogSink.
+ // Accepted options: WithFacility and WithTag.
+-func NewAuditSyslogSink(format auditFormat, opt ...Option) (*AuditSyslogSink, error) {
++func NewAuditSyslogSink(format auditFormat, useEventLogger bool, opt ...Option) (*AuditSyslogSink, error) {
+ 	const op = "event.NewAuditSyslogSink"
+ 
+ 	opts, err := getOpts(opt...)
+diff --git a/internal/observability/event/event_type_audit.go b/internal/observability/event/event_type_audit.go
+index 857d857885..b61520f608 100644
+--- a/internal/observability/event/event_type_audit.go
++++ b/internal/observability/event/event_type_audit.go
+@@ -44,7 +44,7 @@ type audit struct {
+ // newAudit should be used to create an audit event.
+ // auditSubtype and auditFormat are needed for audit.
+ // It will use the supplied options, generate an ID if required, and validate the event.
+-func newAudit(opt ...Option) (*audit, error) {
++func newAudit(useEventLogger bool, opt ...Option) (*audit, error) {
+ 	const op = "event.newAudit"
+ 
+ 	opts, err := getOpts(opt...)
+diff --git a/internal/observability/event/event_type_audit_test.go b/internal/observability/event/event_type_audit_test.go
+index 2451a4f09c..db32831f55 100644
+--- a/internal/observability/event/event_type_audit_test.go
++++ b/internal/observability/event/event_type_audit_test.go
+@@ -70,7 +70,7 @@ func TestAuditEvent_New(t *testing.T) {
+ 		t.Run(name, func(t *testing.T) {
+ 			t.Parallel()
+ 
+-			audit, err := newAudit(tc.Options...)
++			audit, err := newAudit(false, tc.Options...)
+ 			switch {
+ 			case tc.IsErrorExpected:
+ 				require.Error(t, err)
+diff --git a/internal/observability/event/node_formatter_audit_json.go b/internal/observability/event/node_formatter_audit_json.go
+index effb162340..e9e2cd6bed 100644
+--- a/internal/observability/event/node_formatter_audit_json.go
++++ b/internal/observability/event/node_formatter_audit_json.go
+@@ -24,7 +24,7 @@ type AuditFormatterJSON struct {
+ }
+ 
+ // NewAuditFormatterJSON should be used to create an AuditFormatterJSON.
+-func NewAuditFormatterJSON(config vaultaudit.FormatterConfig, salter vaultaudit.Salter) (*AuditFormatterJSON, error) {
++func NewAuditFormatterJSON(config vaultaudit.FormatterConfig, salter vaultaudit.Salter, useEventLogger bool) (*AuditFormatterJSON, error) {
+ 	const op = "event.NewAuditFormatterJSON"
+ 
+ 	f, err := vaultaudit.NewAuditFormatter(salter)
+diff --git a/internal/observability/event/node_formatter_audit_json_test.go b/internal/observability/event/node_formatter_audit_json_test.go
+index a45128adc1..c9a85adaed 100644
+--- a/internal/observability/event/node_formatter_audit_json_test.go
++++ b/internal/observability/event/node_formatter_audit_json_test.go
+@@ -27,7 +27,7 @@ func fakeJSONAuditEvent(tb testing.TB, subtype auditSubtype, input *logical.LogI
+ 
+ 	date := time.Date(2023, time.July, 11, 15, 49, 10, 0o0, time.Local)
+ 
+-	auditEvent, err := newAudit(
++	auditEvent, err := newAudit(false,
+ 		WithID("123"),
+ 		WithSubtype(string(subtype)),
+ 		WithFormat(string(AuditFormatJSON)),
+diff --git a/internal/observability/event/node_formatter_audit_jsonx.go b/internal/observability/event/node_formatter_audit_jsonx.go
+index 2ca88dc0fa..45e292c979 100644
+--- a/internal/observability/event/node_formatter_audit_jsonx.go
++++ b/internal/observability/event/node_formatter_audit_jsonx.go
+@@ -23,7 +23,7 @@ type AuditFormatterJSONx struct {
+ // This formatter node requires that a AuditFormatterJSON node exists earlier
+ // in the pipeline and will attempt to access the JSON encoded data stored by that
+ // formatter node.
+-func NewAuditFormatterJSONx() *AuditFormatterJSONx {
++func NewAuditFormatterJSONx(useEventLogger bool) *AuditFormatterJSONx {
+ 	return &AuditFormatterJSONx{format: AuditFormatJSONx}
+ }
+ 
+diff --git a/vault/audit_broker.go b/vault/audit_broker.go
+index 711d6d2714..0dc6e0a834 100644
+--- a/vault/audit_broker.go
++++ b/vault/audit_broker.go
+@@ -31,7 +31,7 @@ type AuditBroker struct {
+ }
+ 
+ // NewAuditBroker creates a new audit broker
+-func NewAuditBroker(log log.Logger) *AuditBroker {
++func NewAuditBroker(log log.Logger, useEventLogger bool) *AuditBroker {
+ 	b := &AuditBroker{
+ 		backends: make(map[string]backendEntry),
+ 		logger:   log,
+diff --git a/vault/audit_test.go b/vault/audit_test.go
+index c7d85dcdf3..75833e17bd 100644
+--- a/vault/audit_test.go
++++ b/vault/audit_test.go
+@@ -340,7 +340,7 @@ func verifyDefaultAuditTable(t *testing.T, table *MountTable) {
+ 
+ func TestAuditBroker_LogRequest(t *testing.T) {
+ 	l := logging.NewVaultLogger(log.Trace)
+-	b := NewAuditBroker(l)
++	b := NewAuditBroker(l, false)
+ 	a1 := corehelpers.TestNoopAudit(t, nil)
+ 	a2 := corehelpers.TestNoopAudit(t, nil)
+ 	b.Register("foo", a1, false, false)
+@@ -427,7 +427,7 @@ func TestAuditBroker_LogRequest(t *testing.T) {
+ 
+ func TestAuditBroker_LogResponse(t *testing.T) {
+ 	l := logging.NewVaultLogger(log.Trace)
+-	b := NewAuditBroker(l)
++	b := NewAuditBroker(l, false)
+ 	a1 := corehelpers.TestNoopAudit(t, nil)
+ 	a2 := corehelpers.TestNoopAudit(t, nil)
+ 	b.Register("foo", a1, false, false)
+@@ -532,7 +532,7 @@ func TestAuditBroker_LogResponse(t *testing.T) {
+ 
+ func TestAuditBroker_AuditHeaders(t *testing.T) {
+ 	logger := logging.NewVaultLogger(log.Trace)
+-	b := NewAuditBroker(logger)
++	b := NewAuditBroker(logger, false)
+ 	_, barrier, _ := mockBarrier(t)
+ 	view := NewBarrierView(barrier, "headers/")
+ 	a1 := corehelpers.TestNoopAudit(t, nil)
+diff --git a/vault/core.go b/vault/core.go
+index f4d157adf5..5fe5a8970a 100644
+--- a/vault/core.go
++++ b/vault/core.go
+@@ -2365,7 +2365,7 @@ func (s standardUnsealStrategy) unseal(ctx context.Context, logger log.Logger, c
+ 			return err
+ 		}
+ 	} else {
+-		c.auditBroker = NewAuditBroker(c.logger)
++		c.auditBroker = NewAuditBroker(c.logger, false)
+ 	}
+ 
+ 	if !c.ReplicationState().HasState(consts.ReplicationPerformanceSecondary | consts.ReplicationDRSecondary) {

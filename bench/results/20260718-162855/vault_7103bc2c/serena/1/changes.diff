@@ -1,0 +1,85 @@
+diff --git a/audit/audit.go b/audit/audit.go
+index 35a3d38a05..31164be3f2 100644
+--- a/audit/audit.go
++++ b/audit/audit.go
+@@ -59,4 +59,4 @@ type BackendConfig struct {
+ }
+ 
+ // Factory is the factory function to create an audit backend.
+-type Factory func(context.Context, *BackendConfig) (Backend, error)
++type Factory func(context.Context, *BackendConfig, bool) (Backend, error)
+diff --git a/builtin/audit/file/backend.go b/builtin/audit/file/backend.go
+index d4471f1a9a..43471f429f 100644
+--- a/builtin/audit/file/backend.go
++++ b/builtin/audit/file/backend.go
+@@ -20,7 +20,7 @@ import (
+ 	"github.com/hashicorp/vault/sdk/logical"
+ )
+ 
+-func Factory(ctx context.Context, conf *audit.BackendConfig) (audit.Backend, error) {
++func Factory(ctx context.Context, conf *audit.BackendConfig, useEventLogger bool) (audit.Backend, error) {
+ 	if conf.SaltConfig == nil {
+ 		return nil, fmt.Errorf("nil salt config")
+ 	}
+diff --git a/builtin/audit/socket/backend.go b/builtin/audit/socket/backend.go
+index 25077fc0ff..e5e0ce3fd6 100644
+--- a/builtin/audit/socket/backend.go
++++ b/builtin/audit/socket/backend.go
+@@ -19,7 +19,7 @@ import (
+ 	"github.com/hashicorp/vault/sdk/logical"
+ )
+ 
+-func Factory(ctx context.Context, conf *audit.BackendConfig) (audit.Backend, error) {
++func Factory(ctx context.Context, conf *audit.BackendConfig, useEventLogger bool) (audit.Backend, error) {
+ 	if conf.SaltConfig == nil {
+ 		return nil, fmt.Errorf("nil salt config")
+ 	}
+diff --git a/builtin/audit/syslog/backend.go b/builtin/audit/syslog/backend.go
+index 19059b86cc..4fbcfd034e 100644
+--- a/builtin/audit/syslog/backend.go
++++ b/builtin/audit/syslog/backend.go
+@@ -16,7 +16,7 @@ import (
+ 	"github.com/hashicorp/vault/sdk/logical"
+ )
+ 
+-func Factory(ctx context.Context, conf *audit.BackendConfig) (audit.Backend, error) {
++func Factory(ctx context.Context, conf *audit.BackendConfig, useEventLogger bool) (audit.Backend, error) {
+ 	if conf.SaltConfig == nil {
+ 		return nil, fmt.Errorf("nil salt config")
+ 	}
+diff --git a/command/commands.go b/command/commands.go
+index 68e2542b06..9e7b19e09b 100644
+--- a/command/commands.go
++++ b/command/commands.go
+@@ -165,9 +165,15 @@ const (
+ 
+ var (
+ 	auditBackends = map[string]audit.Factory{
+-		"file":   auditFile.Factory,
+-		"socket": auditSocket.Factory,
+-		"syslog": auditSyslog.Factory,
++		"file":   func(ctx context.Context, conf *audit.BackendConfig, useEventLogger bool) (audit.Backend, error) {
++			return auditFile.Factory(ctx, conf, useEventLogger)
++		},
++		"socket": func(ctx context.Context, conf *audit.BackendConfig, useEventLogger bool) (audit.Backend, error) {
++			return auditSocket.Factory(ctx, conf, useEventLogger)
++		},
++		"syslog": func(ctx context.Context, conf *audit.BackendConfig, useEventLogger bool) (audit.Backend, error) {
++			return auditSyslog.Factory(ctx, conf, useEventLogger)
++		},
+ 	}
+ 
+ 	credentialBackends = map[string]logical.Factory{
+diff --git a/vault/audit.go b/vault/audit.go
+index 4078edbee2..e5b2cc2e5d 100644
+--- a/vault/audit.go
++++ b/vault/audit.go
+@@ -482,7 +482,7 @@ func (c *Core) newAuditBackend(ctx context.Context, entry *MountEntry, view logi
+ 		SaltView:   view,
+ 		SaltConfig: saltConfig,
+ 		Config:     conf,
+-	})
++	}, false)
+ 	if err != nil {
+ 		return nil, err
+ 	}

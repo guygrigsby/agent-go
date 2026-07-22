@@ -1,0 +1,4 @@
+ M internal/daemon/worker/handler.go
+ M internal/daemon/worker/listeners.go
+?? .serena/
+?? opencode.json

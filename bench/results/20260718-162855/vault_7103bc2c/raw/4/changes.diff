@@ -1,0 +1,84 @@
+diff --git a/audit/format.go b/audit/format.go
+index 5e461ef61a..23e9a2d396 100644
+--- a/audit/format.go
++++ b/audit/format.go
+@@ -99,7 +99,7 @@ func (s *nonPersistentSalt) Salt(_ context.Context) (*salt.Salt, error) {
+ }
+ 
+ // NewAuditFormatter should be used to create an AuditFormatter.
+-func NewAuditFormatter(salter Salter) (*AuditFormatter, error) {
++func NewAuditFormatter(salter Salter, useEventLogger bool) (*AuditFormatter, error) {
+ 	if salter == nil {
+ 		return nil, errors.New("cannot create a new audit formatter with nil salter")
+ 	}
+@@ -108,7 +108,7 @@ func NewAuditFormatter(salter Salter) (*AuditFormatter, error) {
+ }
+ 
+ // NewAuditFormatterWriter should be used to create a new AuditFormatterWriter.
+-func NewAuditFormatterWriter(formatter Formatter, writer Writer) (*AuditFormatterWriter, error) {
++func NewAuditFormatterWriter(formatter Formatter, writer Writer, useEventLogger bool) (*AuditFormatterWriter, error) {
+ 	switch {
+ 	case formatter == nil:
+ 		return nil, errors.New("cannot create a new audit formatter writer with nil formatter")
+@@ -678,7 +678,7 @@ func parseVaultTokenFromJWT(token string) *string {
+ // NewTemporaryFormatter creates a formatter not backed by a persistent salt
+ func NewTemporaryFormatter(format, prefix string) *AuditFormatterWriter {
+ 	// We can ignore the error from NewAuditFormatter since we are sure the salter isn't nil.
+-	f, _ := NewAuditFormatter(&nonPersistentSalt{})
++	f, _ := NewAuditFormatter(&nonPersistentSalt{}, false)
+ 
+ 	var w Writer
+ 
+@@ -691,7 +691,7 @@ func NewTemporaryFormatter(format, prefix string) *AuditFormatterWriter {
+ 
+ 	// We can ignore the error from NewAuditFormatterWriter since we are sure both
+ 	// the formatter and writer are not nil.
+-	fw, _ := NewAuditFormatterWriter(f, w)
++	fw, _ := NewAuditFormatterWriter(f, w, false)
+ 
+ 	return fw
+ }
+diff --git a/builtin/audit/file/backend.go b/builtin/audit/file/backend.go
+index d4471f1a9a..94f242abef 100644
+--- a/builtin/audit/file/backend.go
++++ b/builtin/audit/file/backend.go
+@@ -125,7 +125,7 @@ func Factory(ctx context.Context, conf *audit.BackendConfig) (audit.Backend, err
+ 	b.salt.Store((*salt.Salt)(nil))
+ 
+ 	// Configure the formatter for either case.
+-	f, err := audit.NewAuditFormatter(b)
++	f, err := audit.NewAuditFormatter(b, false)
+ 	if err != nil {
+ 		return nil, fmt.Errorf("error creating formatter: %w", err)
+ 	}
+@@ -137,7 +137,7 @@ func Factory(ctx context.Context, conf *audit.BackendConfig) (audit.Backend, err
+ 		w = &audit.JSONxWriter{Prefix: conf.Config["prefix"]}
+ 	}
+ 
+-	fw, err := audit.NewAuditFormatterWriter(f, w)
++	fw, err := audit.NewAuditFormatterWriter(f, w, false)
+ 	if err != nil {
+ 		return nil, fmt.Errorf("error creating formatter writer: %w", err)
+ 	}
+diff --git a/builtin/audit/socket/backend.go b/builtin/audit/socket/backend.go
+index 25077fc0ff..c3fde89fa4 100644
+--- a/builtin/audit/socket/backend.go
++++ b/builtin/audit/socket/backend.go
+@@ -100,7 +100,7 @@ func Factory(ctx context.Context, conf *audit.BackendConfig) (audit.Backend, err
+ 	}
+ 
+ 	// Configure the formatter for either case.
+-	f, err := audit.NewAuditFormatter(b)
++	f, err := audit.NewAuditFormatter(b, false)
+ 	if err != nil {
+ 		return nil, fmt.Errorf("error creating formatter: %w", err)
+ 	}
+@@ -112,7 +112,7 @@ func Factory(ctx context.Context, conf *audit.BackendConfig) (audit.Backend, err
+ 		w = &audit.JSONxWriter{Prefix: conf.Config["prefix"]}
+ 	}
+ 
+-	fw, err := audit.NewAuditFormatterWriter(f, w)
++	fw, err := audit.NewAuditFormatterWriter(f, w, false)
+ 	if err != nil {
+ 		return nil, fmt.Errorf("error creating formatter writer: %w", err)
+ 	}

@@ -1,0 +1,15 @@
+ M testing/internal/e2e/boundary/account.go
+ M testing/internal/e2e/boundary/boundary.go
+ M testing/internal/e2e/boundary/credential.go
+ M testing/internal/e2e/boundary/host.go
+ M testing/internal/e2e/boundary/scope.go
+ M testing/internal/e2e/boundary/target.go
+ M testing/internal/e2e/boundary/user.go
+ M testing/internal/e2e/credential/vault/vault_test.go
+ M testing/internal/e2e/host/aws/dynamichostcatalog_test.go
+ M testing/internal/e2e/host/static/connect_authz_token_test.go
+ M testing/internal/e2e/host/static/connect_test.go
+ M testing/internal/e2e/host/static/session_cancel_admin_test.go
+ M testing/internal/e2e/host/static/session_cancel_user_test.go
+ M testing/internal/e2e/host/static/static_credential_store_test.go
+?? opencode.json

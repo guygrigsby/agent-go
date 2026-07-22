@@ -1,0 +1,173 @@
+diff --git a/audit/audit.go b/audit/audit.go
+index 35a3d38a05..cf105e212e 100644
+--- a/audit/audit.go
++++ b/audit/audit.go
+@@ -56,7 +56,17 @@ type BackendConfig struct {
+ 
+ 	// Config is the opaque user configuration provided when mounting
+ 	Config map[string]string
++
++	// UseEventLogger is used to signal whether to use event logger for audit
++	// events (when enabled, the audit backend will be registered with the audit
++	// broker in a way that uses event logging instead of direct registration)
++	UseEventLogger bool
+ }
+ 
+ // Factory is the factory function to create an audit backend.
+ type Factory func(context.Context, *BackendConfig) (Backend, error)
++
++// EventLoggerFactory is the factory function to create an audit backend that uses
++// event logging (when enabled, the audit backend will be registered with the audit
++// broker in a way that uses event logging instead of direct registration)
++type EventLoggerFactory func(context.Context, *BackendConfig) (Backend, error)
+diff --git a/builtin/audit/file/backend.go b/builtin/audit/file/backend.go
+index d4471f1a9a..5b4cd26665 100644
+--- a/builtin/audit/file/backend.go
++++ b/builtin/audit/file/backend.go
+@@ -20,7 +20,7 @@ import (
+ 	"github.com/hashicorp/vault/sdk/logical"
+ )
+ 
+-func Factory(ctx context.Context, conf *audit.BackendConfig) (audit.Backend, error) {
++func Factory(ctx context.Context, conf *audit.BackendConfig, useEventLogger bool) (audit.Backend, error) {
+ 	if conf.SaltConfig == nil {
+ 		return nil, fmt.Errorf("nil salt config")
+ 	}
+@@ -108,11 +108,12 @@ func Factory(ctx context.Context, conf *audit.BackendConfig) (audit.Backend, err
+ 	}
+ 
+ 	b := &Backend{
+-		path:       path,
+-		mode:       mode,
+-		saltConfig: conf.SaltConfig,
+-		saltView:   conf.SaltView,
+-		salt:       new(atomic.Value),
++		path:            path,
++		mode:            mode,
++		saltConfig:      conf.SaltConfig,
++		saltView:        conf.SaltView,
++		useEventLogger:  useEventLogger,
++		salt:            new(atomic.Value),
+ 		formatConfig: audit.FormatterConfig{
+ 			Raw:                logRaw,
+ 			HMACAccessor:       hmacAccessor,
+@@ -173,10 +174,11 @@ type Backend struct {
+ 	f        *os.File
+ 	mode     os.FileMode
+ 
+-	saltMutex  sync.RWMutex
+-	salt       *atomic.Value
+-	saltConfig *salt.Config
+-	saltView   logical.Storage
++	saltMutex    sync.RWMutex
++	salt         *atomic.Value
++	saltConfig   *salt.Config
++	saltView     logical.Storage
++	useEventLogger bool
+ }
+ 
+ var _ audit.Backend = (*Backend)(nil)
+diff --git a/builtin/audit/socket/backend.go b/builtin/audit/socket/backend.go
+index 25077fc0ff..b3006d8cb8 100644
+--- a/builtin/audit/socket/backend.go
++++ b/builtin/audit/socket/backend.go
+@@ -19,7 +19,7 @@ import (
+ 	"github.com/hashicorp/vault/sdk/logical"
+ )
+ 
+-func Factory(ctx context.Context, conf *audit.BackendConfig) (audit.Backend, error) {
++func Factory(ctx context.Context, conf *audit.BackendConfig, useEventLogger bool) (audit.Backend, error) {
+ 	if conf.SaltConfig == nil {
+ 		return nil, fmt.Errorf("nil salt config")
+ 	}
+@@ -86,8 +86,9 @@ func Factory(ctx context.Context, conf *audit.BackendConfig) (audit.Backend, err
+ 	}
+ 
+ 	b := &Backend{
+-		saltConfig: conf.SaltConfig,
+-		saltView:   conf.SaltView,
++		saltConfig:        conf.SaltConfig,
++		saltView:          conf.SaltView,
++		useEventLogger:    useEventLogger,
+ 		formatConfig: audit.FormatterConfig{
+ 			Raw:                logRaw,
+ 			HMACAccessor:       hmacAccessor,
+@@ -135,10 +136,11 @@ type Backend struct {
+ 
+ 	sync.Mutex
+ 
+-	saltMutex  sync.RWMutex
+-	salt       *salt.Salt
+-	saltConfig *salt.Config
+-	saltView   logical.Storage
++	saltMutex    sync.RWMutex
++	salt         *salt.Salt
++	saltConfig   *salt.Config
++	saltView     logical.Storage
++	useEventLogger bool
+ }
+ 
+ var _ audit.Backend = (*Backend)(nil)
+diff --git a/builtin/audit/syslog/backend.go b/builtin/audit/syslog/backend.go
+index 19059b86cc..361f60383a 100644
+--- a/builtin/audit/syslog/backend.go
++++ b/builtin/audit/syslog/backend.go
+@@ -16,7 +16,7 @@ import (
+ 	"github.com/hashicorp/vault/sdk/logical"
+ )
+ 
+-func Factory(ctx context.Context, conf *audit.BackendConfig) (audit.Backend, error) {
++func Factory(ctx context.Context, conf *audit.BackendConfig, useEventLogger bool) (audit.Backend, error) {
+ 	if conf.SaltConfig == nil {
+ 		return nil, fmt.Errorf("nil salt config")
+ 	}
+@@ -82,9 +82,10 @@ func Factory(ctx context.Context, conf *audit.BackendConfig) (audit.Backend, err
+ 	}
+ 
+ 	b := &Backend{
+-		logger:     logger,
+-		saltConfig: conf.SaltConfig,
+-		saltView:   conf.SaltView,
++		logger:            logger,
++		saltConfig:        conf.SaltConfig,
++		saltView:          conf.SaltView,
++		useEventLogger:    useEventLogger,
+ 		formatConfig: audit.FormatterConfig{
+ 			Raw:                logRaw,
+ 			HMACAccessor:       hmacAccessor,
+@@ -123,10 +124,11 @@ type Backend struct {
+ 	formatter    *audit.AuditFormatterWriter
+ 	formatConfig audit.FormatterConfig
+ 
+-	saltMutex  sync.RWMutex
+-	salt       *salt.Salt
+-	saltConfig *salt.Config
+-	saltView   logical.Storage
++	saltMutex    sync.RWMutex
++	salt         *salt.Salt
++	saltConfig   *salt.Config
++	saltView     logical.Storage
++	useEventLogger bool
+ }
+ 
+ var _ audit.Backend = (*Backend)(nil)
+diff --git a/vault/audit.go b/vault/audit.go
+index 4078edbee2..186610b002 100644
+--- a/vault/audit.go
++++ b/vault/audit.go
+@@ -478,10 +478,12 @@ func (c *Core) newAuditBackend(ctx context.Context, entry *MountEntry, view logi
+ 		Location: salt.DefaultLocation,
+ 	}
+ 
++	useEventLogger := c.IsExperimentEnabled(experiments.VaultExperimentCoreAuditEventsAlpha1)
+ 	be, err := f(ctx, &audit.BackendConfig{
+-		SaltView:   view,
+-		SaltConfig: saltConfig,
+-		Config:     conf,
++		SaltView:        view,
++		SaltConfig:      saltConfig,
++		Config:          conf,
++		UseEventLogger:  useEventLogger,
+ 	})
+ 	if err != nil {
+ 		return nil, err

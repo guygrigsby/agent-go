@@ -1,0 +1,35 @@
+diff --git a/internal/servers/controller/common/common.go b/internal/servers/controller/common/common.go
+index 4945b44d9..ca9cf8471 100644
+--- a/internal/servers/controller/common/common.go
++++ b/internal/servers/controller/common/common.go
+@@ -9,8 +9,8 @@ import (
+ 	"github.com/hashicorp/boundary/internal/iam"
+ 	hostplugin "github.com/hashicorp/boundary/internal/plugin/host"
+ 	"github.com/hashicorp/boundary/internal/servers"
+-	"github.com/hashicorp/boundary/internal/session"
+ 	"github.com/hashicorp/boundary/internal/target"
++	"github.com/hashicorp/boundary/internal/types"
+ )
+ 
+ type (
+@@ -24,6 +24,6 @@ type (
+ 	PluginHostRepoFactory      func() (*pluginhost.Repository, error)
+ 	HostPluginRepoFactory      func() (*hostplugin.Repository, error)
+ 	SessionRepoFactory         func() (*session.Repository, error)
+-	ConnectionRepoFactory      func() (*session.ConnectionRepository, error)
++	ConnectionRepoFactory      = types.ConnectionRepoFactory
+ 	TargetRepoFactory          func() (*target.Repository, error)
+ )
+diff --git a/internal/servers/controller/controller.go b/internal/servers/controller/controller.go
+index 76e80816f..9b80adaad 100644
+--- a/internal/servers/controller/controller.go
++++ b/internal/servers/controller/controller.go
+@@ -368,7 +368,7 @@ func (c *Controller) registerJobs() error {
+ // registerSessionConnectionCleanupJob is a helper method to abstract
+ // registering the session connection cleanup job specifically.
+ func (c *Controller) registerSessionConnectionCleanupJob() error {
+-	sessionConnectionCleanupJob, err := newSessionConnectionCleanupJob(c.ConnectionRepoFn, c.conf.StatusGracePeriodDuration)
++	sessionConnectionCleanupJob, err := session.NewSessionConnectionCleanupJob(c.ConnectionRepoFn, c.conf.StatusGracePeriodDuration)
+ 	if err != nil {
+ 		return fmt.Errorf("error creating session cleanup job: %w", err)
+ 	}

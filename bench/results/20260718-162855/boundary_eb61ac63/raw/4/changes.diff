@@ -1,0 +1,167 @@
+diff --git a/internal/session/repository.go b/internal/session/repository.go
+index 8080ae56f..dc88207b5 100644
+--- a/internal/session/repository.go
++++ b/internal/session/repository.go
+@@ -38,7 +38,7 @@ type RepositoryFactory func(opt ...Option) (*Repository, error)
+ 
+ // NewRepository creates a new session Repository. Supports the options: WithLimit
+ // which sets a default limit on results returned by repo operations.
+-func NewRepository(r db.Reader, w db.Writer, kms *kms.Kms, opt ...Option) (*Repository, error) {
++func NewRepository(ctx context.Context, r db.Reader, w db.Writer, kms *kms.Kms, opt ...Option) (*Repository, error) {
+ 	const op = "session.NewRepository"
+ 	if r == nil {
+ 		return nil, errors.NewDeprecated(errors.InvalidParameter, op, "nil reader")
+diff --git a/internal/session/repository_test.go b/internal/session/repository_test.go
+index 4a2ed7878..e22d739e1 100644
+--- a/internal/session/repository_test.go
++++ b/internal/session/repository_test.go
+@@ -1,6 +1,7 @@
+ package session
+ 
+ import (
++	"context"
+ 	"testing"
+ 
+ 	"github.com/hashicorp/boundary/internal/db"
+@@ -11,6 +12,7 @@ import (
+ 
+ func TestNewRepository(t *testing.T) {
+ 	t.Parallel()
++	ctx := context.Background()
+ 	conn, _ := db.TestSetup(t, "postgres")
+ 	rw := db.New(conn)
+ 	wrapper := db.TestWrapper(t)
+@@ -36,7 +38,7 @@ func TestNewRepository(t *testing.T) {
+ 				k: testKms,
+ 			},
+ 			want: func() *Repository {
+-				ret, err := NewRepository(rw, rw, testKms)
++				ret, err := NewRepository(ctx, rw, rw, testKms)
+ 				require.NoError(t, err)
+ 				return ret
+ 			}(),
+@@ -66,7 +68,7 @@ func TestNewRepository(t *testing.T) {
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			assert, require := assert.New(t), require.New(t)
+-			got, err := NewRepository(tt.args.r, tt.args.w, tt.args.k)
++			got, err := NewRepository(ctx, tt.args.r, tt.args.w, tt.args.k)
+ 			if tt.wantErr {
+ 				require.Error(err)
+ 				assert.Equal(tt.wantErrString, err.Error())
+diff --git a/internal/session/service_worker_status_report_test.go b/internal/session/service_worker_status_report_test.go
+index 20a4c8e7c..5d89a6165 100644
+--- a/internal/session/service_worker_status_report_test.go
++++ b/internal/session/service_worker_status_report_test.go
+@@ -33,7 +33,7 @@ func TestWorkerStatusReport(t *testing.T) {
+ 	})
+ 	require.NoError(t, err)
+ 
+-	repo, err := session.NewRepository(rw, rw, kms)
++	repo, err := session.NewRepository(ctx, rw, rw, kms)
+ 	require.NoError(t, err)
+ 	connRepo, err := session.NewConnectionRepository(ctx, rw, rw, kms, session.WithWorkerStateDelay(0))
+ 	require.NoError(t, err)
+diff --git a/internal/target/repository.go b/internal/target/repository.go
+index 2f65552f5..3d25d0b92 100644
+--- a/internal/target/repository.go
++++ b/internal/target/repository.go
+@@ -32,7 +32,7 @@ type Repository struct {
+ 
+ // NewRepository creates a new target Repository. Supports the options: WithLimit
+ // which sets a default limit on results returned by repo operations.
+-func NewRepository(r db.Reader, w db.Writer, kms *kms.Kms, opt ...Option) (*Repository, error) {
++func NewRepository(ctx context.Context, r db.Reader, w db.Writer, kms *kms.Kms, opt ...Option) (*Repository, error) {
+ 	const op = "target.NewRepository"
+ 	if r == nil {
+ 		return nil, errors.NewDeprecated(errors.InvalidParameter, op, "nil reader")
+diff --git a/internal/target/repository_test.go b/internal/target/repository_test.go
+index 6187421a3..b7cbb0042 100644
+--- a/internal/target/repository_test.go
++++ b/internal/target/repository_test.go
+@@ -1,6 +1,7 @@
+ package target
+ 
+ import (
++	"context"
+ 	"testing"
+ 
+ 	"github.com/hashicorp/boundary/internal/db"
+@@ -11,6 +12,7 @@ import (
+ 
+ func TestNewRepository(t *testing.T) {
+ 	t.Parallel()
++	ctx := context.Background()
+ 	conn, _ := db.TestSetup(t, "postgres")
+ 	rw := db.New(conn)
+ 	wrapper := db.TestWrapper(t)
+@@ -79,7 +81,7 @@ func TestNewRepository(t *testing.T) {
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			assert, require := assert.New(t), require.New(t)
+-			got, err := NewRepository(tt.args.r, tt.args.w, tt.args.kms)
++			got, err := NewRepository(ctx, tt.args.r, tt.args.w, tt.args.kms)
+ 			if tt.wantErr {
+ 				require.Error(err)
+ 				assert.Equal(tt.wantErrString, err.Error())
+diff --git a/internal/target/tcp/repository_test.go b/internal/target/tcp/repository_test.go
+index d5ca11008..f3ea76f59 100644
+--- a/internal/target/tcp/repository_test.go
++++ b/internal/target/tcp/repository_test.go
+@@ -30,7 +30,7 @@ func TestRepository_LookupTarget(t *testing.T) {
+ 	_, _, err := iamRepo.UpdateScope(ctx, proj, 1, []string{"name"})
+ 	require.NoError(t, err)
+ 	rw := db.New(conn)
+-	repo, err := target.NewRepository(rw, rw, testKms)
++	repo, err := target.NewRepository(ctx, rw, rw, testKms)
+ 	require.NoError(t, err)
+ 	tgt := tcp.TestTarget(ctx, t, conn, proj.PublicId, "target-name")
+ 
+@@ -137,6 +137,7 @@ func TestRepository_LookupTarget(t *testing.T) {
+ 
+ func TestRepository_ListTargets(t *testing.T) {
+ 	t.Parallel()
++	ctx := context.Background()
+ 	conn, _ := db.TestSetup(t, "postgres")
+ 	const testLimit = 10
+ 	wrapper := db.TestWrapper(t)
+@@ -144,7 +145,7 @@ func TestRepository_ListTargets(t *testing.T) {
+ 	iamRepo := iam.TestRepo(t, conn, wrapper)
+ 	_, proj := iam.TestScopes(t, iamRepo)
+ 	rw := db.New(conn)
+-	repo, err := target.NewRepository(rw, rw, testKms, target.WithLimit(testLimit))
++	repo, err := target.NewRepository(ctx, rw, rw, testKms, target.WithLimit(testLimit))
+ 	require.NoError(t, err)
+ 
+ 	type args struct {
+@@ -246,7 +247,7 @@ func TestRepository_ListRoles_Multiple_Scopes(t *testing.T) {
+ 	_, proj1 := iam.TestScopes(t, iamRepo)
+ 	_, proj2 := iam.TestScopes(t, iamRepo)
+ 	rw := db.New(conn)
+-	repo, err := target.NewRepository(rw, rw, testKms)
++	repo, err := target.NewRepository(ctx, rw, rw, testKms)
+ 	require.NoError(t, err)
+ 
+ 	db.TestDeleteWhere(t, conn, tcp.NewTestTarget(""), "1=1")
+@@ -274,7 +275,7 @@ func TestRepository_DeleteTarget(t *testing.T) {
+ 	testKms := kms.TestKms(t, conn, wrapper)
+ 	iamRepo := iam.TestRepo(t, conn, wrapper)
+ 	_, proj := iam.TestScopes(t, iamRepo)
+-	repo, err := target.NewRepository(rw, rw, testKms)
++	repo, err := target.NewRepository(ctx, rw, rw, testKms)
+ 	require.NoError(t, err)
+ 
+ 	ctx := context.Background()
+diff --git a/testing/dbtest/session_list_benchmarks_dump_generation_test.go b/testing/dbtest/session_list_benchmarks_dump_generation_test.go
+index 6ef81f3ad..60c6aa2d7 100644
+--- a/testing/dbtest/session_list_benchmarks_dump_generation_test.go
++++ b/testing/dbtest/session_list_benchmarks_dump_generation_test.go
+@@ -126,7 +126,7 @@ func TestGenerateSessionBenchmarkTemplateDumps(t *testing.T) {
+ 			require.NoError(err)
+ 			pwRepo, err := password.NewRepository(rw, rw, kms)
+ 			require.NoError(err)
+-			sessRepo, err := session.NewRepository(rw, rw, kms)
++			sessRepo, err := session.NewRepository(ctx, rw, rw, kms)
+ 			require.NoError(err)
+ 			connRepo, err := session.NewConnectionRepository(ctx, rw, rw, kms)
+ 			require.NoError(err)

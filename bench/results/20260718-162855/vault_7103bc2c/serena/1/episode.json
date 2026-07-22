@@ -1,0 +1,72 @@
+{
+ "agent_done": "2026-07-20T11:24:56.740860084Z",
+ "agent_started": "2026-07-20T11:12:56.727288Z",
+ "cache_read": 1432200,
+ "cache_write": 0,
+ "capped": true,
+ "failure_kind": "capped",
+ "first_invalid_s": 570.84696775,
+ "intermediate_states": 6,
+ "invalid_intermediate_rate": 1,
+ "invalid_intermediates": 6,
+ "iter": 1,
+ "kind": "add-param",
+ "mode": "serena",
+ "new_errors": [
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashvault_7103bc2cserena125662313/002/vault/http/logical_test.go:485:12|cannot use (func(ctx context.Context, config *audit.BackendConfig) (audit.Backend, error) literal) (value of type func(ctx \"context\".Context, config *audit.BackendConfig) (audit.Backend, error)) as audit.Factory value in map literal",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashvault_7103bc2cserena125662313/002/vault/vault/audit_test.go:155:28|cannot use (func(ctx context.Context, config *audit.BackendConfig) (audit.Backend, error) literal) (value of type func(ctx \"context\".Context, config *audit.BackendConfig) (audit.Backend, error)) as audit.Factory value in assignment",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashvault_7103bc2cserena125662313/002/vault/vault/external_tests/identity/login_mfa_totp_test.go:64:12|cannot use (func(ctx context.Context, config *audit.BackendConfig) (audit.Backend, error) literal) (value of type func(ctx \"context\".Context, config *audit.BackendConfig) (audit.Backend, error)) as audit.Factory value in map literal",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashvault_7103bc2cserena125662313/002/vault/command/commands.go:174:22|undefined: context",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashvault_7103bc2cserena125662313/002/vault/builtin/audit/file/backend_test.go:46:3|not enough arguments in call to Factory\n\thave (\"context\".Context, *audit.BackendConfig)\n\twant (\"context\".Context, *audit.BackendConfig, bool)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashvault_7103bc2cserena125662313/002/vault/vault/audit_test.go:30:28|cannot use (func(ctx context.Context, config *audit.BackendConfig) (audit.Backend, error) literal) (value of type func(ctx \"context\".Context, config *audit.BackendConfig) (audit.Backend, error)) as audit.Factory value in assignment",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashvault_7103bc2cserena125662313/002/vault/vault/audit_test.go:106:28|cannot use (func(ctx context.Context, config *audit.BackendConfig) (audit.Backend, error) literal) (value of type func(ctx \"context\".Context, config *audit.BackendConfig) (audit.Backend, error)) as audit.Factory value in assignment",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashvault_7103bc2cserena125662313/002/vault/vault/core_test.go:1204:28|cannot use (func(ctx context.Context, config *audit.BackendConfig) (audit.Backend, error) literal) (value of type func(ctx \"context\".Context, config *audit.BackendConfig) (audit.Backend, error)) as audit.Factory value in assignment",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashvault_7103bc2cserena125662313/002/vault/builtin/audit/file/backend_test.go:125:3|not enough arguments in call to Factory\n\thave (\"context\".Context, *audit.BackendConfig)\n\twant (\"context\".Context, *audit.BackendConfig, bool)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashvault_7103bc2cserena125662313/002/vault/builtin/audit/file/backend_test.go:147:3|not enough arguments in call to Factory\n\thave (\"context\".Context, *audit.BackendConfig)\n\twant (\"context\".Context, *audit.BackendConfig, bool)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashvault_7103bc2cserena125662313/002/vault/vault/core_test.go:1140:28|cannot use (func(ctx context.Context, config *audit.BackendConfig) (audit.Backend, error) literal) (value of type func(ctx \"context\".Context, config *audit.BackendConfig) (audit.Backend, error)) as audit.Factory value in assignment",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashvault_7103bc2cserena125662313/002/vault/vault/core_test.go:1326:28|cannot use (func(ctx context.Context, config *audit.BackendConfig) (audit.Backend, error) literal) (value of type func(ctx \"context\".Context, config *audit.BackendConfig) (audit.Backend, error)) as audit.Factory value in assignment",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashvault_7103bc2cserena125662313/002/vault/helper/testhelpers/corehelpers/corehelpers.go:265:9|cannot use (func(_ context.Context, config *audit.BackendConfig) (audit.Backend, error) literal) (value of type func(_ \"context\".Context, config *audit.BackendConfig) (audit.Backend, error)) as audit.Factory value in return statement",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashvault_7103bc2cserena125662313/002/vault/command/commands.go:168:22|undefined: context",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashvault_7103bc2cserena125662313/002/vault/command/commands.go:171:22|undefined: context",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashvault_7103bc2cserena125662313/002/vault/vault/audit_test.go:39:29|not enough arguments in call to factory\n\thave (\"context\".Context, *audit.BackendConfig)\n\twant (\"context\".Context, *audit.BackendConfig, bool)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashvault_7103bc2cserena125662313/002/vault/vault/mount_test.go:727:28|cannot use (func(ctx context.Context, config *audit.BackendConfig) (audit.Backend, error) literal) (value of type func(ctx \"context\".Context, config *audit.BackendConfig) (audit.Backend, error)) as audit.Factory value in assignment",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashvault_7103bc2cserena125662313/002/vault/builtin/audit/file/backend_test.go:85:3|not enough arguments in call to Factory\n\thave (\"context\".Context, *audit.BackendConfig)\n\twant (\"context\".Context, *audit.BackendConfig, bool)"
+ ],
+ "op_mix": {},
+ "pass": false,
+ "predicate": true,
+ "profile": "glm-flash",
+ "prompt": "VAULT-17078: Add useEventLogger Argument to Audit Factory Functions",
+ "rejects_total": 0,
+ "repairs_offered": 0,
+ "resends": 0,
+ "specs": [
+  {
+   "ok": true,
+   "param": "useEventLogger bool",
+   "signature": "func(ctx context.Context, conf *github.com/hashicorp/vault/audit.BackendConfig, useEventLogger bool) (github.com/hashicorp/vault/audit.Backend, error)",
+   "sym": "github.com/hashicorp/vault/builtin/audit/file.Factory"
+  },
+  {
+   "ok": true,
+   "param": "useEventLogger bool",
+   "signature": "func(ctx context.Context, conf *github.com/hashicorp/vault/audit.BackendConfig, useEventLogger bool) (github.com/hashicorp/vault/audit.Backend, error)",
+   "sym": "github.com/hashicorp/vault/builtin/audit/socket.Factory"
+  },
+  {
+   "ok": true,
+   "param": "useEventLogger bool",
+   "signature": "func(ctx context.Context, conf *github.com/hashicorp/vault/audit.BackendConfig, useEventLogger bool) (github.com/hashicorp/vault/audit.Backend, error)",
+   "sym": "github.com/hashicorp/vault/builtin/audit/syslog.Factory"
+  }
+ ],
+ "steps": 45,
+ "task": "vault_7103bc2c",
+ "tests": false,
+ "tests_baseline": true,
+ "tokens_in": 30117,
+ "tokens_out": 5205,
+ "tokens_reasoning": 0,
+ "typecheck": false,
+ "wall_s": 720.013572084
+}

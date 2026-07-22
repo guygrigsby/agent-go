@@ -1,0 +1,71 @@
+{"ms":1313,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-19T09:46:41.069902Z"}
+{"ms":1517,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-19T09:47:41.910427Z"}
+{"ms":31,"op":"query","outcome":"ok","req_sha":"73d61794138b0483","sym":"CredentialStore","ts":"2026-07-19T09:47:52.799006Z"}
+{"ms":46,"op":"query","outcome":"ok","req_sha":"7bbe8f1bc7bc4b8d","sym":"privateCredential","ts":"2026-07-19T09:48:41.232362Z"}
+{"ms":39,"op":"query","outcome":"ok","req_sha":"69d447ed98e1c790","sym":"newClient","ts":"2026-07-19T09:48:50.822763Z"}
+{"ms":23,"op":"view","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/credential/vault","reason":"receiver type not found","repairs":1,"req_sha":"f8de7b37c653c6b5","sym":"vault.go","ts":"2026-07-19T09:49:01.815849Z"}
+{"ms":10,"op":"query","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/credential/vault","req_sha":"999b7757cbcb7f79","sym":"client.renewToken","ts":"2026-07-19T09:49:11.868588Z"}
+{"ms":10,"op":"query","outcome":"ok","req_sha":"14d0d16f2fbce829","sym":"renewToken","ts":"2026-07-19T09:49:18.722444Z"}
+{"ms":2,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/credential/vault","req_sha":"b35823b59b64f66e","sym":"client.renewToken","ts":"2026-07-19T09:49:24.980534Z"}
+{"ms":80,"op":"view","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/credential/vault","reason":"receiver type not found","repairs":1,"req_sha":"f8de7b37c653c6b5","sym":"vault.go","ts":"2026-07-19T09:49:48.863663Z"}
+{"ms":20,"op":"query","outcome":"ok","req_sha":"7520d578043d8ee4","sym":"type vault","ts":"2026-07-19T09:49:51.947981Z"}
+{"ms":11,"op":"query","outcome":"ok","req_sha":"dcf6f1b7083f69ca","sym":"vault","ts":"2026-07-19T09:49:53.472841Z"}
+{"ms":69,"op":"view","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/credential/vault","reason":"fields are not independently viewable; view the containing type","repairs":1,"req_sha":"33b4bc4bca17d20b","sym":"privateCredential.VaultAddress","ts":"2026-07-19T09:50:46.019116Z"}
+{"ms":3,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/credential/vault","req_sha":"4542006070412f25","sym":"privateCredential","ts":"2026-07-19T09:50:49.316607Z"}
+{"ms":25,"op":"query","outcome":"ok","req_sha":"715930645e0fa7f9","sym":"toProto","ts":"2026-07-19T09:50:54.045834Z"}
+{"ms":28,"op":"query","outcome":"ok","req_sha":"01c2b063782a3538","sym":"toStorageStaticStore","ts":"2026-07-19T09:51:19.336701Z"}
+{"ms":27,"op":"query","outcome":"ok","req_sha":"75760277c7844e29","sym":"NewService","ts":"2026-07-19T09:51:23.782966Z"}
+{"ms":33,"op":"query","outcome":"ok","req_sha":"d71b1568687184b7","sym":"validateUpdateRequest","ts":"2026-07-19T09:51:51.679962Z"}
+{"ms":22,"op":"query","outcome":"ok","req_sha":"845ac689db3685c9","sym":"extractClientCertAndPk","ts":"2026-07-19T09:52:21.073447Z"}
+{"ms":11,"op":"query","outcome":"ok","req_sha":"ab9f206f03e84cf0","sym":"decodePemBlocks","ts":"2026-07-19T09:52:24.958901Z"}
+{"ms":30,"op":"query","outcome":"ok","req_sha":"69d447ed98e1c790","sym":"newClient","ts":"2026-07-19T09:52:29.021502Z"}
+{"ms":6,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/credential/vault","req_sha":"612a4bef4dbd536a","sym":"newClient","ts":"2026-07-19T09:52:36.025257Z"}
+{"ms":7,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/credential/vault","req_sha":"c5e700dab7f2e9b9","sym":"client.renewLease","ts":"2026-07-19T09:52:44.532939Z"}
+{"ms":9,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/credential/vault","req_sha":"18a4f13b3c1a6046","sym":"client.swapToken","ts":"2026-07-19T09:52:48.736973Z"}
+{"ms":2,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/credential/vault","req_sha":"3af7220a9f79f3e2","sym":"client.get","ts":"2026-07-19T09:52:51.783164Z"}
+{"ms":46,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/credential/vault","req_sha":"aba47c91b2f5e7ad","sym":"client.capabilities","ts":"2026-07-19T09:52:55.888762Z"}
+{"ms":64,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/credential/vault","req_sha":"9f413224bc96e53e","sym":"client.ping","ts":"2026-07-19T09:53:03.552956Z"}
+{"ms":7,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/credential/vault","req_sha":"99b850d0500d1ff0","sym":"client.revokeToken","ts":"2026-07-19T09:53:08.665733Z"}
+{"ms":6,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/credential/vault","req_sha":"7575f9a1c8fd12b5","sym":"client.revokeLease","ts":"2026-07-19T09:53:12.958232Z"}
+{"ms":2,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/credential/vault","req_sha":"17af6abd673c0395","sym":"client.lookupToken","ts":"2026-07-19T09:53:16.718238Z"}
+{"ms":4,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/credential/vault","req_sha":"942712f5b38baeb4","sym":"client.post","ts":"2026-07-19T09:53:20.880394Z"}
+{"ms":81,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/daemon/controller/handlers/credentialstores","req_sha":"9ef48be5829f1e53","sym":"toProto","ts":"2026-07-19T09:53:26.801658Z"}
+{"ms":3,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/daemon/controller/handlers/credentialstores","req_sha":"b7c7f244a68ab313","sym":"toStorageStaticStore","ts":"2026-07-19T09:53:46.013001Z"}
+{"ms":7,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/daemon/controller/handlers/credentialstores","req_sha":"dbb9499877af0e30","sym":"toStorageVaultStore","ts":"2026-07-19T09:53:51.458606Z"}
+{"ms":55,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/daemon/controller/handlers/credentialstores","req_sha":"b1d7cd38b1e2f011","sym":"NewService","ts":"2026-07-19T09:54:04.307092Z"}
+{"ms":2,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/daemon/controller/handlers/credentialstores","req_sha":"c3061b0142987a9d","sym":"validateUpdateRequest","ts":"2026-07-19T09:54:09.872697Z"}
+{"ms":6,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/daemon/controller/handlers/credentialstores","req_sha":"5b0a90a0245220c4","sym":"validateCreateRequest","ts":"2026-07-19T09:54:21.582716Z"}
+{"ms":5,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/daemon/controller/handlers/credentialstores","req_sha":"a2bcbda93e9062f9","sym":"extractClientCertAndPk","ts":"2026-07-19T09:54:34.944494Z"}
+{"ms":61,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/daemon/controller/handlers/credentialstores","req_sha":"a569d5683e765c0d","sym":"decodePemBlocks","ts":"2026-07-19T09:54:45.841652Z"}
+{"ms":20,"op":"query","outcome":"ok","req_sha":"e41e7d0a6f1e53aa","sym":"CredentialStore.client","ts":"2026-07-19T09:54:52.42534Z"}
+{"ms":10,"op":"query","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/credential/vault","req_sha":"a36107bf3e9c89ef","sym":"client.*client","ts":"2026-07-19T09:54:55.654237Z"}
+{"ms":23,"op":"query","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/credential/vault","req_sha":"78a240df04fa3bbb","sym":"type client","ts":"2026-07-19T09:54:58.78523Z"}
+{"ms":14,"op":"query","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/credential/vault","req_sha":"1c7fcf0bd0075b48","sym":"client","ts":"2026-07-19T09:55:02.105068Z"}
+{"ms":87,"op":"query","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/credential/vault","req_sha":"999b7757cbcb7f79","sym":"client.renewToken","ts":"2026-07-19T09:56:33.51456Z"}
+{"ms":10,"op":"query","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/credential/vault","req_sha":"444f7948b7682117","sym":"CredentialStore","ts":"2026-07-19T09:56:37.992844Z"}
+{"ms":77,"op":"query","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/credential/vault","req_sha":"6add0aacdce9e521","sym":"type CredentialStore","ts":"2026-07-19T09:58:21.124548Z"}
+{"ms":11,"op":"query","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/credential/vault","req_sha":"1c7fcf0bd0075b48","sym":"client","ts":"2026-07-19T09:58:28.915911Z"}
+{"ms":1271,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/credential/vault","req_sha":"4d9a941cb9c908a5","sym":"CredentialStore.client","ts":"2026-07-19T09:58:42.556365Z"}
+{"ms":3,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/credential/vault","req_sha":"f3cd96c7024fdb29","sym":"privateCredential.client","ts":"2026-07-19T09:58:43.833475Z"}
+{"ms":2,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/credential/vault","req_sha":"02309b4b48e71710","sym":"privateLibrary.client","ts":"2026-07-19T09:58:43.841022Z"}
+{"ms":3,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/credential/vault","req_sha":"e70ea227eccbe64d","sym":"privateStore.client","ts":"2026-07-19T09:58:43.847859Z"}
+{"ms":2,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/credential/vault","req_sha":"a96c92f7fa5db5d6","sym":"newClient","ts":"2026-07-19T09:58:43.854867Z"}
+{"ms":2,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/credential/vault","req_sha":"440bfc9c2d62bdfe","sym":"client.renewToken","ts":"2026-07-19T09:58:43.861701Z"}
+{"ms":2,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/credential/vault","req_sha":"bc16b999c5875088","sym":"client.renewLease","ts":"2026-07-19T09:58:43.868597Z"}
+{"ms":2,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/credential/vault","req_sha":"d3b481a74df76d70","sym":"client.swapToken","ts":"2026-07-19T09:58:43.87542Z"}
+{"ms":2,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/credential/vault","req_sha":"249c62cef4ef3f1c","sym":"client.get","ts":"2026-07-19T09:58:43.881916Z"}
+{"ms":3,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/credential/vault","req_sha":"7090f24253c89847","sym":"client.capabilities","ts":"2026-07-19T09:58:43.88835Z"}
+{"ms":2,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/credential/vault","req_sha":"a2ca616376198f57","sym":"client.ping","ts":"2026-07-19T09:58:43.895167Z"}
+{"ms":2,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/credential/vault","req_sha":"837db5fa63688d35","sym":"client.revokeToken","ts":"2026-07-19T09:58:43.901798Z"}
+{"ms":3,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/credential/vault","req_sha":"7cb63ca8c1231843","sym":"client.revokeLease","ts":"2026-07-19T09:58:43.908327Z"}
+{"ms":2,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/credential/vault","req_sha":"35b21ed14b702131","sym":"client.lookupToken","ts":"2026-07-19T09:58:43.915005Z"}
+{"ms":2,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/credential/vault","req_sha":"b0a09cea84c609e0","sym":"client.post","ts":"2026-07-19T09:58:43.921754Z"}
+{"ms":2,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/daemon/controller/handlers/credentialstores","req_sha":"1ce4ebe9d8d60561","sym":"toProto","ts":"2026-07-19T09:58:43.928581Z"}
+{"ms":2,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/daemon/controller/handlers/credentialstores","req_sha":"1edcc53a27b6ad93","sym":"toStorageStaticStore","ts":"2026-07-19T09:58:43.934594Z"}
+{"ms":2,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/daemon/controller/handlers/credentialstores","req_sha":"6edbf9c7bd1c371b","sym":"toStorageVaultStore","ts":"2026-07-19T09:58:43.940908Z"}
+{"ms":2,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/daemon/controller/handlers/credentialstores","req_sha":"8bff4b40d3e297eb","sym":"NewService","ts":"2026-07-19T09:58:43.947534Z"}
+{"ms":3,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/daemon/controller/handlers/credentialstores","req_sha":"5d82d6e8763a6800","sym":"validateUpdateRequest","ts":"2026-07-19T09:58:43.954356Z"}
+{"ms":3,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/daemon/controller/handlers/credentialstores","req_sha":"4a214a87199b7862","sym":"validateCreateRequest","ts":"2026-07-19T09:58:43.961174Z"}
+{"ms":3,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/daemon/controller/handlers/credentialstores","req_sha":"6b8f180550ca65a4","sym":"extractClientCertAndPk","ts":"2026-07-19T09:58:43.968031Z"}
+{"ms":2,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/daemon/controller/handlers/credentialstores","req_sha":"dbb26d0c5a06e3b0","sym":"decodePemBlocks","ts":"2026-07-19T09:58:43.974701Z"}
+{"ms":3,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-19T09:58:43.980914Z"}

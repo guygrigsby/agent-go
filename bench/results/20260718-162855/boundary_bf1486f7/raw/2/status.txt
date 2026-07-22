@@ -1,0 +1,64 @@
+ M internal/cmd/base/initial_resources.go
+ M internal/daemon/cluster/handlers/worker_service_status_test.go
+ M internal/daemon/cluster/handlers/worker_service_test.go
+ M internal/daemon/controller/auth/auth_test.go
+ M internal/daemon/controller/common/scopeids/scope_ids_test.go
+ M internal/daemon/controller/controller.go
+ M internal/daemon/controller/handlers/authmethods/oidc_test.go
+ M internal/daemon/controller/handlers/authtokens/authtoken_service_test.go
+ M internal/daemon/controller/handlers/sessions/session_list_benchmarks_test.go
+ M internal/daemon/controller/handlers/sessions/session_service_test.go
+ M internal/daemon/controller/handlers/targets/target_service.go
+ M internal/daemon/controller/handlers/targets/tcp/target_service_test.go
+ M internal/daemon/controller/handlers/workers/worker_service_test.go
+ M internal/daemon/controller/interceptor_test.go
+ M internal/scheduler/job/testing.go
+ M internal/scheduler/testing.go
+ M internal/server/repository.go
+ M internal/server/repository_worker_test.go
+ M internal/server/testing.go
+ M internal/session/job_session_cleanup_test.go
+ M internal/session/repository_session_test.go
+ M internal/session/service_authorize_connection_test.go
+ M internal/session/service_close_connections_test.go
+ M internal/session/service_worker_status_report_test.go
+ M internal/session/testing.go
+ M internal/target/repository.go
+ M internal/target/repository_credential_source_test.go
+ M internal/target/tcp/immutable_fields_test.go
+ M internal/target/tcp/repository_credential_source_test.go
+ M internal/target/tcp/repository_host_source_test.go
+ M internal/target/tcp/repository_tcp_target_test.go
+ M internal/target/tcp/repository_test.go
+ M internal/target/tcp/testing_test.go
+?? internal/cmd/base/initial_resources.go.bak
+?? internal/daemon/cluster/handlers/worker_service_status_test.go.bak
+?? internal/daemon/cluster/handlers/worker_service_test.go.bak
+?? internal/daemon/controller/auth/auth_test.go.bak
+?? internal/daemon/controller/common/scopeids/scope_ids_test.go.bak
+?? internal/daemon/controller/controller.go.bak
+?? internal/daemon/controller/handlers/authmethods/oidc_test.go.bak
+?? internal/daemon/controller/handlers/authtokens/authtoken_service_test.go.bak
+?? internal/daemon/controller/handlers/sessions/session_list_benchmarks_test.go.bak
+?? internal/daemon/controller/handlers/sessions/session_service_test.go.bak
+?? internal/daemon/controller/handlers/targets/target_service.go.bak
+?? internal/daemon/controller/handlers/targets/tcp/target_service_test.go.bak
+?? internal/daemon/controller/handlers/workers/worker_service_test.go.bak
+?? internal/daemon/controller/interceptor_test.go.bak
+?? internal/scheduler/job/testing.go.bak
+?? internal/scheduler/testing.go.bak
+?? internal/server/repository_worker_test.go.bak
+?? internal/session/job_session_cleanup_test.go.bak
+?? internal/session/repository_session_test.go.bak
+?? internal/session/service_authorize_connection_test.go.bak
+?? internal/session/service_close_connections_test.go.bak
+?? internal/session/service_worker_status_report_test.go.bak
+?? internal/session/testing.go.bak
+?? internal/target/repository_credential_source_test.go.bak
+?? internal/target/tcp/immutable_fields_test.go.bak
+?? internal/target/tcp/repository_credential_source_test.go.bak
+?? internal/target/tcp/repository_host_source_test.go.bak
+?? internal/target/tcp/repository_tcp_target_test.go.bak
+?? internal/target/tcp/repository_test.go.bak
+?? internal/target/tcp/testing_test.go.bak
+?? opencode.json

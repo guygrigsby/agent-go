@@ -1,0 +1,268 @@
+diff --git a/internal/cmd/base/initial_resources.go b/internal/cmd/base/initial_resources.go
+index e32f27611..38218c293 100644
+--- a/internal/cmd/base/initial_resources.go
++++ b/internal/cmd/base/initial_resources.go
+@@ -478,7 +478,7 @@ func (b *Server) CreateInitialTarget(ctx context.Context) (target.Target, error)
+ 		}
+ 	}()
+ 
+-	targetRepo, err := target.NewRepository(rw, rw, kmsCache)
++	targetRepo, err := target.NewRepository(ctx, rw, rw, kmsCache)
+ 	if err != nil {
+ 		return nil, fmt.Errorf("error creating target repository: %w", err)
+ 	}
+diff --git a/internal/daemon/controller/controller.go b/internal/daemon/controller/controller.go
+index b4427bcb8..ab1681b1f 100644
+--- a/internal/daemon/controller/controller.go
++++ b/internal/daemon/controller/controller.go
+@@ -325,7 +325,7 @@ func New(ctx context.Context, conf *Config) (*Controller, error) {
+ 		return credstatic.NewRepository(ctx, dbase, dbase, c.kms)
+ 	}
+ 	c.ServersRepoFn = func() (*server.Repository, error) {
+-		return server.NewRepository(dbase, dbase, c.kms)
++		return server.NewRepository(ctx, dbase, dbase, c.kms)
+ 	}
+ 	c.OidcRepoFn = func() (*oidc.Repository, error) {
+ 		return oidc.NewRepository(ctx, dbase, dbase, c.kms)
+@@ -334,7 +334,7 @@ func New(ctx context.Context, conf *Config) (*Controller, error) {
+ 		return password.NewRepository(dbase, dbase, c.kms)
+ 	}
+ 	c.TargetRepoFn = func(o ...target.Option) (*target.Repository, error) {
+-		return target.NewRepository(dbase, dbase, c.kms, o...)
++		return target.NewRepository(ctx, dbase, dbase, c.kms, o...)
+ 	}
+ 	c.SessionRepoFn = func(opt ...session.Option) (*session.Repository, error) {
+ 		return session.NewRepository(ctx, dbase, dbase, c.kms, opt...)
+diff --git a/internal/scheduler/job/testing.go b/internal/scheduler/job/testing.go
+index 698790e71..cd9655dce 100644
+--- a/internal/scheduler/job/testing.go
++++ b/internal/scheduler/job/testing.go
+@@ -94,7 +94,7 @@ func testController(t *testing.T, conn *db.DB, wrapper wrapping.Wrapper, opt ...
+ 	t.Helper()
+ 	rw := db.New(conn)
+ 	kms := kms.TestKms(t, conn, wrapper)
+-	serversRepo, err := server.NewRepository(rw, rw, kms)
++	serversRepo, err := server.NewRepository(context.Background(), rw, rw, kms)
+ 	require.NoError(t, err)
+ 
+ 	opts := getTestOpts(t, opt...)
+diff --git a/internal/scheduler/testing.go b/internal/scheduler/testing.go
+index e8a9ff975..d1eceeda3 100644
+--- a/internal/scheduler/testing.go
++++ b/internal/scheduler/testing.go
+@@ -28,7 +28,7 @@ func TestScheduler(t testing.TB, conn *db.DB, wrapper wrapping.Wrapper, opt ...O
+ 
+ 	rw := db.New(conn)
+ 	kmsCache := kms.TestKms(t, conn, wrapper)
+-	serversRepo, err := server.NewRepository(rw, rw, kmsCache)
++	serversRepo, err := server.NewRepository(context.Background(), rw, rw, kmsCache)
+ 	require.NoError(t, err)
+ 	iam.TestRepo(t, conn, wrapper)
+ 
+diff --git a/internal/server/repository.go b/internal/server/repository.go
+index a7df5afff..39fd00ef8 100644
+--- a/internal/server/repository.go
++++ b/internal/server/repository.go
+@@ -32,16 +32,16 @@ type Repository struct {
+ 
+ // NewRepository creates a new server Repository. Supports the options: WithLimit
+ // which sets a default limit on results returned by repo operations.
+-func NewRepository(r db.Reader, w db.Writer, kms *kms.Kms, opt ...Option) (*Repository, error) {
++func NewRepository(ctx context.Context, r db.Reader, w db.Writer, kms *kms.Kms, opt ...Option) (*Repository, error) {
+ 	const op = "server.NewRepository"
+ 	if r == nil {
+-		return nil, errors.NewDeprecated(errors.InvalidParameter, op, "nil reader")
++		return nil, errors.New(ctx, errors.InvalidParameter, op, "nil reader")
+ 	}
+ 	if w == nil {
+-		return nil, errors.NewDeprecated(errors.InvalidParameter, op, "nil writer")
++		return nil, errors.New(ctx, errors.InvalidParameter, op, "nil writer")
+ 	}
+ 	if kms == nil {
+-		return nil, errors.NewDeprecated(errors.InvalidParameter, op, "nil kms")
++		return nil, errors.New(ctx, errors.InvalidParameter, op, "nil kms")
+ 	}
+ 
+ 	opts := GetOpts(opt...)
+diff --git a/internal/server/repository_worker_test.go b/internal/server/repository_worker_test.go
+index f4e8100c3..b57ed70cb 100644
+--- a/internal/server/repository_worker_test.go
++++ b/internal/server/repository_worker_test.go
+@@ -145,7 +145,7 @@ func TestLookupWorkerIdByKeyId(t *testing.T) {
+ 	wrapper := db.TestWrapper(t)
+ 	kmsCache := kms.TestKms(t, conn, wrapper)
+ 	require.NoError(t, kmsCache.CreateKeys(context.Background(), scope.Global.String(), kms.WithRandomReader(rand.Reader)))
+-	repo, err := server.NewRepository(rw, rw, kmsCache)
++	repo, err := server.NewRepository(ctx, rw, rw, kmsCache)
+ 	require.NoError(t, err)
+ 	ctx := context.Background()
+ 	var workerKeyId string
+@@ -164,7 +164,7 @@ func TestLookupWorkerIdByKeyId(t *testing.T) {
+ 		conn, mock := db.TestSetupWithMock(t)
+ 		rw := db.New(conn)
+ 		mock.ExpectQuery(`SELECT`).WillReturnError(errors.New(context.Background(), errors.Internal, "test", "lookup-error"))
+-		r, err := server.NewRepository(rw, rw, kmsCache)
++		r, err := server.NewRepository(ctx, rw, rw, kms)
+ 		require.NoError(t, err)
+ 		got, err := r.LookupWorkerIdByKeyId(ctx, "somekey")
+ 		assert.NoError(t, mock.ExpectationsWereMet())
+@@ -255,7 +255,7 @@ func TestUpsertWorkerStatus(t *testing.T) {
+ 	wrapper := db.TestWrapper(t)
+ 	kmsCache := kms.TestKms(t, conn, wrapper)
+ 	require.NoError(t, kmsCache.CreateKeys(context.Background(), scope.Global.String(), kms.WithRandomReader(rand.Reader)))
+-	repo, err := server.NewRepository(rw, rw, kmsCache)
++	repo, err := server.NewRepository(ctx, rw, rw, kmsCache)
+ 	require.NoError(t, err)
+ 
+ 	ctx := context.Background()
+@@ -397,11 +397,11 @@ func TestUpsertWorkerStatus(t *testing.T) {
+ 			repo: func() *server.Repository {
+ 				conn, mock := db.TestSetupWithMock(t)
+ 				rw := db.New(conn)
+-				mock.ExpectBegin()
+-				mock.ExpectQuery(`INSERT`).WillReturnError(errors.New(context.Background(), errors.Internal, "test", "create-error"))
+-				mock.ExpectRollback()
+-				r, err := server.NewRepository(rw, rw, kmsCache)
+-				require.NoError(t, err)
++			mock.ExpectBegin()
++			mock.ExpectQuery(`INSERT`).WillReturnError(errors.New(context.Background(), errors.Internal, "test", "create-error"))
++			mock.ExpectRollback()
++			r, err := server.NewRepository(ctx, rw, rw, kmsCache)
++			require.NoError(t, err)
+ 				return r
+ 			}(),
+ 			status: server.NewWorker(scope.Global.String(),
+@@ -445,8 +445,8 @@ func TestTagUpdatingListing(t *testing.T) {
+ 	rw := db.New(conn)
+ 	wrapper := db.TestWrapper(t)
+ 	kms := kms.TestKms(t, conn, wrapper)
+-	repo, err := server.NewRepository(rw, rw, kms)
+-	require.NoError(err)
++	repo, err := server.NewRepository(ctx, rw, rw, kms)
++	require.NoError(t, err)
+ 	ctx := context.Background()
+ 
+ 	worker1 := server.TestKmsWorker(t, conn, wrapper)
+@@ -610,7 +610,7 @@ func TestListWorkers_WithLiveness(t *testing.T) {
+ 	rw := db.New(conn)
+ 	wrapper := db.TestWrapper(t)
+ 	kms := kms.TestKms(t, conn, wrapper)
+-	serversRepo, err := server.NewRepository(rw, rw, kms)
++	serversRepo, err := server.NewRepository(ctx, rw, rw, kms)
+ 	require.NoError(err)
+ 	ctx := context.Background()
+ 
+@@ -680,7 +680,7 @@ func TestRepository_CreateWorker(t *testing.T) {
+ 	rw := db.New(conn)
+ 	wrapper := db.TestWrapper(t)
+ 	testKms := kms.TestKms(t, conn, wrapper)
+-	testRepo, err := server.NewRepository(rw, rw, testKms)
++	testRepo, err := server.NewRepository(testCtx, rw, rw, testKms)
+ 	require.NoError(t, err)
+ 
+ 	iamRepo := iam.TestRepo(t, conn, wrapper)
+@@ -778,7 +778,7 @@ func TestRepository_CreateWorker(t *testing.T) {
+ 				mock.ExpectBegin()
+ 				mock.ExpectQuery(`INSERT`).WillReturnError(errors.New(testCtx, errors.Internal, "test", "create-error"))
+ 				mock.ExpectRollback()
+-				r, err := server.NewRepository(rw, writer, testKms)
++				r, err := server.NewRepository(testCtx, rw, writer, testKms)
+ 				require.NoError(t, err)
+ 				return r
+ 			}(),
+@@ -836,7 +836,7 @@ func TestRepository_CreateWorker(t *testing.T) {
+ 				mock.ExpectQuery(`SELECT`).WillReturnRows(sqlmock.NewRows([]string{"version", "create_time"}).AddRow(migrations.Version, time.Now()))
+ 				mock.ExpectQuery(`SELECT`).WillReturnError(errors.New(context.Background(), errors.Internal, "test", "no-database-key"))
+ 				k := kms.TestKms(t, mockConn, wrapper)
+-				r, err := server.NewRepository(rw, rw, k)
++				r, err := server.NewRepository(context.Background(), rw, rw, k)
+ 				require.NoError(t, err)
+ 				return r
+ 			}(),
+@@ -985,7 +985,7 @@ func TestRepository_UpdateWorker(t *testing.T) {
+ 	kmsCache := kms.TestKms(t, conn, wrapper)
+ 	require.NoError(t, kmsCache.CreateKeys(context.Background(), scope.Global.String(), kms.WithRandomReader(rand.Reader)))
+ 
+-	repo, err := server.NewRepository(rw, rw, kmsCache)
++	repo, err := server.NewRepository(ctx, rw, rw, kmsCache)
+ 	require.NoError(t, err)
+ 
+ 	pkiCases := []struct {
+diff --git a/internal/target/repository.go b/internal/target/repository.go
+index 7ec5d1b2d..42eba1cf4 100644
+--- a/internal/target/repository.go
++++ b/internal/target/repository.go
+@@ -48,16 +48,16 @@ type Repository struct {
+ // - WithLimit: sets a limit on the number of results returned by various repo operations.
+ // - WithPermissions: defines the permissions the user has to perform different
+ // actions and access resources within the created repo object.
+-func NewRepository(r db.Reader, w db.Writer, kms *kms.Kms, opt ...Option) (*Repository, error) {
++func NewRepository(ctx context.Context, r db.Reader, w db.Writer, kms *kms.Kms, opt ...Option) (*Repository, error) {
+ 	const op = "target.NewRepository"
+ 	if r == nil {
+-		return nil, errors.NewDeprecated(errors.InvalidParameter, op, "nil reader")
++		return nil, errors.New(ctx, errors.InvalidParameter, op, "nil reader")
+ 	}
+ 	if w == nil {
+-		return nil, errors.NewDeprecated(errors.InvalidParameter, op, "nil writer")
++		return nil, errors.New(ctx, errors.InvalidParameter, op, "nil writer")
+ 	}
+ 	if kms == nil {
+-		return nil, errors.NewDeprecated(errors.InvalidParameter, op, "nil kms")
++		return nil, errors.New(ctx, errors.InvalidParameter, op, "nil kms")
+ 	}
+ 
+ 	opts := GetOpts(opt...)
+diff --git a/internal/target/tcp/repository_host_source_test.go b/internal/target/tcp/repository_host_source_test.go
+index 8767820fd..e4d694007 100644
+--- a/internal/target/tcp/repository_host_source_test.go
++++ b/internal/target/tcp/repository_host_source_test.go
+@@ -34,7 +34,7 @@ func TestRepository_AddTargetHostSets(t *testing.T) {
+ 	testKms := kms.TestKms(t, conn, wrapper)
+ 	iamRepo := iam.TestRepo(t, conn, wrapper)
+ 	_, staticProj := iam.TestScopes(t, iamRepo)
+-	repo, err := target.NewRepository(rw, rw, testKms)
++	repo, err := target.NewRepository(ctx, rw, rw, testKms)
+ 	require.NoError(t, err)
+ 
+ 	createHostSetsFn := func(projects []string) []string {
+@@ -199,7 +199,7 @@ func TestRepository_DeleteTargetHosts(t *testing.T) {
+ 	testKms := kms.TestKms(t, conn, wrapper)
+ 	iamRepo := iam.TestRepo(t, conn, wrapper)
+ 	_, proj := iam.TestScopes(t, iamRepo)
+-	repo, err := target.NewRepository(rw, rw, testKms)
++	repo, err := target.NewRepository(ctx, rw, rw, testKms)
+ 	require.NoError(t, err)
+ 
+ 	ctx := context.Background()
+@@ -404,7 +404,7 @@ func TestRepository_SetTargetHostSets(t *testing.T) {
+ 	rw := db.New(conn)
+ 	wrapper := db.TestWrapper(t)
+ 	testKms := kms.TestKms(t, conn, wrapper)
+-	repo, err := target.NewRepository(rw, rw, testKms)
++	repo, err := target.NewRepository(ctx, rw, rw, testKms)
+ 	require.NoError(t, err)
+ 
+ 	iamRepo := iam.TestRepo(t, conn, wrapper)
+diff --git a/internal/target/tcp/repository_test.go b/internal/target/tcp/repository_test.go
+index b7c8e3c60..28fe39149 100644
+--- a/internal/target/tcp/repository_test.go
++++ b/internal/target/tcp/repository_test.go
+@@ -32,7 +32,7 @@ func TestRepository_LookupTarget(t *testing.T) {
+ 	_, _, err := iamRepo.UpdateScope(ctx, proj, 1, []string{"name"})
+ 	require.NoError(t, err)
+ 	rw := db.New(conn)
+-	repo, err := target.NewRepository(rw, rw, testKms)
++	repo, err := target.NewRepository(ctx, rw, rw, testKms)
+ 	require.NoError(t, err)
+ 	tgt := tcp.TestTarget(ctx, t, conn, proj.PublicId, "target-name")
+ 
+@@ -160,7 +160,7 @@ func TestRepository_ListRoles_Multiple_Scopes(t *testing.T) {
+ 	}
+ 
+ 	rw := db.New(conn)
+-	repo, err := target.NewRepository(rw, rw, testKms,
++	repo, err := target.NewRepository(ctx, rw, rw, testKms,
+ 		target.WithPermissions([]perms.Permission{
+ 			{
+ 				ScopeId:  proj1.PublicId,

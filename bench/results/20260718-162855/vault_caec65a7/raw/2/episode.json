@@ -1,0 +1,53 @@
+{
+ "agent_done": "2026-07-22T14:55:27.215862959Z",
+ "agent_started": "2026-07-22T14:43:27.174369Z",
+ "cache_read": 965590,
+ "cache_write": 0,
+ "capped": true,
+ "failure_kind": "capped",
+ "first_invalid_s": 291.939250917,
+ "intermediate_states": 21,
+ "invalid_intermediate_rate": 1,
+ "invalid_intermediates": 21,
+ "iter": 2,
+ "kind": "rename",
+ "mode": "raw",
+ "new_errors": [
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashvault_caec65a7raw933835032/003/vault/vault/logical_system.go:4845:38|undefined: s",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashvault_caec65a7raw933835032/003/vault/vault/logical_system.go:4846:14|undefined: s",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashvault_caec65a7raw933835032/003/vault/command/server.go:2568:40|undefined: vaultseal.SealInfo",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashvault_caec65a7raw933835032/003/vault/command/server.go:2610:25|undefined: vaultseal.SealInfo",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashvault_caec65a7raw933835032/003/vault/command/server.go:2634:69|undefined: vaultseal.SealInfo",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashvault_caec65a7raw933835032/003/vault/command/server.go:2665:47|undefined: vaultseal.SealInfo",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashvault_caec65a7raw933835032/003/vault/helper/testhelpers/seal/sealhelper.go:76:72|undefined: seal.SealInfo",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashvault_caec65a7raw933835032/003/vault/vault/logical_system.go:4843:25|undefined: s",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashvault_caec65a7raw933835032/003/vault/command/server.go:2567:39|undefined: vaultseal.SealInfo"
+ ],
+ "op_mix": {},
+ "pass": false,
+ "predicate": false,
+ "profile": "glm-flash",
+ "prompt": "Rename SealInfo to SealWrapper.",
+ "rejects_total": 0,
+ "repairs_offered": 0,
+ "resends": 0,
+ "specs": [
+  {
+   "baseline_refs": 30,
+   "new_refs": 24,
+   "ok": false,
+   "old_refs_left": 0,
+   "sym": "github.com/hashicorp/vault/vault/seal.SealInfo",
+   "to": "SealWrapper"
+  }
+ ],
+ "steps": 37,
+ "task": "vault_caec65a7",
+ "tests": false,
+ "tests_baseline": true,
+ "tokens_in": 23154,
+ "tokens_out": 12314,
+ "tokens_reasoning": 0,
+ "typecheck": false,
+ "wall_s": 720.041493959
+}

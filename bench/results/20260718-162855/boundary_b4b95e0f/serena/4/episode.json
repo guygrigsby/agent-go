@@ -1,0 +1,235 @@
+{
+ "agent_done": "2026-07-19T09:22:09.775821125Z",
+ "agent_started": "2026-07-19T09:10:09.743809Z",
+ "cache_read": 1260901,
+ "cache_write": 0,
+ "capped": true,
+ "failure_kind": "capped",
+ "first_invalid_s": 416.42517025,
+ "intermediate_states": 13,
+ "invalid_intermediate_rate": 1,
+ "invalid_intermediates": 13,
+ "iter": 4,
+ "kind": "add-param",
+ "mode": "serena",
+ "new_errors": [
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_b4b95e0fserena1758138316/005/boundary/internal/credential/vault/jobs.go:420:23|not enough arguments in call to vc.revokeToken\n\thave ()\n\twant (\"context\".Context)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_b4b95e0fserena1758138316/005/boundary/internal/credential/vault/private_library.go:310:61|not enough arguments in call to client.post\n\thave (string, []byte)\n\twant (\"context\".Context, string, []byte)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_b4b95e0fserena1758138316/005/boundary/internal/credential/vault/vault.go:117:32|c.cl.Auth().Token().RenewSelfWithContext undefined (type *\"github.com/hashicorp/vault/api\".TokenAuth has no field or method RenewSelfWithContext)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_b4b95e0fserena1758138316/005/boundary/internal/credential/vault/testing_test.go:574:47|not enough arguments in call to client.get\n\thave (string)\n\twant (\"context\".Context, string)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_b4b95e0fserena1758138316/005/boundary/internal/credential/vault/vault_test.go:55:44|not enough arguments in call to newClient\n\thave (*clientConfig)\n\twant (\"context\".Context, *clientConfig)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_b4b95e0fserena1758138316/005/boundary/internal/credential/vault/vault_test.go:273:48|not enough arguments in call to client.revokeLease\n\thave (string)\n\twant (\"context\".Context, string)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_b4b95e0fserena1758138316/005/boundary/internal/credential/vault/repository_credential_store.go:81:41|not enough arguments in call to client.lookupToken\n\thave ()\n\twant (\"context\".Context)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_b4b95e0fserena1758138316/005/boundary/internal/credential/vault/repository_credential_store.go:501:42|not enough arguments in call to client.renewToken\n\thave ()\n\twant (\"context\".Context)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_b4b95e0fserena1758138316/005/boundary/internal/credential/vault/vault.go:130:32|c.cl.Auth().Token().RevokeSelfWithContext undefined (type *\"github.com/hashicorp/vault/api\".TokenAuth has no field or method RevokeSelfWithContext)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_b4b95e0fserena1758138316/005/boundary/internal/credential/vault/vault_test.go:135:40|not enough arguments in call to client.lookupToken\n\thave ()\n\twant (\"context\".Context)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_b4b95e0fserena1758138316/005/boundary/internal/credential/vault/repository_credential_store.go:476:37|not enough arguments in call to updatedStore.client\n\thave ()\n\twant (unknown type)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_b4b95e0fserena1758138316/005/boundary/internal/credential/vault/vault.go:142:23|c.cl.Sys().RenewWithContext undefined (type *\"github.com/hashicorp/vault/api\".Sys has no field or method RenewWithContext)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_b4b95e0fserena1758138316/005/boundary/internal/credential/vault/vault_test.go:112:41|not enough arguments in call to client.lookupToken\n\thave ()\n\twant (\"context\".Context)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_b4b95e0fserena1758138316/005/boundary/internal/credential/vault/jobs.go:190:37|not enough arguments in call to vc.renewToken\n\thave ()\n\twant (\"context\".Context)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_b4b95e0fserena1758138316/005/boundary/internal/credential/vault/jobs.go:723:22|not enough arguments in call to c.client\n\thave ()\n\twant (\"context\".Context)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_b4b95e0fserena1758138316/005/boundary/internal/credential/vault/jobs_test.go:108:40|not enough arguments in call to client.get\n\thave (string)\n\twant (\"context\".Context, string)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_b4b95e0fserena1758138316/005/boundary/internal/credential/vault/testing_test.go:559:48|not enough arguments in call to client.get\n\thave (string)\n\twant (\"context\".Context, string)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_b4b95e0fserena1758138316/005/boundary/internal/credential/vault/credential_store.go:171:39|undefined: context",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_b4b95e0fserena1758138316/005/boundary/internal/credential/vault/jobs.go:730:35|not enough arguments in call to vc.revokeLease\n\thave (string)\n\twant (\"context\".Context, string)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_b4b95e0fserena1758138316/005/boundary/internal/credential/vault/private_library.go:308:40|not enough arguments in call to client.get\n\thave (string)\n\twant (\"context\".Context, string)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_b4b95e0fserena1758138316/005/boundary/internal/credential/vault/vault.go:198:27|c.cl.Logical().WriteBytesWithContext undefined (type *\"github.com/hashicorp/vault/api\".Logical has no field or method WriteBytesWithContext)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_b4b95e0fserena1758138316/005/boundary/internal/credential/vault/jobs_test.go:110:61|not enough arguments in call to client.post\n\thave (string, []byte)\n\twant (\"context\".Context, string, []byte)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_b4b95e0fserena1758138316/005/boundary/internal/credential/vault/testing_test.go:316:32|not enough arguments in call to newClient\n\thave (*clientConfig)\n\twant (\"context\".Context, *clientConfig)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_b4b95e0fserena1758138316/005/boundary/internal/credential/vault/testing_test.go:475:29|not enough arguments in call to client.ping\n\thave ()\n\twant (\"context\".Context)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_b4b95e0fserena1758138316/005/boundary/internal/credential/vault/vault_test.go:167:46|not enough arguments in call to client.post\n\thave (string, []byte)\n\twant (\"context\".Context, string, []byte)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_b4b95e0fserena1758138316/005/boundary/internal/credential/vault/testing.go:829:59|not enough arguments in call to vc.post\n\thave (string, []byte)\n\twant (\"context\".Context, string, []byte)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_b4b95e0fserena1758138316/005/boundary/internal/credential/vault/vault.go:183:27|c.cl.Logical().ReadWithContext undefined (type *\"github.com/hashicorp/vault/api\".Logical has no field or method ReadWithContext)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_b4b95e0fserena1758138316/005/boundary/internal/credential/vault/testing_test.go:284:32|not enough arguments in call to newClient\n\thave (*clientConfig)\n\twant (\"context\".Context, *clientConfig)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_b4b95e0fserena1758138316/005/boundary/internal/credential/vault/testing_test.go:287:31|not enough arguments in call to client.ping\n\thave ()\n\twant (\"context\".Context)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_b4b95e0fserena1758138316/005/boundary/internal/credential/vault/vault_test.go:128:41|not enough arguments in call to client.lookupToken\n\thave ()\n\twant (\"context\".Context)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_b4b95e0fserena1758138316/005/boundary/internal/credential/vault/vault_test.go:190:66|not enough arguments in call to client.get\n\thave (string)\n\twant (\"context\".Context, string)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_b4b95e0fserena1758138316/005/boundary/internal/credential/vault/vault_test.go:248:55|not enough arguments in call to client.capabilities\n\thave ([]string)\n\twant (\"context\".Context, []string)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_b4b95e0fserena1758138316/005/boundary/internal/credential/vault/jobs.go:573:63|not enough arguments in call to vc.renewLease\n\thave (string, \"time\".Duration)\n\twant (\"context\".Context, string, \"time\".Duration)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_b4b95e0fserena1758138316/005/boundary/internal/credential/vault/testing_test.go:479:34|not enough arguments in call to client.get\n\thave (string)\n\twant (\"context\".Context, string)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_b4b95e0fserena1758138316/005/boundary/internal/credential/vault/vault_test.go:132:37|not enough arguments in call to client.revokeToken\n\thave ()\n\twant (\"context\".Context)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_b4b95e0fserena1758138316/005/boundary/internal/credential/vault/vault_test.go:153:66|not enough arguments in call to client.get\n\thave (string)\n\twant (\"context\".Context, string)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_b4b95e0fserena1758138316/005/boundary/internal/credential/vault/jobs.go:564:22|not enough arguments in call to c.client\n\thave ()\n\twant (\"context\".Context)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_b4b95e0fserena1758138316/005/boundary/internal/credential/vault/testing_test.go:243:31|not enough arguments in call to client.ping\n\thave ()\n\twant (\"context\".Context)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_b4b95e0fserena1758138316/005/boundary/internal/credential/vault/testing_test.go:260:32|not enough arguments in call to newClient\n\thave (*clientConfig)\n\twant (\"context\".Context, *clientConfig)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_b4b95e0fserena1758138316/005/boundary/internal/credential/vault/vault_test.go:265:66|not enough arguments in call to client.get\n\thave (string)\n\twant (\"context\".Context, string)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_b4b95e0fserena1758138316/005/boundary/internal/credential/vault/testing_test.go:263:31|not enough arguments in call to client.ping\n\thave ()\n\twant (\"context\".Context)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_b4b95e0fserena1758138316/005/boundary/internal/credential/vault/testing_test.go:472:31|not enough arguments in call to newClient\n\thave (*clientConfig)\n\twant (\"context\".Context, *clientConfig)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_b4b95e0fserena1758138316/005/boundary/internal/credential/vault/jobs.go:414:22|not enough arguments in call to s.client\n\thave ()\n\twant (\"context\".Context)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_b4b95e0fserena1758138316/005/boundary/internal/credential/vault/vault.go:98:23|c.cl.Sys().HealthWithContext undefined (type *\"github.com/hashicorp/vault/api\".Sys has no field or method HealthWithContext)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_b4b95e0fserena1758138316/005/boundary/internal/credential/vault/vault_test.go:79:41|not enough arguments in call to client.renewToken\n\thave ()\n\twant (\"context\".Context)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_b4b95e0fserena1758138316/005/boundary/internal/credential/vault/repository_credential_store.go:77:27|not enough arguments in call to cs.client\n\thave ()\n\twant (unknown type)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_b4b95e0fserena1758138316/005/boundary/internal/credential/vault/repository_credential_store.go:89:68|not enough arguments in call to client.capabilities\n\thave ([]string)\n\twant (\"context\".Context, []string)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_b4b95e0fserena1758138316/005/boundary/internal/credential/vault/testing.go:642:30|not enough arguments in call to client.ping\n\thave ()\n\twant (\"context\".Context)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_b4b95e0fserena1758138316/005/boundary/internal/credential/vault/repository_credential_store.go:99:41|not enough arguments in call to client.renewToken\n\thave ()\n\twant (\"context\".Context)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_b4b95e0fserena1758138316/005/boundary/internal/credential/vault/testing.go:639:31|not enough arguments in call to newClient\n\thave (*clientConfig)\n\twant (\"context\".Context, *clientConfig)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_b4b95e0fserena1758138316/005/boundary/internal/credential/vault/testing_test.go:319:31|not enough arguments in call to client.ping\n\thave ()\n\twant (\"context\".Context)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_b4b95e0fserena1758138316/005/boundary/internal/credential/vault/vault_test.go:173:41|not enough arguments in call to client.post\n\thave (string, nil)\n\twant (\"context\".Context, string, []byte)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_b4b95e0fserena1758138316/005/boundary/internal/credential/vault/jobs.go:184:22|not enough arguments in call to s.client\n\thave ()\n\twant (\"context\".Context)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_b4b95e0fserena1758138316/005/boundary/internal/credential/vault/private_library.go:300:27|not enough arguments in call to pl.client\n\thave ()\n\twant (\"context\".Context)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_b4b95e0fserena1758138316/005/boundary/internal/credential/vault/vault.go:154:23|c.cl.Sys().RevokeWithContext undefined (type *\"github.com/hashicorp/vault/api\".Sys has no field or method RevokeWithContext)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_b4b95e0fserena1758138316/005/boundary/internal/credential/vault/vault_test.go:201:64|not enough arguments in call to client.renewLease\n\thave (string, \"time\".Duration)\n\twant (\"context\".Context, string, \"time\".Duration)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_b4b95e0fserena1758138316/005/boundary/internal/credential/vault/vault.go:166:32|c.cl.Auth().Token().LookupSelfWithContext undefined (type *\"github.com/hashicorp/vault/api\".TokenAuth has no field or method LookupSelfWithContext)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_b4b95e0fserena1758138316/005/boundary/internal/credential/vault/testing_test.go:240:32|not enough arguments in call to newClient\n\thave (*clientConfig)\n\twant (\"context\".Context, *clientConfig)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_b4b95e0fserena1758138316/005/boundary/internal/credential/vault/testing_test.go:507:28|not enough arguments in call to client.revokeToken\n\thave ()\n\twant (\"context\".Context)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_b4b95e0fserena1758138316/005/boundary/internal/credential/vault/repository_credential_store.go:481:42|not enough arguments in call to client.lookupToken\n\thave ()\n\twant (\"context\".Context)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_b4b95e0fserena1758138316/005/boundary/internal/credential/vault/repository_credential_store.go:489:69|not enough arguments in call to client.capabilities\n\thave ([]string)\n\twant (\"context\".Context, []string)"
+ ],
+ "op_mix": {},
+ "pass": false,
+ "predicate": false,
+ "profile": "glm-flash",
+ "prompt": "refactor(vault): add context and remove deprecated errors\n\nSpecifically: add parameter ctx context.Context to CredentialStore.client; add parameter ctx context.Context to privateCredential.client; add parameter ctx context.Context to privateLibrary.client; add parameter ctx context.Context to privateStore.client; add parameter ctx context.Context to newClient; add parameter ctx context.Context to client.renewToken; add parameter ctx context.Context to client.renewLease; add parameter ctx context.Context to client.swapToken; add parameter ctx context.Context to client.get; add parameter ctx context.Context to client.capabilities; add parameter ctx context.Context to client.ping; add parameter ctx context.Context to client.revokeToken; add parameter ctx context.Context to client.revokeLease; add parameter ctx context.Context to client.lookupToken; add parameter ctx context.Context to client.post; add parameter ctx context.Context to toProto; add parameter ctx context.Context to toStorageStaticStore; add parameter ctx context.Context to toStorageVaultStore; add parameter ctx context.Context to NewService; add parameter ctx context.Context to validateUpdateRequest; add parameter ctx context.Context to validateCreateRequest; add parameter ctx context.Context to extractClientCertAndPk; add parameter ctx context.Context to decodePemBlocks",
+ "rejects_total": 0,
+ "repairs_offered": 0,
+ "resends": 0,
+ "specs": [
+  {
+   "ok": false,
+   "param": "ctx context.Context",
+   "signature": "func(ctx invalid type) (*client, error)",
+   "sym": "github.com/hashicorp/boundary/internal/credential/vault.CredentialStore.client"
+  },
+  {
+   "ok": true,
+   "param": "ctx context.Context",
+   "signature": "func(ctx context.Context) (*client, error)",
+   "sym": "github.com/hashicorp/boundary/internal/credential/vault.privateCredential.client"
+  },
+  {
+   "ok": true,
+   "param": "ctx context.Context",
+   "signature": "func(ctx context.Context) (*client, error)",
+   "sym": "github.com/hashicorp/boundary/internal/credential/vault.privateLibrary.client"
+  },
+  {
+   "ok": true,
+   "param": "ctx context.Context",
+   "signature": "func(ctx context.Context) (*client, error)",
+   "sym": "github.com/hashicorp/boundary/internal/credential/vault.privateStore.client"
+  },
+  {
+   "ok": true,
+   "param": "ctx context.Context",
+   "signature": "func(ctx context.Context, c *clientConfig) (*client, error)",
+   "sym": "github.com/hashicorp/boundary/internal/credential/vault.newClient"
+  },
+  {
+   "ok": true,
+   "param": "ctx context.Context",
+   "signature": "func(ctx context.Context) (*github.com/hashicorp/vault/api.Secret, error)",
+   "sym": "github.com/hashicorp/boundary/internal/credential/vault.client.renewToken"
+  },
+  {
+   "ok": true,
+   "param": "ctx context.Context",
+   "signature": "func(ctx context.Context, leaseId string, leaseDuration time.Duration) (*github.com/hashicorp/vault/api.Secret, error)",
+   "sym": "github.com/hashicorp/boundary/internal/credential/vault.client.renewLease"
+  },
+  {
+   "ok": false,
+   "param": "ctx context.Context",
+   "signature": "func(new TokenSecret) (old TokenSecret)",
+   "sym": "github.com/hashicorp/boundary/internal/credential/vault.client.swapToken"
+  },
+  {
+   "ok": true,
+   "param": "ctx context.Context",
+   "signature": "func(ctx context.Context, path string) (*github.com/hashicorp/vault/api.Secret, error)",
+   "sym": "github.com/hashicorp/boundary/internal/credential/vault.client.get"
+  },
+  {
+   "ok": true,
+   "param": "ctx context.Context",
+   "signature": "func(ctx context.Context, paths []string) (pathCapabilities, error)",
+   "sym": "github.com/hashicorp/boundary/internal/credential/vault.client.capabilities"
+  },
+  {
+   "ok": true,
+   "param": "ctx context.Context",
+   "signature": "func(ctx context.Context) error",
+   "sym": "github.com/hashicorp/boundary/internal/credential/vault.client.ping"
+  },
+  {
+   "ok": true,
+   "param": "ctx context.Context",
+   "signature": "func(ctx context.Context) error",
+   "sym": "github.com/hashicorp/boundary/internal/credential/vault.client.revokeToken"
+  },
+  {
+   "ok": true,
+   "param": "ctx context.Context",
+   "signature": "func(ctx context.Context, leaseId string) error",
+   "sym": "github.com/hashicorp/boundary/internal/credential/vault.client.revokeLease"
+  },
+  {
+   "ok": true,
+   "param": "ctx context.Context",
+   "signature": "func(ctx context.Context) (*github.com/hashicorp/vault/api.Secret, error)",
+   "sym": "github.com/hashicorp/boundary/internal/credential/vault.client.lookupToken"
+  },
+  {
+   "ok": true,
+   "param": "ctx context.Context",
+   "signature": "func(ctx context.Context, path string, data []byte) (*github.com/hashicorp/vault/api.Secret, error)",
+   "sym": "github.com/hashicorp/boundary/internal/credential/vault.client.post"
+  },
+  {
+   "ok": false,
+   "param": "ctx context.Context",
+   "signature": "func(in github.com/hashicorp/boundary/internal/credential.Store, opt ...github.com/hashicorp/boundary/internal/daemon/controller/handlers.Option) (*github.com/hashicorp/boundary/sdk/pbs/controller/api/resources/credentialstores.CredentialStore, error)",
+   "sym": "github.com/hashicorp/boundary/internal/daemon/controller/handlers/credentialstores.toProto"
+  },
+  {
+   "ok": false,
+   "param": "ctx context.Context",
+   "signature": "func(scopeId string, in *github.com/hashicorp/boundary/sdk/pbs/controller/api/resources/credentialstores.CredentialStore) (out *github.com/hashicorp/boundary/internal/credential/static.CredentialStore, err error)",
+   "sym": "github.com/hashicorp/boundary/internal/daemon/controller/handlers/credentialstores.toStorageStaticStore"
+  },
+  {
+   "ok": false,
+   "param": "ctx context.Context",
+   "signature": "func(scopeId string, in *github.com/hashicorp/boundary/sdk/pbs/controller/api/resources/credentialstores.CredentialStore) (out *github.com/hashicorp/boundary/internal/credential/vault.CredentialStore, err error)",
+   "sym": "github.com/hashicorp/boundary/internal/daemon/controller/handlers/credentialstores.toStorageVaultStore"
+  },
+  {
+   "ok": false,
+   "param": "ctx context.Context",
+   "signature": "func(vaultRepo github.com/hashicorp/boundary/internal/daemon/controller/common.VaultCredentialRepoFactory, staticRepo github.com/hashicorp/boundary/internal/daemon/controller/common.StaticCredentialRepoFactory, iamRepo github.com/hashicorp/boundary/internal/daemon/controller/common.IamRepoFactory) (Service, error)",
+   "sym": "github.com/hashicorp/boundary/internal/daemon/controller/handlers/credentialstores.NewService"
+  },
+  {
+   "ok": false,
+   "param": "ctx context.Context",
+   "signature": "func(req *github.com/hashicorp/boundary/internal/gen/controller/api/services.UpdateCredentialStoreRequest) error",
+   "sym": "github.com/hashicorp/boundary/internal/daemon/controller/handlers/credentialstores.validateUpdateRequest"
+  },
+  {
+   "ok": false,
+   "param": "ctx context.Context",
+   "signature": "func(req *github.com/hashicorp/boundary/internal/gen/controller/api/services.CreateCredentialStoreRequest) error",
+   "sym": "github.com/hashicorp/boundary/internal/daemon/controller/handlers/credentialstores.validateCreateRequest"
+  },
+  {
+   "ok": false,
+   "param": "ctx context.Context",
+   "signature": "func(cert string, pk string) ([]*encoding/pem.Block, *encoding/pem.Block, error)",
+   "sym": "github.com/hashicorp/boundary/internal/daemon/controller/handlers/credentialstores.extractClientCertAndPk"
+  },
+  {
+   "ok": false,
+   "param": "ctx context.Context",
+   "signature": "func(input string) ([]*encoding/pem.Block, error)",
+   "sym": "github.com/hashicorp/boundary/internal/daemon/controller/handlers/credentialstores.decodePemBlocks"
+  }
+ ],
+ "steps": 46,
+ "task": "boundary_b4b95e0f",
+ "tests": false,
+ "tests_baseline": true,
+ "tokens_in": 31981,
+ "tokens_out": 9153,
+ "tokens_reasoning": 0,
+ "typecheck": false,
+ "wall_s": 720.032012125
+}

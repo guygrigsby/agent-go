@@ -1,0 +1,2 @@
+ M internal/credential/vault/vault.go
+?? opencode.json

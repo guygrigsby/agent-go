@@ -1,0 +1,51 @@
+{
+ "agent_done": "2026-07-21T19:20:00.76048375Z",
+ "agent_started": "2026-07-21T19:08:00.732719Z",
+ "cache_read": 1157441,
+ "cache_write": 0,
+ "capped": true,
+ "failure_kind": "",
+ "first_invalid_s": 304.489677083,
+ "intermediate_states": 17,
+ "invalid_intermediate_rate": 0.8823529411764706,
+ "invalid_intermediates": 15,
+ "iter": 0,
+ "kind": "move",
+ "mode": "raw",
+ "new_errors": null,
+ "op_mix": {},
+ "pass": true,
+ "predicate": true,
+ "profile": "glm-flash",
+ "prompt": "move user variables into globals\n\nSpecifically: move AnyAuthenticatedUserId from github.com/hashicorp/boundary/internal/perms to github.com/hashicorp/boundary/globals; move RecoveryUserId from github.com/hashicorp/boundary/internal/perms to github.com/hashicorp/boundary/globals",
+ "rejects_total": 0,
+ "repairs_offered": 0,
+ "resends": 0,
+ "specs": [
+  {
+   "in_target": true,
+   "ok": true,
+   "still_in_source": false,
+   "sym": "github.com/hashicorp/boundary/internal/perms.AnyAuthenticatedUserId",
+   "to_name": "",
+   "to_pkg": "github.com/hashicorp/boundary/globals"
+  },
+  {
+   "in_target": true,
+   "ok": true,
+   "still_in_source": false,
+   "sym": "github.com/hashicorp/boundary/internal/perms.RecoveryUserId",
+   "to_name": "",
+   "to_pkg": "github.com/hashicorp/boundary/globals"
+  }
+ ],
+ "steps": 49,
+ "task": "boundary_b26814a3",
+ "tests": false,
+ "tests_baseline": false,
+ "tokens_in": 22263,
+ "tokens_out": 9700,
+ "tokens_reasoning": 0,
+ "typecheck": true,
+ "wall_s": 720.02776475
+}

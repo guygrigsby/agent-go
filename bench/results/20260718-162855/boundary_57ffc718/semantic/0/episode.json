@@ -1,0 +1,140 @@
+{
+ "agent_done": "2026-07-19T03:37:16.277138541Z",
+ "agent_started": "2026-07-19T03:30:07.612864Z",
+ "cache_read": 337284,
+ "cache_write": 0,
+ "capped": false,
+ "failure_kind": "",
+ "intermediate_states": 5,
+ "invalid_intermediate_rate": 0,
+ "invalid_intermediates": 0,
+ "iter": 0,
+ "kind": "add-param",
+ "mode": "semantic",
+ "new_errors": null,
+ "op_mix": {
+  "add-param": {
+   "ok": 14,
+   "rejected": 0
+  },
+  "query": {
+   "ok": 14,
+   "rejected": 0
+  },
+  "status": {
+   "ok": 1,
+   "rejected": 0
+  },
+  "test": {
+   "ok": 3,
+   "rejected": 0
+  },
+  "view": {
+   "ok": 14,
+   "rejected": 0
+  }
+ },
+ "pass": true,
+ "predicate": true,
+ "profile": "glm-flash",
+ "prompt": "refact(e2e): Add context as an argument for cli methods\n\nSpecifically: add parameter ctx context.Context to CreateNewAccountCli; add parameter ctx context.Context to AuthenticateCli; add parameter ctx context.Context to AuthenticateAdminCli; add parameter ctx context.Context to CreateNewCredentialStoreStaticCli; add parameter ctx context.Context to CreateNewHostCli; add parameter ctx context.Context to AddHostToHostSetCli; add parameter ctx context.Context to CreateNewHostCatalogCli; add parameter ctx context.Context to CreateNewHostSetCli; add parameter ctx context.Context to CreateNewOrgCli; add parameter ctx context.Context to CreateNewProjectCli; add parameter ctx context.Context to CreateNewTargetCli; add parameter ctx context.Context to AddHostSourceToTargetCli; add parameter ctx context.Context to CreateNewUserCli; add parameter ctx context.Context to SetAccountToUserCli",
+ "rejects_total": 0,
+ "repairs_offered": 0,
+ "resends": 0,
+ "specs": [
+  {
+   "ok": true,
+   "param": "ctx context.Context",
+   "signature": "func(t testing.TB, loginName string, ctx context.Context) (string, string)",
+   "sym": "github.com/hashicorp/boundary/testing/internal/e2e/boundary.CreateNewAccountCli"
+  },
+  {
+   "ok": true,
+   "param": "ctx context.Context",
+   "signature": "func(t testing.TB, loginName string, password string, ctx context.Context)",
+   "sym": "github.com/hashicorp/boundary/testing/internal/e2e/boundary.AuthenticateCli"
+  },
+  {
+   "ok": true,
+   "param": "ctx context.Context",
+   "signature": "func(t testing.TB, ctx context.Context)",
+   "sym": "github.com/hashicorp/boundary/testing/internal/e2e/boundary.AuthenticateAdminCli"
+  },
+  {
+   "ok": true,
+   "param": "ctx context.Context",
+   "signature": "func(t testing.TB, projectId string, ctx context.Context) string",
+   "sym": "github.com/hashicorp/boundary/testing/internal/e2e/boundary.CreateNewCredentialStoreStaticCli"
+  },
+  {
+   "ok": true,
+   "param": "ctx context.Context",
+   "signature": "func(t testing.TB, hostCatalogId string, address string, ctx context.Context) string",
+   "sym": "github.com/hashicorp/boundary/testing/internal/e2e/boundary.CreateNewHostCli"
+  },
+  {
+   "ok": true,
+   "param": "ctx context.Context",
+   "signature": "func(t testing.TB, hostSetId string, hostId string, ctx context.Context)",
+   "sym": "github.com/hashicorp/boundary/testing/internal/e2e/boundary.AddHostToHostSetCli"
+  },
+  {
+   "ok": true,
+   "param": "ctx context.Context",
+   "signature": "func(t testing.TB, projectId string, ctx context.Context) string",
+   "sym": "github.com/hashicorp/boundary/testing/internal/e2e/boundary.CreateNewHostCatalogCli"
+  },
+  {
+   "ok": true,
+   "param": "ctx context.Context",
+   "signature": "func(t testing.TB, hostCatalogId string, ctx context.Context) string",
+   "sym": "github.com/hashicorp/boundary/testing/internal/e2e/boundary.CreateNewHostSetCli"
+  },
+  {
+   "ok": true,
+   "param": "ctx context.Context",
+   "signature": "func(t testing.TB, ctx context.Context) string",
+   "sym": "github.com/hashicorp/boundary/testing/internal/e2e/boundary.CreateNewOrgCli"
+  },
+  {
+   "ok": true,
+   "param": "ctx context.Context",
+   "signature": "func(t testing.TB, orgId string, ctx context.Context) string",
+   "sym": "github.com/hashicorp/boundary/testing/internal/e2e/boundary.CreateNewProjectCli"
+  },
+  {
+   "ok": true,
+   "param": "ctx context.Context",
+   "signature": "func(t testing.TB, projectId string, defaultPort string, ctx context.Context) string",
+   "sym": "github.com/hashicorp/boundary/testing/internal/e2e/boundary.CreateNewTargetCli"
+  },
+  {
+   "ok": true,
+   "param": "ctx context.Context",
+   "signature": "func(t testing.TB, targetId string, hostSourceId string, ctx context.Context)",
+   "sym": "github.com/hashicorp/boundary/testing/internal/e2e/boundary.AddHostSourceToTargetCli"
+  },
+  {
+   "ok": true,
+   "param": "ctx context.Context",
+   "signature": "func(t testing.TB, scopeId string, ctx context.Context) string",
+   "sym": "github.com/hashicorp/boundary/testing/internal/e2e/boundary.CreateNewUserCli"
+  },
+  {
+   "ok": true,
+   "param": "ctx context.Context",
+   "signature": "func(t testing.TB, userId string, accountId string, ctx context.Context)",
+   "sym": "github.com/hashicorp/boundary/testing/internal/e2e/boundary.SetAccountToUserCli"
+  }
+ ],
+ "steps": 22,
+ "task": "boundary_57ffc718",
+ "tests": true,
+ "tests_baseline": true,
+ "time_to_first_mutation_s": 170.094332,
+ "tokens_in": 23380,
+ "tokens_out": 3380,
+ "tokens_reasoning": 0,
+ "typecheck": true,
+ "wall_s": 428.664274541
+}

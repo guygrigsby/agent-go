@@ -1,0 +1,56 @@
+diff --git a/builtin/credential/aws/path_login.go b/builtin/credential/aws/path_login.go
+index 320230534a..6cec17c544 100644
+--- a/builtin/credential/aws/path_login.go
++++ b/builtin/credential/aws/path_login.go
+@@ -340,7 +340,8 @@ func (b *backend) pathLoginResolveRoleIam(ctx context.Context, req *logical.Requ
+ 
+ // instanceIamRoleARN fetches the IAM role ARN associated with the given
+ // instance profile name
+-func (b *backend) instanceIamRoleARN(iamClient *iam.IAM, instanceProfileName string) (string, error) {
++func (b *backend) instanceIamRoleARN(ctx context.Context, iamClient *iam.IAM, instanceProfileName string) (string, error) {
++
+ 	if iamClient == nil {
+ 		return "", fmt.Errorf("nil iamClient")
+ 	}
+@@ -348,7 +349,7 @@ func (b *backend) instanceIamRoleARN(iamClient *iam.IAM, instanceProfileName str
+ 		return "", fmt.Errorf("missing instance profile name")
+ 	}
+ 
+-	profile, err := iamClient.GetInstanceProfile(&iam.GetInstanceProfileInput{
++	profile, err := iamClient.GetInstanceProfileWithContext(ctx, &iam.GetInstanceProfileInput{
+ 		InstanceProfileName: aws.String(instanceProfileName),
+ 	})
+ 	if err != nil {
+@@ -371,6 +372,7 @@ func (b *backend) instanceIamRoleARN(iamClient *iam.IAM, instanceProfileName str
+ 	}
+ 
+ 	return *profile.InstanceProfile.Roles[0].Arn, nil
++
+ }
+ 
+ // validateInstance queries the status of the EC2 instance using AWS EC2 API
+@@ -596,6 +598,7 @@ func (b *backend) pathLoginUpdate(ctx context.Context, req *logical.Request, dat
+ func (b *backend) verifyInstanceMeetsRoleRequirements(ctx context.Context,
+ 	s logical.Storage, instance *ec2.Instance, roleEntry *awsRoleEntry, roleName string, identityDoc *identityDocument) (error, error,
+ ) {
++
+ 	switch {
+ 	case instance == nil:
+ 		return nil, fmt.Errorf("nil instance")
+@@ -724,7 +727,7 @@ func (b *backend) verifyInstanceMeetsRoleRequirements(ctx context.Context,
+ 		} else if iamClient == nil {
+ 			return nil, fmt.Errorf("received a nil iamClient")
+ 		}
+-		iamRoleARN, err := b.instanceIamRoleARN(iamClient, iamInstanceProfileEntity.FriendlyName)
++		iamRoleARN, err := b.instanceIamRoleARN(ctx, iamClient, iamInstanceProfileEntity.FriendlyName)
+ 		if err != nil {
+ 			return nil, fmt.Errorf("IAM role ARN could not be fetched: %w", err)
+ 		}
+@@ -750,6 +753,7 @@ func (b *backend) verifyInstanceMeetsRoleRequirements(ctx context.Context,
+ 	}
+ 
+ 	return nil, nil
++
+ }
+ 
+ // pathLoginUpdateEc2 is used to create a Vault token by the EC2 instances

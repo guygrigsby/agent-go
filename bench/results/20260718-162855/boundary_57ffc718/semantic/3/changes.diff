@@ -1,0 +1,30 @@
+diff --git a/testing/internal/e2e/boundary/account.go b/testing/internal/e2e/boundary/account.go
+index d91625c1d..b56139ec7 100644
+--- a/testing/internal/e2e/boundary/account.go
++++ b/testing/internal/e2e/boundary/account.go
+@@ -39,11 +39,10 @@ func CreateNewAccountApi(t testing.TB, ctx context.Context, client *api.Client,
+ 
+ // CreateNewAccountCli creates a new account using the cli.
+ // Returns the id of the new account as well as the password that was generated
+-func CreateNewAccountCli(t testing.TB, loginName string) (string, string) {
++func CreateNewAccountCli(t testing.TB, loginName string, ctx context.Context) (string, string) {
+ 	c, err := loadConfig()
+ 	require.NoError(t, err)
+ 
+-	ctx := context.Background()
+ 	password, err := base62.Random(16)
+ 	require.NoError(t, err)
+ 	output := e2e.RunCommand(ctx, "boundary",
+diff --git a/testing/internal/e2e/host/static/session_cancel_user_test.go b/testing/internal/e2e/host/static/session_cancel_user_test.go
+index 31b279867..897ce9013 100644
+--- a/testing/internal/e2e/host/static/session_cancel_user_test.go
++++ b/testing/internal/e2e/host/static/session_cancel_user_test.go
+@@ -35,7 +35,7 @@ func TestSessionCancelUserCli(t *testing.T) {
+ 	newTargetId := boundary.CreateNewTargetCli(t, newProjectId, c.TargetPort)
+ 	boundary.AddHostSourceToTargetCli(t, newTargetId, newHostSetId)
+ 	acctName := "e2e-account"
+-	newAccountId, acctPassword := boundary.CreateNewAccountCli(t, acctName)
++	newAccountId, acctPassword := boundary.CreateNewAccountCli(t, acctName, context.Background())
+ 	newUserId := boundary.CreateNewUserCli(t, "global")
+ 	boundary.SetAccountToUserCli(t, newUserId, newAccountId)
+ 

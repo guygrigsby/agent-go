@@ -1,0 +1,34 @@
+diff --git a/globals/globals.go b/globals/globals.go
+index daba120cc..1d13d207e 100644
+--- a/globals/globals.go
++++ b/globals/globals.go
+@@ -3,9 +3,11 @@ package globals
+ import "time"
+ 
+ const (
+-	TcpProxyV1     = "boundary-tcp-proxy-v1"
+-	ServiceTokenV1 = "s1"
+-	SessionPrefix  = "s_"
++	TcpProxyV1            = "boundary-tcp-proxy-v1"
++	ServiceTokenV1        = "s1"
++	SessionPrefix         = "s_"
++	AnyAuthenticatedUserId = "u_auth"
++	RecoveryUserId        = "u_recovery"
+ )
+ 
+ type (
+diff --git a/internal/perms/acl.go b/internal/perms/acl.go
+index 4e8d1b63f..039ed6496 100644
+--- a/internal/perms/acl.go
++++ b/internal/perms/acl.go
+@@ -9,9 +9,7 @@ import (
+ )
+ 
+ const (
+-	AnyAuthenticatedUserId = "u_auth"
+-	AnonymousUserId        = "u_anon"
+-	RecoveryUserId         = "u_recovery"
++	AnonymousUserId = "u_anon"
+ )
+ 
+ // ACL provides an entry point into the permissions engine for determining if an

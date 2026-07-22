@@ -1,0 +1,317 @@
+diff --git a/internal/observability/event/audit_sink_file.go b/internal/observability/event/audit_sink_file.go
+index decffce3bc..d91cfd5a1a 100644
+--- a/internal/observability/event/audit_sink_file.go
++++ b/internal/observability/event/audit_sink_file.go
+@@ -31,11 +31,13 @@ type AuditFileSink struct {
+ 	path     string
+ 	format   auditFormat
+ 	prefix   string
++
++	useEventLogger bool
+ }
+ 
+ // NewAuditFileSink should be used to create a new AuditFileSink.
+ // Accepted options: WithFileMode and WithPrefix.
+-func NewAuditFileSink(path string, format auditFormat, opt ...Option) (*AuditFileSink, error) {
++func NewAuditFileSink(path string, format auditFormat, useEventLogger bool, opt ...Option) (*AuditFileSink, error) {
+ 	const op = "event.NewAuditFileSink"
+ 
+ 	// Parse and check path
+@@ -53,7 +55,6 @@ func NewAuditFileSink(path string, format auditFormat, opt ...Option) (*AuditFil
+ 	if err := format.validate(); err != nil {
+ 		return nil, fmt.Errorf("%s: invalid format: %w", op, err)
+ 	}
+-
+ 	opts, err := getOpts(opt...)
+ 	if err != nil {
+ 		return nil, fmt.Errorf("%s: error applying options: %w", op, err)
+@@ -78,12 +79,13 @@ func NewAuditFileSink(path string, format auditFormat, opt ...Option) (*AuditFil
+ 	}
+ 
+ 	return &AuditFileSink{
+-		file:     nil,
+-		fileLock: sync.RWMutex{},
+-		fileMode: mode,
+-		format:   format,
+-		path:     p,
+-		prefix:   opts.withPrefix,
++		file:           nil,
++		fileLock:       sync.RWMutex{},
++		fileMode:       mode,
++		format:         format,
++		path:           p,
++		prefix:         opts.withPrefix,
++		useEventLogger: useEventLogger,
+ 	}, nil
+ }
+ 
+diff --git a/internal/observability/event/audit_sink_file_test.go b/internal/observability/event/audit_sink_file_test.go
+index 94f0e7bd90..d9e5114586 100644
+--- a/internal/observability/event/audit_sink_file_test.go
++++ b/internal/observability/event/audit_sink_file_test.go
+@@ -22,7 +22,7 @@ import (
+ 
+ // TestAuditFileSink_Type ensures that the node is a 'sink' type.
+ func TestAuditFileSink_Type(t *testing.T) {
+-	f, err := NewAuditFileSink(t.TempDir(), AuditFormatJSON)
++	f, err := NewAuditFileSink(t.TempDir(), AuditFormatJSON, false)
+ 	require.NoError(t, err)
+ 	require.NotNil(t, f)
+ 	require.Equal(t, eventlogger.NodeTypeSink, f.Type())
+@@ -143,7 +143,7 @@ func TestNewAuditFileSink(t *testing.T) {
+ 				tempPath = filepath.Join(tempDir, tempPath)
+ 			}
+ 
+-			sink, err := NewAuditFileSink(tempPath, tc.Format, tc.Options...)
++			sink, err := NewAuditFileSink(tempPath, tc.Format, false, tc.Options...)
+ 
+ 			switch {
+ 			case tc.IsErrorExpected:
+@@ -236,7 +236,7 @@ func TestAuditFileSink_Reopen(t *testing.T) {
+ 				}()
+ 			}
+ 
+-			sink, err := NewAuditFileSink(tempPath, AuditFormatJSON, tc.Options...)
++			sink, err := NewAuditFileSink(tempPath, AuditFormatJSON, false, tc.Options...)
+ 			require.NoError(t, err)
+ 			require.NotNil(t, sink)
+ 
+@@ -309,12 +309,12 @@ func TestAuditFileSink_Process(t *testing.T) {
+ 			// Setup a formatter
+ 			cfg := vaultaudit.FormatterConfig{}
+ 			ss := newStaticSalt(t)
+-			formatter, err := NewAuditFormatterJSON(cfg, ss)
++			formatter, err := NewAuditFormatterJSON(cfg, ss, false)
+ 			require.NoError(t, err)
+ 			require.NotNil(t, formatter)
+ 
+ 			// Setup a sink
+-			sink, err := NewAuditFileSink(tc.Path, tc.Format)
++			sink, err := NewAuditFileSink(tc.Path, tc.Format, false)
+ 			require.NoError(t, err)
+ 			require.NotNil(t, sink)
+ 
+@@ -386,12 +386,12 @@ func BenchmarkAuditFileSink_Process(b *testing.B) {
+ 	// Create the formatter node.
+ 	cfg := vaultaudit.FormatterConfig{}
+ 	ss := newStaticSalt(b)
+-	formatter, err := NewAuditFormatterJSON(cfg, ss)
++	formatter, err := NewAuditFormatterJSON(cfg, ss, false)
+ 	require.NoError(b, err)
+ 	require.NotNil(b, formatter)
+ 
+ 	// Create the sink node.
+-	sink, err := NewAuditFileSink("/dev/null", AuditFormatJSON)
++	sink, err := NewAuditFileSink("/dev/null", AuditFormatJSON, false)
+ 	require.NoError(b, err)
+ 	require.NotNil(b, sink)
+ 
+diff --git a/internal/observability/event/audit_sink_socket.go b/internal/observability/event/audit_sink_socket.go
+index f76de6c634..31e2225208 100644
+--- a/internal/observability/event/audit_sink_socket.go
++++ b/internal/observability/event/audit_sink_socket.go
+@@ -23,11 +23,13 @@ type AuditSocketSink struct {
+ 	maxDuration time.Duration
+ 	socketLock  sync.RWMutex
+ 	connection  net.Conn
++
++	useEventLogger bool
+ }
+ 
+ // NewAuditSocketSink should be used to create a new AuditSocketSink.
+ // Accepted options: WithMaxDuration and WithSocketType.
+-func NewAuditSocketSink(format auditFormat, address string, opt ...Option) (*AuditSocketSink, error) {
++func NewAuditSocketSink(format auditFormat, address string, useEventLogger bool, opt ...Option) (*AuditSocketSink, error) {
+ 	const op = "event.NewAuditSocketSink"
+ 
+ 	opts, err := getOpts(opt...)
+@@ -36,14 +38,14 @@ func NewAuditSocketSink(format auditFormat, address string, opt ...Option) (*Aud
+ 	}
+ 
+ 	sink := &AuditSocketSink{
+-		format:      format,
+-		address:     address,
+-		socketType:  opts.withSocketType,
+-		maxDuration: opts.withMaxDuration,
+-		socketLock:  sync.RWMutex{},
+-		connection:  nil,
++		format:         format,
++		address:        address,
++		socketType:     opts.withSocketType,
++		maxDuration:    opts.withMaxDuration,
++		socketLock:     sync.RWMutex{},
++		connection:     nil,
++		useEventLogger: useEventLogger,
+ 	}
+-
+ 	return sink, nil
+ }
+ 
+diff --git a/internal/observability/event/audit_sink_syslog.go b/internal/observability/event/audit_sink_syslog.go
+index 61fbfb0873..bc8c8d7270 100644
+--- a/internal/observability/event/audit_sink_syslog.go
++++ b/internal/observability/event/audit_sink_syslog.go
+@@ -16,11 +16,13 @@ import (
+ type AuditSyslogSink struct {
+ 	format auditFormat
+ 	logger gsyslog.Syslogger
++
++	useEventLogger bool
+ }
+ 
+ // NewAuditSyslogSink should be used to create a new AuditSyslogSink.
+ // Accepted options: WithFacility and WithTag.
+-func NewAuditSyslogSink(format auditFormat, opt ...Option) (*AuditSyslogSink, error) {
++func NewAuditSyslogSink(format auditFormat, useEventLogger bool, opt ...Option) (*AuditSyslogSink, error) {
+ 	const op = "event.NewAuditSyslogSink"
+ 
+ 	opts, err := getOpts(opt...)
+@@ -33,7 +35,11 @@ func NewAuditSyslogSink(format auditFormat, opt ...Option) (*AuditSyslogSink, er
+ 		return nil, fmt.Errorf("%s: error creating syslogger: %w", op, err)
+ 	}
+ 
+-	return &AuditSyslogSink{format: format, logger: logger}, nil
++	return &AuditSyslogSink{
++		format:         format,
++		logger:         logger,
++		useEventLogger: useEventLogger,
++	}, nil
+ }
+ 
+ // Process handles writing the event to the syslog.
+diff --git a/internal/observability/event/node_formatter_audit_json.go b/internal/observability/event/node_formatter_audit_json.go
+index effb162340..1a6ffbcaa6 100644
+--- a/internal/observability/event/node_formatter_audit_json.go
++++ b/internal/observability/event/node_formatter_audit_json.go
+@@ -21,10 +21,12 @@ type AuditFormatterJSON struct {
+ 	config    vaultaudit.FormatterConfig
+ 	format    auditFormat
+ 	formatter vaultaudit.Formatter
++
++	useEventLogger bool
+ }
+ 
+ // NewAuditFormatterJSON should be used to create an AuditFormatterJSON.
+-func NewAuditFormatterJSON(config vaultaudit.FormatterConfig, salter vaultaudit.Salter) (*AuditFormatterJSON, error) {
++func NewAuditFormatterJSON(config vaultaudit.FormatterConfig, salter vaultaudit.Salter, useEventLogger bool) (*AuditFormatterJSON, error) {
+ 	const op = "event.NewAuditFormatterJSON"
+ 
+ 	f, err := vaultaudit.NewAuditFormatter(salter)
+@@ -33,11 +35,11 @@ func NewAuditFormatterJSON(config vaultaudit.FormatterConfig, salter vaultaudit.
+ 	}
+ 
+ 	jsonFormatter := &AuditFormatterJSON{
+-		format:    AuditFormatJSON,
+-		config:    config,
+-		formatter: f,
++		format:         AuditFormatJSON,
++		config:         config,
++		formatter:      f,
++		useEventLogger: useEventLogger,
+ 	}
+-
+ 	return jsonFormatter, nil
+ }
+ 
+diff --git a/internal/observability/event/node_formatter_audit_json_test.go b/internal/observability/event/node_formatter_audit_json_test.go
+index a45128adc1..04a338bab0 100644
+--- a/internal/observability/event/node_formatter_audit_json_test.go
++++ b/internal/observability/event/node_formatter_audit_json_test.go
+@@ -101,7 +101,7 @@ func TestNewAuditFormatterJSON(t *testing.T) {
+ 				ss = newStaticSalt(t)
+ 			}
+ 
+-			f, err := NewAuditFormatterJSON(cfg, ss)
++			f, err := NewAuditFormatterJSON(cfg, ss, false)
+ 
+ 			switch {
+ 			case tc.IsErrorExpected:
+@@ -121,7 +121,7 @@ func TestAuditFormatterJSON_Reopen(t *testing.T) {
+ 	ss := newStaticSalt(t)
+ 	cfg := vaultaudit.FormatterConfig{}
+ 
+-	f, err := NewAuditFormatterJSON(cfg, ss)
++	f, err := NewAuditFormatterJSON(cfg, ss, false)
+ 	require.NoError(t, err)
+ 	require.NotNil(t, f)
+ 	require.NoError(t, f.Reopen())
+@@ -132,7 +132,7 @@ func TestAuditFormatterJSON_Type(t *testing.T) {
+ 	ss := newStaticSalt(t)
+ 	cfg := vaultaudit.FormatterConfig{}
+ 
+-	f, err := NewAuditFormatterJSON(cfg, ss)
++	f, err := NewAuditFormatterJSON(cfg, ss, false)
+ 	require.NoError(t, err)
+ 	require.NotNil(t, f)
+ 	require.Equal(t, eventlogger.NodeTypeFormatter, f.Type())
+@@ -209,7 +209,7 @@ func TestAuditFormatterJSON_Process(t *testing.T) {
+ 			ss := newStaticSalt(t)
+ 			cfg := vaultaudit.FormatterConfig{}
+ 
+-			f, err := NewAuditFormatterJSON(cfg, ss)
++			f, err := NewAuditFormatterJSON(cfg, ss, false)
+ 			require.NoError(t, err)
+ 			require.NotNil(t, f)
+ 
+diff --git a/internal/observability/event/node_formatter_audit_jsonx.go b/internal/observability/event/node_formatter_audit_jsonx.go
+index 2ca88dc0fa..d3a37b8b01 100644
+--- a/internal/observability/event/node_formatter_audit_jsonx.go
++++ b/internal/observability/event/node_formatter_audit_jsonx.go
+@@ -16,6 +16,8 @@ var _ eventlogger.Node = (*AuditFormatterJSONx)(nil)
+ // AuditFormatterJSONx represents a formatter node which will Process JSON to JSONx format.
+ type AuditFormatterJSONx struct {
+ 	format auditFormat
++
++	useEventLogger bool
+ }
+ 
+ // NewAuditFormatterJSONx creates a formatter node which can be used to format
+@@ -23,8 +25,11 @@ type AuditFormatterJSONx struct {
+ // This formatter node requires that a AuditFormatterJSON node exists earlier
+ // in the pipeline and will attempt to access the JSON encoded data stored by that
+ // formatter node.
+-func NewAuditFormatterJSONx() *AuditFormatterJSONx {
+-	return &AuditFormatterJSONx{format: AuditFormatJSONx}
++func NewAuditFormatterJSONx(useEventLogger bool) *AuditFormatterJSONx {
++	return &AuditFormatterJSONx{
++		format:         AuditFormatJSONx,
++		useEventLogger: useEventLogger,
++	}
+ }
+ 
+ // Reopen is a no-op for this formatter node.
+diff --git a/internal/observability/event/node_formatter_audit_jsonx_test.go b/internal/observability/event/node_formatter_audit_jsonx_test.go
+index ab45924e3d..b8bc653d71 100644
+--- a/internal/observability/event/node_formatter_audit_jsonx_test.go
++++ b/internal/observability/event/node_formatter_audit_jsonx_test.go
+@@ -52,18 +52,18 @@ func fakeJSONxAuditEvent(t *testing.T, subtype auditSubtype, input *logical.LogI
+ 
+ // TestNewAuditFormatterJSONx ensures we can create new AuditFormatterJSONx structs.
+ func TestNewAuditFormatterJSONx(t *testing.T) {
+-	f := NewAuditFormatterJSONx()
++	f := NewAuditFormatterJSONx(false)
+ 	require.NotNil(t, f)
+ }
+ 
+ // TestAuditFormatterJSONx_Reopen ensures that we do no get an error when calling Reopen.
+ func TestAuditFormatterJSONx_Reopen(t *testing.T) {
+-	require.NoError(t, NewAuditFormatterJSONx().Reopen())
++	require.NoError(t, NewAuditFormatterJSONx(false).Reopen())
+ }
+ 
+ // TestAuditFormatterJSONx_Type ensures that the node is a 'formatter' type.
+ func TestAuditFormatterJSONx_Type(t *testing.T) {
+-	require.Equal(t, eventlogger.NodeTypeFormatter, NewAuditFormatterJSONx().Type())
++	require.Equal(t, eventlogger.NodeTypeFormatter, NewAuditFormatterJSONx(false).Type())
+ }
+ 
+ // TestAuditFormatterJSONx_Process attempts to run the Process method to convert
+@@ -117,7 +117,7 @@ func TestAuditFormatterJSONx_Process(t *testing.T) {
+ 				e.FormattedAs(string(AuditFormatJSON), jsonBytes)
+ 			}
+ 
+-			processed, err := NewAuditFormatterJSONx().Process(context.Background(), e)
++			processed, err := NewAuditFormatterJSONx(false).Process(context.Background(), e)
+ 			b, found := e.Format(string(AuditFormatJSONx))
+ 
+ 			switch {

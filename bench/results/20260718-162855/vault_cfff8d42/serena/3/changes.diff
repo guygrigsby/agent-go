@@ -1,0 +1,199 @@
+diff --git a/builtin/credential/aws/backend.go b/builtin/credential/aws/backend.go
+index 5e94db7b91..d246be37eb 100644
+--- a/builtin/credential/aws/backend.go
++++ b/builtin/credential/aws/backend.go
+@@ -312,7 +312,7 @@ func (b *backend) resolveArnToRealUniqueId(ctx context.Context, s logical.Storag
+ 
+ 	switch entity.Type {
+ 	case "user":
+-		userInfo, err := iamClient.GetUser(&iam.GetUserInput{UserName: &entity.FriendlyName})
++		userInfo, err := iamClient.GetUserWithContext(ctx, &iam.GetUserInput{UserName: &entity.FriendlyName})
+ 		if err != nil {
+ 			return "", awsutil.AppendAWSError(err)
+ 		}
+@@ -321,7 +321,7 @@ func (b *backend) resolveArnToRealUniqueId(ctx context.Context, s logical.Storag
+ 		}
+ 		return *userInfo.User.UserId, nil
+ 	case "role":
+-		roleInfo, err := iamClient.GetRole(&iam.GetRoleInput{RoleName: &entity.FriendlyName})
++		roleInfo, err := iamClient.GetRoleWithContext(ctx, &iam.GetRoleInput{RoleName: &entity.FriendlyName})
+ 		if err != nil {
+ 			return "", awsutil.AppendAWSError(err)
+ 		}
+diff --git a/builtin/credential/aws/path_config_rotate_root.go b/builtin/credential/aws/path_config_rotate_root.go
+index 0a28b627b8..6c517b9c41 100644
+--- a/builtin/credential/aws/path_config_rotate_root.go
++++ b/builtin/credential/aws/path_config_rotate_root.go
+@@ -100,7 +100,7 @@ func (b *backend) pathConfigRotateRootUpdate(ctx context.Context, req *logical.R
+ 	// Get the current user's name since it's required to create an access key.
+ 	// Empty input means get the current user.
+ 	var getUserInput iam.GetUserInput
+-	getUserRes, err := iamClient.GetUser(&getUserInput)
++	getUserRes, err := iamClient.GetUserWithContext(ctx, &getUserInput)
+ 	if err != nil {
+ 		return nil, fmt.Errorf("error calling GetUser: %w", err)
+ 	}
+@@ -118,7 +118,7 @@ func (b *backend) pathConfigRotateRootUpdate(ctx context.Context, req *logical.R
+ 	createAccessKeyInput := iam.CreateAccessKeyInput{
+ 		UserName: getUserRes.User.UserName,
+ 	}
+-	createAccessKeyRes, err := iamClient.CreateAccessKey(&createAccessKeyInput)
++	createAccessKeyRes, err := iamClient.CreateAccessKeyWithContext(ctx, &createAccessKeyInput)
+ 	if err != nil {
+ 		return nil, fmt.Errorf("error calling CreateAccessKey: %w", err)
+ 	}
+@@ -142,7 +142,7 @@ func (b *backend) pathConfigRotateRootUpdate(ctx context.Context, req *logical.R
+ 			AccessKeyId: createAccessKeyRes.AccessKey.AccessKeyId,
+ 			UserName:    getUserRes.User.UserName,
+ 		}
+-		if _, err := iamClient.DeleteAccessKey(&deleteAccessKeyInput); err != nil {
++		if _, err := iamClient.DeleteAccessKeyWithContext(ctx, &deleteAccessKeyInput); err != nil {
+ 			// Include this error in the errs returned by this method.
+ 			errs = multierror.Append(errs, fmt.Errorf("error deleting newly created but unstored access key ID %s: %s", *createAccessKeyRes.AccessKey.AccessKeyId, err))
+ 		}
+@@ -179,7 +179,7 @@ func (b *backend) pathConfigRotateRootUpdate(ctx context.Context, req *logical.R
+ 		AccessKeyId: aws.String(oldAccessKey),
+ 		UserName:    getUserRes.User.UserName,
+ 	}
+-	if _, err = iamClient.DeleteAccessKey(&deleteAccessKeyInput); err != nil {
++	if _, err = iamClient.DeleteAccessKeyWithContext(ctx, &deleteAccessKeyInput); err != nil {
+ 		errs = multierror.Append(errs, fmt.Errorf("error deleting old access key ID %s: %w", oldAccessKey, err))
+ 		return nil, errs
+ 	}
+diff --git a/builtin/credential/aws/path_login.go b/builtin/credential/aws/path_login.go
+index 320230534a..f326d58cc9 100644
+--- a/builtin/credential/aws/path_login.go
++++ b/builtin/credential/aws/path_login.go
+@@ -340,7 +340,7 @@ func (b *backend) pathLoginResolveRoleIam(ctx context.Context, req *logical.Requ
+ 
+ // instanceIamRoleARN fetches the IAM role ARN associated with the given
+ // instance profile name
+-func (b *backend) instanceIamRoleARN(iamClient *iam.IAM, instanceProfileName string) (string, error) {
++func (b *backend) instanceIamRoleARN(ctx context.Context, iamClient *iam.IAM, instanceProfileName string) (string, error) {
+ 	if iamClient == nil {
+ 		return "", fmt.Errorf("nil iamClient")
+ 	}
+@@ -348,7 +348,7 @@ func (b *backend) instanceIamRoleARN(iamClient *iam.IAM, instanceProfileName str
+ 		return "", fmt.Errorf("missing instance profile name")
+ 	}
+ 
+-	profile, err := iamClient.GetInstanceProfile(&iam.GetInstanceProfileInput{
++	profile, err := iamClient.GetInstanceProfileWithContext(ctx, &iam.GetInstanceProfileInput{
+ 		InstanceProfileName: aws.String(instanceProfileName),
+ 	})
+ 	if err != nil {
+@@ -724,7 +724,7 @@ func (b *backend) verifyInstanceMeetsRoleRequirements(ctx context.Context,
+ 		} else if iamClient == nil {
+ 			return nil, fmt.Errorf("received a nil iamClient")
+ 		}
+-		iamRoleARN, err := b.instanceIamRoleARN(iamClient, iamInstanceProfileEntity.FriendlyName)
++		iamRoleARN, err := b.instanceIamRoleARN(ctx, iamClient, iamInstanceProfileEntity.FriendlyName)
+ 		if err != nil {
+ 			return nil, fmt.Errorf("IAM role ARN could not be fetched: %w", err)
+ 		}
+@@ -1835,7 +1835,7 @@ func (b *backend) fullArn(ctx context.Context, e *iamEntity, s logical.Storage)
+ 		input := iam.GetUserInput{
+ 			UserName: aws.String(e.FriendlyName),
+ 		}
+-		resp, err := client.GetUser(&input)
++		resp, err := client.GetUserWithContext(ctx, &input)
+ 		if err != nil {
+ 			return "", fmt.Errorf("error fetching user %q: %w", e.FriendlyName, err)
+ 		}
+@@ -1849,7 +1849,7 @@ func (b *backend) fullArn(ctx context.Context, e *iamEntity, s logical.Storage)
+ 		input := iam.GetRoleInput{
+ 			RoleName: aws.String(e.FriendlyName),
+ 		}
+-		resp, err := client.GetRole(&input)
++		resp, err := client.GetRoleWithContext(ctx, &input)
+ 		if err != nil {
+ 			return "", fmt.Errorf("error fetching role %q: %w", e.FriendlyName, err)
+ 		}
+diff --git a/builtin/logical/aws/backend_test.go b/builtin/logical/aws/backend_test.go
+index 5e59fdf2eb..47b3f400d2 100644
+--- a/builtin/logical/aws/backend_test.go
++++ b/builtin/logical/aws/backend_test.go
+@@ -372,7 +372,7 @@ func createUser(t *testing.T, userName string, accessKey *awsAccessKey) {
+ 	createAccessKeyInput := &iam.CreateAccessKeyInput{
+ 		UserName: aws.String(userName),
+ 	}
+-	createAccessKeyOutput, err := svc.CreateAccessKey(createAccessKeyInput)
++	createAccessKeyOutput, err := svc.CreateAccessKeyWithContext(context.Background(), createAccessKeyInput)
+ 	if err != nil {
+ 		t.Fatalf("AWS CreateAccessKey failed: %v", err)
+ 	}
+@@ -495,7 +495,7 @@ func deleteTestUser(accessKey *awsAccessKey, userName string) error {
+ 		AccessKeyId: aws.String(accessKey.AccessKeyID),
+ 		UserName:    aws.String(userName),
+ 	}
+-	_, err = svc.DeleteAccessKey(deleteAccessKeyInput)
++	_, err = svc.DeleteAccessKeyWithContext(context.Background(), deleteAccessKeyInput)
+ 	if err != nil {
+ 		log.Printf("[WARN] AWS DeleteAccessKey failed: %v", err)
+ 		return err
+@@ -767,7 +767,7 @@ func assertCreatedIAMUser(accessKey, secretKey, token string) error {
+ 	}
+ 	client := iam.New(sess)
+ 	log.Printf("[WARN] Checking if IAM User is created properly...")
+-	userOutput, err := client.GetUser(&iam.GetUserInput{})
++	userOutput, err := client.GetUserWithContext(context.Background(), &iam.GetUserInput{})
+ 	if err != nil {
+ 		return err
+ 	}
+diff --git a/builtin/logical/aws/path_config_rotate_root.go b/builtin/logical/aws/path_config_rotate_root.go
+index 212a9eb3a8..295b08547f 100644
+--- a/builtin/logical/aws/path_config_rotate_root.go
++++ b/builtin/logical/aws/path_config_rotate_root.go
+@@ -59,7 +59,7 @@ func (b *backend) pathConfigRotateRootUpdate(ctx context.Context, req *logical.R
+ 	}
+ 
+ 	var getUserInput iam.GetUserInput // empty input means get current user
+-	getUserRes, err := client.GetUser(&getUserInput)
++	getUserRes, err := client.GetUserWithContext(ctx, &getUserInput)
+ 	if err != nil {
+ 		return nil, fmt.Errorf("error calling GetUser: %w", err)
+ 	}
+@@ -76,7 +76,7 @@ func (b *backend) pathConfigRotateRootUpdate(ctx context.Context, req *logical.R
+ 	createAccessKeyInput := iam.CreateAccessKeyInput{
+ 		UserName: getUserRes.User.UserName,
+ 	}
+-	createAccessKeyRes, err := client.CreateAccessKey(&createAccessKeyInput)
++	createAccessKeyRes, err := client.CreateAccessKeyWithContext(ctx, &createAccessKeyInput)
+ 	if err != nil {
+ 		return nil, fmt.Errorf("error calling CreateAccessKey: %w", err)
+ 	}
+@@ -107,7 +107,7 @@ func (b *backend) pathConfigRotateRootUpdate(ctx context.Context, req *logical.R
+ 		AccessKeyId: aws.String(oldAccessKey),
+ 		UserName:    getUserRes.User.UserName,
+ 	}
+-	_, err = client.DeleteAccessKey(&deleteAccessKeyInput)
++	_, err = client.DeleteAccessKeyWithContext(ctx, &deleteAccessKeyInput)
+ 	if err != nil {
+ 		return nil, fmt.Errorf("error deleting old access key: %w", err)
+ 	}
+diff --git a/builtin/logical/aws/path_user.go b/builtin/logical/aws/path_user.go
+index ca5e1a2955..6789cd26c9 100644
+--- a/builtin/logical/aws/path_user.go
++++ b/builtin/logical/aws/path_user.go
+@@ -224,7 +224,7 @@ func (b *backend) pathUserRollback(ctx context.Context, req *logical.Request, _k
+ 
+ 	// Revoke all keys
+ 	for _, k := range keys {
+-		_, err = client.DeleteAccessKey(&iam.DeleteAccessKeyInput{
++		_, err = client.DeleteAccessKeyWithContext(ctx, &iam.DeleteAccessKeyInput{
+ 			AccessKeyId: k.AccessKeyId,
+ 			UserName:    aws.String(username),
+ 		})
+diff --git a/builtin/logical/aws/secret_access_keys.go b/builtin/logical/aws/secret_access_keys.go
+index 9b8a2bc9b8..565eae7365 100644
+--- a/builtin/logical/aws/secret_access_keys.go
++++ b/builtin/logical/aws/secret_access_keys.go
+@@ -378,7 +378,7 @@ func (b *backend) secretAccessKeysCreate(
+ 	}
+ 
+ 	// Create the keys
+-	keyResp, err := iamClient.CreateAccessKey(&iam.CreateAccessKeyInput{
++	keyResp, err := iamClient.CreateAccessKeyWithContext(ctx, &iam.CreateAccessKeyInput{
+ 		UserName: aws.String(username),
+ 	})
+ 	if err != nil {

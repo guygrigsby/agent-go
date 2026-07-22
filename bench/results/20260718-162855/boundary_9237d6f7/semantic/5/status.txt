@@ -1,0 +1,14 @@
+ M api/targets/custom.go
+ M internal/auth/additional_verification_test.go
+ M internal/cmd/commands/proxy/proxy.go
+ M internal/cmd/commands/targets/target.go
+ M internal/perms/grants_test.go
+ M internal/servers/controller/handlers/targets/target_service.go
+ M internal/servers/controller/handlers/workers/worker_service.go
+ M internal/servers/worker/handler.go
+ M internal/servers/worker/session.go
+ M internal/session/repository_session.go
+ M internal/session/repository_session_test.go
+ M internal/types/action/action.go
+ M internal/types/action/action_test.go
+?? opencode.json

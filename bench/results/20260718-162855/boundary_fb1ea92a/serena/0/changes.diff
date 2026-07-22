@@ -1,0 +1,42 @@
+diff --git a/internal/daemon/worker/handler.go b/internal/daemon/worker/handler.go
+index de3ef4829..7f4e1c07a 100644
+--- a/internal/daemon/worker/handler.go
++++ b/internal/daemon/worker/handler.go
+@@ -46,13 +46,13 @@ type HandlerProperties struct {
+ 
+ // Handler returns a http.Handler for the API. This can be used on
+ // its own to mount the Worker API within another web server.
+-func (w *Worker) handler(props HandlerProperties, sm session.Manager) (http.Handler, error) {
++func (w *Worker) handler(controlCtx context.Context, props HandlerProperties, sm session.Manager) (http.Handler, error) {
+ 	const op = "worker.(Worker).handler"
+ 	// Create the muxer to handle the actual endpoints
+ 	mux := http.NewServeMux()
+ 
+ 	var h http.Handler
+-	h, err := w.handleProxy(props.ListenerConfig, sm)
++	h, err := w.handleProxy(controlCtx, props.ListenerConfig, sm)
+ 	if err != nil {
+ 		return nil, fmt.Errorf("%s: %w", op, err)
+ 	}
+@@ -64,7 +64,7 @@ func (w *Worker) handler(props HandlerProperties, sm session.Manager) (http.Hand
+ 	return metricHandler, nil
+ }
+ 
+-func (w *Worker) handleProxy(listenerCfg *listenerutil.ListenerConfig, sessionManager session.Manager) (http.HandlerFunc, error) {
++func (w *Worker) handleProxy(controlCtx context.Context, listenerCfg *listenerutil.ListenerConfig, sessionManager session.Manager) (http.HandlerFunc, error) {
+ 	const op = "worker.(Worker).handleProxy"
+ 	if listenerCfg == nil {
+ 		return nil, fmt.Errorf("%s: missing listener config", op)
+diff --git a/internal/daemon/worker/listeners.go b/internal/daemon/worker/listeners.go
+index 9d746fe49..8b27374b0 100644
+--- a/internal/daemon/worker/listeners.go
++++ b/internal/daemon/worker/listeners.go
+@@ -85,7 +85,7 @@ func (w *Worker) startListeners(sm session.Manager) error {
+ 
+ func (w *Worker) configureForWorker(ln *base.ServerListener, logger *log.Logger, sessionManager session.Manager) (func(), error) {
+ 	const op = "worker.configureForWorker"
+-	handler, err := w.handler(HandlerProperties{ListenerConfig: ln.Config}, sessionManager)
++	handler, err := w.handler(w.baseContext, HandlerProperties{ListenerConfig: ln.Config}, sessionManager)
+ 	if err != nil {
+ 		return nil, err
+ 	}

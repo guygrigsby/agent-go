@@ -1,0 +1,88 @@
+{
+ "agent_done": "2026-07-22T03:35:16.8922225Z",
+ "agent_started": "2026-07-22T03:23:51.370013Z",
+ "cache_read": 744091,
+ "cache_write": 0,
+ "capped": false,
+ "failure_kind": "",
+ "intermediate_states": 3,
+ "invalid_intermediate_rate": 0,
+ "invalid_intermediates": 0,
+ "iter": 2,
+ "kind": "rename",
+ "mode": "semantic",
+ "new_errors": null,
+ "op_mix": {
+  "help": {
+   "ok": 1,
+   "rejected": 0
+  },
+  "patch": {
+   "ok": 0,
+   "rejected": 2
+  },
+  "query": {
+   "ok": 13,
+   "rejected": 9
+  },
+  "rename": {
+   "ok": 3,
+   "rejected": 4
+  },
+  "status": {
+   "ok": 1,
+   "rejected": 0
+  },
+  "test": {
+   "ok": 1,
+   "rejected": 0
+  },
+  "view": {
+   "ok": 0,
+   "rejected": 3
+  }
+ },
+ "pass": true,
+ "predicate": true,
+ "profile": "glm-flash",
+ "prompt": "Rename the UI passthrough dir flag/env var\n\nSpecifically, rename: flagPassthroughDirectory -\u003e flagUiPassthroughDir; devPassthroughHandler -\u003e devUiPassthroughHandler; PassthroughDirectory -\u003e DevUiPassthroughDir",
+ "rejects_total": 18,
+ "repairs_offered": 20,
+ "resends": 3,
+ "specs": [
+  {
+   "baseline_refs": 3,
+   "new_refs": 3,
+   "ok": true,
+   "old_refs_left": 0,
+   "sym": "github.com/hashicorp/boundary/internal/cmd/commands/dev.Command.flagPassthroughDirectory",
+   "to": "flagUiPassthroughDir"
+  },
+  {
+   "baseline_refs": 2,
+   "new_refs": 2,
+   "ok": true,
+   "old_refs_left": 0,
+   "sym": "github.com/hashicorp/boundary/internal/servers/controller.devPassthroughHandler",
+   "to": "devUiPassthroughHandler"
+  },
+  {
+   "baseline_refs": 4,
+   "new_refs": 4,
+   "ok": true,
+   "old_refs_left": 0,
+   "sym": "github.com/hashicorp/boundary/internal/cmd/config.Config.PassthroughDirectory",
+   "to": "DevUiPassthroughDir"
+  }
+ ],
+ "steps": 35,
+ "task": "boundary_c0532428",
+ "tests": false,
+ "tests_baseline": false,
+ "time_to_first_mutation_s": 372.76303,
+ "tokens_in": 44602,
+ "tokens_out": 4696,
+ "tokens_reasoning": 0,
+ "typecheck": true,
+ "wall_s": 685.5222095
+}

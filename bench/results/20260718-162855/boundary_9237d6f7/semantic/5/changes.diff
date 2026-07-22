@@ -1,0 +1,178 @@
+diff --git a/api/targets/custom.go b/api/targets/custom.go
+index 0be0837b2..0e8f3c103 100644
+--- a/api/targets/custom.go
++++ b/api/targets/custom.go
+@@ -25,7 +25,7 @@ func (n SessionAuthorizationResult) GetResponseMap() map[string]interface{} {
+ 	return n.responseMap
+ }
+ 
+-func (c *Client) Authorize(ctx context.Context, targetId string, opt ...Option) (*SessionAuthorizationResult, error) {
++func (c *Client) AuthorizeSession(ctx context.Context, targetId string, opt ...Option) (*SessionAuthorizationResult, error) {
+ 	if targetId == "" {
+ 		return nil, fmt.Errorf("empty targetId value passed into Authorize request")
+ 	}
+diff --git a/internal/auth/additional_verification_test.go b/internal/auth/additional_verification_test.go
+index a01bf03b7..7d76286b6 100644
+--- a/internal/auth/additional_verification_test.go
++++ b/internal/auth/additional_verification_test.go
+@@ -91,7 +91,7 @@ func TestAdditionalVerification(t *testing.T) {
+ 					name: "good target",
+ 					opts: []auth.Option{
+ 						auth.WithId("ttcp_1234567890"),
+-						auth.WithAction(action.Authorize),
++						auth.WithAction(action.AuthorizeSession),
+ 						auth.WithScopeId(proj.PublicId),
+ 						auth.WithType(resource.Target),
+ 					},
+diff --git a/internal/cmd/commands/proxy/proxy.go b/internal/cmd/commands/proxy/proxy.go
+index 70f9131fb..c3740e1e1 100644
+--- a/internal/cmd/commands/proxy/proxy.go
++++ b/internal/cmd/commands/proxy/proxy.go
+@@ -438,7 +438,7 @@ func (c *Command) Run(args []string) (retCode int) {
+ 			opts = append(opts, targets.WithHostId(c.flagHostId))
+ 		}
+ 
+-		sar, err := targetClient.Authorize(c.Context, c.flagTargetId, opts...)
++		sar, err := targetClient.AuthorizeSession(c.Context, c.flagTargetId, opts...)
+ 		if err != nil {
+ 			if api.AsServerError(err) != nil {
+ 				c.UI.Error(fmt.Sprintf("Error from controller when performing authorize on a session against target: %s", err.Error()))
+diff --git a/internal/cmd/commands/targets/target.go b/internal/cmd/commands/targets/target.go
+index d38500714..506da8cd6 100644
+--- a/internal/cmd/commands/targets/target.go
++++ b/internal/cmd/commands/targets/target.go
+@@ -283,7 +283,7 @@ func (c *Command) Run(args []string) int {
+ 	case "set-host-sets":
+ 		result, err = targetClient.SetHostSets(c.Context, c.FlagId, version, hostSets, opts...)
+ 	case "authorize":
+-		sar, err = targetClient.Authorize(c.Context, c.FlagId, opts...)
++		sar, err = targetClient.AuthorizeSession(c.Context, c.FlagId, opts...)
+ 	}
+ 
+ 	plural := "target"
+diff --git a/internal/perms/grants_test.go b/internal/perms/grants_test.go
+index 3dfc49f3e..e1be55fc6 100644
+--- a/internal/perms/grants_test.go
++++ b/internal/perms/grants_test.go
+@@ -71,7 +71,7 @@ func Test_ActionParsingValidation(t *testing.T) {
+ 					action.Read:         true,
+ 					action.Delete:       true,
+ 					action.Authenticate: true,
+-					action.Authorize:    true,
++					action.AuthorizeSession:    true,
+ 				},
+ 			},
+ 		},
+diff --git a/internal/servers/controller/handlers/targets/target_service.go b/internal/servers/controller/handlers/targets/target_service.go
+index d4d8c3aaf..0e37f5610 100644
+--- a/internal/servers/controller/handlers/targets/target_service.go
++++ b/internal/servers/controller/handlers/targets/target_service.go
+@@ -230,7 +230,7 @@ func (s Service) AuthorizeSession(ctx context.Context, req *pbs.AuthorizeSession
+ 	if err := validateAuthorizeRequest(req); err != nil {
+ 		return nil, err
+ 	}
+-	authResults := s.authResult(ctx, req.GetId(), action.Authorize)
++	authResults := s.authResult(ctx, req.GetId(), action.AuthorizeSession)
+ 	if authResults.Error != nil {
+ 		return nil, authResults.Error
+ 	}
+diff --git a/internal/servers/controller/handlers/workers/worker_service.go b/internal/servers/controller/handlers/workers/worker_service.go
+index 396e49f9b..480916764 100644
+--- a/internal/servers/controller/handlers/workers/worker_service.go
++++ b/internal/servers/controller/handlers/workers/worker_service.go
+@@ -225,7 +225,7 @@ func (ws *workerServiceServer) AuthorizeConnection(ctx context.Context, req *pbs
+ 		return nil, status.Errorf(codes.Internal, "error getting session repo: %v", err)
+ 	}
+ 
+-	connectionInfo, connStates, authzSummary, err := sessRepo.AuthorizeConnection(ctx, req.GetSessionId())
++	connectionInfo, connStates, authzSummary, err := sessRepo.AuthorizeSessionConnection(ctx, req.GetSessionId())
+ 	if err != nil {
+ 		return nil, err
+ 	}
+diff --git a/internal/servers/worker/handler.go b/internal/servers/worker/handler.go
+index fcc00dc43..9c7d7a30e 100644
+--- a/internal/servers/worker/handler.go
++++ b/internal/servers/worker/handler.go
+@@ -131,7 +131,7 @@ func (w *Worker) handleProxy() http.HandlerFunc {
+ 
+ 		var ci *connInfo
+ 		var connsLeft int32
+-		ci, connsLeft, err = w.authorizeConnection(r.Context(), sessionId)
++		ci, connsLeft, err = w.authorizeSession(r.Context(), sessionId)
+ 		if err != nil {
+ 			w.logger.Error("unable to authorize connection", "error", err)
+ 			conn.Close(websocket.StatusInternalError, "unable to authorize connection")
+diff --git a/internal/servers/worker/session.go b/internal/servers/worker/session.go
+index acdd9519d..f52ea2896 100644
+--- a/internal/servers/worker/session.go
++++ b/internal/servers/worker/session.go
+@@ -152,7 +152,7 @@ func (w *Worker) activateSession(ctx context.Context, sessionId, tofuToken strin
+ 	return resp.GetStatus(), nil
+ }
+ 
+-func (w *Worker) authorizeConnection(ctx context.Context, sessionId string) (*connInfo, int32, error) {
++func (w *Worker) authorizeSession(ctx context.Context, sessionId string) (*connInfo, int32, error) {
+ 	rawConn := w.controllerSessionConn.Load()
+ 	if rawConn == nil {
+ 		return nil, 0, errors.New("could not get a controller client")
+diff --git a/internal/session/repository_session.go b/internal/session/repository_session.go
+index 49af3b761..88b553c9f 100644
+--- a/internal/session/repository_session.go
++++ b/internal/session/repository_session.go
+@@ -365,7 +365,7 @@ func (r *Repository) TerminateCompletedSessions(ctx context.Context) (int, error
+ // If authorization is success, it creates/stores a new connection in the repo
+ // and returns it, along with it's states.  If the authorization fails, it
+ // an error of ErrInvalidStateForOperation.
+-func (r *Repository) AuthorizeConnection(ctx context.Context, sessionId string) (*Connection, []*ConnectionState, *ConnectionAuthzSummary, error) {
++func (r *Repository) AuthorizeSessionConnection(ctx context.Context, sessionId string) (*Connection, []*ConnectionState, *ConnectionAuthzSummary, error) {
+ 	if sessionId == "" {
+ 		return nil, nil, nil, status.Errorf(codes.FailedPrecondition, "authorize connection: missing session id: %v", db.ErrInvalidParameter)
+ 	}
+diff --git a/internal/session/repository_session_test.go b/internal/session/repository_session_test.go
+index 51ff80335..d7c1ef228 100644
+--- a/internal/session/repository_session_test.go
++++ b/internal/session/repository_session_test.go
+@@ -497,7 +497,7 @@ func TestRepository_AuthorizeConnect(t *testing.T) {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			assert, require := assert.New(t), require.New(t)
+ 
+-			c, cs, authzInfo, err := repo.AuthorizeConnection(context.Background(), tt.session.PublicId)
++			c, cs, authzInfo, err := repo.AuthorizeSessionConnection(context.Background(), tt.session.PublicId)
+ 			if tt.wantErr {
+ 				require.Error(err)
+ 				// TODO (jimlambrt 9/2020): add in tests for errorsIs once we
+diff --git a/internal/types/action/action.go b/internal/types/action/action.go
+index 421021e50..3d5b80134 100644
+--- a/internal/types/action/action.go
++++ b/internal/types/action/action.go
+@@ -14,7 +14,7 @@ const (
+ 	Delete           Type = 5
+ 	Authenticate     Type = 6
+ 	All              Type = 7
+-	Authorize        Type = 8
++	AuthorizeSession        Type = 8
+ 	AddGrants        Type = 9
+ 	RemoveGrants     Type = 10
+ 	SetGrants        Type = 11
+@@ -47,7 +47,7 @@ var Map = map[string]Type{
+ 	Delete.String():           Delete,
+ 	Authenticate.String():     Authenticate,
+ 	All.String():              All,
+-	Authorize.String():        Authorize,
++	AuthorizeSession.String():        AuthorizeSession,
+ 	AddGrants.String():        AddGrants,
+ 	RemoveGrants.String():     RemoveGrants,
+ 	SetGrants.String():        SetGrants,
+diff --git a/internal/types/action/action_test.go b/internal/types/action/action_test.go
+index 01890bb51..81b1d396b 100644
+--- a/internal/types/action/action_test.go
++++ b/internal/types/action/action_test.go
+@@ -44,7 +44,7 @@ func TestAction(t *testing.T) {
+ 			want:   "*",
+ 		},
+ 		{
+-			action: Authorize,
++			action: AuthorizeSession,
+ 			want:   "authorize",
+ 		},
+ 		{

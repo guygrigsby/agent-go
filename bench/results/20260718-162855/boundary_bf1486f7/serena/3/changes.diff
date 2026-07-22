@@ -1,0 +1,200 @@
+diff --git a/internal/cmd/base/initial_resources.go b/internal/cmd/base/initial_resources.go
+index e32f27611..38218c293 100644
+--- a/internal/cmd/base/initial_resources.go
++++ b/internal/cmd/base/initial_resources.go
+@@ -478,7 +478,7 @@ func (b *Server) CreateInitialTarget(ctx context.Context) (target.Target, error)
+ 		}
+ 	}()
+ 
+-	targetRepo, err := target.NewRepository(rw, rw, kmsCache)
++	targetRepo, err := target.NewRepository(ctx, rw, rw, kmsCache)
+ 	if err != nil {
+ 		return nil, fmt.Errorf("error creating target repository: %w", err)
+ 	}
+diff --git a/internal/daemon/controller/controller.go b/internal/daemon/controller/controller.go
+index b4427bcb8..ef2123fdc 100644
+--- a/internal/daemon/controller/controller.go
++++ b/internal/daemon/controller/controller.go
+@@ -334,7 +334,7 @@ func New(ctx context.Context, conf *Config) (*Controller, error) {
+ 		return password.NewRepository(dbase, dbase, c.kms)
+ 	}
+ 	c.TargetRepoFn = func(o ...target.Option) (*target.Repository, error) {
+-		return target.NewRepository(dbase, dbase, c.kms, o...)
++		return target.NewRepository(ctx, dbase, dbase, c.kms, o...)
+ 	}
+ 	c.SessionRepoFn = func(opt ...session.Option) (*session.Repository, error) {
+ 		return session.NewRepository(ctx, dbase, dbase, c.kms, opt...)
+diff --git a/internal/daemon/controller/handlers/targets/tcp/target_service_test.go b/internal/daemon/controller/handlers/targets/tcp/target_service_test.go
+index 98b5c50c5..9e40b401f 100644
+--- a/internal/daemon/controller/handlers/targets/tcp/target_service_test.go
++++ b/internal/daemon/controller/handlers/targets/tcp/target_service_test.go
+@@ -77,7 +77,7 @@ func testService(t *testing.T, ctx context.Context, conn *db.DB, kms *kms.Kms, w
+ 	rw := db.New(conn)
+ 	sche := scheduler.TestScheduler(t, conn, wrapper)
+ 	repoFn := func(o ...target.Option) (*target.Repository, error) {
+-		return target.NewRepository(rw, rw, kms, o...)
++		return target.NewRepository(ctx, rw, rw, kms, o...)
+ 	}
+ 	iamRepoFn := func() (*iam.Repository, error) {
+ 		return iam.TestRepo(t, conn, wrapper), nil
+@@ -688,6 +688,7 @@ func TestCreate(t *testing.T) {
+ 
+ func TestUpdate(t *testing.T) {
+ 	t.Parallel()
++	ctx := context.Background()
+ 	conn, _ := db.TestSetup(t, "postgres")
+ 	wrapper := db.TestWrapper(t)
+ 	kms := kms.TestKms(t, conn, wrapper)
+@@ -711,7 +712,7 @@ func TestUpdate(t *testing.T) {
+ 	_ = iam.TestRoleGrant(t, conn, r.GetPublicId(), "id=*;type=*;actions=*")
+ 
+ 	repoFn := func(o ...target.Option) (*target.Repository, error) {
+-		return target.NewRepository(rw, rw, kms)
++		return target.NewRepository(ctx, rw, rw, kms)
+ 	}
+ 	repo, err := repoFn()
+ 	require.NoError(t, err, "Couldn't create new target repo.")
+@@ -729,7 +730,6 @@ func TestUpdate(t *testing.T) {
+ 		{Id: hs[1].GetPublicId(), HostCatalogId: hs[1].GetCatalogId()},
+ 	}
+ 
+-	ctx := context.Background()
+ 	ttar, err := target.New(ctx, tcp.Subtype, proj.GetPublicId(),
+ 		target.WithName("default"),
+ 		target.WithDescription("default"),
+@@ -1111,6 +1111,7 @@ func TestUpdate(t *testing.T) {
+ 
+ func TestUpdate_BadVersion(t *testing.T) {
+ 	t.Parallel()
++	ctx := context.Background()
+ 	conn, _ := db.TestSetup(t, "postgres")
+ 	wrapper := db.TestWrapper(t)
+ 	kms := kms.TestKms(t, conn, wrapper)
+@@ -1135,12 +1136,11 @@ func TestUpdate_BadVersion(t *testing.T) {
+ 	_ = iam.TestRoleGrant(t, conn, r.GetPublicId(), "id=*;type=*;actions=*")
+ 
+ 	repoFn := func(o ...target.Option) (*target.Repository, error) {
+-		return target.NewRepository(rw, rw, kms)
++		return target.NewRepository(ctx, rw, rw, kms)
+ 	}
+ 	repo, err := repoFn()
+ 	require.NoError(t, err, "Couldn't create new target repo.")
+ 
+-	ctx := context.Background()
+ 	ttar, err := target.New(ctx, tcp.Subtype, proj.GetPublicId(), target.WithName("default"), target.WithDescription("default"))
+ 	tar := ttar.(*tcp.Target)
+ 	tar.DefaultPort = 2
+@@ -1157,7 +1157,6 @@ func TestUpdate_BadVersion(t *testing.T) {
+ 		Token:       at.GetToken(),
+ 	}
+ 	requestContext := context.WithValue(context.Background(), requests.ContextRequestInformationKey, &requests.RequestContext{})
+-	ctx = auth.NewVerifierContext(requestContext, iamRepoFn, tokenRepoFn, serversRepoFn, kms, &requestInfo)
+ 	upTar, err := tested.UpdateTarget(ctx, &pbs.UpdateTargetRequest{
+ 		Id: gtar.GetPublicId(),
+ 		Item: &pb.Target{
+@@ -2740,7 +2739,7 @@ func TestAuthorizeSession(t *testing.T) {
+ 	require.NoError(t, err)
+ 
+ 	repoFn := func(o ...target.Option) (*target.Repository, error) {
+-		return target.NewRepository(rw, rw, kms)
++		return target.NewRepository(ctx, rw, rw, kms)
+ 	}
+ 	iamRepo := iam.TestRepo(t, conn, wrapper)
+ 	iamRepoFn := func() (*iam.Repository, error) {
+@@ -3000,7 +2999,7 @@ func TestAuthorizeSessionTypedCredentials(t *testing.T) {
+ 	require.NoError(t, err)
+ 
+ 	repoFn := func(o ...target.Option) (*target.Repository, error) {
+-		return target.NewRepository(rw, rw, kms)
++		return target.NewRepository(ctx, rw, rw, kms)
+ 	}
+ 	iamRepo := iam.TestRepo(t, conn, wrapper)
+ 	iamRepoFn := func() (*iam.Repository, error) {
+@@ -3579,7 +3578,7 @@ func TestAuthorizeSession_Errors(t *testing.T) {
+ 	require.NoError(t, err)
+ 
+ 	repoFn := func(o ...target.Option) (*target.Repository, error) {
+-		return target.NewRepository(rw, rw, kms)
++		return target.NewRepository(ctx, rw, rw, kms)
+ 	}
+ 	iamRepo := iam.TestRepo(t, conn, wrapper)
+ 	iamRepoFn := func() (*iam.Repository, error) {
+diff --git a/internal/session/repository_session_test.go b/internal/session/repository_session_test.go
+index 79103dcda..4191fdcf1 100644
+--- a/internal/session/repository_session_test.go
++++ b/internal/session/repository_session_test.go
+@@ -963,7 +963,7 @@ func TestRepository_CancelSession(t *testing.T) {
+ 				// is terminated when the one connection is closed.
+ 				tcpTarget := tcp.TestTarget(ctx, t, conn, proj.PublicId, "test target", target.WithSessionConnectionLimit(1))
+ 
+-				targetRepo, err := target.NewRepository(rw, rw, testKms)
++				targetRepo, err := target.NewRepository(ctx, rw, rw, testKms)
+ 				require.NoError(t, err)
+ 				_, _, _, err = targetRepo.AddTargetHostSources(ctx, tcpTarget.GetPublicId(), tcpTarget.GetVersion(), []string{sets[0].PublicId})
+ 				require.NoError(t, err)
+@@ -1491,7 +1491,7 @@ func testSessionCredentialParams(t *testing.T, conn *db.DB, wrapper wrapping.Wra
+ 	ctx := context.Background()
+ 
+ 	kms := kms.TestKms(t, conn, wrapper)
+-	targetRepo, err := target.NewRepository(rw, rw, kms)
++	targetRepo, err := target.NewRepository(ctx, rw, rw, kms)
+ 	require.NoError(err)
+ 	tar, _, _, err := targetRepo.LookupTarget(ctx, params.TargetId)
+ 	require.NoError(err)
+@@ -1530,7 +1530,7 @@ func TestRepository_deleteTargetFKey(t *testing.T) {
+ 	kms := kms.TestKms(t, conn, wrapper)
+ 	ctx := context.Background()
+ 	repo, err := NewRepository(ctx, rw, rw, kms)
+-	targetRepo, err := target.NewRepository(rw, rw, kms)
++	targetRepo, err := target.NewRepository(ctx, rw, rw, kms)
+ 	require.NoError(t, err)
+ 
+ 	tests := []struct {
+diff --git a/internal/session/service_authorize_connection_test.go b/internal/session/service_authorize_connection_test.go
+index 0f254e3e6..3e6df2937 100644
+--- a/internal/session/service_authorize_connection_test.go
++++ b/internal/session/service_authorize_connection_test.go
+@@ -90,7 +90,7 @@ func TestService_AuthorizeConnection(t *testing.T) {
+ 				// is terminated when the one connection is closed.
+ 				tcpTarget := tcp.TestTarget(ctx, t, conn, proj.PublicId, "test target", target.WithSessionConnectionLimit(1))
+ 
+-				targetRepo, err := target.NewRepository(rw, rw, testKms)
++				targetRepo, err := target.NewRepository(ctx, rw, rw, testKms)
+ 				require.NoError(t, err)
+ 				_, _, _, err = targetRepo.AddTargetHostSources(ctx, tcpTarget.GetPublicId(), tcpTarget.GetVersion(), []string{sets[0].PublicId})
+ 				require.NoError(t, err)
+diff --git a/internal/session/testing.go b/internal/session/testing.go
+index 65b4dc3a2..09857b634 100644
+--- a/internal/session/testing.go
++++ b/internal/session/testing.go
+@@ -144,7 +144,7 @@ func TestSessionParams(t testing.TB, conn *db.DB, wrapper wrapping.Wrapper, iamR
+ 	tcpTarget := tcp.TestTarget(ctx, t, conn, proj.PublicId, "test target")
+ 
+ 	kms := kms.TestKms(t, conn, wrapper)
+-	targetRepo, err := target.NewRepository(rw, rw, kms)
++	targetRepo, err := target.NewRepository(ctx, rw, rw, kms)
+ 	require.NoError(err)
+ 	_, _, _, err = targetRepo.AddTargetHostSources(ctx, tcpTarget.GetPublicId(), tcpTarget.GetVersion(), []string{sets[0].PublicId})
+ 	require.NoError(err)
+diff --git a/internal/target/repository.go b/internal/target/repository.go
+index 7ec5d1b2d..b811007b0 100644
+--- a/internal/target/repository.go
++++ b/internal/target/repository.go
+@@ -48,7 +48,7 @@ type Repository struct {
+ // - WithLimit: sets a limit on the number of results returned by various repo operations.
+ // - WithPermissions: defines the permissions the user has to perform different
+ // actions and access resources within the created repo object.
+-func NewRepository(r db.Reader, w db.Writer, kms *kms.Kms, opt ...Option) (*Repository, error) {
++func NewRepository(ctx context.Context, r db.Reader, w db.Writer, kms *kms.Kms, opt ...Option) (*Repository, error) {
+ 	const op = "target.NewRepository"
+ 	if r == nil {
+ 		return nil, errors.NewDeprecated(errors.InvalidParameter, op, "nil reader")
+@@ -68,7 +68,7 @@ func NewRepository(r db.Reader, w db.Writer, kms *kms.Kms, opt ...Option) (*Repo
+ 
+ 	for _, p := range opts.WithPermissions {
+ 		if p.Resource != resource.Target {
+-			return nil, errors.New(context.Background(), errors.InvalidParameter, op, "permission for incorrect resource found")
++			return nil, errors.New(ctx, errors.InvalidParameter, op, "permission for incorrect resource found")
+ 		}
+ 	}
+ 

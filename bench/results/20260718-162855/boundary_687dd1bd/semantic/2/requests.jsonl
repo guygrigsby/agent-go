@@ -1,0 +1,60 @@
+{"ms":955,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-21T11:02:26.039218Z"}
+{"ms":979,"op":"query","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/servers/controller","req_sha":"2d698ceca03db297","sym":"TestSessionConnectionCleanupJob","ts":"2026-07-21T11:03:32.577387Z"}
+{"ms":24,"op":"query","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/servers/controller","req_sha":"0b8463631f28ec7f","sym":"TestSessionConnectionCleanupJobNewJobErr","ts":"2026-07-21T11:03:37.98875Z"}
+{"ms":25,"op":"query","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/servers/controller","req_sha":"728b7cce0e680e92","sym":"newSessionConnectionCleanupJob","ts":"2026-07-21T11:03:43.153788Z"}
+{"ms":23,"op":"query","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/servers/controller","req_sha":"5bb975a071b11f0a","sym":"sessionConnectionCleanupJob","ts":"2026-07-21T11:03:48.221655Z"}
+{"ms":7,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/servers/controller","req_sha":"a19c80246cbdd6db","sym":"sessionConnectionCleanupJob","ts":"2026-07-21T11:04:05.864691Z"}
+{"ms":8,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/servers/controller","req_sha":"267b957cc67671ad","sym":"newSessionConnectionCleanupJob","ts":"2026-07-21T11:04:10.849752Z"}
+{"ms":8,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/servers/controller","req_sha":"4b2acaa971909f6e","sym":"TestSessionConnectionCleanupJob","ts":"2026-07-21T11:04:15.864171Z"}
+{"ms":8,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/servers/controller","req_sha":"634f0c28178f163f","sym":"TestSessionConnectionCleanupJobNewJobErr","ts":"2026-07-21T11:04:21.399429Z"}
+{"ms":8,"op":"query","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/servers/controller","reason":"symbol not found","repairs":3,"req_sha":"55b7dbe2c0e39ecf","ts":"2026-07-21T11:04:53.90415Z"}
+{"ms":8,"op":"query","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/servers/controller","reason":"symbol not found","repairs":3,"req_sha":"55b7dbe2c0e39ecf","ts":"2026-07-21T11:05:00.516281Z"}
+{"ms":8,"op":"query","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/servers/controller","reason":"symbol not found","repairs":3,"req_sha":"55b7dbe2c0e39ecf","ts":"2026-07-21T11:05:06.627692Z"}
+{"ms":7,"op":"query","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/servers/controller","reason":"symbol not found","repairs":3,"req_sha":"55b7dbe2c0e39ecf","ts":"2026-07-21T11:05:12.563195Z"}
+{"ms":9,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/servers/controller","req_sha":"c9f6c96ac94f4586","sym":"Controller.registerSessionConnectionCleanupJob","ts":"2026-07-21T11:05:34.387847Z"}
+{"ms":7,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/servers/controller","req_sha":"a75593bc9b19f9b8","sym":"Controller","ts":"2026-07-21T11:05:38.787231Z"}
+{"ms":9,"op":"view","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/servers/controller","reason":"receiver type not found","repairs":1,"req_sha":"dd877b383e813569","sym":"session_cleanup_job.go","ts":"2026-07-21T11:05:42.84538Z"}
+{"ms":9,"op":"view","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/servers/controller","reason":"receiver type not found","repairs":1,"req_sha":"c09f2f37d78f1a1a","sym":"controller.go","ts":"2026-07-21T11:05:51.783888Z"}
+{"ms":26,"op":"query","outcome":"ok","req_sha":"d5539f3a6c2f8dc4","sym":"sessionConnectionCleanupJob","ts":"2026-07-21T11:05:54.735198Z"}
+{"ms":28,"op":"query","outcome":"ok","req_sha":"6c58002f0fddd562","sym":"newSessionConnectionCleanupJob","ts":"2026-07-21T11:05:55.179026Z"}
+{"ms":26,"op":"query","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/session","req_sha":"08d5bea58d382e5e","sym":"sessionConnectionCleanupJob","ts":"2026-07-21T11:05:55.907713Z"}
+{"ms":23,"op":"query","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/session","req_sha":"b6e1a4c567497ee5","sym":"newSessionConnectionCleanupJob","ts":"2026-07-21T11:05:56.662494Z"}
+{"ms":8,"op":"query","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/session","reason":"empty query","repairs":0,"req_sha":"0c3d7096e45aa4f3","ts":"2026-07-21T11:06:24.473492Z"}
+{"ms":8,"op":"query","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/session","reason":"empty query","repairs":0,"req_sha":"0c3d7096e45aa4f3","ts":"2026-07-21T11:06:28.854333Z"}
+{"ms":27,"op":"query","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/session","req_sha":"1fc048661a68a47b","sym":"Job","ts":"2026-07-21T11:06:31.156607Z"}
+{"ms":9,"op":"view","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/session","reason":"symbol not found","repairs":3,"req_sha":"331dfca01cd8e259","ts":"2026-07-21T11:06:31.721653Z"}
+{"ms":24,"op":"query","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/session","req_sha":"7387475728b99b44","sym":"cleanup","ts":"2026-07-21T11:07:24.43627Z"}
+{"ms":10,"op":"view","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/session","reason":"receiver type not found","repairs":1,"req_sha":"33385c1b3f5aa06b","sym":"session.go","ts":"2026-07-21T11:07:25.170423Z"}
+{"ms":9,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/credential/vault","req_sha":"9c5722dda6e4cc19","sym":"CredentialCleanupJob","ts":"2026-07-21T11:08:13.483541Z"}
+{"ms":6,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/credential/vault","req_sha":"3b89d3a55d8b1b8f","sym":"newCredentialCleanupJob","ts":"2026-07-21T11:08:14.47826Z"}
+{"ms":1128,"op":"upsert","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/session","reason":"declaration does not typecheck","repairs":0,"req_sha":"f44215076be76892","ts":"2026-07-21T11:08:26.453413Z"}
+{"ms":846,"op":"query","outcome":"ok","req_sha":"8c0306a447480c35","sym":"ConnectionRepoFactory","ts":"2026-07-21T11:09:45.622608Z"}
+{"ms":8,"op":"query","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/servers/controller/common","reason":"empty query","repairs":0,"req_sha":"bd60e98f70c299da","ts":"2026-07-21T11:09:46.864592Z"}
+{"ms":6,"op":"view","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/servers/controller/common","reason":"declaration not found","repairs":1,"req_sha":"99e0edfcf4228d35","sym":"ConnectionRepoFactory","ts":"2026-07-21T11:10:02.938731Z"}
+{"ms":8,"op":"view","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/servers/controller","reason":"receiver type not found","repairs":1,"req_sha":"c09f2f37d78f1a1a","sym":"controller.go","ts":"2026-07-21T11:10:04.000972Z"}
+{"ms":23,"op":"query","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/servers/controller/common","req_sha":"8384acd0003fb5ef","sym":"ConnectionRepoFactory","ts":"2026-07-21T11:10:10.995953Z"}
+{"ms":8,"op":"query","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/servers/controller/common","reason":"empty query","repairs":0,"req_sha":"bd60e98f70c299da","ts":"2026-07-21T11:10:12.266024Z"}
+{"ms":6,"op":"view","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/servers/controller/common","reason":"receiver type not found","repairs":1,"req_sha":"d0da111822a3620f","sym":"common.go","ts":"2026-07-21T11:10:17.774947Z"}
+{"ms":6,"op":"view","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/servers/controller/common","reason":"declaration not found","repairs":1,"req_sha":"99e0edfcf4228d35","sym":"ConnectionRepoFactory","ts":"2026-07-21T11:10:22.417363Z"}
+{"ms":8,"op":"view","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/servers/controller/common","reason":"declaration not found","repairs":1,"req_sha":"1d9086c4c6facc87","sym":"SessionRepoFactory","ts":"2026-07-21T11:10:23.578094Z"}
+{"ms":7,"op":"upsert","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/session","reason":"expected exactly one top-level declaration","repairs":0,"req_sha":"2f5dc342ebbb9e7e","ts":"2026-07-21T11:10:49.128854Z"}
+{"ms":1015,"op":"upsert","outcome":"accepted","pkg":"github.com/hashicorp/boundary/internal/session","req_sha":"02d3b58e1091e59a","ts":"2026-07-21T11:10:55.000837Z"}
+{"ms":267,"op":"upsert","outcome":"accepted","pkg":"github.com/hashicorp/boundary/internal/session","req_sha":"f51f6aff07278f30","ts":"2026-07-21T11:11:06.851613Z"}
+{"ms":425,"op":"upsert","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/session","reason":"declaration does not typecheck","repairs":1,"req_sha":"fc948f7ef831288d","ts":"2026-07-21T11:11:20.65943Z"}
+{"ms":942,"op":"query","outcome":"ok","req_sha":"235b24856b65c287","sym":"DeadWorkerConnCloseMinGrace","ts":"2026-07-21T11:11:35.674575Z"}
+{"ms":265,"op":"upsert","outcome":"accepted","pkg":"github.com/hashicorp/boundary/internal/session","req_sha":"64a7fac6c954072b","ts":"2026-07-21T11:11:53.780326Z"}
+{"ms":1193,"op":"upsert","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/session","reason":"declaration does not typecheck","repairs":1,"req_sha":"360919902a12ca0c","ts":"2026-07-21T11:13:00.89189Z"}
+{"ms":853,"op":"upsert","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/session","reason":"expected exactly one top-level declaration","repairs":0,"req_sha":"f7f259e00bff9937","ts":"2026-07-21T11:13:47.55571Z"}
+{"ms":256,"op":"upsert","outcome":"accepted","pkg":"github.com/hashicorp/boundary/internal/session","req_sha":"0370782c39254046","ts":"2026-07-21T11:13:54.453774Z"}
+{"ms":1237,"op":"upsert","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/session","reason":"declaration does not typecheck","repairs":1,"req_sha":"3cf4292a53d29bd0","ts":"2026-07-21T11:14:53.780156Z"}
+{"ms":858,"op":"query","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/session","req_sha":"d15cb4ca39d6d907","sym":"Test","ts":"2026-07-21T11:15:23.89249Z"}
+{"ms":8,"op":"view","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/session","reason":"receiver type not found","repairs":1,"req_sha":"29f6683de7862e7d","sym":"agent_test.go","ts":"2026-07-21T11:16:58.826277Z"}
+{"ms":889,"op":"inspect","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/session","reason":"symbol not found","repairs":3,"req_sha":"3bcd0eec2ecf9f01","sym":"TestSessionConnectionCleanupJob","ts":"2026-07-21T11:17:27.196701Z"}
+{"ms":1,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/servers/controller","req_sha":"8d6140766b9b7d13","sym":"TestSessionConnectionCleanupJob","ts":"2026-07-21T11:17:28.090902Z"}
+{"ms":1,"op":"inspect","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/session","reason":"symbol not found","repairs":3,"req_sha":"576ddf859a83880f","sym":"TestSessionConnectionCleanupJobNewJobErr","ts":"2026-07-21T11:17:28.096437Z"}
+{"ms":2,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/servers/controller","req_sha":"c3ea6d6bf3edf312","sym":"TestSessionConnectionCleanupJobNewJobErr","ts":"2026-07-21T11:17:28.101828Z"}
+{"ms":1,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/session","req_sha":"f1a76671bd3caad1","sym":"newSessionConnectionCleanupJob","ts":"2026-07-21T11:17:28.107507Z"}
+{"ms":1,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/servers/controller","req_sha":"918d94aa58ba8346","sym":"newSessionConnectionCleanupJob","ts":"2026-07-21T11:17:28.112779Z"}
+{"ms":1,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/session","req_sha":"2d8fc66ea0625b3d","sym":"sessionConnectionCleanupJob","ts":"2026-07-21T11:17:28.117979Z"}
+{"ms":1,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/servers/controller","req_sha":"dbff5929b65ece8e","sym":"sessionConnectionCleanupJob","ts":"2026-07-21T11:17:28.123157Z"}
+{"ms":2,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-21T11:17:28.128581Z"}

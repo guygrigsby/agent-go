@@ -1,0 +1,70 @@
+{
+ "agent_done": "2026-07-20T10:10:52.127644375Z",
+ "agent_started": "2026-07-20T09:58:52.080699Z",
+ "cache_read": 755341,
+ "cache_write": 0,
+ "capped": true,
+ "failure_kind": "",
+ "intermediate_states": 3,
+ "invalid_intermediate_rate": 0,
+ "invalid_intermediates": 0,
+ "iter": 4,
+ "kind": "add-param",
+ "mode": "semantic",
+ "new_errors": null,
+ "op_mix": {
+  "add-param": {
+   "ok": 0,
+   "rejected": 1
+  },
+  "help": {
+   "ok": 1,
+   "rejected": 0
+  },
+  "patch": {
+   "ok": 1,
+   "rejected": 9
+  },
+  "query": {
+   "ok": 4,
+   "rejected": 5
+  },
+  "set-body": {
+   "ok": 0,
+   "rejected": 4
+  },
+  "upsert": {
+   "ok": 1,
+   "rejected": 0
+  },
+  "view": {
+   "ok": 8,
+   "rejected": 4
+  }
+ },
+ "pass": true,
+ "predicate": true,
+ "profile": "glm-flash",
+ "prompt": "aws: pass cancelable context with aws calls\n\nSpecifically: add parameter ctx context.Context to backend.instanceIamRoleARN",
+ "rejects_total": 23,
+ "repairs_offered": 20,
+ "resends": 6,
+ "specs": [
+  {
+   "ok": true,
+   "param": "ctx context.Context",
+   "signature": "func(ctx context.Context, iamClient *github.com/aws/aws-sdk-go/service/iam.IAM, instanceProfileName string) (string, error)",
+   "sym": "github.com/hashicorp/vault/builtin/credential/aws.backend.instanceIamRoleARN"
+  }
+ ],
+ "steps": 38,
+ "task": "vault_cfff8d42",
+ "tests": true,
+ "tests_baseline": true,
+ "time_to_first_mutation_s": 474.167529,
+ "tokens_in": 32869,
+ "tokens_out": 7870,
+ "tokens_reasoning": 0,
+ "typecheck": true,
+ "wall_s": 720.046945375
+}

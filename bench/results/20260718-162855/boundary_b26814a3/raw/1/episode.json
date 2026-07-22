@@ -1,0 +1,58 @@
+{
+ "agent_done": "2026-07-21T19:32:32.120528334Z",
+ "agent_started": "2026-07-21T19:20:32.085253Z",
+ "cache_read": 1325075,
+ "cache_write": 0,
+ "capped": true,
+ "failure_kind": "capped",
+ "first_invalid_s": 185.728176667,
+ "intermediate_states": 17,
+ "invalid_intermediate_rate": 0.9411764705882353,
+ "invalid_intermediates": 16,
+ "iter": 1,
+ "kind": "move",
+ "mode": "raw",
+ "new_errors": [
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_b26814a3raw2647361258/003/boundary/internal/daemon/controller/handlers/groups/group_service.go:737:20|undefined: globals.RecoveryUserId",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_b26814a3raw2647361258/003/boundary/internal/daemon/controller/handlers/roles/role_service.go:978:20|undefined: globals.RecoveryUserId",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_b26814a3raw2647361258/003/boundary/internal/daemon/controller/handlers/roles/role_service.go:1004:20|undefined: globals.RecoveryUserId",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_b26814a3raw2647361258/003/boundary/internal/perms/acl_test.go:726:18|undefined: RecoveryUserId",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_b26814a3raw2647361258/003/boundary/internal/perms/acl_test.go:751:18|undefined: RecoveryUserId",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenameglm-flashboundary_b26814a3raw2647361258/003/boundary/internal/daemon/controller/handlers/groups/group_service.go:713:20|undefined: globals.RecoveryUserId"
+ ],
+ "op_mix": {},
+ "pass": false,
+ "predicate": false,
+ "profile": "glm-flash",
+ "prompt": "move user variables into globals\n\nSpecifically: move AnyAuthenticatedUserId from github.com/hashicorp/boundary/internal/perms to github.com/hashicorp/boundary/globals; move RecoveryUserId from github.com/hashicorp/boundary/internal/perms to github.com/hashicorp/boundary/globals",
+ "rejects_total": 0,
+ "repairs_offered": 0,
+ "resends": 0,
+ "specs": [
+  {
+   "in_target": false,
+   "ok": false,
+   "still_in_source": false,
+   "sym": "github.com/hashicorp/boundary/internal/perms.AnyAuthenticatedUserId",
+   "to_name": "",
+   "to_pkg": "github.com/hashicorp/boundary/globals"
+  },
+  {
+   "in_target": false,
+   "ok": false,
+   "still_in_source": false,
+   "sym": "github.com/hashicorp/boundary/internal/perms.RecoveryUserId",
+   "to_name": "",
+   "to_pkg": "github.com/hashicorp/boundary/globals"
+  }
+ ],
+ "steps": 41,
+ "task": "boundary_b26814a3",
+ "tests": false,
+ "tests_baseline": true,
+ "tokens_in": 35168,
+ "tokens_out": 6681,
+ "tokens_reasoning": 0,
+ "typecheck": false,
+ "wall_s": 720.035275334
+}

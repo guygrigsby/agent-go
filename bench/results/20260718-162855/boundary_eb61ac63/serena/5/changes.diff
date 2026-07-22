@@ -1,0 +1,1743 @@
+diff --git a/internal/auth/oidc/service_callback_test.go b/internal/auth/oidc/service_callback_test.go
+index cd84e1d9a..77b0df328 100644
+--- a/internal/auth/oidc/service_callback_test.go
++++ b/internal/auth/oidc/service_callback_test.go
+@@ -46,7 +46,7 @@ func Test_Callback(t *testing.T) {
+ 		return NewRepository(ctx, rw, rw, kmsCache)
+ 	}
+ 	atRepoFn := func() (*authtoken.Repository, error) {
+-		return authtoken.NewRepository(rw, rw, kmsCache)
++		return authtoken.NewRepository(context.Background(),rw, rw, kmsCache)
+ 	}
+ 	atRepo, err := atRepoFn()
+ 	require.NoError(t, err)
+@@ -518,7 +518,7 @@ func Test_StartAuth_to_Callback(t *testing.T) {
+ 			return NewRepository(ctx, rw, rw, kmsCache)
+ 		}
+ 		atRepoFn := func() (*authtoken.Repository, error) {
+-			return authtoken.NewRepository(rw, rw, kmsCache)
++			return authtoken.NewRepository(context.Background(),rw, rw, kmsCache)
+ 		}
+ 		atRepo, err := atRepoFn()
+ 		require.NoError(err)
+@@ -622,7 +622,7 @@ func Test_ManagedGroupFiltering(t *testing.T) {
+ 		return NewRepository(ctx, rw, rw, kmsCache)
+ 	}
+ 	atRepoFn := func() (*authtoken.Repository, error) {
+-		return authtoken.NewRepository(rw, rw, kmsCache)
++		return authtoken.NewRepository(context.Background(),rw, rw, kmsCache)
+ 	}
+ 
+ 	iamRepo := iam.TestRepo(t, conn, rootWrapper)
+diff --git a/internal/auth/oidc/service_token_request_test.go b/internal/auth/oidc/service_token_request_test.go
+index a59381abb..0eda36462 100644
+--- a/internal/auth/oidc/service_token_request_test.go
++++ b/internal/auth/oidc/service_token_request_test.go
+@@ -35,11 +35,11 @@ func Test_TokenRequest(t *testing.T) {
+ 	require.NoError(t, err)
+ 
+ 	atRepoFn := func() (*authtoken.Repository, error) {
+-		r, err := authtoken.NewRepository(rw, rw, kmsCache)
++		r, err := authtoken.NewRepository(context.Background(),rw, rw, kmsCache)
+ 		require.NoError(t, err)
+ 		return r, nil
+ 	}
+-	testAtRepo, err := authtoken.NewRepository(rw, rw, kmsCache)
++	testAtRepo, err := authtoken.NewRepository(context.Background(),rw, rw, kmsCache)
+ 	require.NoError(t, err)
+ 
+ 	// a reusable test authmethod for the unit tests
+diff --git a/internal/auth/password/repository.go b/internal/auth/password/repository.go
+index c5d78e65b..977da038b 100644
+--- a/internal/auth/password/repository.go
++++ b/internal/auth/password/repository.go
+@@ -22,15 +22,15 @@ type Repository struct {
+ // only be used for one transaction and it is not safe for concurrent go
+ // routines to access it.  WithLimit option is used as a repo wide default
+ // limit applied to all ListX methods.
+-func NewRepository(r db.Reader, w db.Writer, kms *kms.Kms, opt ...Option) (*Repository, error) {
++func NewRepository(ctx context.Context, r db.Reader, w db.Writer, kms *kms.Kms, opt ...Option) (*Repository, error) {
+ 	const op = "password.NewRepository"
+ 	switch {
+ 	case r == nil:
+-		return nil, errors.NewDeprecated(errors.InvalidParameter, op, "missing db.Reader")
++		return nil, errors.New(ctx, errors.InvalidParameter, op, "missing db.Reader")
+ 	case w == nil:
+-		return nil, errors.NewDeprecated(errors.InvalidParameter, op, "missing db.Writer")
++		return nil, errors.New(ctx, errors.InvalidParameter, op, "missing db.Writer")
+ 	case kms == nil:
+-		return nil, errors.NewDeprecated(errors.InvalidParameter, op, "missing kms")
++		return nil, errors.New(ctx, errors.InvalidParameter, op, "missing kms")
+ 	}
+ 
+ 	opts := getOpts(opt...)
+diff --git a/internal/auth/password/repository_test.go b/internal/auth/password/repository_test.go
+index 80b9eb236..0c85fa411 100644
+--- a/internal/auth/password/repository_test.go
++++ b/internal/auth/password/repository_test.go
+@@ -109,7 +109,7 @@ func TestRepository_New(t *testing.T) {
+ 		tt := tt
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			assert, require := assert.New(t), require.New(t)
+-			got, err := NewRepository(tt.args.r, tt.args.w, tt.args.kms, tt.args.opts...)
++			got, err := NewRepository(context.Background(), tt.args.r, tt.args.w, tt.args.kms, tt.args.opts...)
+ 			if tt.wantIsErr != 0 {
+ 				assert.Truef(errors.Match(errors.T(tt.wantIsErr), err), "Unexpected error %s", err)
+ 				assert.Equal(tt.wantErrMsg, err.Error())
+diff --git a/internal/authtoken/repository.go b/internal/authtoken/repository.go
+index 6f59dd416..14bdd7966 100644
+--- a/internal/authtoken/repository.go
++++ b/internal/authtoken/repository.go
+@@ -31,15 +31,15 @@ type Repository struct {
+ 
+ // NewRepository creates a new Repository. The returned repository is not safe for concurrent go
+ // routines to access it.
+-func NewRepository(r db.Reader, w db.Writer, kms *kms.Kms, opt ...Option) (*Repository, error) {
++func NewRepository(ctx context.Context, r db.Reader, w db.Writer, kms *kms.Kms, opt ...Option) (*Repository, error) {
+ 	const op = "authtoken.NewRepository"
+ 	switch {
+ 	case r == nil:
+-		return nil, errors.NewDeprecated(errors.InvalidParameter, op, "nil db reader")
++		return nil, errors.New(ctx, errors.InvalidParameter, op, "nil db reader")
+ 	case w == nil:
+-		return nil, errors.NewDeprecated(errors.InvalidParameter, op, "nil db writer")
++		return nil, errors.New(ctx, errors.InvalidParameter, op, "nil db writer")
+ 	case kms == nil:
+-		return nil, errors.NewDeprecated(errors.InvalidParameter, op, "nil kms")
++		return nil, errors.New(ctx, errors.InvalidParameter, op, "nil kms")
+ 	}
+ 
+ 	opts := getOpts(opt...)
+diff --git a/internal/authtoken/repository_test.go b/internal/authtoken/repository_test.go
+index 9cba05337..6177b7ed6 100644
+--- a/internal/authtoken/repository_test.go
++++ b/internal/authtoken/repository_test.go
+@@ -166,7 +166,7 @@ func TestRepository_New(t *testing.T) {
+ 		tt := tt
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			assert := assert.New(t)
+-			got, err := NewRepository(tt.args.r, tt.args.w, tt.args.kms, tt.args.opts...)
++			got, err := NewRepository(context.Background(), tt.args.r, tt.args.w, tt.args.kms, tt.args.opts...)
+ 			if tt.wantIsErr != 0 {
+ 				assert.Truef(errors.Match(errors.T(tt.wantIsErr), err), "Unexpected error %s", err)
+ 				assert.Equal(tt.wantErrMsg, err.Error())
+diff --git a/internal/cmd/base/initial_resources.go b/internal/cmd/base/initial_resources.go
+index e32f27611..f7d8c812d 100644
+--- a/internal/cmd/base/initial_resources.go
++++ b/internal/cmd/base/initial_resources.go
+@@ -88,7 +88,7 @@ func (b *Server) CreateInitialPasswordAuthMethod(ctx context.Context) (*password
+ 	}
+ 
+ 	// Create the dev auth method
+-	pwRepo, err := password.NewRepository(rw, rw, kmsCache)
++	pwRepo, err := password.NewRepository(context.Background(),rw, rw, kmsCache)
+ 	if err != nil {
+ 		return nil, nil, fmt.Errorf("error creating password repo: %w", err)
+ 	}
+@@ -478,7 +478,7 @@ func (b *Server) CreateInitialTarget(ctx context.Context) (target.Target, error)
+ 		}
+ 	}()
+ 
+-	targetRepo, err := target.NewRepository(rw, rw, kmsCache)
++	targetRepo, err := target.NewRepository(context.Background(),rw, rw, kmsCache)
+ 	if err != nil {
+ 		return nil, fmt.Errorf("error creating target repository: %w", err)
+ 	}
+@@ -609,7 +609,7 @@ func (b *Server) RegisterHostPlugin(ctx context.Context, name string, plg plgpb.
+ 		}
+ 	}()
+ 
+-	hpRepo, err := hostplugin.NewRepository(rw, rw, kmsCache)
++	hpRepo, err := hostplugin.NewRepository(context.Background(), rw, rw, kmsCache)
+ 	if err != nil {
+ 		return nil, fmt.Errorf("error creating host plugin repository: %w", err)
+ 	}
+diff --git a/internal/credential/vault/repository_test.go b/internal/credential/vault/repository_test.go
+index e3d84e131..c029341e0 100644
+--- a/internal/credential/vault/repository_test.go
++++ b/internal/credential/vault/repository_test.go
+@@ -126,7 +126,7 @@ func TestRepository_New(t *testing.T) {
+ 		tt := tt
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			assert, require := assert.New(t), require.New(t)
+-			got, err := NewRepository(tt.args.r, tt.args.w, tt.args.kms, tt.args.scheduler, tt.args.opts...)
++			got, err := NewRepository(context.Background(), tt.args.r, tt.args.w, tt.args.kms, tt.args.scheduler, tt.args.opts...)
+ 			if tt.wantIsErr != 0 {
+ 				assert.Truef(errors.Match(errors.T(tt.wantIsErr), err), "want err: %q got: %q", tt.wantIsErr, err)
+ 				assert.Nil(got)
+diff --git a/internal/daemon/controller/auth/auth_test.go b/internal/daemon/controller/auth/auth_test.go
+index 97c8b995a..41136a7eb 100644
+--- a/internal/daemon/controller/auth/auth_test.go
++++ b/internal/daemon/controller/auth/auth_test.go
+@@ -29,7 +29,7 @@ func TestAuthTokenAuthenticator(t *testing.T) {
+ 	rw := db.New(conn)
+ 	wrapper := db.TestWrapper(t)
+ 	kms := kms.TestKms(t, conn, wrapper)
+-	tokenRepo, err := authtoken.NewRepository(rw, rw, kms)
++	tokenRepo, err := authtoken.NewRepository(context.Background(),rw, rw, kms)
+ 	require.NoError(t, err)
+ 	iamRepo := iam.TestRepo(t, conn, wrapper)
+ 	tokenRepoFn := func() (*authtoken.Repository, error) {
+@@ -152,7 +152,7 @@ func TestVerify_AuditEvent(t *testing.T) {
+ 	rw := db.New(conn)
+ 	wrapper := db.TestWrapper(t)
+ 	testKms := kms.TestKms(t, conn, wrapper)
+-	tokenRepo, err := authtoken.NewRepository(rw, rw, testKms)
++	tokenRepo, err := authtoken.NewRepository(context.Background(),rw, rw, testKms)
+ 	require.NoError(t, err)
+ 	iamRepo := iam.TestRepo(t, conn, wrapper)
+ 	tokenRepoFn := func() (*authtoken.Repository, error) {
+diff --git a/internal/daemon/controller/common/scopeids/scope_ids_test.go b/internal/daemon/controller/common/scopeids/scope_ids_test.go
+index e65b9e9ae..663f19525 100644
+--- a/internal/daemon/controller/common/scopeids/scope_ids_test.go
++++ b/internal/daemon/controller/common/scopeids/scope_ids_test.go
+@@ -36,7 +36,7 @@ func TestListingScopeIds(t *testing.T) {
+ 		return iamRepo, nil
+ 	}
+ 	authTokenRepoFn := func() (*authtoken.Repository, error) {
+-		return authtoken.NewRepository(rw, rw, kms)
++		return authtoken.NewRepository(context.Background(),rw, rw, kms)
+ 	}
+ 	serversRepoFn := func() (*server.Repository, error) {
+ 		return server.NewRepository(rw, rw, kms)
+diff --git a/internal/daemon/controller/controller.go b/internal/daemon/controller/controller.go
+index 5cfbcd0a4..6774c882b 100644
+--- a/internal/daemon/controller/controller.go
++++ b/internal/daemon/controller/controller.go
+@@ -305,16 +305,16 @@ func New(ctx context.Context, conf *Config) (*Controller, error) {
+ 		return iam.NewRepository(dbase, dbase, c.kms, iam.WithRandomReader(c.conf.SecureRandomReader))
+ 	}
+ 	c.StaticHostRepoFn = func() (*static.Repository, error) {
+-		return static.NewRepository(dbase, dbase, c.kms)
++		return static.NewRepository(context.Background(), dbase, dbase, c.kms)
+ 	}
+ 	c.PluginHostRepoFn = func() (*pluginhost.Repository, error) {
+-		return pluginhost.NewRepository(dbase, dbase, c.kms, c.scheduler, c.conf.HostPlugins)
++		return pluginhost.NewRepository(context.Background(),context.Background(), dbase, dbase, c.kms, c.scheduler, c.conf.HostPlugins)
+ 	}
+ 	c.HostPluginRepoFn = func() (*host.Repository, error) {
+-		return host.NewRepository(dbase, dbase, c.kms)
++		return host.NewRepository(context.Background(),context.Background(), dbase, dbase, c.kms)
+ 	}
+ 	c.AuthTokenRepoFn = func() (*authtoken.Repository, error) {
+-		return authtoken.NewRepository(dbase, dbase, c.kms,
++		return authtoken.NewRepository(context.Background(),dbase, dbase, c.kms,
+ 			authtoken.WithTokenTimeToLiveDuration(c.conf.RawConfig.Controller.AuthTokenTimeToLiveDuration),
+ 			authtoken.WithTokenTimeToStaleDuration(c.conf.RawConfig.Controller.AuthTokenTimeToStaleDuration))
+ 	}
+@@ -331,10 +331,10 @@ func New(ctx context.Context, conf *Config) (*Controller, error) {
+ 		return oidc.NewRepository(ctx, dbase, dbase, c.kms)
+ 	}
+ 	c.PasswordAuthRepoFn = func() (*password.Repository, error) {
+-		return password.NewRepository(dbase, dbase, c.kms)
++		return password.NewRepository(context.Background(),dbase, dbase, c.kms)
+ 	}
+ 	c.TargetRepoFn = func() (*target.Repository, error) {
+-		return target.NewRepository(dbase, dbase, c.kms)
++		return target.NewRepository(context.Background(),dbase, dbase, c.kms)
+ 	}
+ 	c.SessionRepoFn = func(opt ...session.Option) (*session.Repository, error) {
+ 		return session.NewRepository(dbase, dbase, c.kms, opt...)
+diff --git a/internal/daemon/controller/handlers/accounts/account_service_test.go b/internal/daemon/controller/handlers/accounts/account_service_test.go
+index 6993381bc..4cf5c4ee3 100644
+--- a/internal/daemon/controller/handlers/accounts/account_service_test.go
++++ b/internal/daemon/controller/handlers/accounts/account_service_test.go
+@@ -62,7 +62,7 @@ func TestNewService(t *testing.T) {
+ 	wrap := db.TestWrapper(t)
+ 	kmsCache := kms.TestKms(t, conn, wrap)
+ 	pwRepoFn := func() (*password.Repository, error) {
+-		return password.NewRepository(rw, rw, kmsCache)
++		return password.NewRepository(context.Background(),rw, rw, kmsCache)
+ 	}
+ 	oidcRepoFn := func() (*oidc.Repository, error) {
+ 		return oidc.NewRepository(ctx, rw, rw, kmsCache)
+@@ -113,7 +113,7 @@ func TestGet(t *testing.T) {
+ 	wrap := db.TestWrapper(t)
+ 	kmsCache := kms.TestKms(t, conn, wrap)
+ 	pwRepoFn := func() (*password.Repository, error) {
+-		return password.NewRepository(rw, rw, kmsCache)
++		return password.NewRepository(context.Background(),rw, rw, kmsCache)
+ 	}
+ 	oidcRepoFn := func() (*oidc.Repository, error) {
+ 		return oidc.NewRepository(ctx, rw, rw, kmsCache)
+@@ -256,7 +256,7 @@ func TestListPassword(t *testing.T) {
+ 	wrap := db.TestWrapper(t)
+ 	kms := kms.TestKms(t, conn, wrap)
+ 	pwRepoFn := func() (*password.Repository, error) {
+-		return password.NewRepository(rw, rw, kms)
++		return password.NewRepository(context.Background(),rw, rw, kms)
+ 	}
+ 	oidcRepoFn := func() (*oidc.Repository, error) {
+ 		return oidc.NewRepository(ctx, rw, rw, kms)
+@@ -394,7 +394,7 @@ func TestListOidc(t *testing.T) {
+ 	wrap := db.TestWrapper(t)
+ 	kmsCache := kms.TestKms(t, conn, wrap)
+ 	pwRepoFn := func() (*password.Repository, error) {
+-		return password.NewRepository(rw, rw, kmsCache)
++		return password.NewRepository(context.Background(),rw, rw, kmsCache)
+ 	}
+ 	oidcRepoFn := func() (*oidc.Repository, error) {
+ 		return oidc.NewRepository(ctx, rw, rw, kmsCache)
+@@ -551,7 +551,7 @@ func TestDelete(t *testing.T) {
+ 	wrap := db.TestWrapper(t)
+ 	kmsCache := kms.TestKms(t, conn, wrap)
+ 	pwRepoFn := func() (*password.Repository, error) {
+-		return password.NewRepository(rw, rw, kmsCache)
++		return password.NewRepository(context.Background(),rw, rw, kmsCache)
+ 	}
+ 	oidcRepoFn := func() (*oidc.Repository, error) {
+ 		return oidc.NewRepository(ctx, rw, rw, kmsCache)
+@@ -647,7 +647,7 @@ func TestDelete_twice(t *testing.T) {
+ 	rw := db.New(conn)
+ 	kms := kms.TestKms(t, conn, wrap)
+ 	pwRepoFn := func() (*password.Repository, error) {
+-		return password.NewRepository(rw, rw, kms)
++		return password.NewRepository(context.Background(),rw, rw, kms)
+ 	}
+ 	oidcRepoFn := func() (*oidc.Repository, error) {
+ 		return oidc.NewRepository(ctx, rw, rw, kms)
+@@ -679,7 +679,7 @@ func TestCreatePassword(t *testing.T) {
+ 	wrap := db.TestWrapper(t)
+ 	kms := kms.TestKms(t, conn, wrap)
+ 	pwRepoFn := func() (*password.Repository, error) {
+-		return password.NewRepository(rw, rw, kms)
++		return password.NewRepository(context.Background(),rw, rw, kms)
+ 	}
+ 	oidcRepoFn := func() (*oidc.Repository, error) {
+ 		return oidc.NewRepository(ctx, rw, rw, kms)
+@@ -923,7 +923,7 @@ func TestCreateOidc(t *testing.T) {
+ 	wrap := db.TestWrapper(t)
+ 	kmsCache := kms.TestKms(t, conn, wrap)
+ 	pwRepoFn := func() (*password.Repository, error) {
+-		return password.NewRepository(rw, rw, kmsCache)
++		return password.NewRepository(context.Background(),rw, rw, kmsCache)
+ 	}
+ 	oidcRepoFn := func() (*oidc.Repository, error) {
+ 		return oidc.NewRepository(ctx, rw, rw, kmsCache)
+@@ -1157,7 +1157,7 @@ func TestUpdatePassword(t *testing.T) {
+ 	wrap := db.TestWrapper(t)
+ 	kms := kms.TestKms(t, conn, wrap)
+ 	pwRepoFn := func() (*password.Repository, error) {
+-		return password.NewRepository(rw, rw, kms)
++		return password.NewRepository(context.Background(),rw, rw, kms)
+ 	}
+ 	oidcRepoFn := func() (*oidc.Repository, error) {
+ 		return oidc.NewRepository(ctx, rw, rw, kms)
+@@ -1544,7 +1544,7 @@ func TestUpdateOidc(t *testing.T) {
+ 	wrap := db.TestWrapper(t)
+ 	kmsCache := kms.TestKms(t, conn, wrap)
+ 	pwRepoFn := func() (*password.Repository, error) {
+-		return password.NewRepository(rw, rw, kmsCache)
++		return password.NewRepository(context.Background(),rw, rw, kmsCache)
+ 	}
+ 	oidcRepoFn := func() (*oidc.Repository, error) {
+ 		return oidc.NewRepository(ctx, rw, rw, kmsCache)
+@@ -1931,7 +1931,7 @@ func TestSetPassword(t *testing.T) {
+ 	wrap := db.TestWrapper(t)
+ 	kms := kms.TestKms(t, conn, wrap)
+ 	pwRepoFn := func() (*password.Repository, error) {
+-		return password.NewRepository(rw, rw, kms)
++		return password.NewRepository(context.Background(),rw, rw, kms)
+ 	}
+ 	oidcRepoFn := func() (*oidc.Repository, error) {
+ 		return oidc.NewRepository(ctx, rw, rw, kms)
+@@ -2070,7 +2070,7 @@ func TestChangePassword(t *testing.T) {
+ 	wrap := db.TestWrapper(t)
+ 	kms := kms.TestKms(t, conn, wrap)
+ 	pwRepoFn := func() (*password.Repository, error) {
+-		return password.NewRepository(rw, rw, kms)
++		return password.NewRepository(context.Background(),rw, rw, kms)
+ 	}
+ 	oidcRepoFn := func() (*oidc.Repository, error) {
+ 		return oidc.NewRepository(ctx, rw, rw, kms)
+diff --git a/internal/daemon/controller/handlers/authmethods/authmethod_service_test.go b/internal/daemon/controller/handlers/authmethods/authmethod_service_test.go
+index 97963eb2c..28644090b 100644
+--- a/internal/daemon/controller/handlers/authmethods/authmethod_service_test.go
++++ b/internal/daemon/controller/handlers/authmethods/authmethod_service_test.go
+@@ -84,10 +84,10 @@ func TestGet(t *testing.T) {
+ 		return oidc.NewRepository(ctx, rw, rw, kmsCache)
+ 	}
+ 	pwRepoFn := func() (*password.Repository, error) {
+-		return password.NewRepository(rw, rw, kmsCache)
++		return password.NewRepository(context.Background(),rw, rw, kmsCache)
+ 	}
+ 	atRepoFn := func() (*authtoken.Repository, error) {
+-		return authtoken.NewRepository(rw, rw, kmsCache)
++		return authtoken.NewRepository(context.Background(),rw, rw, kmsCache)
+ 	}
+ 	iamRepo := iam.TestRepo(t, conn, wrapper)
+ 
+@@ -225,10 +225,10 @@ func TestList(t *testing.T) {
+ 		return oidc.NewRepository(ctx, rw, rw, kmsCache)
+ 	}
+ 	pwRepoFn := func() (*password.Repository, error) {
+-		return password.NewRepository(rw, rw, kmsCache)
++		return password.NewRepository(context.Background(),rw, rw, kmsCache)
+ 	}
+ 	atRepoFn := func() (*authtoken.Repository, error) {
+-		return authtoken.NewRepository(rw, rw, kmsCache)
++		return authtoken.NewRepository(context.Background(),rw, rw, kmsCache)
+ 	}
+ 	iamRepo := iam.TestRepo(t, conn, wrapper)
+ 
+@@ -411,10 +411,10 @@ func TestDelete(t *testing.T) {
+ 		return oidc.NewRepository(ctx, rw, rw, kmsCache)
+ 	}
+ 	pwRepoFn := func() (*password.Repository, error) {
+-		return password.NewRepository(rw, rw, kmsCache)
++		return password.NewRepository(context.Background(),rw, rw, kmsCache)
+ 	}
+ 	atRepoFn := func() (*authtoken.Repository, error) {
+-		return authtoken.NewRepository(rw, rw, kmsCache)
++		return authtoken.NewRepository(context.Background(),rw, rw, kmsCache)
+ 	}
+ 	iamRepo := iam.TestRepo(t, conn, wrapper)
+ 
+@@ -491,10 +491,10 @@ func TestDelete_twice(t *testing.T) {
+ 		return oidc.NewRepository(ctx, rw, rw, kms)
+ 	}
+ 	pwRepoFn := func() (*password.Repository, error) {
+-		return password.NewRepository(rw, rw, kms)
++		return password.NewRepository(context.Background(),rw, rw, kms)
+ 	}
+ 	atRepoFn := func() (*authtoken.Repository, error) {
+-		return authtoken.NewRepository(rw, rw, kms)
++		return authtoken.NewRepository(context.Background(),rw, rw, kms)
+ 	}
+ 	iamRepo := iam.TestRepo(t, conn, wrapper)
+ 
+@@ -524,13 +524,13 @@ func TestCreate(t *testing.T) {
+ 		return iam.TestRepo(t, conn, wrapper), nil
+ 	}
+ 	pwRepoFn := func() (*password.Repository, error) {
+-		return password.NewRepository(rw, rw, kms)
++		return password.NewRepository(context.Background(),rw, rw, kms)
+ 	}
+ 	oidcRepoFn := func() (*oidc.Repository, error) {
+ 		return oidc.NewRepository(ctx, rw, rw, kms)
+ 	}
+ 	atRepoFn := func() (*authtoken.Repository, error) {
+-		return authtoken.NewRepository(rw, rw, kms)
++		return authtoken.NewRepository(context.Background(),rw, rw, kms)
+ 	}
+ 	iamRepo := iam.TestRepo(t, conn, wrapper)
+ 
+diff --git a/internal/daemon/controller/handlers/authmethods/oidc_test.go b/internal/daemon/controller/handlers/authmethods/oidc_test.go
+index f9c7fa79f..545f2a3b0 100644
+--- a/internal/daemon/controller/handlers/authmethods/oidc_test.go
++++ b/internal/daemon/controller/handlers/authmethods/oidc_test.go
+@@ -89,10 +89,10 @@ func getSetup(t *testing.T) setup {
+ 		return oidc.NewRepository(ctx, ret.rw, ret.rw, ret.kmsCache)
+ 	}
+ 	ret.pwRepoFn = func() (*password.Repository, error) {
+-		return password.NewRepository(ret.rw, ret.rw, ret.kmsCache)
++		return password.NewRepository(context.Background(),ret.rw, ret.rw, ret.kmsCache)
+ 	}
+ 	ret.atRepoFn = func() (*authtoken.Repository, error) {
+-		return authtoken.NewRepository(ret.rw, ret.rw, ret.kmsCache)
++		return authtoken.NewRepository(context.Background(),ret.rw, ret.rw, ret.kmsCache)
+ 	}
+ 
+ 	ret.org, ret.proj = iam.TestScopes(t, ret.iamRepo)
+@@ -146,10 +146,10 @@ func TestList_FilterNonPublic(t *testing.T) {
+ 		return oidc.NewRepository(ctx, rw, rw, kmsCache)
+ 	}
+ 	pwRepoFn := func() (*password.Repository, error) {
+-		return password.NewRepository(rw, rw, kmsCache)
++		return password.NewRepository(context.Background(),rw, rw, kmsCache)
+ 	}
+ 	atRepoFn := func() (*authtoken.Repository, error) {
+-		return authtoken.NewRepository(rw, rw, kmsCache)
++		return authtoken.NewRepository(context.Background(),rw, rw, kmsCache)
+ 	}
+ 	serversRepoFn := func() (*server.Repository, error) {
+ 		return server.NewRepository(rw, rw, kmsCache)
+@@ -248,10 +248,10 @@ func TestUpdate_OIDC(t *testing.T) {
+ 		return oidc.NewRepository(ctx, rw, rw, kms)
+ 	}
+ 	pwRepoFn := func() (*password.Repository, error) {
+-		return password.NewRepository(rw, rw, kms)
++		return password.NewRepository(context.Background(),rw, rw, kms)
+ 	}
+ 	atRepoFn := func() (*authtoken.Repository, error) {
+-		return authtoken.NewRepository(rw, rw, kms)
++		return authtoken.NewRepository(context.Background(),rw, rw, kms)
+ 	}
+ 	iamRepo := iam.TestRepo(t, conn, wrapper)
+ 
+@@ -1056,10 +1056,10 @@ func TestUpdate_OIDCDryRun(t *testing.T) {
+ 		return oidc.NewRepository(ctx, rw, rw, kmsCache)
+ 	}
+ 	pwRepoFn := func() (*password.Repository, error) {
+-		return password.NewRepository(rw, rw, kmsCache)
++		return password.NewRepository(context.Background(),rw, rw, kmsCache)
+ 	}
+ 	atRepoFn := func() (*authtoken.Repository, error) {
+-		return authtoken.NewRepository(rw, rw, kmsCache)
++		return authtoken.NewRepository(context.Background(),rw, rw, kmsCache)
+ 	}
+ 	iamRepo := iam.TestRepo(t, conn, wrapper)
+ 
+@@ -1232,10 +1232,10 @@ func TestChangeState_OIDC(t *testing.T) {
+ 		return oidc.NewRepository(ctx, rw, rw, kmsCache)
+ 	}
+ 	pwRepoFn := func() (*password.Repository, error) {
+-		return password.NewRepository(rw, rw, kmsCache)
++		return password.NewRepository(context.Background(),rw, rw, kmsCache)
+ 	}
+ 	atRepoFn := func() (*authtoken.Repository, error) {
+-		return authtoken.NewRepository(rw, rw, kmsCache)
++		return authtoken.NewRepository(context.Background(),rw, rw, kmsCache)
+ 	}
+ 	iamRepo := iam.TestRepo(t, conn, wrapper)
+ 
+@@ -1571,7 +1571,7 @@ func TestAuthenticate_OIDC_Start(t *testing.T) {
+ 
+ func TestAuthenticate_OIDC_Token(t *testing.T) {
+ 	s := getSetup(t)
+-	testAtRepo, err := authtoken.NewRepository(s.rw, s.rw, s.kmsCache)
++	testAtRepo, err := authtoken.NewRepository(context.Background(),s.rw, s.rw, s.kmsCache)
+ 	require.NoError(t, err)
+ 
+ 	// a reusable test authmethod for the unit tests
+diff --git a/internal/daemon/controller/handlers/authmethods/password_test.go b/internal/daemon/controller/handlers/authmethods/password_test.go
+index 3f1688fb4..c5f624054 100644
+--- a/internal/daemon/controller/handlers/authmethods/password_test.go
++++ b/internal/daemon/controller/handlers/authmethods/password_test.go
+@@ -42,10 +42,10 @@ func TestUpdate_Password(t *testing.T) {
+ 		return oidc.NewRepository(ctx, rw, rw, kms)
+ 	}
+ 	pwRepoFn := func() (*password.Repository, error) {
+-		return password.NewRepository(rw, rw, kms)
++		return password.NewRepository(context.Background(),rw, rw, kms)
+ 	}
+ 	atRepoFn := func() (*authtoken.Repository, error) {
+-		return authtoken.NewRepository(rw, rw, kms)
++		return authtoken.NewRepository(context.Background(),rw, rw, kms)
+ 	}
+ 	iamRepo := iam.TestRepo(t, conn, wrapper)
+ 
+@@ -479,10 +479,10 @@ func TestAuthenticate_Password(t *testing.T) {
+ 		return oidc.NewRepository(ctx, rw, rw, kms)
+ 	}
+ 	pwRepoFn := func() (*password.Repository, error) {
+-		return password.NewRepository(rw, rw, kms)
++		return password.NewRepository(context.Background(),rw, rw, kms)
+ 	}
+ 	atRepoFn := func() (*authtoken.Repository, error) {
+-		return authtoken.NewRepository(rw, rw, kms)
++		return authtoken.NewRepository(context.Background(),rw, rw, kms)
+ 	}
+ 	am := password.TestAuthMethods(t, conn, o.GetPublicId(), 1)[0]
+ 
+@@ -657,10 +657,10 @@ func TestAuthenticate_AuthAccountConnectedToIamUser_Password(t *testing.T) {
+ 		return oidc.NewRepository(ctx, rw, rw, kms)
+ 	}
+ 	pwRepoFn := func() (*password.Repository, error) {
+-		return password.NewRepository(rw, rw, kms)
++		return password.NewRepository(context.Background(),rw, rw, kms)
+ 	}
+ 	atRepoFn := func() (*authtoken.Repository, error) {
+-		return authtoken.NewRepository(rw, rw, kms)
++		return authtoken.NewRepository(context.Background(),rw, rw, kms)
+ 	}
+ 
+ 	am := password.TestAuthMethods(t, conn, o.GetPublicId(), 1)[0]
+diff --git a/internal/daemon/controller/handlers/authtokens/authtoken_service_test.go b/internal/daemon/controller/handlers/authtokens/authtoken_service_test.go
+index 505360540..9bb1ac6ba 100644
+--- a/internal/daemon/controller/handlers/authtokens/authtoken_service_test.go
++++ b/internal/daemon/controller/handlers/authtokens/authtoken_service_test.go
+@@ -41,7 +41,7 @@ func TestGetSelf(t *testing.T) {
+ 		return iam.TestRepo(t, conn, wrap), nil
+ 	}
+ 	tokenRepoFn := func() (*authtoken.Repository, error) {
+-		return authtoken.NewRepository(rw, rw, kms)
++		return authtoken.NewRepository(context.Background(),rw, rw, kms)
+ 	}
+ 	serversRepoFn := func() (*server.Repository, error) {
+ 		return server.NewRepository(rw, rw, kms)
+@@ -122,7 +122,7 @@ func TestGet(t *testing.T) {
+ 		return iam.TestRepo(t, conn, wrap), nil
+ 	}
+ 	repoFn := func() (*authtoken.Repository, error) {
+-		return authtoken.NewRepository(rw, rw, kms)
++		return authtoken.NewRepository(context.Background(),rw, rw, kms)
+ 	}
+ 
+ 	s, err := authtokens.NewService(repoFn, iamRepoFn)
+@@ -200,7 +200,7 @@ func TestList_Self(t *testing.T) {
+ 		return iamRepo, nil
+ 	}
+ 	tokenRepoFn := func() (*authtoken.Repository, error) {
+-		return authtoken.NewRepository(rw, rw, kms)
++		return authtoken.NewRepository(context.Background(),rw, rw, kms)
+ 	}
+ 	serversRepoFn := func() (*server.Repository, error) {
+ 		return server.NewRepository(rw, rw, kms)
+@@ -265,7 +265,7 @@ func TestList(t *testing.T) {
+ 		return iam.TestRepo(t, conn, wrap), nil
+ 	}
+ 	repoFn := func() (*authtoken.Repository, error) {
+-		return authtoken.NewRepository(rw, rw, kms)
++		return authtoken.NewRepository(context.Background(),rw, rw, kms)
+ 	}
+ 	iamRepo := iam.TestRepo(t, conn, wrap)
+ 
+@@ -424,7 +424,7 @@ func TestDeleteSelf(t *testing.T) {
+ 		return iamRepo, nil
+ 	}
+ 	tokenRepoFn := func() (*authtoken.Repository, error) {
+-		return authtoken.NewRepository(rw, rw, kms)
++		return authtoken.NewRepository(context.Background(),rw, rw, kms)
+ 	}
+ 	serversRepoFn := func() (*server.Repository, error) {
+ 		return server.NewRepository(rw, rw, kms)
+@@ -512,7 +512,7 @@ func TestDelete(t *testing.T) {
+ 		return iam.TestRepo(t, conn, wrap), nil
+ 	}
+ 	repoFn := func() (*authtoken.Repository, error) {
+-		return authtoken.NewRepository(rw, rw, kms)
++		return authtoken.NewRepository(context.Background(),rw, rw, kms)
+ 	}
+ 	iamRepo := iam.TestRepo(t, conn, wrap)
+ 
+@@ -576,7 +576,7 @@ func TestDelete_twice(t *testing.T) {
+ 		return iam.TestRepo(t, conn, wrap), nil
+ 	}
+ 	repoFn := func() (*authtoken.Repository, error) {
+-		return authtoken.NewRepository(rw, rw, kms)
++		return authtoken.NewRepository(context.Background(),rw, rw, kms)
+ 	}
+ 	iamRepo := iam.TestRepo(t, conn, wrap)
+ 
+diff --git a/internal/daemon/controller/handlers/host_catalogs/host_catalog_service_test.go b/internal/daemon/controller/handlers/host_catalogs/host_catalog_service_test.go
+index 14bfb8a4a..c23d0fa9c 100644
+--- a/internal/daemon/controller/handlers/host_catalogs/host_catalog_service_test.go
++++ b/internal/daemon/controller/handlers/host_catalogs/host_catalog_service_test.go
+@@ -88,7 +88,7 @@ func TestGet_Static(t *testing.T) {
+ 		return plugin.NewRepository(rw, rw, kms, sche, map[string]plgpb.HostPluginServiceClient{})
+ 	}
+ 	pluginRepo := func() (*host.Repository, error) {
+-		return host.NewRepository(rw, rw, kms)
++		return host.NewRepository(context.Background(),rw, rw, kms)
+ 	}
+ 	iamRepoFn := func() (*iam.Repository, error) {
+ 		return iam.TestRepo(t, conn, wrapper), nil
+@@ -178,7 +178,7 @@ func TestGet_Plugin(t *testing.T) {
+ 		return plugin.NewRepository(rw, rw, kms, sche, map[string]plgpb.HostPluginServiceClient{})
+ 	}
+ 	pluginRepo := func() (*host.Repository, error) {
+-		return host.NewRepository(rw, rw, kms)
++		return host.NewRepository(context.Background(),rw, rw, kms)
+ 	}
+ 	iamRepoFn := func() (*iam.Repository, error) {
+ 		return iam.TestRepo(t, conn, wrapper), nil
+@@ -291,7 +291,7 @@ func TestList(t *testing.T) {
+ 		return plugin.NewRepository(rw, rw, kms, sche, map[string]plgpb.HostPluginServiceClient{})
+ 	}
+ 	pluginRepo := func() (*host.Repository, error) {
+-		return host.NewRepository(rw, rw, kms)
++		return host.NewRepository(context.Background(),rw, rw, kms)
+ 	}
+ 	repoFn := func() (*static.Repository, error) {
+ 		return static.NewRepository(rw, rw, kms)
+@@ -497,7 +497,7 @@ func TestDelete_Static(t *testing.T) {
+ 		return plugin.NewRepository(rw, rw, kms, sche, map[string]plgpb.HostPluginServiceClient{})
+ 	}
+ 	pluginRepo := func() (*host.Repository, error) {
+-		return host.NewRepository(rw, rw, kms)
++		return host.NewRepository(context.Background(),rw, rw, kms)
+ 	}
+ 	iamRepoFn := func() (*iam.Repository, error) {
+ 		return iamRepo, nil
+@@ -567,7 +567,7 @@ func TestDelete_Plugin(t *testing.T) {
+ 		return plugin.NewRepository(rw, rw, kms, sche, map[string]plgpb.HostPluginServiceClient{})
+ 	}
+ 	pluginRepo := func() (*host.Repository, error) {
+-		return host.NewRepository(rw, rw, kms)
++		return host.NewRepository(context.Background(),rw, rw, kms)
+ 	}
+ 	iamRepoFn := func() (*iam.Repository, error) {
+ 		return iamRepo, nil
+@@ -639,7 +639,7 @@ func TestDelete_twice(t *testing.T) {
+ 		return plugin.NewRepository(rw, rw, kms, sche, map[string]plgpb.HostPluginServiceClient{})
+ 	}
+ 	pluginRepo := func() (*host.Repository, error) {
+-		return host.NewRepository(rw, rw, kms)
++		return host.NewRepository(context.Background(),rw, rw, kms)
+ 	}
+ 	iamRepoFn := func() (*iam.Repository, error) {
+ 		return iamRepo, nil
+@@ -675,7 +675,7 @@ func TestCreate_Static(t *testing.T) {
+ 		return plugin.NewRepository(rw, rw, kms, sche, map[string]plgpb.HostPluginServiceClient{})
+ 	}
+ 	pluginRepo := func() (*host.Repository, error) {
+-		return host.NewRepository(rw, rw, kms)
++		return host.NewRepository(context.Background(),rw, rw, kms)
+ 	}
+ 	iamRepoFn := func() (*iam.Repository, error) {
+ 		return iamRepo, nil
+@@ -824,7 +824,7 @@ func TestCreate_Plugin(t *testing.T) {
+ 		return static.NewRepository(rw, rw, kms)
+ 	}
+ 	pluginRepo := func() (*host.Repository, error) {
+-		return host.NewRepository(rw, rw, kms)
++		return host.NewRepository(context.Background(),rw, rw, kms)
+ 	}
+ 	iamRepoFn := func() (*iam.Repository, error) {
+ 		return iamRepo, nil
+@@ -1004,7 +1004,7 @@ func TestUpdate_Static(t *testing.T) {
+ 		return plugin.NewRepository(rw, rw, kms, sche, map[string]plgpb.HostPluginServiceClient{})
+ 	}
+ 	pluginRepo := func() (*host.Repository, error) {
+-		return host.NewRepository(rw, rw, kms)
++		return host.NewRepository(context.Background(),rw, rw, kms)
+ 	}
+ 	iamRepoFn := func() (*iam.Repository, error) {
+ 		return iamRepo, nil
+@@ -1376,10 +1376,10 @@ func TestUpdate_Plugin(t *testing.T) {
+ 		return static.NewRepository(rw, rw, kms)
+ 	}
+ 	pluginHostRepo := func() (*plugin.Repository, error) {
+-		return plugin.NewRepository(rw, rw, kms, sche, plgm)
++		return plugin.NewRepository(context.Background(), rw, rw, kms, sche, plgm)
+ 	}
+ 	pluginRepo := func() (*host.Repository, error) {
+-		return host.NewRepository(rw, rw, kms)
++		return host.NewRepository(context.Background(),rw, rw, kms)
+ 	}
+ 	iamRepoFn := func() (*iam.Repository, error) {
+ 		return iamRepo, nil
+diff --git a/internal/daemon/controller/handlers/host_sets/host_set_service_test.go b/internal/daemon/controller/handlers/host_sets/host_set_service_test.go
+index 04625fff1..4ee5cfae0 100644
+--- a/internal/daemon/controller/handlers/host_sets/host_set_service_test.go
++++ b/internal/daemon/controller/handlers/host_sets/host_set_service_test.go
+@@ -165,7 +165,7 @@ func TestGet_Plugin(t *testing.T) {
+ 		plg.GetPublicId(): plugin.NewWrappingPluginClient(&plugin.TestPluginServer{}),
+ 	}
+ 	pluginRepoFn := func() (*plugin.Repository, error) {
+-		return plugin.NewRepository(rw, rw, kms, sche, plgm)
++		return plugin.NewRepository(context.Background(), rw, rw, kms, sche, plgm)
+ 	}
+ 
+ 	hc := plugin.TestCatalog(t, conn, proj.GetPublicId(), plg.GetPublicId())
+@@ -379,7 +379,7 @@ func TestList_Plugin(t *testing.T) {
+ 		plg.GetPublicId(): plugin.NewWrappingPluginClient(&plugin.TestPluginServer{}),
+ 	}
+ 	pluginRepoFn := func() (*plugin.Repository, error) {
+-		return plugin.NewRepository(rw, rw, kms, sche, plgm)
++		return plugin.NewRepository(context.Background(), rw, rw, kms, sche, plgm)
+ 	}
+ 	hc := plugin.TestCatalog(t, conn, proj.GetPublicId(), plg.GetPublicId())
+ 	hcNoHosts := plugin.TestCatalog(t, conn, proj.GetPublicId(), plg.GetPublicId())
+@@ -1479,7 +1479,7 @@ func TestUpdate_Plugin(t *testing.T) {
+ 		return static.NewRepository(rw, rw, kms)
+ 	}
+ 	pluginHostRepo := func() (*plugin.Repository, error) {
+-		return plugin.NewRepository(rw, rw, kms, sche, plgm)
++		return plugin.NewRepository(context.Background(), rw, rw, kms, sche, plgm)
+ 	}
+ 	iamRepoFn := func() (*iam.Repository, error) {
+ 		return iamRepo, nil
+diff --git a/internal/daemon/controller/handlers/hosts/host_service_test.go b/internal/daemon/controller/handlers/hosts/host_service_test.go
+index 60a873801..a08e381b1 100644
+--- a/internal/daemon/controller/handlers/hosts/host_service_test.go
++++ b/internal/daemon/controller/handlers/hosts/host_service_test.go
+@@ -155,7 +155,7 @@ func TestGet_Plugin(t *testing.T) {
+ 	rw := db.New(conn)
+ 	sche := scheduler.TestScheduler(t, conn, wrapper)
+ 	pluginRepoFn := func() (*plugin.Repository, error) {
+-		return plugin.NewRepository(rw, rw, kms, sche, plgm)
++		return plugin.NewRepository(context.Background(), rw, rw, kms, sche, plgm)
+ 	}
+ 	repoFn := func() (*static.Repository, error) {
+ 		return static.NewRepository(rw, rw, kms)
+@@ -381,7 +381,7 @@ func TestList_Plugin(t *testing.T) {
+ 	rw := db.New(conn)
+ 	sche := scheduler.TestScheduler(t, conn, wrapper)
+ 	pluginRepoFn := func() (*plugin.Repository, error) {
+-		return plugin.NewRepository(rw, rw, kms, sche, plgm)
++		return plugin.NewRepository(context.Background(), rw, rw, kms, sche, plgm)
+ 	}
+ 	repoFn := func() (*static.Repository, error) {
+ 		return static.NewRepository(rw, rw, kms)
+diff --git a/internal/daemon/controller/handlers/sessions/session_list_benchmarks_test.go b/internal/daemon/controller/handlers/sessions/session_list_benchmarks_test.go
+index eeddc12e6..8070bfa15 100644
+--- a/internal/daemon/controller/handlers/sessions/session_list_benchmarks_test.go
++++ b/internal/daemon/controller/handlers/sessions/session_list_benchmarks_test.go
+@@ -84,10 +84,10 @@ func BenchmarkSessionList(b *testing.B) {
+ 			iamRepo, err := iam.NewRepository(rw, rw, kmsThing)
+ 			require.NoError(b, err)
+ 
+-			authTokenRepo, err := authtoken.NewRepository(rw, rw, kmsThing)
++			authTokenRepo, err := authtoken.NewRepository(context.Background(),rw, rw, kmsThing)
+ 			require.NoError(b, err)
+ 
+-			pwRepo, err := password.NewRepository(rw, rw, kmsThing)
++			pwRepo, err := password.NewRepository(context.Background(),rw, rw, kmsThing)
+ 			require.NoError(b, err)
+ 
+ 			serversRepo, err := server.NewRepository(rw, rw, kmsThing)
+diff --git a/internal/daemon/controller/handlers/sessions/session_service_test.go b/internal/daemon/controller/handlers/sessions/session_service_test.go
+index 241e830f4..84d7bf049 100644
+--- a/internal/daemon/controller/handlers/sessions/session_service_test.go
++++ b/internal/daemon/controller/handlers/sessions/session_service_test.go
+@@ -51,7 +51,7 @@ func TestGetSession(t *testing.T) {
+ 		return session.NewRepository(rw, rw, kms, opt...)
+ 	}
+ 	tokenRepoFn := func() (*authtoken.Repository, error) {
+-		return authtoken.NewRepository(rw, rw, kms)
++		return authtoken.NewRepository(context.Background(),rw, rw, kms)
+ 	}
+ 	serversRepoFn := func() (*server.Repository, error) {
+ 		return server.NewRepository(rw, rw, kms)
+@@ -173,7 +173,7 @@ func TestList_Self(t *testing.T) {
+ 		return session.NewRepository(rw, rw, kms, opt...)
+ 	}
+ 	tokenRepoFn := func() (*authtoken.Repository, error) {
+-		return authtoken.NewRepository(rw, rw, kms)
++		return authtoken.NewRepository(context.Background(),rw, rw, kms)
+ 	}
+ 	serversRepoFn := func() (*server.Repository, error) {
+ 		return server.NewRepository(rw, rw, kms)
+@@ -260,7 +260,7 @@ func TestList(t *testing.T) {
+ 		return session.NewRepository(rw, rw, kms, opt...)
+ 	}
+ 	tokenRepoFn := func() (*authtoken.Repository, error) {
+-		return authtoken.NewRepository(rw, rw, kms)
++		return authtoken.NewRepository(context.Background(),rw, rw, kms)
+ 	}
+ 	serversRepoFn := func() (*server.Repository, error) {
+ 		return server.NewRepository(rw, rw, kms)
+@@ -557,7 +557,7 @@ func TestCancel(t *testing.T) {
+ 		return session.NewRepository(rw, rw, kms, opt...)
+ 	}
+ 	tokenRepoFn := func() (*authtoken.Repository, error) {
+-		return authtoken.NewRepository(rw, rw, kms)
++		return authtoken.NewRepository(context.Background(),rw, rw, kms)
+ 	}
+ 	serversRepoFn := func() (*server.Repository, error) {
+ 		return server.NewRepository(rw, rw, kms)
+diff --git a/internal/daemon/controller/handlers/targets/tcp/target_service_test.go b/internal/daemon/controller/handlers/targets/tcp/target_service_test.go
+index 676f0f728..e786a86c3 100644
+--- a/internal/daemon/controller/handlers/targets/tcp/target_service_test.go
++++ b/internal/daemon/controller/handlers/targets/tcp/target_service_test.go
+@@ -77,7 +77,7 @@ func testService(t *testing.T, ctx context.Context, conn *db.DB, kms *kms.Kms, w
+ 	rw := db.New(conn)
+ 	sche := scheduler.TestScheduler(t, conn, wrapper)
+ 	repoFn := func() (*target.Repository, error) {
+-		return target.NewRepository(rw, rw, kms)
++		return target.NewRepository(context.Background(),rw, rw, kms)
+ 	}
+ 	iamRepoFn := func() (*iam.Repository, error) {
+ 		return iam.TestRepo(t, conn, wrapper), nil
+@@ -116,7 +116,7 @@ func TestGet(t *testing.T) {
+ 		return iamRepo, nil
+ 	}
+ 	tokenRepoFn := func() (*authtoken.Repository, error) {
+-		return authtoken.NewRepository(rw, rw, kms)
++		return authtoken.NewRepository(context.Background(),rw, rw, kms)
+ 	}
+ 	serversRepoFn := func() (*server.Repository, error) {
+ 		return server.NewRepository(rw, rw, kms)
+@@ -224,7 +224,7 @@ func TestList(t *testing.T) {
+ 		return iamRepo, nil
+ 	}
+ 	tokenRepoFn := func() (*authtoken.Repository, error) {
+-		return authtoken.NewRepository(rw, rw, kms)
++		return authtoken.NewRepository(context.Background(),rw, rw, kms)
+ 	}
+ 	serversRepoFn := func() (*server.Repository, error) {
+ 		return server.NewRepository(rw, rw, kms)
+@@ -389,7 +389,7 @@ func TestDelete(t *testing.T) {
+ 		return iamRepo, nil
+ 	}
+ 	tokenRepoFn := func() (*authtoken.Repository, error) {
+-		return authtoken.NewRepository(rw, rw, kms)
++		return authtoken.NewRepository(context.Background(),rw, rw, kms)
+ 	}
+ 	serversRepoFn := func() (*server.Repository, error) {
+ 		return server.NewRepository(rw, rw, kms)
+@@ -473,7 +473,7 @@ func TestDelete_twice(t *testing.T) {
+ 		return iamRepo, nil
+ 	}
+ 	tokenRepoFn := func() (*authtoken.Repository, error) {
+-		return authtoken.NewRepository(rw, rw, kms)
++		return authtoken.NewRepository(context.Background(),rw, rw, kms)
+ 	}
+ 	serversRepoFn := func() (*server.Repository, error) {
+ 		return server.NewRepository(rw, rw, kms)
+@@ -519,7 +519,7 @@ func TestCreate(t *testing.T) {
+ 		return iamRepo, nil
+ 	}
+ 	tokenRepoFn := func() (*authtoken.Repository, error) {
+-		return authtoken.NewRepository(rw, rw, kms)
++		return authtoken.NewRepository(context.Background(),rw, rw, kms)
+ 	}
+ 	serversRepoFn := func() (*server.Repository, error) {
+ 		return server.NewRepository(rw, rw, kms)
+@@ -698,7 +698,7 @@ func TestUpdate(t *testing.T) {
+ 		return iamRepo, nil
+ 	}
+ 	tokenRepoFn := func() (*authtoken.Repository, error) {
+-		return authtoken.NewRepository(rw, rw, kms)
++		return authtoken.NewRepository(context.Background(),rw, rw, kms)
+ 	}
+ 	serversRepoFn := func() (*server.Repository, error) {
+ 		return server.NewRepository(rw, rw, kms)
+@@ -711,7 +711,7 @@ func TestUpdate(t *testing.T) {
+ 	_ = iam.TestRoleGrant(t, conn, r.GetPublicId(), "id=*;type=*;actions=*")
+ 
+ 	repoFn := func() (*target.Repository, error) {
+-		return target.NewRepository(rw, rw, kms)
++		return target.NewRepository(context.Background(),rw, rw, kms)
+ 	}
+ 	repo, err := repoFn()
+ 	require.NoError(t, err, "Couldn't create new target repo.")
+@@ -1122,7 +1122,7 @@ func TestUpdate_BadVersion(t *testing.T) {
+ 		return iamRepo, nil
+ 	}
+ 	tokenRepoFn := func() (*authtoken.Repository, error) {
+-		return authtoken.NewRepository(rw, rw, kms)
++		return authtoken.NewRepository(context.Background(),rw, rw, kms)
+ 	}
+ 	serversRepoFn := func() (*server.Repository, error) {
+ 		return server.NewRepository(rw, rw, kms)
+@@ -1135,7 +1135,7 @@ func TestUpdate_BadVersion(t *testing.T) {
+ 	_ = iam.TestRoleGrant(t, conn, r.GetPublicId(), "id=*;type=*;actions=*")
+ 
+ 	repoFn := func() (*target.Repository, error) {
+-		return target.NewRepository(rw, rw, kms)
++		return target.NewRepository(context.Background(),rw, rw, kms)
+ 	}
+ 	repo, err := repoFn()
+ 	require.NoError(t, err, "Couldn't create new target repo.")
+@@ -1184,7 +1184,7 @@ func TestAddTargetHostSets(t *testing.T) {
+ 		return iamRepo, nil
+ 	}
+ 	tokenRepoFn := func() (*authtoken.Repository, error) {
+-		return authtoken.NewRepository(rw, rw, kms)
++		return authtoken.NewRepository(context.Background(),rw, rw, kms)
+ 	}
+ 	serversRepoFn := func() (*server.Repository, error) {
+ 		return server.NewRepository(rw, rw, kms)
+@@ -1346,7 +1346,7 @@ func TestSetTargetHostSets(t *testing.T) {
+ 		return iamRepo, nil
+ 	}
+ 	tokenRepoFn := func() (*authtoken.Repository, error) {
+-		return authtoken.NewRepository(rw, rw, kms)
++		return authtoken.NewRepository(context.Background(),rw, rw, kms)
+ 	}
+ 	serversRepoFn := func() (*server.Repository, error) {
+ 		return server.NewRepository(rw, rw, kms)
+@@ -1502,7 +1502,7 @@ func TestRemoveTargetHostSets(t *testing.T) {
+ 		return iamRepo, nil
+ 	}
+ 	tokenRepoFn := func() (*authtoken.Repository, error) {
+-		return authtoken.NewRepository(rw, rw, kms)
++		return authtoken.NewRepository(context.Background(),rw, rw, kms)
+ 	}
+ 	serversRepoFn := func() (*server.Repository, error) {
+ 		return server.NewRepository(rw, rw, kms)
+@@ -1670,7 +1670,7 @@ func TestAddTargetHostSources(t *testing.T) {
+ 		return iamRepo, nil
+ 	}
+ 	tokenRepoFn := func() (*authtoken.Repository, error) {
+-		return authtoken.NewRepository(rw, rw, kms)
++		return authtoken.NewRepository(context.Background(),rw, rw, kms)
+ 	}
+ 	serversRepoFn := func() (*server.Repository, error) {
+ 		return server.NewRepository(rw, rw, kms)
+@@ -1832,7 +1832,7 @@ func TestSetTargetHostSources(t *testing.T) {
+ 		return iamRepo, nil
+ 	}
+ 	tokenRepoFn := func() (*authtoken.Repository, error) {
+-		return authtoken.NewRepository(rw, rw, kms)
++		return authtoken.NewRepository(context.Background(),rw, rw, kms)
+ 	}
+ 	serversRepoFn := func() (*server.Repository, error) {
+ 		return server.NewRepository(rw, rw, kms)
+@@ -1982,7 +1982,7 @@ func TestRemoveTargetHostSources(t *testing.T) {
+ 		return iamRepo, nil
+ 	}
+ 	tokenRepoFn := func() (*authtoken.Repository, error) {
+-		return authtoken.NewRepository(rw, rw, kms)
++		return authtoken.NewRepository(context.Background(),rw, rw, kms)
+ 	}
+ 	serversRepoFn := func() (*server.Repository, error) {
+ 		return server.NewRepository(rw, rw, kms)
+@@ -2149,7 +2149,7 @@ func TestAddTargetCredentialSources(t *testing.T) {
+ 		return iamRepo, nil
+ 	}
+ 	tokenRepoFn := func() (*authtoken.Repository, error) {
+-		return authtoken.NewRepository(rw, rw, kms)
++		return authtoken.NewRepository(context.Background(),rw, rw, kms)
+ 	}
+ 	serversRepoFn := func() (*server.Repository, error) {
+ 		return server.NewRepository(rw, rw, kms)
+@@ -2331,7 +2331,7 @@ func TestSetTargetCredentialSources(t *testing.T) {
+ 		return iamRepo, nil
+ 	}
+ 	tokenRepoFn := func() (*authtoken.Repository, error) {
+-		return authtoken.NewRepository(rw, rw, kms)
++		return authtoken.NewRepository(context.Background(),rw, rw, kms)
+ 	}
+ 	serversRepoFn := func() (*server.Repository, error) {
+ 		return server.NewRepository(rw, rw, kms)
+@@ -2507,7 +2507,7 @@ func TestRemoveTargetCredentialSources(t *testing.T) {
+ 		return iamRepo, nil
+ 	}
+ 	tokenRepoFn := func() (*authtoken.Repository, error) {
+-		return authtoken.NewRepository(rw, rw, kms)
++		return authtoken.NewRepository(context.Background(),rw, rw, kms)
+ 	}
+ 	serversRepoFn := func() (*server.Repository, error) {
+ 		return server.NewRepository(rw, rw, kms)
+@@ -2740,7 +2740,7 @@ func TestAuthorizeSession(t *testing.T) {
+ 	require.NoError(t, err)
+ 
+ 	repoFn := func() (*target.Repository, error) {
+-		return target.NewRepository(rw, rw, kms)
++		return target.NewRepository(context.Background(),rw, rw, kms)
+ 	}
+ 	iamRepo := iam.TestRepo(t, conn, wrapper)
+ 	iamRepoFn := func() (*iam.Repository, error) {
+@@ -2764,7 +2764,7 @@ func TestAuthorizeSession(t *testing.T) {
+ 		return credstatic.NewRepository(ctx, rw, rw, kms)
+ 	}
+ 	atRepoFn := func() (*authtoken.Repository, error) {
+-		return authtoken.NewRepository(rw, rw, kms)
++		return authtoken.NewRepository(context.Background(),rw, rw, kms)
+ 	}
+ 
+ 	plg := host.TestPlugin(t, conn, "test")
+@@ -2793,7 +2793,7 @@ func TestAuthorizeSession(t *testing.T) {
+ 		}),
+ 	}
+ 	pluginHostRepoFn := func() (*plugin.Repository, error) {
+-		return plugin.NewRepository(rw, rw, kms, sche, plgm)
++		return plugin.NewRepository(context.Background(), rw, rw, kms, sche, plgm)
+ 	}
+ 
+ 	org, proj := iam.TestScopes(t, iamRepo)
+@@ -3000,7 +3000,7 @@ func TestAuthorizeSessionTypedCredentials(t *testing.T) {
+ 	require.NoError(t, err)
+ 
+ 	repoFn := func() (*target.Repository, error) {
+-		return target.NewRepository(rw, rw, kms)
++		return target.NewRepository(context.Background(),rw, rw, kms)
+ 	}
+ 	iamRepo := iam.TestRepo(t, conn, wrapper)
+ 	iamRepoFn := func() (*iam.Repository, error) {
+@@ -3022,7 +3022,7 @@ func TestAuthorizeSessionTypedCredentials(t *testing.T) {
+ 		return credstatic.NewRepository(ctx, rw, rw, kms)
+ 	}
+ 	atRepoFn := func() (*authtoken.Repository, error) {
+-		return authtoken.NewRepository(rw, rw, kms)
++		return authtoken.NewRepository(context.Background(),rw, rw, kms)
+ 	}
+ 	pluginHostRepoFn := func() (*plugin.Repository, error) {
+ 		return plugin.NewRepository(rw, rw, kms, sche, map[string]plgpb.HostPluginServiceClient{})
+@@ -3579,7 +3579,7 @@ func TestAuthorizeSession_Errors(t *testing.T) {
+ 	require.NoError(t, err)
+ 
+ 	repoFn := func() (*target.Repository, error) {
+-		return target.NewRepository(rw, rw, kms)
++		return target.NewRepository(context.Background(),rw, rw, kms)
+ 	}
+ 	iamRepo := iam.TestRepo(t, conn, wrapper)
+ 	iamRepoFn := func() (*iam.Repository, error) {
+@@ -3604,7 +3604,7 @@ func TestAuthorizeSession_Errors(t *testing.T) {
+ 		return credstatic.NewRepository(ctx, rw, rw, kms)
+ 	}
+ 	atRepoFn := func() (*authtoken.Repository, error) {
+-		return authtoken.NewRepository(rw, rw, kms)
++		return authtoken.NewRepository(context.Background(),rw, rw, kms)
+ 	}
+ 	org, proj := iam.TestScopes(t, iamRepo)
+ 
+@@ -3842,7 +3842,7 @@ func TestAddTargetCredentialLibraryPerms(t *testing.T) {
+ 	kms := kms.TestKms(t, conn, wrapper)
+ 
+ 	atRepoFn := func() (*authtoken.Repository, error) {
+-		return authtoken.NewRepository(rw, rw, kms)
++		return authtoken.NewRepository(context.Background(),rw, rw, kms)
+ 	}
+ 	iamRepoFn := func() (*iam.Repository, error) {
+ 		return iam.TestRepo(t, conn, wrapper), nil
+@@ -3928,7 +3928,7 @@ func TestSetTargetCredentialLibraryPerms(t *testing.T) {
+ 	kms := kms.TestKms(t, conn, wrapper)
+ 
+ 	atRepoFn := func() (*authtoken.Repository, error) {
+-		return authtoken.NewRepository(rw, rw, kms)
++		return authtoken.NewRepository(context.Background(),rw, rw, kms)
+ 	}
+ 	iamRepoFn := func() (*iam.Repository, error) {
+ 		return iam.TestRepo(t, conn, wrapper), nil
+@@ -4014,7 +4014,7 @@ func TestRemoveTargetCredentialLibraryPerms(t *testing.T) {
+ 	kms := kms.TestKms(t, conn, wrapper)
+ 
+ 	atRepoFn := func() (*authtoken.Repository, error) {
+-		return authtoken.NewRepository(rw, rw, kms)
++		return authtoken.NewRepository(context.Background(),rw, rw, kms)
+ 	}
+ 	iamRepoFn := func() (*iam.Repository, error) {
+ 		return iam.TestRepo(t, conn, wrapper), nil
+diff --git a/internal/daemon/controller/interceptor_test.go b/internal/daemon/controller/interceptor_test.go
+index e6a5039a7..78f0a84a7 100644
+--- a/internal/daemon/controller/interceptor_test.go
++++ b/internal/daemon/controller/interceptor_test.go
+@@ -43,7 +43,7 @@ func Test_requestCtxInterceptor(t *testing.T) {
+ 		return iamRepo, nil
+ 	}
+ 	atRepoFn := func() (*authtoken.Repository, error) {
+-		return authtoken.NewRepository(rw, rw, kmsCache)
++		return authtoken.NewRepository(context.Background(),rw, rw, kmsCache)
+ 	}
+ 	serversRepoFn := func() (*server.Repository, error) {
+ 		return server.NewRepository(rw, rw, kmsCache)
+diff --git a/internal/db/schema/migrations/oss/postgres_2_10_test.go b/internal/db/schema/migrations/oss/postgres_2_10_test.go
+index 1fd6f830a..5a9d9a118 100644
+--- a/internal/db/schema/migrations/oss/postgres_2_10_test.go
++++ b/internal/db/schema/migrations/oss/postgres_2_10_test.go
+@@ -52,7 +52,7 @@ func Test_AuthMethodSubtypes(t *testing.T) {
+ 	// test password subtype insert
+ 	pw, err := password.NewAuthMethod(org.PublicId, password.WithName("eve's favorite"))
+ 	require.NoError(err)
+-	passRepo, err := password.NewRepository(rw, rw, kmsCache)
++	passRepo, err := password.NewRepository(context.Background(),rw, rw, kmsCache)
+ 	require.NoError(err)
+ 	pw, err = passRepo.CreateAuthMethod(ctx, pw)
+ 	require.NoError(err)
+diff --git a/internal/host/plugin/host_set_member_test.go b/internal/host/plugin/host_set_member_test.go
+index 056552db8..6c4d1d72f 100644
+--- a/internal/host/plugin/host_set_member_test.go
++++ b/internal/host/plugin/host_set_member_test.go
+@@ -34,7 +34,7 @@ func TestHostSetMember_InsertDelete(t *testing.T) {
+ 		plg.GetPublicId(): NewWrappingPluginClient(&plgpb.UnimplementedHostPluginServiceServer{}),
+ 	}
+ 
+-	repo, err := NewRepository(rw, rw, kms, sched, plgm)
++	repo, err := NewRepository(context.Background(), rw, rw, kms, sched, plgm)
+ 	require.NoError(t, err)
+ 
+ 	cats := TestCatalogs(t, conn, prj.PublicId, plg.PublicId, 2)
+diff --git a/internal/host/plugin/repository.go b/internal/host/plugin/repository.go
+index 7c0f4d885..7f42bc86d 100644
+--- a/internal/host/plugin/repository.go
++++ b/internal/host/plugin/repository.go
+@@ -31,24 +31,24 @@ type Repository struct {
+ // only be used for one transaction and it is not safe for concurrent go
+ // routines to access it. WithLimit option is used as a repo wide default
+ // limit applied to all ListX methods.
+-func NewRepository(r db.Reader, w db.Writer, kms *kms.Kms, sched *scheduler.Scheduler, plgm map[string]plgpb.HostPluginServiceClient, opt ...host.Option) (*Repository, error) {
++func NewRepository(ctx context.Context, r db.Reader, w db.Writer, kms *kms.Kms, sched *scheduler.Scheduler, plgm map[string]plgpb.HostPluginServiceClient, opt ...host.Option) (*Repository, error) {
+ 	const op = "plugin.NewRepository"
+ 	switch {
+ 	case r == nil:
+-		return nil, errors.NewDeprecated(errors.InvalidParameter, op, "db.Reader")
++		return nil, errors.New(ctx, errors.InvalidParameter, op, "db.Reader")
+ 	case w == nil:
+-		return nil, errors.NewDeprecated(errors.InvalidParameter, op, "db.Writer")
++		return nil, errors.New(ctx, errors.InvalidParameter, op, "db.Writer")
+ 	case kms == nil:
+-		return nil, errors.NewDeprecated(errors.InvalidParameter, op, "kms")
++		return nil, errors.New(ctx, errors.InvalidParameter, op, "kms")
+ 	case sched == nil:
+-		return nil, errors.NewDeprecated(errors.InvalidParameter, op, "scheduler")
++		return nil, errors.New(ctx, errors.InvalidParameter, op, "scheduler")
+ 	case plgm == nil:
+-		return nil, errors.NewDeprecated(errors.InvalidParameter, op, "plgm")
++		return nil, errors.New(ctx, errors.InvalidParameter, op, "plgm")
+ 	}
+ 
+ 	opts, err := host.GetOpts(opt...)
+ 	if err != nil {
+-		return nil, errors.WrapDeprecated(err, op)
++		return nil, errors.Wrap(err, op)
+ 	}
+ 	if opts.WithLimit == 0 {
+ 		// zero signals the boundary defaults should be used.
+diff --git a/internal/host/plugin/repository_host_catalog_test.go b/internal/host/plugin/repository_host_catalog_test.go
+index a8115cb8c..0c726c970 100644
+--- a/internal/host/plugin/repository_host_catalog_test.go
++++ b/internal/host/plugin/repository_host_catalog_test.go
+@@ -378,7 +378,7 @@ func TestRepository_CreateCatalog(t *testing.T) {
+ 				},
+ 			},
+ 		}
+-		repo, err := NewRepository(rw, rw, kms, sched, plgm)
++		repo, err := NewRepository(context.Background(), rw, rw, kms, sched, plgm)
+ 		assert.NoError(err)
+ 		assert.NotNil(repo)
+ 		_, prj := iam.TestScopes(t, iam.TestRepo(t, conn, wrapper))
+@@ -424,7 +424,7 @@ func TestRepository_CreateCatalog(t *testing.T) {
+ 				},
+ 			},
+ 		}
+-		repo, err := NewRepository(rw, rw, kms, sched, plgm)
++		repo, err := NewRepository(context.Background(), rw, rw, kms, sched, plgm)
+ 		assert.NoError(err)
+ 		assert.NotNil(repo)
+ 		org, prj := iam.TestScopes(t, iam.TestRepo(t, conn, wrapper))
+@@ -1297,7 +1297,7 @@ func TestRepository_LookupCatalog(t *testing.T) {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			assert := assert.New(t)
+ 			kms := kms.TestKms(t, conn, wrapper)
+-			repo, err := NewRepository(rw, rw, kms, sched, plgm)
++			repo, err := NewRepository(context.Background(), rw, rw, kms, sched, plgm)
+ 			assert.NoError(err)
+ 			assert.NotNil(repo)
+ 
+@@ -1330,7 +1330,7 @@ func TestRepository_ListCatalogs_Multiple_Scopes(t *testing.T) {
+ 	plgm := map[string]plgpb.HostPluginServiceClient{
+ 		plg.GetPublicId(): &WrappingPluginClient{Server: &TestPluginServer{}},
+ 	}
+-	repo, err := NewRepository(rw, rw, kms, sched, plgm)
++	repo, err := NewRepository(context.Background(), rw, rw, kms, sched, plgm)
+ 	assert.NoError(t, err)
+ 	assert.NotNil(t, repo)
+ 
+@@ -1371,7 +1371,7 @@ func TestRepository_DeleteCatalog(t *testing.T) {
+ 	assert.NotNil(t, badId)
+ 
+ 	kms := kms.TestKms(t, conn, wrapper)
+-	repo, err := NewRepository(rw, rw, kms, sched, plgm)
++	repo, err := NewRepository(context.Background(), rw, rw, kms, sched, plgm)
+ 	assert.NoError(t, err)
+ 	assert.NotNil(t, repo)
+ 
+@@ -1483,7 +1483,7 @@ func TestRepository_DeleteCatalogX(t *testing.T) {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			assert := assert.New(t)
+ 			kms := kms.TestKms(t, conn, wrapper)
+-			repo, err := NewRepository(rw, rw, kms, sched, plgm)
++			repo, err := NewRepository(context.Background(), rw, rw, kms, sched, plgm)
+ 			assert.NoError(err)
+ 			assert.NotNil(repo)
+ 
+diff --git a/internal/host/plugin/repository_host_set_test.go b/internal/host/plugin/repository_host_set_test.go
+index b3918ba96..21149a844 100644
+--- a/internal/host/plugin/repository_host_set_test.go
++++ b/internal/host/plugin/repository_host_set_test.go
+@@ -304,7 +304,7 @@ func TestRepository_CreateSet(t *testing.T) {
+ 					return plgpb.UnimplementedHostPluginServiceServer{}.OnCreateSet(ctx, req)
+ 				}}),
+ 			}
+-			repo, err := NewRepository(rw, rw, kms, sched, plgm)
++			repo, err := NewRepository(context.Background(), rw, rw, kms, sched, plgm)
+ 			require.NoError(err)
+ 			require.NotNil(repo)
+ 			got, plgInfo, err := repo.CreateSet(context.Background(), prj.GetPublicId(), tt.in, tt.opts...)
+@@ -357,7 +357,7 @@ func TestRepository_CreateSet(t *testing.T) {
+ 				return &plgpb.OnCreateSetResponse{}, nil
+ 			}}),
+ 		}
+-		repo, err := NewRepository(rw, rw, kms, sched, plgm)
++		repo, err := NewRepository(context.Background(), rw, rw, kms, sched, plgm)
+ 		require.NoError(err)
+ 		require.NotNil(repo)
+ 
+@@ -400,7 +400,7 @@ func TestRepository_CreateSet(t *testing.T) {
+ 				return &plgpb.OnCreateSetResponse{}, nil
+ 			}}),
+ 		}
+-		repo, err := NewRepository(rw, rw, kms, sched, plgm)
++		repo, err := NewRepository(context.Background(), rw, rw, kms, sched, plgm)
+ 		require.NoError(err)
+ 		require.NotNil(repo)
+ 
+@@ -1388,7 +1388,7 @@ func TestRepository_LookupSet(t *testing.T) {
+ 		tt := tt
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			assert, require := assert.New(t), require.New(t)
+-			repo, err := NewRepository(rw, rw, kms, sched, plgm)
++			repo, err := NewRepository(context.Background(), rw, rw, kms, sched, plgm)
+ 			assert.NoError(err)
+ 			require.NotNil(repo)
+ 			got, _, err := repo.LookupSet(ctx, tt.in)
+@@ -1505,7 +1505,7 @@ func TestRepository_Endpoints(t *testing.T) {
+ 		tt := tt
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			assert, require := assert.New(t), require.New(t)
+-			repo, err := NewRepository(rw, rw, kms, sched, plgm)
++			repo, err := NewRepository(context.Background(), rw, rw, kms, sched, plgm)
+ 			assert.NoError(err)
+ 			require.NotNil(repo)
+ 			got, err := repo.Endpoints(ctx, tt.setIds)
+@@ -1592,7 +1592,7 @@ func TestRepository_ListSets(t *testing.T) {
+ 		tt := tt
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			assert, require := assert.New(t), require.New(t)
+-			repo, err := NewRepository(rw, rw, kms, sched, plgm)
++			repo, err := NewRepository(context.Background(), rw, rw, kms, sched, plgm)
+ 			assert.NoError(err)
+ 			require.NotNil(repo)
+ 			got, gotPlg, err := repo.ListSets(context.Background(), tt.in, tt.opts...)
+@@ -1764,7 +1764,7 @@ func TestRepository_DeleteSet(t *testing.T) {
+ 		tt := tt
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			assert, require := assert.New(t), require.New(t)
+-			repo, err := NewRepository(rw, rw, kms, sched, plgm)
++			repo, err := NewRepository(context.Background(), rw, rw, kms, sched, plgm)
+ 			assert.NoError(err)
+ 			require.NotNil(repo)
+ 			got, err := repo.DeleteSet(ctx, prj.PublicId, tt.in)
+diff --git a/internal/host/plugin/repository_host_test.go b/internal/host/plugin/repository_host_test.go
+index 3ca1dc8af..eb1cea073 100644
+--- a/internal/host/plugin/repository_host_test.go
++++ b/internal/host/plugin/repository_host_test.go
+@@ -220,7 +220,7 @@ func TestJob_UpsertHosts(t *testing.T) {
+ 				),
+ 			)
+ 
+-			repo, err := NewRepository(rw, rw, kms, sched, plgm)
++			repo, err := NewRepository(context.Background(), rw, rw, kms, sched, plgm)
+ 			require.NoError(err)
+ 			require.NotNil(repo)
+ 
+diff --git a/internal/host/plugin/repository_test.go b/internal/host/plugin/repository_test.go
+index 594882b00..5c21b9d30 100644
+--- a/internal/host/plugin/repository_test.go
++++ b/internal/host/plugin/repository_test.go
+@@ -152,7 +152,7 @@ func TestRepository_New(t *testing.T) {
+ 		tt := tt
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			assert, require := assert.New(t), require.New(t)
+-			got, err := NewRepository(tt.args.r, tt.args.w, tt.args.kms, tt.args.scheduler, tt.args.plugins, tt.args.opts...)
++			got, err := NewRepository(context.Background(), tt.args.r, tt.args.w, tt.args.kms, tt.args.scheduler, tt.args.plugins, tt.args.opts...)
+ 			if tt.wantIsErr != 0 {
+ 				assert.Truef(errors.Match(errors.T(tt.wantIsErr), err), "want err: %q got: %q", tt.wantIsErr, err)
+ 				assert.Nil(got)
+diff --git a/internal/host/static/repository.go b/internal/host/static/repository.go
+index ed4bca656..7d4ef7850 100644
+--- a/internal/host/static/repository.go
++++ b/internal/host/static/repository.go
+@@ -21,15 +21,15 @@ type Repository struct {
+ // only be used for one transaction and it is not safe for concurrent go
+ // routines to access it. WithLimit option is used as a repo wide default
+ // limit applied to all ListX methods.
+-func NewRepository(r db.Reader, w db.Writer, kms *kms.Kms, opt ...Option) (*Repository, error) {
++func NewRepository(ctx context.Context, r db.Reader, w db.Writer, kms *kms.Kms, opt ...Option) (*Repository, error) {
+ 	const op = "static.NewRepository"
+ 	switch {
+ 	case r == nil:
+-		return nil, errors.NewDeprecated(errors.InvalidParameter, op, "db.Reader")
++		return nil, errors.New(ctx, errors.InvalidParameter, op, "db.Reader")
+ 	case w == nil:
+-		return nil, errors.NewDeprecated(errors.InvalidParameter, op, "db.Writer")
++		return nil, errors.New(ctx, errors.InvalidParameter, op, "db.Writer")
+ 	case kms == nil:
+-		return nil, errors.NewDeprecated(errors.InvalidParameter, op, "kms")
++		return nil, errors.New(ctx, errors.InvalidParameter, op, "kms")
+ 	}
+ 
+ 	opts := getOpts(opt...)
+diff --git a/internal/host/static/repository_test.go b/internal/host/static/repository_test.go
+index 03b46e289..029d87a4e 100644
+--- a/internal/host/static/repository_test.go
++++ b/internal/host/static/repository_test.go
+@@ -104,7 +104,7 @@ func TestRepository_New(t *testing.T) {
+ 		tt := tt
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			assert, require := assert.New(t), require.New(t)
+-			got, err := NewRepository(tt.args.r, tt.args.w, tt.args.kms, tt.args.opts...)
++			got, err := NewRepository(context.Background(), tt.args.r, tt.args.w, tt.args.kms, tt.args.opts...)
+ 			if tt.wantIsErr != 0 {
+ 				assert.Truef(errors.Match(errors.T(tt.wantIsErr), err), "want err: %q got: %q", tt.wantIsErr, err)
+ 				assert.Nil(got)
+diff --git a/internal/iam/repository_test.go b/internal/iam/repository_test.go
+index 7b27a264d..75d832e29 100644
+--- a/internal/iam/repository_test.go
++++ b/internal/iam/repository_test.go
+@@ -89,7 +89,7 @@ func TestNewRepository(t *testing.T) {
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			assert, require := assert.New(t), require.New(t)
+-			got, err := NewRepository(tt.args.r, tt.args.w, tt.args.kms)
++			got, err := NewRepository(context.Background(), tt.args.r, tt.args.w, tt.args.kms)
+ 			if tt.wantErr {
+ 				require.Error(err)
+ 				assert.Equal(tt.wantErrString, err.Error())
+diff --git a/internal/plugin/host/repository.go b/internal/plugin/host/repository.go
+index f07c0bd72..69c54fb10 100644
+--- a/internal/plugin/host/repository.go
++++ b/internal/plugin/host/repository.go
+@@ -21,15 +21,15 @@ type Repository struct {
+ // only be used for one transaction and it is not safe for concurrent go
+ // routines to access it. WithLimit option is used as a repo wide default
+ // limit applied to all ListX methods.
+-func NewRepository(r db.Reader, w db.Writer, kms *kms.Kms, opt ...Option) (*Repository, error) {
++func NewRepository(ctx context.Context, r db.Reader, w db.Writer, kms *kms.Kms, opt ...Option) (*Repository, error) {
+ 	const op = "static.NewRepository"
+ 	switch {
+ 	case r == nil:
+-		return nil, errors.NewDeprecated(errors.InvalidParameter, op, "db.Reader")
++		return nil, errors.New(ctx, errors.InvalidParameter, op, "db.Reader")
+ 	case w == nil:
+-		return nil, errors.NewDeprecated(errors.InvalidParameter, op, "db.Writer")
++		return nil, errors.New(ctx, errors.InvalidParameter, op, "db.Writer")
+ 	case kms == nil:
+-		return nil, errors.NewDeprecated(errors.InvalidParameter, op, "kms")
++		return nil, errors.New(ctx, errors.InvalidParameter, op, "kms")
+ 	}
+ 
+ 	opts := GetOpts(opt...)
+diff --git a/internal/plugin/host/repository_test.go b/internal/plugin/host/repository_test.go
+index ba4b57797..c996ee73a 100644
+--- a/internal/plugin/host/repository_test.go
++++ b/internal/plugin/host/repository_test.go
+@@ -104,7 +104,7 @@ func TestRepository_New(t *testing.T) {
+ 		tt := tt
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			assert, require := assert.New(t), require.New(t)
+-			got, err := NewRepository(tt.args.r, tt.args.w, tt.args.kms, tt.args.opts...)
++			got, err := NewRepository(context.Background(), tt.args.r, tt.args.w, tt.args.kms, tt.args.opts...)
+ 			if tt.wantIsErr != 0 {
+ 				assert.Truef(errors.Match(errors.T(tt.wantIsErr), err), "want err: %q got: %q", tt.wantIsErr, err)
+ 				assert.Nil(got)
+diff --git a/internal/scheduler/job/repository_test.go b/internal/scheduler/job/repository_test.go
+index 7cd638dcb..ab9ebe432 100644
+--- a/internal/scheduler/job/repository_test.go
++++ b/internal/scheduler/job/repository_test.go
+@@ -116,7 +116,7 @@ func TestRepository_New(t *testing.T) {
+ 		tt := tt
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			assert, require := assert.New(t), require.New(t)
+-			got, err := NewRepository(tt.args.r, tt.args.w, tt.args.kms, tt.opts...)
++			got, err := NewRepository(context.Background(), tt.args.r, tt.args.w, tt.args.kms, tt.opts...)
+ 			if tt.wantErr {
+ 				require.Error(err)
+ 				assert.Truef(errors.Match(errors.T(tt.wantErrCode), err), "Unexpected error %s", err)
+diff --git a/internal/session/repository_session_test.go b/internal/session/repository_session_test.go
+index 30ef301a2..52b6788fe 100644
+--- a/internal/session/repository_session_test.go
++++ b/internal/session/repository_session_test.go
+@@ -958,7 +958,7 @@ func TestRepository_CancelSession(t *testing.T) {
+ 				// is terminated when the one connection is closed.
+ 				tcpTarget := tcp.TestTarget(ctx, t, conn, proj.PublicId, "test target", target.WithSessionConnectionLimit(1))
+ 
+-				targetRepo, err := target.NewRepository(rw, rw, testKms)
++				targetRepo, err := target.NewRepository(context.Background(),rw, rw, testKms)
+ 				require.NoError(t, err)
+ 				_, _, _, err = targetRepo.AddTargetHostSources(ctx, tcpTarget.GetPublicId(), tcpTarget.GetVersion(), []string{sets[0].PublicId})
+ 				require.NoError(t, err)
+@@ -967,7 +967,7 @@ func TestRepository_CancelSession(t *testing.T) {
+ 				acct := password.TestAccount(t, conn, authMethod.GetPublicId(), "name1")
+ 				user := iam.TestUser(t, iamRepo, org.PublicId, iam.WithAccountIds(acct.PublicId))
+ 
+-				authTokenRepo, err := authtoken.NewRepository(rw, rw, testKms)
++				authTokenRepo, err := authtoken.NewRepository(context.Background(),rw, rw, testKms)
+ 				require.NoError(t, err)
+ 				at, err := authTokenRepo.CreateAuthToken(ctx, user, acct.GetPublicId())
+ 				require.NoError(t, err)
+@@ -1483,7 +1483,7 @@ func testSessionCredentialParams(t *testing.T, conn *db.DB, wrapper wrapping.Wra
+ 	ctx := context.Background()
+ 
+ 	kms := kms.TestKms(t, conn, wrapper)
+-	targetRepo, err := target.NewRepository(rw, rw, kms)
++	targetRepo, err := target.NewRepository(context.Background(),rw, rw, kms)
+ 	require.NoError(err)
+ 	tar, _, _, err := targetRepo.LookupTarget(ctx, params.TargetId)
+ 	require.NoError(err)
+@@ -1521,7 +1521,7 @@ func TestRepository_deleteTargetFKey(t *testing.T) {
+ 	iamRepo := iam.TestRepo(t, conn, wrapper)
+ 	kms := kms.TestKms(t, conn, wrapper)
+ 	repo, err := NewRepository(rw, rw, kms)
+-	targetRepo, err := target.NewRepository(rw, rw, kms)
++	targetRepo, err := target.NewRepository(context.Background(),rw, rw, kms)
+ 	require.NoError(t, err)
+ 
+ 	tests := []struct {
+diff --git a/internal/session/service_authorize_connection_test.go b/internal/session/service_authorize_connection_test.go
+index 39582a086..454969a85 100644
+--- a/internal/session/service_authorize_connection_test.go
++++ b/internal/session/service_authorize_connection_test.go
+@@ -90,7 +90,7 @@ func TestService_AuthorizeConnection(t *testing.T) {
+ 				// is terminated when the one connection is closed.
+ 				tcpTarget := tcp.TestTarget(ctx, t, conn, proj.PublicId, "test target", target.WithSessionConnectionLimit(1))
+ 
+-				targetRepo, err := target.NewRepository(rw, rw, testKms)
++				targetRepo, err := target.NewRepository(context.Background(),rw, rw, testKms)
+ 				require.NoError(t, err)
+ 				_, _, _, err = targetRepo.AddTargetHostSources(ctx, tcpTarget.GetPublicId(), tcpTarget.GetVersion(), []string{sets[0].PublicId})
+ 				require.NoError(t, err)
+@@ -99,7 +99,7 @@ func TestService_AuthorizeConnection(t *testing.T) {
+ 				acct := password.TestAccount(t, conn, authMethod.GetPublicId(), "name1")
+ 				user := iam.TestUser(t, iamRepo, org.PublicId, iam.WithAccountIds(acct.PublicId))
+ 
+-				authTokenRepo, err := authtoken.NewRepository(rw, rw, testKms)
++				authTokenRepo, err := authtoken.NewRepository(context.Background(),rw, rw, testKms)
+ 				require.NoError(t, err)
+ 				at, err := authTokenRepo.CreateAuthToken(ctx, user, acct.GetPublicId())
+ 				require.NoError(t, err)
+diff --git a/internal/session/service_close_connections_test.go b/internal/session/service_close_connections_test.go
+index 8ccbad1f1..56cef3231 100644
+--- a/internal/session/service_close_connections_test.go
++++ b/internal/session/service_close_connections_test.go
+@@ -51,7 +51,7 @@ func TestServiceCloseConnections(t *testing.T) {
+ 		// is terminated when the one connection is closed.
+ 		tcpTarget := tcp.TestTarget(ctx, t, conn, proj.PublicId, "test target", target.WithSessionConnectionLimit(1))
+ 
+-		targetRepo, err := target.NewRepository(rw, rw, testKms)
++		targetRepo, err := target.NewRepository(context.Background(),rw, rw, testKms)
+ 		require.NoError(t, err)
+ 		_, _, _, err = targetRepo.AddTargetHostSources(ctx, tcpTarget.GetPublicId(), tcpTarget.GetVersion(), []string{sets[0].PublicId})
+ 		require.NoError(t, err)
+@@ -60,7 +60,7 @@ func TestServiceCloseConnections(t *testing.T) {
+ 		acct := password.TestAccount(t, conn, authMethod.GetPublicId(), "name1")
+ 		user := iam.TestUser(t, iamRepo, org.PublicId, iam.WithAccountIds(acct.PublicId))
+ 
+-		authTokenRepo, err := authtoken.NewRepository(rw, rw, testKms)
++		authTokenRepo, err := authtoken.NewRepository(context.Background(),rw, rw, testKms)
+ 		require.NoError(t, err)
+ 		at, err := authTokenRepo.CreateAuthToken(ctx, user, acct.GetPublicId())
+ 		require.NoError(t, err)
+diff --git a/internal/session/testing.go b/internal/session/testing.go
+index 65b4dc3a2..b0d19b412 100644
+--- a/internal/session/testing.go
++++ b/internal/session/testing.go
+@@ -144,7 +144,7 @@ func TestSessionParams(t testing.TB, conn *db.DB, wrapper wrapping.Wrapper, iamR
+ 	tcpTarget := tcp.TestTarget(ctx, t, conn, proj.PublicId, "test target")
+ 
+ 	kms := kms.TestKms(t, conn, wrapper)
+-	targetRepo, err := target.NewRepository(rw, rw, kms)
++	targetRepo, err := target.NewRepository(context.Background(),rw, rw, kms)
+ 	require.NoError(err)
+ 	_, _, _, err = targetRepo.AddTargetHostSources(ctx, tcpTarget.GetPublicId(), tcpTarget.GetVersion(), []string{sets[0].PublicId})
+ 	require.NoError(err)
+@@ -153,7 +153,7 @@ func TestSessionParams(t testing.TB, conn *db.DB, wrapper wrapping.Wrapper, iamR
+ 	acct := password.TestAccount(t, conn, authMethod.GetPublicId(), "name1")
+ 	user := iam.TestUser(t, iamRepo, org.PublicId, iam.WithAccountIds(acct.PublicId))
+ 
+-	authTokenRepo, err := authtoken.NewRepository(rw, rw, kms)
++	authTokenRepo, err := authtoken.NewRepository(context.Background(),rw, rw, kms)
+ 	require.NoError(err)
+ 	at, err := authTokenRepo.CreateAuthToken(ctx, user, acct.GetPublicId())
+ 	require.NoError(err)
+diff --git a/internal/target/repository.go b/internal/target/repository.go
+index 2f65552f5..2c1c54cad 100644
+--- a/internal/target/repository.go
++++ b/internal/target/repository.go
+@@ -32,16 +32,16 @@ type Repository struct {
+ 
+ // NewRepository creates a new target Repository. Supports the options: WithLimit
+ // which sets a default limit on results returned by repo operations.
+-func NewRepository(r db.Reader, w db.Writer, kms *kms.Kms, opt ...Option) (*Repository, error) {
++func NewRepository(ctx context.Context, r db.Reader, w db.Writer, kms *kms.Kms, opt ...Option) (*Repository, error) {
+ 	const op = "target.NewRepository"
+ 	if r == nil {
+-		return nil, errors.NewDeprecated(errors.InvalidParameter, op, "nil reader")
++		return nil, errors.New(ctx, errors.InvalidParameter, op, "nil reader")
+ 	}
+ 	if w == nil {
+-		return nil, errors.NewDeprecated(errors.InvalidParameter, op, "nil writer")
++		return nil, errors.New(ctx, errors.InvalidParameter, op, "nil writer")
+ 	}
+ 	if kms == nil {
+-		return nil, errors.NewDeprecated(errors.InvalidParameter, op, "nil kms")
++		return nil, errors.New(ctx, errors.InvalidParameter, op, "nil kms")
+ 	}
+ 	opts := GetOpts(opt...)
+ 	if opts.WithLimit == 0 {
+diff --git a/internal/target/repository_credential_source_test.go b/internal/target/repository_credential_source_test.go
+index 049a05a47..b86b4e4cc 100644
+--- a/internal/target/repository_credential_source_test.go
++++ b/internal/target/repository_credential_source_test.go
+@@ -48,7 +48,7 @@ func TestRepository_SetTargetCredentialSources(t *testing.T) {
+ 	rw := db.New(conn)
+ 	wrapper := db.TestWrapper(t)
+ 	testKms := kms.TestKms(t, conn, wrapper)
+-	repo, err := target.NewRepository(rw, rw, testKms)
++	repo, err := target.NewRepository(context.Background(),rw, rw, testKms)
+ 	require.NoError(t, err)
+ 
+ 	iamRepo := iam.TestRepo(t, conn, wrapper)
+diff --git a/internal/target/repository_test.go b/internal/target/repository_test.go
+index 6187421a3..ee8a90573 100644
+--- a/internal/target/repository_test.go
++++ b/internal/target/repository_test.go
+@@ -79,7 +79,7 @@ func TestNewRepository(t *testing.T) {
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			assert, require := assert.New(t), require.New(t)
+-			got, err := NewRepository(tt.args.r, tt.args.w, tt.args.kms)
++			got, err := NewRepository(context.Background(), tt.args.r, tt.args.w, tt.args.kms)
+ 			if tt.wantErr {
+ 				require.Error(err)
+ 				assert.Equal(tt.wantErrString, err.Error())
+diff --git a/internal/target/tcp/immutable_fields_test.go b/internal/target/tcp/immutable_fields_test.go
+index fb2871f95..8924df57a 100644
+--- a/internal/target/tcp/immutable_fields_test.go
++++ b/internal/target/tcp/immutable_fields_test.go
+@@ -159,7 +159,7 @@ func TestTargetHostSet_ImmutableFields(t *testing.T) {
+ 	wrapper := db.TestWrapper(t)
+ 	testKms := kms.TestKms(t, conn, wrapper)
+ 	rw := db.New(conn)
+-	repo, err := target.NewRepository(rw, rw, testKms)
++	repo, err := target.NewRepository(context.Background(),rw, rw, testKms)
+ 	require.NoError(t, err)
+ 
+ 	ts := timestamp.Timestamp{Timestamp: &timestamppb.Timestamp{Seconds: 0, Nanos: 0}}
+diff --git a/internal/target/tcp/repository_credential_source_test.go b/internal/target/tcp/repository_credential_source_test.go
+index 79c76d9bc..37c641cae 100644
+--- a/internal/target/tcp/repository_credential_source_test.go
++++ b/internal/target/tcp/repository_credential_source_test.go
+@@ -29,7 +29,7 @@ func TestRepository_AddTargetCredentialSources(t *testing.T) {
+ 	testKms := kms.TestKms(t, conn, wrapper)
+ 	iamRepo := iam.TestRepo(t, conn, wrapper)
+ 	_, staticProj := iam.TestScopes(t, iamRepo)
+-	repo, err := target.NewRepository(rw, rw, testKms)
++	repo, err := target.NewRepository(context.Background(),rw, rw, testKms)
+ 	require.NoError(t, err)
+ 
+ 	csVault := vault.TestCredentialStores(t, conn, wrapper, staticProj.GetPublicId(), 1)[0]
+@@ -336,7 +336,7 @@ func TestRepository_DeleteTargetCredentialSources(t *testing.T) {
+ 	testKms := kms.TestKms(t, conn, wrapper)
+ 	iamRepo := iam.TestRepo(t, conn, wrapper)
+ 	_, proj := iam.TestScopes(t, iamRepo)
+-	repo, err := target.NewRepository(rw, rw, testKms)
++	repo, err := target.NewRepository(context.Background(),rw, rw, testKms)
+ 	require.NoError(t, err)
+ 
+ 	type args struct {
+@@ -563,7 +563,7 @@ func TestRepository_SetTargetCredentialSources(t *testing.T) {
+ 	rw := db.New(conn)
+ 	wrapper := db.TestWrapper(t)
+ 	testKms := kms.TestKms(t, conn, wrapper)
+-	repo, err := target.NewRepository(rw, rw, testKms)
++	repo, err := target.NewRepository(context.Background(),rw, rw, testKms)
+ 	require.NoError(t, err)
+ 
+ 	iamRepo := iam.TestRepo(t, conn, wrapper)
+diff --git a/internal/target/tcp/repository_host_source_test.go b/internal/target/tcp/repository_host_source_test.go
+index 8767820fd..2ec9de027 100644
+--- a/internal/target/tcp/repository_host_source_test.go
++++ b/internal/target/tcp/repository_host_source_test.go
+@@ -34,7 +34,7 @@ func TestRepository_AddTargetHostSets(t *testing.T) {
+ 	testKms := kms.TestKms(t, conn, wrapper)
+ 	iamRepo := iam.TestRepo(t, conn, wrapper)
+ 	_, staticProj := iam.TestScopes(t, iamRepo)
+-	repo, err := target.NewRepository(rw, rw, testKms)
++	repo, err := target.NewRepository(context.Background(),rw, rw, testKms)
+ 	require.NoError(t, err)
+ 
+ 	createHostSetsFn := func(projects []string) []string {
+@@ -199,7 +199,7 @@ func TestRepository_DeleteTargetHosts(t *testing.T) {
+ 	testKms := kms.TestKms(t, conn, wrapper)
+ 	iamRepo := iam.TestRepo(t, conn, wrapper)
+ 	_, proj := iam.TestScopes(t, iamRepo)
+-	repo, err := target.NewRepository(rw, rw, testKms)
++	repo, err := target.NewRepository(context.Background(),rw, rw, testKms)
+ 	require.NoError(t, err)
+ 
+ 	ctx := context.Background()
+@@ -404,7 +404,7 @@ func TestRepository_SetTargetHostSets(t *testing.T) {
+ 	rw := db.New(conn)
+ 	wrapper := db.TestWrapper(t)
+ 	testKms := kms.TestKms(t, conn, wrapper)
+-	repo, err := target.NewRepository(rw, rw, testKms)
++	repo, err := target.NewRepository(context.Background(),rw, rw, testKms)
+ 	require.NoError(t, err)
+ 
+ 	iamRepo := iam.TestRepo(t, conn, wrapper)
+diff --git a/internal/target/tcp/repository_tcp_target_test.go b/internal/target/tcp/repository_tcp_target_test.go
+index 109daf05a..92e96f183 100644
+--- a/internal/target/tcp/repository_tcp_target_test.go
++++ b/internal/target/tcp/repository_tcp_target_test.go
+@@ -28,7 +28,7 @@ func TestRepository_CreateTarget(t *testing.T) {
+ 	rw := db.New(conn)
+ 	wrapper := db.TestWrapper(t)
+ 	testKms := kms.TestKms(t, conn, wrapper)
+-	repo, err := target.NewRepository(rw, rw, testKms)
++	repo, err := target.NewRepository(context.Background(),rw, rw, testKms)
+ 	require.NoError(t, err)
+ 	_, proj := iam.TestScopes(t, iam.TestRepo(t, conn, wrapper))
+ 
+@@ -165,7 +165,7 @@ func TestRepository_UpdateTcpTarget(t *testing.T) {
+ 	wrapper := db.TestWrapper(t)
+ 	testKms := kms.TestKms(t, conn, wrapper)
+ 
+-	repo, err := target.NewRepository(rw, rw, testKms)
++	repo, err := target.NewRepository(context.Background(),rw, rw, testKms)
+ 	require.NoError(t, err)
+ 	id := tcp.TestId(t)
+ 
+diff --git a/internal/target/tcp/repository_test.go b/internal/target/tcp/repository_test.go
+index d5ca11008..255222d11 100644
+--- a/internal/target/tcp/repository_test.go
++++ b/internal/target/tcp/repository_test.go
+@@ -30,7 +30,7 @@ func TestRepository_LookupTarget(t *testing.T) {
+ 	_, _, err := iamRepo.UpdateScope(ctx, proj, 1, []string{"name"})
+ 	require.NoError(t, err)
+ 	rw := db.New(conn)
+-	repo, err := target.NewRepository(rw, rw, testKms)
++	repo, err := target.NewRepository(context.Background(),rw, rw, testKms)
+ 	require.NoError(t, err)
+ 	tgt := tcp.TestTarget(ctx, t, conn, proj.PublicId, "target-name")
+ 
+@@ -144,7 +144,7 @@ func TestRepository_ListTargets(t *testing.T) {
+ 	iamRepo := iam.TestRepo(t, conn, wrapper)
+ 	_, proj := iam.TestScopes(t, iamRepo)
+ 	rw := db.New(conn)
+-	repo, err := target.NewRepository(rw, rw, testKms, target.WithLimit(testLimit))
++	repo, err := target.NewRepository(context.Background(),rw, rw, testKms, target.WithLimit(testLimit))
+ 	require.NoError(t, err)
+ 
+ 	type args struct {
+@@ -246,7 +246,7 @@ func TestRepository_ListRoles_Multiple_Scopes(t *testing.T) {
+ 	_, proj1 := iam.TestScopes(t, iamRepo)
+ 	_, proj2 := iam.TestScopes(t, iamRepo)
+ 	rw := db.New(conn)
+-	repo, err := target.NewRepository(rw, rw, testKms)
++	repo, err := target.NewRepository(context.Background(),rw, rw, testKms)
+ 	require.NoError(t, err)
+ 
+ 	db.TestDeleteWhere(t, conn, tcp.NewTestTarget(""), "1=1")
+@@ -274,7 +274,7 @@ func TestRepository_DeleteTarget(t *testing.T) {
+ 	testKms := kms.TestKms(t, conn, wrapper)
+ 	iamRepo := iam.TestRepo(t, conn, wrapper)
+ 	_, proj := iam.TestScopes(t, iamRepo)
+-	repo, err := target.NewRepository(rw, rw, testKms)
++	repo, err := target.NewRepository(context.Background(),rw, rw, testKms)
+ 	require.NoError(t, err)
+ 
+ 	ctx := context.Background()
+diff --git a/internal/target/tcp/testing_test.go b/internal/target/tcp/testing_test.go
+index bcc402f5a..d4d29a60b 100644
+--- a/internal/target/tcp/testing_test.go
++++ b/internal/target/tcp/testing_test.go
+@@ -23,7 +23,7 @@ func Test_TestTcpTarget(t *testing.T) {
+ 	testKms := kms.TestKms(t, conn, wrapper)
+ 	iamRepo := iam.TestRepo(t, conn, wrapper)
+ 	_, proj := iam.TestScopes(t, iamRepo)
+-	repo, err := target.NewRepository(rw, rw, testKms)
++	repo, err := target.NewRepository(context.Background(),rw, rw, testKms)
+ 	require.NoError(err)
+ 	ctx := context.Background()
+ 
+@@ -56,7 +56,7 @@ func Test_TestCredentialLibrary(t *testing.T) {
+ 	testKms := kms.TestKms(t, conn, wrapper)
+ 	iamRepo := iam.TestRepo(t, conn, wrapper)
+ 	_, proj := iam.TestScopes(t, iamRepo)
+-	repo, err := target.NewRepository(rw, rw, testKms)
++	repo, err := target.NewRepository(context.Background(),rw, rw, testKms)
+ 	require.NoError(err)
+ 	ctx := context.Background()
+ 
+diff --git a/testing/dbtest/session_list_benchmarks_dump_generation_test.go b/testing/dbtest/session_list_benchmarks_dump_generation_test.go
+index 6ef81f3ad..5ada274dd 100644
+--- a/testing/dbtest/session_list_benchmarks_dump_generation_test.go
++++ b/testing/dbtest/session_list_benchmarks_dump_generation_test.go
+@@ -122,9 +122,9 @@ func TestGenerateSessionBenchmarkTemplateDumps(t *testing.T) {
+ 			kms := kms.TestKms(t, conn, wrap)
+ 
+ 			iamRepo := iam.TestRepo(t, conn, wrap)
+-			authTokenRepo, err := authtoken.NewRepository(rw, rw, kms)
++			authTokenRepo, err := authtoken.NewRepository(context.Background(),rw, rw, kms)
+ 			require.NoError(err)
+-			pwRepo, err := password.NewRepository(rw, rw, kms)
++			pwRepo, err := password.NewRepository(context.Background(),rw, rw, kms)
+ 			require.NoError(err)
+ 			sessRepo, err := session.NewRepository(rw, rw, kms)
+ 			require.NoError(err)

@@ -1,0 +1,2613 @@
+diff --git a/internal/auth/oidc/account_claim_map_test.go b/internal/auth/oidc/account_claim_map_test.go
+index 68923539f..4c5992eb5 100644
+--- a/internal/auth/oidc/account_claim_map_test.go
++++ b/internal/auth/oidc/account_claim_map_test.go
+@@ -7,7 +7,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/errors"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/stretchr/testify/assert"
+ 	"github.com/stretchr/testify/require"
+ 	"google.golang.org/protobuf/proto"
+diff --git a/internal/auth/oidc/account_test.go b/internal/auth/oidc/account_test.go
+index e03db7be8..339b2ce01 100644
+--- a/internal/auth/oidc/account_test.go
++++ b/internal/auth/oidc/account_test.go
+@@ -9,7 +9,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/errors"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/stretchr/testify/assert"
+ 	"github.com/stretchr/testify/require"
+ 	"google.golang.org/protobuf/proto"
+diff --git a/internal/auth/oidc/aud_claim_test.go b/internal/auth/oidc/aud_claim_test.go
+index 548e55229..fee53af21 100644
+--- a/internal/auth/oidc/aud_claim_test.go
++++ b/internal/auth/oidc/aud_claim_test.go
+@@ -7,7 +7,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/errors"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/stretchr/testify/assert"
+ 	"github.com/stretchr/testify/require"
+ 	"google.golang.org/protobuf/proto"
+diff --git a/internal/auth/oidc/auth_method.go b/internal/auth/oidc/auth_method.go
+index 1f2417424..5187b0dd7 100644
+--- a/internal/auth/oidc/auth_method.go
++++ b/internal/auth/oidc/auth_method.go
+@@ -13,7 +13,7 @@ import (
+ 
+ 	"github.com/hashicorp/boundary/internal/auth/oidc/store"
+ 	"github.com/hashicorp/boundary/internal/errors"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/oplog"
+ 	wrapping "github.com/hashicorp/go-kms-wrapping"
+ 	"github.com/hashicorp/go-kms-wrapping/structwrapping"
+@@ -236,7 +236,7 @@ func (a *AuthMethod) hmacClientSecret(ctx context.Context, cipher wrapping.Wrapp
+ 	if cipher == nil {
+ 		return errors.New(ctx, errors.InvalidParameter, op, "missing cipher")
+ 	}
+-	reader, err := kms.NewDerivedReader(cipher, 32, []byte(a.PublicId), nil)
++	reader, err := crypto.NewDerivedReader(cipher, 32, []byte(a.PublicId), nil)
+ 	if err != nil {
+ 		return errors.Wrap(ctx, err, op)
+ 	}
+diff --git a/internal/auth/oidc/auth_method_test.go b/internal/auth/oidc/auth_method_test.go
+index 0aaf2b2aa..dc9c33ec9 100644
+--- a/internal/auth/oidc/auth_method_test.go
++++ b/internal/auth/oidc/auth_method_test.go
+@@ -10,7 +10,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/errors"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	wrapping "github.com/hashicorp/go-kms-wrapping"
+ 	"github.com/hashicorp/go-kms-wrapping/wrappers/aead"
+ 	"github.com/stretchr/testify/assert"
+diff --git a/internal/auth/oidc/certificate_test.go b/internal/auth/oidc/certificate_test.go
+index 72a86cd50..5f2e54eb3 100644
+--- a/internal/auth/oidc/certificate_test.go
++++ b/internal/auth/oidc/certificate_test.go
+@@ -7,7 +7,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/errors"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/stretchr/testify/assert"
+ 	"github.com/stretchr/testify/require"
+ 	"google.golang.org/protobuf/proto"
+diff --git a/internal/auth/oidc/claims_scope_test.go b/internal/auth/oidc/claims_scope_test.go
+index efdc6a676..91677af14 100644
+--- a/internal/auth/oidc/claims_scope_test.go
++++ b/internal/auth/oidc/claims_scope_test.go
+@@ -7,7 +7,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/errors"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/stretchr/testify/assert"
+ 	"github.com/stretchr/testify/require"
+ 	"google.golang.org/protobuf/proto"
+diff --git a/internal/auth/oidc/immutable_fields_test.go b/internal/auth/oidc/immutable_fields_test.go
+index 4b57f676a..88b1888af 100644
+--- a/internal/auth/oidc/immutable_fields_test.go
++++ b/internal/auth/oidc/immutable_fields_test.go
+@@ -7,7 +7,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/db/timestamp"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/stretchr/testify/assert"
+ 	"github.com/stretchr/testify/require"
+ 	"google.golang.org/protobuf/proto"
+diff --git a/internal/auth/oidc/repository.go b/internal/auth/oidc/repository.go
+index b9304ff6f..7b6440092 100644
+--- a/internal/auth/oidc/repository.go
++++ b/internal/auth/oidc/repository.go
+@@ -5,7 +5,7 @@ import (
+ 
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/errors"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ )
+ 
+ // Repository is the oidc repository
+diff --git a/internal/auth/oidc/repository_account.go b/internal/auth/oidc/repository_account.go
+index 1f6ed7ffa..aca05aa96 100644
+--- a/internal/auth/oidc/repository_account.go
++++ b/internal/auth/oidc/repository_account.go
+@@ -8,7 +8,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	dbcommon "github.com/hashicorp/boundary/internal/db/common"
+ 	"github.com/hashicorp/boundary/internal/errors"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/oplog"
+ )
+ 
+diff --git a/internal/auth/oidc/repository_account_test.go b/internal/auth/oidc/repository_account_test.go
+index 62dc111da..be4bf7187 100644
+--- a/internal/auth/oidc/repository_account_test.go
++++ b/internal/auth/oidc/repository_account_test.go
+@@ -13,7 +13,7 @@ import (
+ 	dbassert "github.com/hashicorp/boundary/internal/db/assert"
+ 	"github.com/hashicorp/boundary/internal/errors"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/oplog"
+ 	"github.com/stretchr/testify/assert"
+ 	"github.com/stretchr/testify/require"
+diff --git a/internal/auth/oidc/repository_auth_method.go b/internal/auth/oidc/repository_auth_method.go
+index cadba1dd7..7774ecbb7 100644
+--- a/internal/auth/oidc/repository_auth_method.go
++++ b/internal/auth/oidc/repository_auth_method.go
+@@ -8,7 +8,7 @@ import (
+ 
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/errors"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/oplog"
+ 	wrapping "github.com/hashicorp/go-kms-wrapping"
+ 	"google.golang.org/protobuf/proto"
+diff --git a/internal/auth/oidc/repository_auth_method_create.go b/internal/auth/oidc/repository_auth_method_create.go
+index 67ba95de4..d4a3b7872 100644
+--- a/internal/auth/oidc/repository_auth_method_create.go
++++ b/internal/auth/oidc/repository_auth_method_create.go
+@@ -6,7 +6,7 @@ import (
+ 
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/errors"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/oplog"
+ )
+ 
+diff --git a/internal/auth/oidc/repository_auth_method_create_test.go b/internal/auth/oidc/repository_auth_method_create_test.go
+index 3a2f91740..19026b803 100644
+--- a/internal/auth/oidc/repository_auth_method_create_test.go
++++ b/internal/auth/oidc/repository_auth_method_create_test.go
+@@ -10,7 +10,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/errors"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/oplog"
+ 	"github.com/stretchr/testify/assert"
+ 	"github.com/stretchr/testify/require"
+diff --git a/internal/auth/oidc/repository_auth_method_delete.go b/internal/auth/oidc/repository_auth_method_delete.go
+index 0b8cfa8c9..51fc043b4 100644
+--- a/internal/auth/oidc/repository_auth_method_delete.go
++++ b/internal/auth/oidc/repository_auth_method_delete.go
+@@ -6,7 +6,7 @@ import (
+ 
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/errors"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/oplog"
+ )
+ 
+diff --git a/internal/auth/oidc/repository_auth_method_delete_test.go b/internal/auth/oidc/repository_auth_method_delete_test.go
+index 1696487ba..48b182cec 100644
+--- a/internal/auth/oidc/repository_auth_method_delete_test.go
++++ b/internal/auth/oidc/repository_auth_method_delete_test.go
+@@ -8,7 +8,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/errors"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/oplog"
+ 	"github.com/stretchr/testify/assert"
+ 	"github.com/stretchr/testify/require"
+diff --git a/internal/auth/oidc/repository_auth_method_operational_state.go b/internal/auth/oidc/repository_auth_method_operational_state.go
+index caa86c033..eacb0cf74 100644
+--- a/internal/auth/oidc/repository_auth_method_operational_state.go
++++ b/internal/auth/oidc/repository_auth_method_operational_state.go
+@@ -6,7 +6,7 @@ import (
+ 
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/errors"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/oplog"
+ )
+ 
+diff --git a/internal/auth/oidc/repository_auth_method_operational_state_test.go b/internal/auth/oidc/repository_auth_method_operational_state_test.go
+index bb744571a..6add05d12 100644
+--- a/internal/auth/oidc/repository_auth_method_operational_state_test.go
++++ b/internal/auth/oidc/repository_auth_method_operational_state_test.go
+@@ -8,7 +8,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/errors"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/oplog"
+ 	"github.com/hashicorp/cap/oidc"
+ 	"github.com/stretchr/testify/assert"
+diff --git a/internal/auth/oidc/repository_auth_method_read.go b/internal/auth/oidc/repository_auth_method_read.go
+index 35d86f8e8..135a24db9 100644
+--- a/internal/auth/oidc/repository_auth_method_read.go
++++ b/internal/auth/oidc/repository_auth_method_read.go
+@@ -8,7 +8,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/db/timestamp"
+ 	"github.com/hashicorp/boundary/internal/errors"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/go-kms-wrapping/structwrapping"
+ )
+ 
+diff --git a/internal/auth/oidc/repository_auth_method_read_test.go b/internal/auth/oidc/repository_auth_method_read_test.go
+index 5ee1d8680..ad2054f09 100644
+--- a/internal/auth/oidc/repository_auth_method_read_test.go
++++ b/internal/auth/oidc/repository_auth_method_read_test.go
+@@ -8,7 +8,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/errors"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/stretchr/testify/assert"
+ 	"github.com/stretchr/testify/require"
+ )
+diff --git a/internal/auth/oidc/repository_auth_method_test.go b/internal/auth/oidc/repository_auth_method_test.go
+index 80e0b467a..67c6c19c6 100644
+--- a/internal/auth/oidc/repository_auth_method_test.go
++++ b/internal/auth/oidc/repository_auth_method_test.go
+@@ -9,7 +9,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/errors"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/oplog"
+ 	wrapping "github.com/hashicorp/go-kms-wrapping"
+ 	"github.com/stretchr/testify/assert"
+diff --git a/internal/auth/oidc/repository_auth_method_update.go b/internal/auth/oidc/repository_auth_method_update.go
+index e7891388d..2f1c39c4b 100644
+--- a/internal/auth/oidc/repository_auth_method_update.go
++++ b/internal/auth/oidc/repository_auth_method_update.go
+@@ -9,7 +9,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	dbcommon "github.com/hashicorp/boundary/internal/db/common"
+ 	"github.com/hashicorp/boundary/internal/errors"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/oplog"
+ 	"github.com/hashicorp/go-multierror"
+ 	"github.com/hashicorp/go-secure-stdlib/strutil"
+diff --git a/internal/auth/oidc/repository_auth_method_update_test.go b/internal/auth/oidc/repository_auth_method_update_test.go
+index e3f8601a6..d7e059e60 100644
+--- a/internal/auth/oidc/repository_auth_method_update_test.go
++++ b/internal/auth/oidc/repository_auth_method_update_test.go
+@@ -14,7 +14,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/errors"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/oplog"
+ 	"github.com/hashicorp/boundary/sdk/testutil"
+ 	"github.com/hashicorp/cap/oidc"
+diff --git a/internal/auth/oidc/repository_managed_group.go b/internal/auth/oidc/repository_managed_group.go
+index 606b5ed0c..88b1dc3cd 100644
+--- a/internal/auth/oidc/repository_managed_group.go
++++ b/internal/auth/oidc/repository_managed_group.go
+@@ -8,7 +8,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	dbcommon "github.com/hashicorp/boundary/internal/db/common"
+ 	"github.com/hashicorp/boundary/internal/errors"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/oplog"
+ )
+ 
+diff --git a/internal/auth/oidc/repository_managed_group_members.go b/internal/auth/oidc/repository_managed_group_members.go
+index 2758aaf36..24ae4a2c3 100644
+--- a/internal/auth/oidc/repository_managed_group_members.go
++++ b/internal/auth/oidc/repository_managed_group_members.go
+@@ -6,7 +6,7 @@ import (
+ 
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/errors"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/oplog"
+ )
+ 
+diff --git a/internal/auth/oidc/repository_managed_group_members_test.go b/internal/auth/oidc/repository_managed_group_members_test.go
+index 429d9266e..f79b09b27 100644
+--- a/internal/auth/oidc/repository_managed_group_members_test.go
++++ b/internal/auth/oidc/repository_managed_group_members_test.go
+@@ -11,7 +11,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/errors"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/servers/controller"
+ 	"github.com/stretchr/testify/assert"
+ 	"github.com/stretchr/testify/require"
+diff --git a/internal/auth/oidc/repository_managed_group_test.go b/internal/auth/oidc/repository_managed_group_test.go
+index 12cbc8db9..d714c947a 100644
+--- a/internal/auth/oidc/repository_managed_group_test.go
++++ b/internal/auth/oidc/repository_managed_group_test.go
+@@ -14,7 +14,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/errors"
+ 	"github.com/hashicorp/boundary/internal/iam"
+ 	"github.com/hashicorp/boundary/internal/intglobals"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/oplog"
+ 	"github.com/stretchr/testify/assert"
+ 	"github.com/stretchr/testify/require"
+diff --git a/internal/auth/oidc/repository_test.go b/internal/auth/oidc/repository_test.go
+index 3026d2059..d2d99bb82 100644
+--- a/internal/auth/oidc/repository_test.go
++++ b/internal/auth/oidc/repository_test.go
+@@ -6,7 +6,7 @@ import (
+ 
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/errors"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/stretchr/testify/assert"
+ 	"github.com/stretchr/testify/require"
+ )
+diff --git a/internal/auth/oidc/service.go b/internal/auth/oidc/service.go
+index 568668a62..e4f551adb 100644
+--- a/internal/auth/oidc/service.go
++++ b/internal/auth/oidc/service.go
+@@ -10,7 +10,8 @@ import (
+ 	"github.com/hashicorp/boundary/internal/authtoken"
+ 	"github.com/hashicorp/boundary/internal/errors"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	`github.com/hashicorp/boundary/internal/kms`
++	`github.com/hashicorp/boundary/internal/libs/crypto`
+ 	wrapping "github.com/hashicorp/go-kms-wrapping"
+ 	"github.com/hashicorp/go-kms-wrapping/wrappers/aead"
+ 
+@@ -189,7 +190,7 @@ func requestWrappingWrapper(ctx context.Context, k *kms.Kms, scopeId, authMethod
+ 	}
+ 
+ 	// okay, I guess we need to derive a new key for this combo of oidcWrapper and authMethod
+-	reader, err := kms.NewDerivedReader(oidcWrapper, 32, []byte(authMethodId), []byte(scopeId))
++	reader, err := crypto.NewDerivedReader(oidcWrapper, 32, []byte(authMethodId), []byte(scopeId))
+ 	if err != nil {
+ 		return nil, errors.Wrap(ctx, err, op)
+ 	}
+diff --git a/internal/auth/oidc/service_callback_test.go b/internal/auth/oidc/service_callback_test.go
+index f1b66c3ca..b56b1e476 100644
+--- a/internal/auth/oidc/service_callback_test.go
++++ b/internal/auth/oidc/service_callback_test.go
+@@ -19,7 +19,7 @@ import (
+ 	iamStore "github.com/hashicorp/boundary/internal/iam/store"
+ 	"github.com/hashicorp/go-secure-stdlib/strutil"
+ 
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/oplog"
+ 	"github.com/hashicorp/cap/oidc"
+ 	"github.com/stretchr/testify/assert"
+diff --git a/internal/auth/oidc/service_start_auth_test.go b/internal/auth/oidc/service_start_auth_test.go
+index b280b0ce0..a3ecc0c44 100644
+--- a/internal/auth/oidc/service_start_auth_test.go
++++ b/internal/auth/oidc/service_start_auth_test.go
+@@ -16,7 +16,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/errors"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/cap/oidc"
+ 	"github.com/stretchr/testify/assert"
+ 	"github.com/stretchr/testify/require"
+diff --git a/internal/auth/oidc/service_test.go b/internal/auth/oidc/service_test.go
+index 084b825a4..6b6614e27 100644
+--- a/internal/auth/oidc/service_test.go
++++ b/internal/auth/oidc/service_test.go
+@@ -10,7 +10,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/db/timestamp"
+ 	"github.com/hashicorp/boundary/internal/errors"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	wrapping "github.com/hashicorp/go-kms-wrapping"
+ 	"github.com/hashicorp/go-kms-wrapping/wrappers/aead"
+ 	"github.com/stretchr/testify/assert"
+diff --git a/internal/auth/oidc/service_token_request.go b/internal/auth/oidc/service_token_request.go
+index 70733d646..3039ca069 100644
+--- a/internal/auth/oidc/service_token_request.go
++++ b/internal/auth/oidc/service_token_request.go
+@@ -8,7 +8,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/auth/oidc/request"
+ 	"github.com/hashicorp/boundary/internal/authtoken"
+ 	"github.com/hashicorp/boundary/internal/errors"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"google.golang.org/protobuf/proto"
+ )
+ 
+diff --git a/internal/auth/oidc/service_token_request_test.go b/internal/auth/oidc/service_token_request_test.go
+index a758d47d2..64304abbf 100644
+--- a/internal/auth/oidc/service_token_request_test.go
++++ b/internal/auth/oidc/service_token_request_test.go
+@@ -13,7 +13,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/db/timestamp"
+ 	"github.com/hashicorp/boundary/internal/errors"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/mr-tron/base58"
+ 	"github.com/stretchr/testify/assert"
+ 	"github.com/stretchr/testify/require"
+diff --git a/internal/auth/oidc/signing_alg_test.go b/internal/auth/oidc/signing_alg_test.go
+index 0e37aa349..5e6f3fee5 100644
+--- a/internal/auth/oidc/signing_alg_test.go
++++ b/internal/auth/oidc/signing_alg_test.go
+@@ -7,7 +7,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/errors"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/stretchr/testify/assert"
+ 	"github.com/stretchr/testify/require"
+ 	"google.golang.org/protobuf/proto"
+diff --git a/internal/auth/oidc/testing.go b/internal/auth/oidc/testing.go
+index d46ff8c6d..771ce27cd 100644
+--- a/internal/auth/oidc/testing.go
++++ b/internal/auth/oidc/testing.go
+@@ -26,7 +26,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/db/timestamp"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/cap/oidc"
+ 	wrapping "github.com/hashicorp/go-kms-wrapping"
+ 	"github.com/stretchr/testify/require"
+diff --git a/internal/auth/password/repository.go b/internal/auth/password/repository.go
+index c5d78e65b..23df504b2 100644
+--- a/internal/auth/password/repository.go
++++ b/internal/auth/password/repository.go
+@@ -5,7 +5,7 @@ import (
+ 
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/errors"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ )
+ 
+ // A Repository stores and retrieves the persistent types in the password
+diff --git a/internal/auth/password/repository_account.go b/internal/auth/password/repository_account.go
+index 4bd0beb07..0331380d6 100644
+--- a/internal/auth/password/repository_account.go
++++ b/internal/auth/password/repository_account.go
+@@ -10,7 +10,7 @@ import (
+ 	dbcommon "github.com/hashicorp/boundary/internal/db/common"
+ 	"github.com/hashicorp/boundary/internal/errors"
+ 	"github.com/hashicorp/boundary/internal/intglobals"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/oplog"
+ )
+ 
+diff --git a/internal/auth/password/repository_account_test.go b/internal/auth/password/repository_account_test.go
+index 13ee140a7..f1933cebe 100644
+--- a/internal/auth/password/repository_account_test.go
++++ b/internal/auth/password/repository_account_test.go
+@@ -11,7 +11,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/errors"
+ 	"github.com/hashicorp/boundary/internal/iam"
+ 	"github.com/hashicorp/boundary/internal/intglobals"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/oplog"
+ 	"github.com/stretchr/testify/assert"
+ 	"github.com/stretchr/testify/require"
+diff --git a/internal/auth/password/repository_authmethod.go b/internal/auth/password/repository_authmethod.go
+index 2433f2b29..6c9ed949b 100644
+--- a/internal/auth/password/repository_authmethod.go
++++ b/internal/auth/password/repository_authmethod.go
+@@ -8,7 +8,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	dbcommon "github.com/hashicorp/boundary/internal/db/common"
+ 	"github.com/hashicorp/boundary/internal/errors"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/oplog"
+ )
+ 
+diff --git a/internal/auth/password/repository_authmethod_test.go b/internal/auth/password/repository_authmethod_test.go
+index 1c5a073a6..d3fe28300 100644
+--- a/internal/auth/password/repository_authmethod_test.go
++++ b/internal/auth/password/repository_authmethod_test.go
+@@ -12,7 +12,7 @@ import (
+ 	dbassert "github.com/hashicorp/boundary/internal/db/assert"
+ 	"github.com/hashicorp/boundary/internal/errors"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/oplog"
+ 	"github.com/stretchr/testify/assert"
+ 	"github.com/stretchr/testify/require"
+diff --git a/internal/auth/password/repository_configuration.go b/internal/auth/password/repository_configuration.go
+index 2cffa5841..37980ec09 100644
+--- a/internal/auth/password/repository_configuration.go
++++ b/internal/auth/password/repository_configuration.go
+@@ -7,7 +7,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/auth/password/store"
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/errors"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/oplog"
+ )
+ 
+diff --git a/internal/auth/password/repository_configuration_test.go b/internal/auth/password/repository_configuration_test.go
+index ab4fd024e..8809be8ba 100644
+--- a/internal/auth/password/repository_configuration_test.go
++++ b/internal/auth/password/repository_configuration_test.go
+@@ -9,7 +9,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/errors"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/oplog"
+ 	"github.com/stretchr/testify/assert"
+ 	"github.com/stretchr/testify/require"
+diff --git a/internal/auth/password/repository_password.go b/internal/auth/password/repository_password.go
+index f335afec6..bc395673a 100644
+--- a/internal/auth/password/repository_password.go
++++ b/internal/auth/password/repository_password.go
+@@ -9,7 +9,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/errors"
+ 
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/oplog"
+ 	"golang.org/x/crypto/argon2"
+ )
+diff --git a/internal/auth/password/repository_password_test.go b/internal/auth/password/repository_password_test.go
+index bf326252b..c618736e2 100644
+--- a/internal/auth/password/repository_password_test.go
++++ b/internal/auth/password/repository_password_test.go
+@@ -9,7 +9,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/errors"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/oplog"
+ 	"github.com/stretchr/testify/assert"
+ 	"github.com/stretchr/testify/require"
+diff --git a/internal/auth/password/repository_test.go b/internal/auth/password/repository_test.go
+index 80b9eb236..e335b37ef 100644
+--- a/internal/auth/password/repository_test.go
++++ b/internal/auth/password/repository_test.go
+@@ -5,7 +5,7 @@ import (
+ 
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/errors"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/stretchr/testify/assert"
+ 	"github.com/stretchr/testify/require"
+ )
+diff --git a/internal/authtoken/authtoken.go b/internal/authtoken/authtoken.go
+index cfe8a8285..bcad5b92b 100644
+--- a/internal/authtoken/authtoken.go
++++ b/internal/authtoken/authtoken.go
+@@ -11,7 +11,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/errors"
+ 	"github.com/hashicorp/boundary/internal/gen/controller/tokens"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	wrapping "github.com/hashicorp/go-kms-wrapping"
+ 	"github.com/hashicorp/go-kms-wrapping/structwrapping"
+ 	"github.com/hashicorp/go-secure-stdlib/base62"
+diff --git a/internal/authtoken/authtoken_test.go b/internal/authtoken/authtoken_test.go
+index 7f1df4279..0d538fff1 100644
+--- a/internal/authtoken/authtoken_test.go
++++ b/internal/authtoken/authtoken_test.go
+@@ -11,7 +11,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/db/timestamp"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/stretchr/testify/assert"
+ 	"github.com/stretchr/testify/require"
+ 	"google.golang.org/protobuf/proto"
+diff --git a/internal/authtoken/immutable_fields_test.go b/internal/authtoken/immutable_fields_test.go
+index e0cef25d2..de3287942 100644
+--- a/internal/authtoken/immutable_fields_test.go
++++ b/internal/authtoken/immutable_fields_test.go
+@@ -7,7 +7,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/db/timestamp"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/stretchr/testify/assert"
+ 	"github.com/stretchr/testify/require"
+ 	"google.golang.org/protobuf/proto"
+diff --git a/internal/authtoken/repository.go b/internal/authtoken/repository.go
+index 6f59dd416..f2936b9cd 100644
+--- a/internal/authtoken/repository.go
++++ b/internal/authtoken/repository.go
+@@ -10,7 +10,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/db/timestamp"
+ 	"github.com/hashicorp/boundary/internal/errors"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ )
+ 
+ var (
+diff --git a/internal/authtoken/repository_test.go b/internal/authtoken/repository_test.go
+index 3ad9f7ce5..038c46e85 100644
+--- a/internal/authtoken/repository_test.go
++++ b/internal/authtoken/repository_test.go
+@@ -10,7 +10,7 @@ import (
+ 	"github.com/google/go-cmp/cmp"
+ 	"github.com/hashicorp/boundary/internal/auth/password"
+ 	"github.com/hashicorp/boundary/internal/db/timestamp"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/oplog"
+ 	"github.com/stretchr/testify/assert"
+ 	"github.com/stretchr/testify/require"
+diff --git a/internal/authtoken/testing.go b/internal/authtoken/testing.go
+index b34cded2f..5e53e4ce8 100644
+--- a/internal/authtoken/testing.go
++++ b/internal/authtoken/testing.go
+@@ -7,7 +7,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/auth/password"
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/stretchr/testify/require"
+ )
+ 
+diff --git a/internal/cmd/base/dev.go b/internal/cmd/base/dev.go
+index 589081f01..558660439 100644
+--- a/internal/cmd/base/dev.go
++++ b/internal/cmd/base/dev.go
+@@ -14,7 +14,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/db/schema"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/observability/event"
+ 	"github.com/hashicorp/boundary/internal/types/scope"
+ 	"github.com/hashicorp/boundary/testing/dbtest"
+diff --git a/internal/cmd/base/initial_resources.go b/internal/cmd/base/initial_resources.go
+index edb221e4b..08473ce64 100644
+--- a/internal/cmd/base/initial_resources.go
++++ b/internal/cmd/base/initial_resources.go
+@@ -9,7 +9,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/host/static"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/servers/controller/auth"
+ 	"github.com/hashicorp/boundary/internal/target"
+ 	"github.com/hashicorp/boundary/internal/target/tcp"
+diff --git a/internal/cmd/base/servers.go b/internal/cmd/base/servers.go
+index 965d49716..04d0cb1b5 100644
+--- a/internal/cmd/base/servers.go
++++ b/internal/cmd/base/servers.go
+@@ -23,7 +23,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/cmd/config"
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	berrors "github.com/hashicorp/boundary/internal/errors"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/observability/event"
+ 	"github.com/hashicorp/boundary/internal/servers"
+ 	"github.com/hashicorp/boundary/internal/types/scope"
+diff --git a/internal/cmd/commands/server/server.go b/internal/cmd/commands/server/server.go
+index f21adf2c1..4aa65ebf3 100644
+--- a/internal/cmd/commands/server/server.go
++++ b/internal/cmd/commands/server/server.go
+@@ -18,7 +18,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/db/schema"
+ 	"github.com/hashicorp/boundary/internal/errors"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/observability/event"
+ 	"github.com/hashicorp/boundary/internal/servers/controller"
+ 	"github.com/hashicorp/boundary/internal/servers/worker"
+diff --git a/internal/credential/vault/client_certificate.go b/internal/credential/vault/client_certificate.go
+index b368c7d72..1b191b449 100644
+--- a/internal/credential/vault/client_certificate.go
++++ b/internal/credential/vault/client_certificate.go
+@@ -10,7 +10,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/credential/vault/store"
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/errors"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/oplog"
+ 	wrapping "github.com/hashicorp/go-kms-wrapping"
+ 	"github.com/hashicorp/go-kms-wrapping/structwrapping"
+@@ -103,7 +103,7 @@ func (c *ClientCertificate) hmacCertificateKey(ctx context.Context, cipher wrapp
+ 	if cipher == nil {
+ 		return errors.New(ctx, errors.InvalidParameter, op, "missing cipher")
+ 	}
+-	reader, err := kms.NewDerivedReader(cipher, 32, []byte(c.StoreId), nil)
++	reader, err := crypto.NewDerivedReader(cipher, 32, []byte(c.StoreId), nil)
+ 	if err != nil {
+ 		return errors.Wrap(ctx, err, op)
+ 	}
+diff --git a/internal/credential/vault/client_certificate_test.go b/internal/credential/vault/client_certificate_test.go
+index 21af5dd26..97b44055b 100644
+--- a/internal/credential/vault/client_certificate_test.go
++++ b/internal/credential/vault/client_certificate_test.go
+@@ -7,7 +7,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/credential/vault/store"
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/stretchr/testify/assert"
+ 	"github.com/stretchr/testify/require"
+ )
+diff --git a/internal/credential/vault/jobs.go b/internal/credential/vault/jobs.go
+index 29977dac6..ad3c1dcec 100644
+--- a/internal/credential/vault/jobs.go
++++ b/internal/credential/vault/jobs.go
+@@ -7,7 +7,7 @@ import (
+ 
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/errors"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/observability/event"
+ 	"github.com/hashicorp/boundary/internal/oplog"
+ 	"github.com/hashicorp/boundary/internal/scheduler"
+diff --git a/internal/credential/vault/jobs_test.go b/internal/credential/vault/jobs_test.go
+index e739d3dfb..824c3b231 100644
+--- a/internal/credential/vault/jobs_test.go
++++ b/internal/credential/vault/jobs_test.go
+@@ -13,7 +13,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/errors"
+ 	"github.com/hashicorp/boundary/internal/host/static"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/scheduler"
+ 	"github.com/hashicorp/boundary/internal/session"
+ 	"github.com/hashicorp/boundary/internal/target"
+diff --git a/internal/credential/vault/private_library.go b/internal/credential/vault/private_library.go
+index 12a27f203..999b4e2ad 100644
+--- a/internal/credential/vault/private_library.go
++++ b/internal/credential/vault/private_library.go
+@@ -9,7 +9,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/credential"
+ 	"github.com/hashicorp/boundary/internal/db/timestamp"
+ 	"github.com/hashicorp/boundary/internal/errors"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	wrapping "github.com/hashicorp/go-kms-wrapping"
+ 	"github.com/hashicorp/go-kms-wrapping/structwrapping"
+ 	"google.golang.org/protobuf/proto"
+diff --git a/internal/credential/vault/private_library_test.go b/internal/credential/vault/private_library_test.go
+index b2f925b08..bf9852a78 100644
+--- a/internal/credential/vault/private_library_test.go
++++ b/internal/credential/vault/private_library_test.go
+@@ -7,7 +7,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/credential"
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/scheduler"
+ 	"github.com/stretchr/testify/assert"
+ 	"github.com/stretchr/testify/require"
+diff --git a/internal/credential/vault/private_store.go b/internal/credential/vault/private_store.go
+index 06f5d5e34..e43ecc457 100644
+--- a/internal/credential/vault/private_store.go
++++ b/internal/credential/vault/private_store.go
+@@ -7,7 +7,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/db/timestamp"
+ 	"github.com/hashicorp/boundary/internal/errors"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	wrapping "github.com/hashicorp/go-kms-wrapping"
+ 	"github.com/hashicorp/go-kms-wrapping/structwrapping"
+ )
+diff --git a/internal/credential/vault/private_store_test.go b/internal/credential/vault/private_store_test.go
+index c6e8a9523..4ec0b78d0 100644
+--- a/internal/credential/vault/private_store_test.go
++++ b/internal/credential/vault/private_store_test.go
+@@ -6,7 +6,7 @@ import (
+ 
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/scheduler"
+ 	"github.com/stretchr/testify/assert"
+ 	"github.com/stretchr/testify/require"
+diff --git a/internal/credential/vault/repository.go b/internal/credential/vault/repository.go
+index 1f32016dd..69b977a2b 100644
+--- a/internal/credential/vault/repository.go
++++ b/internal/credential/vault/repository.go
+@@ -3,7 +3,7 @@ package vault
+ import (
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/errors"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/scheduler"
+ )
+ 
+diff --git a/internal/credential/vault/repository_credential_library.go b/internal/credential/vault/repository_credential_library.go
+index d28727664..bf3252a34 100644
+--- a/internal/credential/vault/repository_credential_library.go
++++ b/internal/credential/vault/repository_credential_library.go
+@@ -8,7 +8,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	dbcommon "github.com/hashicorp/boundary/internal/db/common"
+ 	"github.com/hashicorp/boundary/internal/errors"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/oplog"
+ 	"github.com/hashicorp/go-secure-stdlib/strutil"
+ )
+diff --git a/internal/credential/vault/repository_credential_library_test.go b/internal/credential/vault/repository_credential_library_test.go
+index 039675242..82669d6ea 100644
+--- a/internal/credential/vault/repository_credential_library_test.go
++++ b/internal/credential/vault/repository_credential_library_test.go
+@@ -12,7 +12,7 @@ import (
+ 	dbassert "github.com/hashicorp/boundary/internal/db/assert"
+ 	"github.com/hashicorp/boundary/internal/errors"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/oplog"
+ 	"github.com/hashicorp/boundary/internal/scheduler"
+ 	"github.com/stretchr/testify/assert"
+diff --git a/internal/credential/vault/repository_credential_store.go b/internal/credential/vault/repository_credential_store.go
+index 9e724fed4..0583c6d6b 100644
+--- a/internal/credential/vault/repository_credential_store.go
++++ b/internal/credential/vault/repository_credential_store.go
+@@ -9,7 +9,7 @@ import (
+ 	dbcommon "github.com/hashicorp/boundary/internal/db/common"
+ 	"github.com/hashicorp/boundary/internal/db/timestamp"
+ 	"github.com/hashicorp/boundary/internal/errors"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/oplog"
+ 	"github.com/hashicorp/go-secure-stdlib/parseutil"
+ 	vault "github.com/hashicorp/vault/api"
+diff --git a/internal/credential/vault/repository_credential_store_test.go b/internal/credential/vault/repository_credential_store_test.go
+index 657975b6f..c62b36efb 100644
+--- a/internal/credential/vault/repository_credential_store_test.go
++++ b/internal/credential/vault/repository_credential_store_test.go
+@@ -16,7 +16,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/db/timestamp"
+ 	"github.com/hashicorp/boundary/internal/errors"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/oplog"
+ 	"github.com/hashicorp/boundary/internal/scheduler"
+ 	wrapping "github.com/hashicorp/go-kms-wrapping"
+diff --git a/internal/credential/vault/repository_credentials_test.go b/internal/credential/vault/repository_credentials_test.go
+index 91f8245bb..4aa08759e 100644
+--- a/internal/credential/vault/repository_credentials_test.go
++++ b/internal/credential/vault/repository_credentials_test.go
+@@ -12,7 +12,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/errors"
+ 	"github.com/hashicorp/boundary/internal/host/static"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/scheduler"
+ 	"github.com/hashicorp/boundary/internal/session"
+ 	"github.com/hashicorp/boundary/internal/target"
+diff --git a/internal/credential/vault/repository_test.go b/internal/credential/vault/repository_test.go
+index e3d84e131..3f68a5756 100644
+--- a/internal/credential/vault/repository_test.go
++++ b/internal/credential/vault/repository_test.go
+@@ -5,7 +5,7 @@ import (
+ 
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/errors"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/scheduler"
+ 	"github.com/stretchr/testify/assert"
+ 	"github.com/stretchr/testify/require"
+diff --git a/internal/credential/vault/testing.go b/internal/credential/vault/testing.go
+index 53042d626..2e91fc6b7 100644
+--- a/internal/credential/vault/testing.go
++++ b/internal/credential/vault/testing.go
+@@ -22,7 +22,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/errors"
+ 
+ 	"github.com/hashicorp/boundary/internal/db"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/scheduler"
+ 	wrapping "github.com/hashicorp/go-kms-wrapping"
+ 	vault "github.com/hashicorp/vault/api"
+diff --git a/internal/credential/vault/testing_external_test.go b/internal/credential/vault/testing_external_test.go
+index 4b24273eb..86532e6e5 100644
+--- a/internal/credential/vault/testing_external_test.go
++++ b/internal/credential/vault/testing_external_test.go
+@@ -8,7 +8,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/host/static"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/session"
+ 	"github.com/hashicorp/boundary/internal/target"
+ 	"github.com/hashicorp/boundary/internal/target/tcp"
+diff --git a/internal/credential/vault/vault_token_test.go b/internal/credential/vault/vault_token_test.go
+index 106531f67..cfc179aa6 100644
+--- a/internal/credential/vault/vault_token_test.go
++++ b/internal/credential/vault/vault_token_test.go
+@@ -11,7 +11,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/db/timestamp"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/stretchr/testify/assert"
+ 	"github.com/stretchr/testify/require"
+ 	"golang.org/x/crypto/blake2b"
+diff --git a/internal/db/schema/migrations/oss/postgres_14_01_test.go b/internal/db/schema/migrations/oss/postgres_14_01_test.go
+index fcc5421b2..cc094955c 100644
+--- a/internal/db/schema/migrations/oss/postgres_14_01_test.go
++++ b/internal/db/schema/migrations/oss/postgres_14_01_test.go
+@@ -11,7 +11,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/db/schema"
+ 	"github.com/hashicorp/boundary/internal/host/static"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/session"
+ 	"github.com/hashicorp/boundary/internal/target"
+ 	"github.com/hashicorp/boundary/internal/target/tcp"
+diff --git a/internal/db/schema/migrations/oss/postgres_16_05_test.go b/internal/db/schema/migrations/oss/postgres_16_05_test.go
+index a6c4bc081..90a04272d 100644
+--- a/internal/db/schema/migrations/oss/postgres_16_05_test.go
++++ b/internal/db/schema/migrations/oss/postgres_16_05_test.go
+@@ -12,7 +12,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/db/schema"
+ 	"github.com/hashicorp/boundary/internal/host/static"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/session"
+ 	"github.com/hashicorp/boundary/internal/target"
+ 	"github.com/hashicorp/boundary/internal/target/tcp"
+diff --git a/internal/db/schema/migrations/oss/postgres_18_01_test.go b/internal/db/schema/migrations/oss/postgres_18_01_test.go
+index 7b65ab84a..d7c4502ee 100644
+--- a/internal/db/schema/migrations/oss/postgres_18_01_test.go
++++ b/internal/db/schema/migrations/oss/postgres_18_01_test.go
+@@ -7,7 +7,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/db/common"
+ 	"github.com/hashicorp/boundary/internal/db/schema"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/servers"
+ 	"github.com/hashicorp/boundary/testing/dbtest"
+ 	"github.com/stretchr/testify/assert"
+diff --git a/internal/db/schema/migrations/oss/postgres_2_10_test.go b/internal/db/schema/migrations/oss/postgres_2_10_test.go
+index 058ef31b5..180aad405 100644
+--- a/internal/db/schema/migrations/oss/postgres_2_10_test.go
++++ b/internal/db/schema/migrations/oss/postgres_2_10_test.go
+@@ -9,7 +9,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/errors"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/stretchr/testify/assert"
+ 	"github.com/stretchr/testify/require"
+ )
+diff --git a/internal/host/static/repository.go b/internal/host/static/repository.go
+index ed4bca656..03db1f3d0 100644
+--- a/internal/host/static/repository.go
++++ b/internal/host/static/repository.go
+@@ -3,7 +3,7 @@ package static
+ import (
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/errors"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ )
+ 
+ // A Repository stores and retrieves the persistent types in the static
+diff --git a/internal/host/static/repository_host.go b/internal/host/static/repository_host.go
+index 3f395c883..d5c68c89c 100644
+--- a/internal/host/static/repository_host.go
++++ b/internal/host/static/repository_host.go
+@@ -8,7 +8,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	dbcommon "github.com/hashicorp/boundary/internal/db/common"
+ 	"github.com/hashicorp/boundary/internal/errors"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/oplog"
+ )
+ 
+diff --git a/internal/host/static/repository_host_catalog.go b/internal/host/static/repository_host_catalog.go
+index 6ff019e96..96c97a394 100644
+--- a/internal/host/static/repository_host_catalog.go
++++ b/internal/host/static/repository_host_catalog.go
+@@ -7,7 +7,7 @@ import (
+ 
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/errors"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/oplog"
+ )
+ 
+diff --git a/internal/host/static/repository_host_catalog_test.go b/internal/host/static/repository_host_catalog_test.go
+index 3a733193f..ba317b73e 100644
+--- a/internal/host/static/repository_host_catalog_test.go
++++ b/internal/host/static/repository_host_catalog_test.go
+@@ -10,7 +10,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/errors"
+ 	"github.com/hashicorp/boundary/internal/host/static/store"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/stretchr/testify/assert"
+ 	"github.com/stretchr/testify/require"
+ )
+diff --git a/internal/host/static/repository_host_set.go b/internal/host/static/repository_host_set.go
+index a3d986924..5bd949e65 100644
+--- a/internal/host/static/repository_host_set.go
++++ b/internal/host/static/repository_host_set.go
+@@ -8,7 +8,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	dbcommon "github.com/hashicorp/boundary/internal/db/common"
+ 	"github.com/hashicorp/boundary/internal/errors"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/oplog"
+ )
+ 
+diff --git a/internal/host/static/repository_host_set_member.go b/internal/host/static/repository_host_set_member.go
+index dead39500..560f617b3 100644
+--- a/internal/host/static/repository_host_set_member.go
++++ b/internal/host/static/repository_host_set_member.go
+@@ -10,7 +10,7 @@ import (
+ 
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/errors"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/oplog"
+ )
+ 
+diff --git a/internal/host/static/repository_host_set_member_test.go b/internal/host/static/repository_host_set_member_test.go
+index 03e15d8f5..d2a21e0fe 100644
+--- a/internal/host/static/repository_host_set_member_test.go
++++ b/internal/host/static/repository_host_set_member_test.go
+@@ -10,7 +10,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/errors"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/oplog"
+ 	"github.com/stretchr/testify/assert"
+ 	"github.com/stretchr/testify/require"
+diff --git a/internal/host/static/repository_host_set_test.go b/internal/host/static/repository_host_set_test.go
+index 05f3eb43a..f6e49b88a 100644
+--- a/internal/host/static/repository_host_set_test.go
++++ b/internal/host/static/repository_host_set_test.go
+@@ -12,7 +12,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/errors"
+ 	"github.com/hashicorp/boundary/internal/host/static/store"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/oplog"
+ 	"github.com/stretchr/testify/assert"
+ 	"github.com/stretchr/testify/require"
+diff --git a/internal/host/static/repository_host_test.go b/internal/host/static/repository_host_test.go
+index aebf419b7..72b1313fc 100644
+--- a/internal/host/static/repository_host_test.go
++++ b/internal/host/static/repository_host_test.go
+@@ -12,7 +12,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/errors"
+ 	"github.com/hashicorp/boundary/internal/host/static/store"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/oplog"
+ 	"github.com/stretchr/testify/assert"
+ 	"github.com/stretchr/testify/require"
+diff --git a/internal/host/static/repository_test.go b/internal/host/static/repository_test.go
+index 03b46e289..f619612c3 100644
+--- a/internal/host/static/repository_test.go
++++ b/internal/host/static/repository_test.go
+@@ -8,7 +8,7 @@ import (
+ 
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/errors"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ )
+ 
+ func TestRepository_New(t *testing.T) {
+diff --git a/internal/iam/principal_role_ext_test.go b/internal/iam/principal_role_ext_test.go
+index 58020e462..61e6d1fcc 100644
+--- a/internal/iam/principal_role_ext_test.go
++++ b/internal/iam/principal_role_ext_test.go
+@@ -9,7 +9,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/errors"
+ 	"github.com/hashicorp/boundary/internal/iam"
+ 	"github.com/hashicorp/boundary/internal/iam/store"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/stretchr/testify/assert"
+ 	"github.com/stretchr/testify/require"
+ 	"google.golang.org/protobuf/proto"
+diff --git a/internal/iam/repository.go b/internal/iam/repository.go
+index 17cf4db87..422601a0d 100644
+--- a/internal/iam/repository.go
++++ b/internal/iam/repository.go
+@@ -7,7 +7,7 @@ import (
+ 
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/errors"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/oplog"
+ 	"github.com/hashicorp/boundary/internal/types/scope"
+ )
+diff --git a/internal/iam/repository_group.go b/internal/iam/repository_group.go
+index 44ca3e1e9..dd05de7fa 100644
+--- a/internal/iam/repository_group.go
++++ b/internal/iam/repository_group.go
+@@ -8,7 +8,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	dbcommon "github.com/hashicorp/boundary/internal/db/common"
+ 	"github.com/hashicorp/boundary/internal/errors"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/oplog"
+ )
+ 
+diff --git a/internal/iam/repository_principal_role.go b/internal/iam/repository_principal_role.go
+index 98f67148c..3be116f69 100644
+--- a/internal/iam/repository_principal_role.go
++++ b/internal/iam/repository_principal_role.go
+@@ -8,7 +8,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/errors"
+ 	"github.com/hashicorp/boundary/internal/intglobals"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/oplog"
+ )
+ 
+diff --git a/internal/iam/repository_principal_role_ext_test.go b/internal/iam/repository_principal_role_ext_test.go
+index 8ab944a80..3be5f10d0 100644
+--- a/internal/iam/repository_principal_role_ext_test.go
++++ b/internal/iam/repository_principal_role_ext_test.go
+@@ -9,7 +9,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/errors"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/stretchr/testify/assert"
+ 	"github.com/stretchr/testify/require"
+ )
+diff --git a/internal/iam/repository_role_grant.go b/internal/iam/repository_role_grant.go
+index 0bb39d82f..643955079 100644
+--- a/internal/iam/repository_role_grant.go
++++ b/internal/iam/repository_role_grant.go
+@@ -6,7 +6,7 @@ import (
+ 
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/errors"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/oplog"
+ 	"github.com/hashicorp/boundary/internal/perms"
+ )
+diff --git a/internal/iam/repository_role_grant_ext_test.go b/internal/iam/repository_role_grant_ext_test.go
+index ebc0f08f6..89881443d 100644
+--- a/internal/iam/repository_role_grant_ext_test.go
++++ b/internal/iam/repository_role_grant_ext_test.go
+@@ -9,7 +9,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/auth/oidc"
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/types/scope"
+ 	"github.com/stretchr/testify/assert"
+ 	"github.com/stretchr/testify/require"
+diff --git a/internal/iam/repository_scope.go b/internal/iam/repository_scope.go
+index b5b89c3bc..c45d3b022 100644
+--- a/internal/iam/repository_scope.go
++++ b/internal/iam/repository_scope.go
+@@ -9,7 +9,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	dbcommon "github.com/hashicorp/boundary/internal/db/common"
+ 	"github.com/hashicorp/boundary/internal/errors"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/oplog"
+ 	"github.com/hashicorp/boundary/internal/types/resource"
+ 	"github.com/hashicorp/boundary/internal/types/scope"
+diff --git a/internal/iam/repository_scope_primary_auth_method_id_test.go b/internal/iam/repository_scope_primary_auth_method_id_test.go
+index 93df7d7ee..9d38d0280 100644
+--- a/internal/iam/repository_scope_primary_auth_method_id_test.go
++++ b/internal/iam/repository_scope_primary_auth_method_id_test.go
+@@ -8,7 +8,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/auth/oidc"
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/oplog"
+ 	"github.com/stretchr/testify/assert"
+ 	"github.com/stretchr/testify/require"
+diff --git a/internal/iam/repository_test.go b/internal/iam/repository_test.go
+index 128932a32..3522d00f3 100644
+--- a/internal/iam/repository_test.go
++++ b/internal/iam/repository_test.go
+@@ -10,7 +10,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/db/timestamp"
+ 	iam_store "github.com/hashicorp/boundary/internal/iam/store"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/oplog"
+ 	"github.com/hashicorp/boundary/internal/oplog/store"
+ 	"github.com/hashicorp/boundary/internal/types/scope"
+diff --git a/internal/iam/repository_user.go b/internal/iam/repository_user.go
+index f22e87758..43676ecea 100644
+--- a/internal/iam/repository_user.go
++++ b/internal/iam/repository_user.go
+@@ -8,7 +8,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	dbcommon "github.com/hashicorp/boundary/internal/db/common"
+ 	"github.com/hashicorp/boundary/internal/errors"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/oplog"
+ 	"github.com/hashicorp/boundary/internal/types/scope"
+ )
+diff --git a/internal/iam/repository_user_iam_pkg_test.go b/internal/iam/repository_user_iam_pkg_test.go
+index 690441d2d..183f27dbb 100644
+--- a/internal/iam/repository_user_iam_pkg_test.go
++++ b/internal/iam/repository_user_iam_pkg_test.go
+@@ -7,7 +7,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	dbassert "github.com/hashicorp/boundary/internal/db/assert"
+ 	"github.com/hashicorp/boundary/internal/errors"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/stretchr/testify/assert"
+ 	"github.com/stretchr/testify/require"
+ )
+diff --git a/internal/iam/repository_user_test.go b/internal/iam/repository_user_test.go
+index 88d8c5240..1c65dae8d 100644
+--- a/internal/iam/repository_user_test.go
++++ b/internal/iam/repository_user_test.go
+@@ -15,7 +15,7 @@ import (
+ 	dbassert "github.com/hashicorp/boundary/internal/db/assert"
+ 	"github.com/hashicorp/boundary/internal/errors"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/oplog"
+ 	"github.com/hashicorp/go-secure-stdlib/strutil"
+ 	"github.com/hashicorp/go-uuid"
+diff --git a/internal/iam/testing.go b/internal/iam/testing.go
+index 3e693a9a5..77eea479d 100644
+--- a/internal/iam/testing.go
++++ b/internal/iam/testing.go
+@@ -8,7 +8,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/auth/store"
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	dbassert "github.com/hashicorp/boundary/internal/db/assert"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/types/scope"
+ 	wrapping "github.com/hashicorp/go-kms-wrapping"
+ 	"github.com/hashicorp/go-uuid"
+diff --git a/internal/kms/database_key_test.go b/internal/kms/database_key_test.go
+index 77eba15d6..a1596ed4d 100644
+--- a/internal/kms/database_key_test.go
++++ b/internal/kms/database_key_test.go
+@@ -7,7 +7,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/errors"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/stretchr/testify/assert"
+ 	"github.com/stretchr/testify/require"
+ 	"google.golang.org/protobuf/proto"
+diff --git a/internal/kms/database_key_version_test.go b/internal/kms/database_key_version_test.go
+index bc43c5374..7e560a67e 100644
+--- a/internal/kms/database_key_version_test.go
++++ b/internal/kms/database_key_version_test.go
+@@ -7,7 +7,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/errors"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/stretchr/testify/assert"
+ 	"github.com/stretchr/testify/require"
+ 	"google.golang.org/protobuf/proto"
+diff --git a/internal/kms/immutable_fields_test.go b/internal/kms/immutable_fields_test.go
+index 12f38ed09..c57ea2e01 100644
+--- a/internal/kms/immutable_fields_test.go
++++ b/internal/kms/immutable_fields_test.go
+@@ -7,7 +7,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/db/timestamp"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/stretchr/testify/assert"
+ 	"github.com/stretchr/testify/require"
+ 	"google.golang.org/protobuf/proto"
+diff --git a/internal/kms/kms.go b/internal/kms/kms.go
+index 11b2ddcdd..fa67dd874 100644
+--- a/internal/kms/kms.go
++++ b/internal/kms/kms.go
+@@ -2,9 +2,7 @@ package kms
+ 
+ import (
+ 	"context"
+-	"crypto/sha256"
+ 	"fmt"
+-	"io"
+ 	"sync"
+ 
+ 	"github.com/hashicorp/boundary/internal/db"
+@@ -13,7 +11,6 @@ import (
+ 	wrapping "github.com/hashicorp/go-kms-wrapping"
+ 	"github.com/hashicorp/go-kms-wrapping/wrappers/aead"
+ 	"github.com/hashicorp/go-kms-wrapping/wrappers/multiwrapper"
+-	"golang.org/x/crypto/hkdf"
+ )
+ 
+ // ExternalWrappers holds wrappers defined outside of Boundary, e.g. in its
+@@ -373,39 +370,4 @@ func (k *Kms) loadDek(ctx context.Context, scopeId string, purpose KeyPurpose, r
+ }
+ 
+ // DerivedReader returns a reader from which keys can be read, using the
+-// given wrapper, reader length limit, salt and context info. Salt and info can
+-// be nil.
+-//
+-// Example:
+-//	reader, _ := NewDerivedReader(wrapper, userId, jobId)
+-// 	key := ed25519.GenerateKey(reader)
+-func NewDerivedReader(wrapper wrapping.Wrapper, lenLimit int64, salt, info []byte) (*io.LimitedReader, error) {
+-	const op = "kms.NewDerivedReader"
+-	if wrapper == nil {
+-		return nil, errors.NewDeprecated(errors.InvalidParameter, op, "missing wrapper")
+-	}
+-	if lenLimit < 20 {
+-		return nil, errors.NewDeprecated(errors.InvalidParameter, op, "lenLimit must be >= 20")
+-	}
+-	var aeadWrapper *aead.Wrapper
+-	switch w := wrapper.(type) {
+-	case *multiwrapper.MultiWrapper:
+-		raw := w.WrapperForKeyID("__base__")
+-		var ok bool
+-		if aeadWrapper, ok = raw.(*aead.Wrapper); !ok {
+-			return nil, errors.NewDeprecated(errors.InvalidParameter, op, "unexpected wrapper type from multiwrapper base")
+-		}
+-	case *aead.Wrapper:
+-		if w.GetKeyBytes() == nil {
+-			return nil, errors.NewDeprecated(errors.InvalidParameter, op, "aead wrapper missing bytes")
+-		}
+-		aeadWrapper = w
+-	default:
+-		return nil, errors.NewDeprecated(errors.InvalidParameter, op, "unknown wrapper type")
+-	}
+-	reader := hkdf.New(sha256.New, aeadWrapper.GetKeyBytes(), salt, info)
+-	return &io.LimitedReader{
+-		R: reader,
+-		N: lenLimit,
+-	}, nil
+-}
++
+diff --git a/internal/kms/kms_ext_test.go b/internal/kms/kms_ext_test.go
+index d533f4f65..e3e1440ed 100644
+--- a/internal/kms/kms_ext_test.go
++++ b/internal/kms/kms_ext_test.go
+@@ -9,7 +9,7 @@ import (
+ 
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/types/scope"
+ 	"github.com/hashicorp/go-kms-wrapping/wrappers/aead"
+ 	"github.com/hashicorp/go-kms-wrapping/wrappers/multiwrapper"
+diff --git a/internal/kms/kms_test.go b/internal/kms/kms_test.go
+index dbd8e964e..ce9196b92 100644
+--- a/internal/kms/kms_test.go
++++ b/internal/kms/kms_test.go
+@@ -9,6 +9,7 @@ import (
+ 
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/errors"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/types/scope"
+ 	wrapping "github.com/hashicorp/go-kms-wrapping"
+ 	"github.com/hashicorp/go-kms-wrapping/wrappers/aead"
+@@ -157,7 +158,7 @@ func TestNewDerivedReader(t *testing.T) {
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+ 			assert, require := assert.New(t), require.New(t)
+-			got, err := NewDerivedReader(tt.args.wrapper, tt.args.lenLimit, tt.args.salt, tt.args.info)
++			got, err := crypto.NewDerivedReader(tt.args.wrapper, tt.args.lenLimit, tt.args.salt, tt.args.info)
+ 			if tt.wantErr {
+ 				require.Error(err)
+ 				assert.Truef(errors.Match(errors.T(errors.InvalidParameter), err), "unexpected error: %s", err)
+diff --git a/internal/kms/oidc_key_test.go b/internal/kms/oidc_key_test.go
+index 9117d63bd..2ace4ab93 100644
+--- a/internal/kms/oidc_key_test.go
++++ b/internal/kms/oidc_key_test.go
+@@ -7,7 +7,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/errors"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/stretchr/testify/assert"
+ 	"github.com/stretchr/testify/require"
+ 	"google.golang.org/protobuf/proto"
+diff --git a/internal/kms/oidc_key_version_test.go b/internal/kms/oidc_key_version_test.go
+index d1ad93e81..692d9e293 100644
+--- a/internal/kms/oidc_key_version_test.go
++++ b/internal/kms/oidc_key_version_test.go
+@@ -7,7 +7,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/errors"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/stretchr/testify/assert"
+ 	"github.com/stretchr/testify/require"
+ 	"google.golang.org/protobuf/proto"
+diff --git a/internal/kms/oplog_key_test.go b/internal/kms/oplog_key_test.go
+index 852d20df0..c34e6dafd 100644
+--- a/internal/kms/oplog_key_test.go
++++ b/internal/kms/oplog_key_test.go
+@@ -7,7 +7,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/errors"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/stretchr/testify/assert"
+ 	"github.com/stretchr/testify/require"
+ 	"google.golang.org/protobuf/proto"
+diff --git a/internal/kms/oplog_key_version_test.go b/internal/kms/oplog_key_version_test.go
+index d51864525..88156c354 100644
+--- a/internal/kms/oplog_key_version_test.go
++++ b/internal/kms/oplog_key_version_test.go
+@@ -7,7 +7,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/errors"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/stretchr/testify/assert"
+ 	"github.com/stretchr/testify/require"
+ 	"google.golang.org/protobuf/proto"
+diff --git a/internal/kms/repository_database_key_test.go b/internal/kms/repository_database_key_test.go
+index 12eb6cb7f..036fbb8e4 100644
+--- a/internal/kms/repository_database_key_test.go
++++ b/internal/kms/repository_database_key_test.go
+@@ -8,7 +8,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/errors"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/oplog"
+ 	wrapping "github.com/hashicorp/go-kms-wrapping"
+ 	"github.com/hashicorp/go-kms-wrapping/wrappers/aead"
+diff --git a/internal/kms/repository_database_key_version_test.go b/internal/kms/repository_database_key_version_test.go
+index e5babcece..7c29a397d 100644
+--- a/internal/kms/repository_database_key_version_test.go
++++ b/internal/kms/repository_database_key_version_test.go
+@@ -8,7 +8,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/errors"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/oplog"
+ 	wrapping "github.com/hashicorp/go-kms-wrapping"
+ 	"github.com/stretchr/testify/assert"
+diff --git a/internal/kms/repository_oidc_key_test.go b/internal/kms/repository_oidc_key_test.go
+index ce5372789..ef868f0c6 100644
+--- a/internal/kms/repository_oidc_key_test.go
++++ b/internal/kms/repository_oidc_key_test.go
+@@ -8,7 +8,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/errors"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/oplog"
+ 	wrapping "github.com/hashicorp/go-kms-wrapping"
+ 	"github.com/hashicorp/go-kms-wrapping/wrappers/aead"
+diff --git a/internal/kms/repository_oidc_key_version_test.go b/internal/kms/repository_oidc_key_version_test.go
+index 967dd45b2..72e598d69 100644
+--- a/internal/kms/repository_oidc_key_version_test.go
++++ b/internal/kms/repository_oidc_key_version_test.go
+@@ -8,7 +8,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/errors"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/oplog"
+ 	wrapping "github.com/hashicorp/go-kms-wrapping"
+ 	"github.com/stretchr/testify/assert"
+diff --git a/internal/kms/repository_oplog_key_test.go b/internal/kms/repository_oplog_key_test.go
+index c585efd10..c5e260256 100644
+--- a/internal/kms/repository_oplog_key_test.go
++++ b/internal/kms/repository_oplog_key_test.go
+@@ -8,7 +8,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/errors"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/oplog"
+ 	wrapping "github.com/hashicorp/go-kms-wrapping"
+ 	"github.com/hashicorp/go-kms-wrapping/wrappers/aead"
+diff --git a/internal/kms/repository_oplog_key_version_test.go b/internal/kms/repository_oplog_key_version_test.go
+index e6b47ecf6..5caabb0e3 100644
+--- a/internal/kms/repository_oplog_key_version_test.go
++++ b/internal/kms/repository_oplog_key_version_test.go
+@@ -8,7 +8,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/errors"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/oplog"
+ 	wrapping "github.com/hashicorp/go-kms-wrapping"
+ 	"github.com/stretchr/testify/assert"
+diff --git a/internal/kms/repository_root_key_test.go b/internal/kms/repository_root_key_test.go
+index a14e44a28..aa482b258 100644
+--- a/internal/kms/repository_root_key_test.go
++++ b/internal/kms/repository_root_key_test.go
+@@ -8,7 +8,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/errors"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/oplog"
+ 	wrapping "github.com/hashicorp/go-kms-wrapping"
+ 	"github.com/stretchr/testify/assert"
+diff --git a/internal/kms/repository_root_key_version_test.go b/internal/kms/repository_root_key_version_test.go
+index ba7f4a366..bbf723595 100644
+--- a/internal/kms/repository_root_key_version_test.go
++++ b/internal/kms/repository_root_key_version_test.go
+@@ -8,7 +8,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/errors"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/oplog"
+ 	wrapping "github.com/hashicorp/go-kms-wrapping"
+ 	"github.com/stretchr/testify/assert"
+diff --git a/internal/kms/repository_session_key_test.go b/internal/kms/repository_session_key_test.go
+index a8623dbb9..f0b29078a 100644
+--- a/internal/kms/repository_session_key_test.go
++++ b/internal/kms/repository_session_key_test.go
+@@ -8,7 +8,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/errors"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/oplog"
+ 	wrapping "github.com/hashicorp/go-kms-wrapping"
+ 	"github.com/hashicorp/go-kms-wrapping/wrappers/aead"
+diff --git a/internal/kms/repository_session_key_version_test.go b/internal/kms/repository_session_key_version_test.go
+index 9b12404a2..282c228b7 100644
+--- a/internal/kms/repository_session_key_version_test.go
++++ b/internal/kms/repository_session_key_version_test.go
+@@ -8,7 +8,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/errors"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/oplog"
+ 	wrapping "github.com/hashicorp/go-kms-wrapping"
+ 	"github.com/stretchr/testify/assert"
+diff --git a/internal/kms/repository_test.go b/internal/kms/repository_test.go
+index 553382de7..975b14ad2 100644
+--- a/internal/kms/repository_test.go
++++ b/internal/kms/repository_test.go
+@@ -9,7 +9,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/errors"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	wrapping "github.com/hashicorp/go-kms-wrapping"
+ 	"github.com/stretchr/testify/assert"
+ 	"github.com/stretchr/testify/require"
+diff --git a/internal/kms/repository_token_key_test.go b/internal/kms/repository_token_key_test.go
+index 85841921e..2b3ddd376 100644
+--- a/internal/kms/repository_token_key_test.go
++++ b/internal/kms/repository_token_key_test.go
+@@ -8,7 +8,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/errors"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/oplog"
+ 	wrapping "github.com/hashicorp/go-kms-wrapping"
+ 	"github.com/hashicorp/go-kms-wrapping/wrappers/aead"
+diff --git a/internal/kms/repository_token_key_version_test.go b/internal/kms/repository_token_key_version_test.go
+index d2ae50bfb..4363ebab7 100644
+--- a/internal/kms/repository_token_key_version_test.go
++++ b/internal/kms/repository_token_key_version_test.go
+@@ -8,7 +8,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/errors"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/oplog"
+ 	wrapping "github.com/hashicorp/go-kms-wrapping"
+ 	"github.com/stretchr/testify/assert"
+diff --git a/internal/kms/root_key_test.go b/internal/kms/root_key_test.go
+index e5f038357..4367b91ce 100644
+--- a/internal/kms/root_key_test.go
++++ b/internal/kms/root_key_test.go
+@@ -7,7 +7,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/errors"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/stretchr/testify/assert"
+ 	"github.com/stretchr/testify/require"
+ 	"google.golang.org/protobuf/proto"
+diff --git a/internal/kms/root_key_version_test.go b/internal/kms/root_key_version_test.go
+index f77988657..f9a1f5854 100644
+--- a/internal/kms/root_key_version_test.go
++++ b/internal/kms/root_key_version_test.go
+@@ -7,7 +7,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/errors"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/kms/store"
+ 	"github.com/stretchr/testify/assert"
+ 	"github.com/stretchr/testify/require"
+diff --git a/internal/kms/session_key_test.go b/internal/kms/session_key_test.go
+index 7fc0d9127..740c277d6 100644
+--- a/internal/kms/session_key_test.go
++++ b/internal/kms/session_key_test.go
+@@ -7,7 +7,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/errors"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/stretchr/testify/assert"
+ 	"github.com/stretchr/testify/require"
+ 	"google.golang.org/protobuf/proto"
+diff --git a/internal/kms/session_key_version_test.go b/internal/kms/session_key_version_test.go
+index 6567c66af..7db78304b 100644
+--- a/internal/kms/session_key_version_test.go
++++ b/internal/kms/session_key_version_test.go
+@@ -7,7 +7,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/errors"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/stretchr/testify/assert"
+ 	"github.com/stretchr/testify/require"
+ 	"google.golang.org/protobuf/proto"
+diff --git a/internal/kms/testing_test.go b/internal/kms/testing_test.go
+index dde5795dc..33f0ae4b7 100644
+--- a/internal/kms/testing_test.go
++++ b/internal/kms/testing_test.go
+@@ -5,7 +5,7 @@ import (
+ 
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/stretchr/testify/assert"
+ 	"github.com/stretchr/testify/require"
+ )
+diff --git a/internal/kms/token_key_test.go b/internal/kms/token_key_test.go
+index 0aefbe1c4..029683045 100644
+--- a/internal/kms/token_key_test.go
++++ b/internal/kms/token_key_test.go
+@@ -7,7 +7,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/errors"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/stretchr/testify/assert"
+ 	"github.com/stretchr/testify/require"
+ 	"google.golang.org/protobuf/proto"
+diff --git a/internal/kms/token_key_version_test.go b/internal/kms/token_key_version_test.go
+index dfa2c942b..6b70aedbe 100644
+--- a/internal/kms/token_key_version_test.go
++++ b/internal/kms/token_key_version_test.go
+@@ -7,7 +7,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/errors"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/stretchr/testify/assert"
+ 	"github.com/stretchr/testify/require"
+ 	"google.golang.org/protobuf/proto"
+diff --git a/internal/scheduler/additional_verification_test.go b/internal/scheduler/additional_verification_test.go
+index ec2779c70..a60ca2674 100644
+--- a/internal/scheduler/additional_verification_test.go
++++ b/internal/scheduler/additional_verification_test.go
+@@ -11,7 +11,7 @@ import (
+ 
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/observability/event"
+ 	"github.com/hashicorp/boundary/internal/scheduler/job"
+ 	"github.com/hashicorp/go-hclog"
+diff --git a/internal/scheduler/job/additional_verification_test.go b/internal/scheduler/job/additional_verification_test.go
+index 7d5474e4a..1486f7312 100644
+--- a/internal/scheduler/job/additional_verification_test.go
++++ b/internal/scheduler/job/additional_verification_test.go
+@@ -8,7 +8,7 @@ import (
+ 
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/stretchr/testify/assert"
+ 	"github.com/stretchr/testify/require"
+ )
+diff --git a/internal/scheduler/job/repository.go b/internal/scheduler/job/repository.go
+index 4e79b9449..e921b38b3 100644
+--- a/internal/scheduler/job/repository.go
++++ b/internal/scheduler/job/repository.go
+@@ -3,7 +3,7 @@ package job
+ import (
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/errors"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ )
+ 
+ // A Repository stores and retrieves the persistent types in the job
+diff --git a/internal/scheduler/job/repository_job_test.go b/internal/scheduler/job/repository_job_test.go
+index 7731fb46b..1a9ae0c9f 100644
+--- a/internal/scheduler/job/repository_job_test.go
++++ b/internal/scheduler/job/repository_job_test.go
+@@ -11,7 +11,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/errors"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/scheduler/job/store"
+ 	"github.com/stretchr/testify/assert"
+ 	"github.com/stretchr/testify/require"
+diff --git a/internal/scheduler/job/repository_run_test.go b/internal/scheduler/job/repository_run_test.go
+index 8cd810298..3be133029 100644
+--- a/internal/scheduler/job/repository_run_test.go
++++ b/internal/scheduler/job/repository_run_test.go
+@@ -10,7 +10,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/errors"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/scheduler/job/store"
+ 	"github.com/stretchr/testify/assert"
+ 	"github.com/stretchr/testify/require"
+diff --git a/internal/scheduler/job/repository_test.go b/internal/scheduler/job/repository_test.go
+index 7cd638dcb..f668f0407 100644
+--- a/internal/scheduler/job/repository_test.go
++++ b/internal/scheduler/job/repository_test.go
+@@ -5,7 +5,7 @@ import (
+ 
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/errors"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/stretchr/testify/assert"
+ 	"github.com/stretchr/testify/require"
+ )
+diff --git a/internal/scheduler/job/testing.go b/internal/scheduler/job/testing.go
+index bd192c93e..a962c0cf8 100644
+--- a/internal/scheduler/job/testing.go
++++ b/internal/scheduler/job/testing.go
+@@ -7,7 +7,7 @@ import (
+ 	"time"
+ 
+ 	"github.com/hashicorp/boundary/internal/db"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/servers"
+ 	wrapping "github.com/hashicorp/go-kms-wrapping"
+ 	"github.com/hashicorp/go-uuid"
+diff --git a/internal/scheduler/scheduler_test.go b/internal/scheduler/scheduler_test.go
+index ce40b9cc8..d6a1ab6d8 100644
+--- a/internal/scheduler/scheduler_test.go
++++ b/internal/scheduler/scheduler_test.go
+@@ -9,7 +9,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/errors"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/scheduler/job"
+ 	"github.com/stretchr/testify/assert"
+ 	"github.com/stretchr/testify/require"
+diff --git a/internal/scheduler/testing.go b/internal/scheduler/testing.go
+index 71646d7d0..0b806d0e7 100644
+--- a/internal/scheduler/testing.go
++++ b/internal/scheduler/testing.go
+@@ -8,7 +8,7 @@ import (
+ 
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/scheduler/job"
+ 	"github.com/hashicorp/boundary/internal/servers"
+ 	wrapping "github.com/hashicorp/go-kms-wrapping"
+diff --git a/internal/servers/common/handler.go b/internal/servers/common/handler.go
+index ffc42d614..71baa37b3 100644
+--- a/internal/servers/common/handler.go
++++ b/internal/servers/common/handler.go
+@@ -7,7 +7,7 @@ import (
+ 	"time"
+ 
+ 	"github.com/hashicorp/boundary/internal/errors"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/observability/event"
+ 	"github.com/hashicorp/boundary/internal/servers/controller/auth"
+ 	"github.com/hashicorp/go-secure-stdlib/base62"
+diff --git a/internal/servers/common/handler_test.go b/internal/servers/common/handler_test.go
+index ecd288035..288c02ce7 100644
+--- a/internal/servers/common/handler_test.go
++++ b/internal/servers/common/handler_test.go
+@@ -16,7 +16,7 @@ import (
+ 
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/errors"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/observability/event"
+ 	"github.com/hashicorp/eventlogger"
+ 	"github.com/hashicorp/eventlogger/filters/gated"
+diff --git a/internal/servers/controller/auth/auth.go b/internal/servers/controller/auth/auth.go
+index ebc6d23bb..b322f0130 100644
+--- a/internal/servers/controller/auth/auth.go
++++ b/internal/servers/controller/auth/auth.go
+@@ -14,7 +14,7 @@ import (
+ 	authpb "github.com/hashicorp/boundary/internal/gen/controller/auth"
+ 	"github.com/hashicorp/boundary/internal/gen/controller/tokens"
+ 
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/observability/event"
+ 	"github.com/hashicorp/boundary/internal/perms"
+ 	"github.com/hashicorp/boundary/internal/requests"
+diff --git a/internal/servers/controller/auth/auth_test.go b/internal/servers/controller/auth/auth_test.go
+index 0eda12218..210513d44 100644
+--- a/internal/servers/controller/auth/auth_test.go
++++ b/internal/servers/controller/auth/auth_test.go
+@@ -13,7 +13,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	authpb "github.com/hashicorp/boundary/internal/gen/controller/auth"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/observability/event"
+ 	"github.com/hashicorp/boundary/internal/servers"
+ 	"github.com/hashicorp/boundary/internal/servers/controller/handlers"
+diff --git a/internal/servers/controller/auth/option.go b/internal/servers/controller/auth/option.go
+index 939a2f0d0..6583e3488 100644
+--- a/internal/servers/controller/auth/option.go
++++ b/internal/servers/controller/auth/option.go
+@@ -1,7 +1,7 @@
+ package auth
+ 
+ import (
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/perms"
+ 	"github.com/hashicorp/boundary/internal/types/action"
+ 	"github.com/hashicorp/boundary/internal/types/resource"
+diff --git a/internal/servers/controller/auth/options_test.go b/internal/servers/controller/auth/options_test.go
+index 4f26d994e..09b49c4b3 100644
+--- a/internal/servers/controller/auth/options_test.go
++++ b/internal/servers/controller/auth/options_test.go
+@@ -3,7 +3,7 @@ package auth
+ import (
+ 	"testing"
+ 
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/perms"
+ 	"github.com/hashicorp/boundary/internal/types/action"
+ 	"github.com/hashicorp/boundary/internal/types/resource"
+diff --git a/internal/servers/controller/common/scopeids/scope_ids_test.go b/internal/servers/controller/common/scopeids/scope_ids_test.go
+index d0598b975..85ebd7510 100644
+--- a/internal/servers/controller/common/scopeids/scope_ids_test.go
++++ b/internal/servers/controller/common/scopeids/scope_ids_test.go
+@@ -9,7 +9,7 @@ import (
+ 	pbs "github.com/hashicorp/boundary/internal/gen/controller/api/services"
+ 	authpb "github.com/hashicorp/boundary/internal/gen/controller/auth"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/servers"
+ 	"github.com/hashicorp/boundary/internal/servers/controller/auth"
+ 	"github.com/hashicorp/boundary/internal/servers/controller/handlers"
+diff --git a/internal/servers/controller/controller.go b/internal/servers/controller/controller.go
+index 064cd4264..8e7f3432c 100644
+--- a/internal/servers/controller/controller.go
++++ b/internal/servers/controller/controller.go
+@@ -16,7 +16,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/host/static"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/observability/event"
+ 	"github.com/hashicorp/boundary/internal/scheduler"
+ 	"github.com/hashicorp/boundary/internal/scheduler/job"
+diff --git a/internal/servers/controller/gateway.go b/internal/servers/controller/gateway.go
+index 40142890e..ce6f8b414 100644
+--- a/internal/servers/controller/gateway.go
++++ b/internal/servers/controller/gateway.go
+@@ -10,7 +10,7 @@ import (
+ 	"github.com/hashicorp/boundary/globals"
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/errors"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/observability/event"
+ 	"github.com/hashicorp/boundary/internal/servers/controller/common"
+ 	"github.com/hashicorp/boundary/internal/servers/controller/handlers"
+diff --git a/internal/servers/controller/handlers/accounts/account_service_test.go b/internal/servers/controller/handlers/accounts/account_service_test.go
+index 056983ae3..10970b486 100644
+--- a/internal/servers/controller/handlers/accounts/account_service_test.go
++++ b/internal/servers/controller/handlers/accounts/account_service_test.go
+@@ -18,7 +18,7 @@ import (
+ 	pbs "github.com/hashicorp/boundary/internal/gen/controller/api/services"
+ 	"github.com/hashicorp/boundary/internal/iam"
+ 	"github.com/hashicorp/boundary/internal/intglobals"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	requestauth "github.com/hashicorp/boundary/internal/servers/controller/auth"
+ 	"github.com/hashicorp/boundary/internal/servers/controller/common"
+ 	"github.com/hashicorp/boundary/internal/servers/controller/handlers"
+diff --git a/internal/servers/controller/handlers/authmethods/authmethod_service.go b/internal/servers/controller/handlers/authmethods/authmethod_service.go
+index 4bf43902a..46e1cce71 100644
+--- a/internal/servers/controller/handlers/authmethods/authmethod_service.go
++++ b/internal/servers/controller/handlers/authmethods/authmethod_service.go
+@@ -13,7 +13,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/authtoken"
+ 	"github.com/hashicorp/boundary/internal/errors"
+ 	pbs "github.com/hashicorp/boundary/internal/gen/controller/api/services"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/perms"
+ 	"github.com/hashicorp/boundary/internal/requests"
+ 	requestauth "github.com/hashicorp/boundary/internal/servers/controller/auth"
+diff --git a/internal/servers/controller/handlers/authmethods/authmethod_service_test.go b/internal/servers/controller/handlers/authmethods/authmethod_service_test.go
+index 8dbd20d93..2d6e6f335 100644
+--- a/internal/servers/controller/handlers/authmethods/authmethod_service_test.go
++++ b/internal/servers/controller/handlers/authmethods/authmethod_service_test.go
+@@ -16,7 +16,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/errors"
+ 	pbs "github.com/hashicorp/boundary/internal/gen/controller/api/services"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	requestauth "github.com/hashicorp/boundary/internal/servers/controller/auth"
+ 	"github.com/hashicorp/boundary/internal/servers/controller/handlers"
+ 	"github.com/hashicorp/boundary/internal/servers/controller/handlers/authmethods"
+diff --git a/internal/servers/controller/handlers/authmethods/oidc_test.go b/internal/servers/controller/handlers/authmethods/oidc_test.go
+index ddc308af8..32abf4052 100644
+--- a/internal/servers/controller/handlers/authmethods/oidc_test.go
++++ b/internal/servers/controller/handlers/authmethods/oidc_test.go
+@@ -22,7 +22,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/errors"
+ 	pbs "github.com/hashicorp/boundary/internal/gen/controller/api/services"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/requests"
+ 	"github.com/hashicorp/boundary/internal/servers"
+ 	"github.com/hashicorp/boundary/internal/servers/controller/auth"
+diff --git a/internal/servers/controller/handlers/authmethods/password_test.go b/internal/servers/controller/handlers/authmethods/password_test.go
+index 6f7a2b6b7..94b9181c8 100644
+--- a/internal/servers/controller/handlers/authmethods/password_test.go
++++ b/internal/servers/controller/handlers/authmethods/password_test.go
+@@ -13,7 +13,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/errors"
+ 	pbs "github.com/hashicorp/boundary/internal/gen/controller/api/services"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/servers/controller/auth"
+ 	"github.com/hashicorp/boundary/internal/servers/controller/handlers"
+ 	"github.com/hashicorp/boundary/internal/servers/controller/handlers/authmethods"
+diff --git a/internal/servers/controller/handlers/authtokens/authtoken_service_test.go b/internal/servers/controller/handlers/authtokens/authtoken_service_test.go
+index cff486682..04dfcfccc 100644
+--- a/internal/servers/controller/handlers/authtokens/authtoken_service_test.go
++++ b/internal/servers/controller/handlers/authtokens/authtoken_service_test.go
+@@ -13,7 +13,7 @@ import (
+ 	pbs "github.com/hashicorp/boundary/internal/gen/controller/api/services"
+ 	authpb "github.com/hashicorp/boundary/internal/gen/controller/auth"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/requests"
+ 	"github.com/hashicorp/boundary/internal/servers"
+ 	"github.com/hashicorp/boundary/internal/servers/controller/auth"
+diff --git a/internal/servers/controller/handlers/credentiallibraries/credentiallibrary_service_test.go b/internal/servers/controller/handlers/credentiallibraries/credentiallibrary_service_test.go
+index 681294a1a..1de7f609d 100644
+--- a/internal/servers/controller/handlers/credentiallibraries/credentiallibrary_service_test.go
++++ b/internal/servers/controller/handlers/credentiallibraries/credentiallibrary_service_test.go
+@@ -13,7 +13,7 @@ import (
+ 	pbs "github.com/hashicorp/boundary/internal/gen/controller/api/services"
+ 	"github.com/hashicorp/boundary/internal/host/static"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/scheduler"
+ 	"github.com/hashicorp/boundary/internal/servers/controller/auth"
+ 	"github.com/hashicorp/boundary/internal/servers/controller/handlers"
+diff --git a/internal/servers/controller/handlers/credentialstores/credentialstore_service_test.go b/internal/servers/controller/handlers/credentialstores/credentialstore_service_test.go
+index bd6508304..7c41da532 100644
+--- a/internal/servers/controller/handlers/credentialstores/credentialstore_service_test.go
++++ b/internal/servers/controller/handlers/credentialstores/credentialstore_service_test.go
+@@ -17,7 +17,7 @@ import (
+ 	pbs "github.com/hashicorp/boundary/internal/gen/controller/api/services"
+ 	"github.com/hashicorp/boundary/internal/host/static"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/scheduler"
+ 	"github.com/hashicorp/boundary/internal/servers/controller/auth"
+ 	"github.com/hashicorp/boundary/internal/servers/controller/handlers"
+diff --git a/internal/servers/controller/handlers/host_catalogs/host_catalog_service_test.go b/internal/servers/controller/handlers/host_catalogs/host_catalog_service_test.go
+index 239747a5a..bb1b39a6f 100644
+--- a/internal/servers/controller/handlers/host_catalogs/host_catalog_service_test.go
++++ b/internal/servers/controller/handlers/host_catalogs/host_catalog_service_test.go
+@@ -13,7 +13,7 @@ import (
+ 	pbs "github.com/hashicorp/boundary/internal/gen/controller/api/services"
+ 	"github.com/hashicorp/boundary/internal/host/static"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/servers/controller/auth"
+ 	"github.com/hashicorp/boundary/internal/servers/controller/common"
+ 	"github.com/hashicorp/boundary/internal/servers/controller/handlers"
+diff --git a/internal/servers/controller/handlers/host_sets/host_set_service_test.go b/internal/servers/controller/handlers/host_sets/host_set_service_test.go
+index c08efc732..c676ae493 100644
+--- a/internal/servers/controller/handlers/host_sets/host_set_service_test.go
++++ b/internal/servers/controller/handlers/host_sets/host_set_service_test.go
+@@ -14,7 +14,7 @@ import (
+ 	pbs "github.com/hashicorp/boundary/internal/gen/controller/api/services"
+ 	"github.com/hashicorp/boundary/internal/host/static"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/servers/controller/auth"
+ 	"github.com/hashicorp/boundary/internal/servers/controller/handlers"
+ 	"github.com/hashicorp/boundary/internal/servers/controller/handlers/host_sets"
+diff --git a/internal/servers/controller/handlers/hosts/host_service_test.go b/internal/servers/controller/handlers/hosts/host_service_test.go
+index b7cfc7a65..f292a2558 100644
+--- a/internal/servers/controller/handlers/hosts/host_service_test.go
++++ b/internal/servers/controller/handlers/hosts/host_service_test.go
+@@ -13,7 +13,7 @@ import (
+ 	pbs "github.com/hashicorp/boundary/internal/gen/controller/api/services"
+ 	"github.com/hashicorp/boundary/internal/host/static"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/servers/controller/auth"
+ 	"github.com/hashicorp/boundary/internal/servers/controller/handlers"
+ 	"github.com/hashicorp/boundary/internal/servers/controller/handlers/hosts"
+diff --git a/internal/servers/controller/handlers/managed_groups/managed_group_service_test.go b/internal/servers/controller/handlers/managed_groups/managed_group_service_test.go
+index 1ca2cda25..4f1c4af55 100644
+--- a/internal/servers/controller/handlers/managed_groups/managed_group_service_test.go
++++ b/internal/servers/controller/handlers/managed_groups/managed_group_service_test.go
+@@ -18,7 +18,7 @@ import (
+ 	pbs "github.com/hashicorp/boundary/internal/gen/controller/api/services"
+ 	"github.com/hashicorp/boundary/internal/iam"
+ 	"github.com/hashicorp/boundary/internal/intglobals"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/servers/controller/auth"
+ 	"github.com/hashicorp/boundary/internal/servers/controller/common"
+ 	"github.com/hashicorp/boundary/internal/servers/controller/handlers"
+diff --git a/internal/servers/controller/handlers/roles/role_service_test.go b/internal/servers/controller/handlers/roles/role_service_test.go
+index b2e9fcfc2..07efc18ea 100644
+--- a/internal/servers/controller/handlers/roles/role_service_test.go
++++ b/internal/servers/controller/handlers/roles/role_service_test.go
+@@ -12,7 +12,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	pbs "github.com/hashicorp/boundary/internal/gen/controller/api/services"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/perms"
+ 	"github.com/hashicorp/boundary/internal/servers/controller/auth"
+ 	"github.com/hashicorp/boundary/internal/servers/controller/handlers"
+diff --git a/internal/servers/controller/handlers/sessions/session_service_test.go b/internal/servers/controller/handlers/sessions/session_service_test.go
+index 4fa363167..01ab320db 100644
+--- a/internal/servers/controller/handlers/sessions/session_service_test.go
++++ b/internal/servers/controller/handlers/sessions/session_service_test.go
+@@ -15,7 +15,7 @@ import (
+ 	authpb "github.com/hashicorp/boundary/internal/gen/controller/auth"
+ 	"github.com/hashicorp/boundary/internal/host/static"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/servers"
+ 	"github.com/hashicorp/boundary/internal/servers/controller/auth"
+ 	"github.com/hashicorp/boundary/internal/servers/controller/handlers"
+diff --git a/internal/servers/controller/handlers/targets/target_service.go b/internal/servers/controller/handlers/targets/target_service.go
+index 0cb56b84e..990e84a23 100644
+--- a/internal/servers/controller/handlers/targets/target_service.go
++++ b/internal/servers/controller/handlers/targets/target_service.go
+@@ -19,7 +19,7 @@ import (
+ 	pbs "github.com/hashicorp/boundary/internal/gen/controller/api/services"
+ 	"github.com/hashicorp/boundary/internal/host"
+ 	"github.com/hashicorp/boundary/internal/host/static"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/perms"
+ 	"github.com/hashicorp/boundary/internal/requests"
+ 	"github.com/hashicorp/boundary/internal/servers"
+diff --git a/internal/servers/controller/handlers/targets/target_service_test.go b/internal/servers/controller/handlers/targets/target_service_test.go
+index e28ffb64a..5325f5162 100644
+--- a/internal/servers/controller/handlers/targets/target_service_test.go
++++ b/internal/servers/controller/handlers/targets/target_service_test.go
+@@ -22,7 +22,7 @@ import (
+ 	spbs "github.com/hashicorp/boundary/internal/gen/controller/servers/services"
+ 	"github.com/hashicorp/boundary/internal/host/static"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/requests"
+ 	"github.com/hashicorp/boundary/internal/scheduler"
+ 	"github.com/hashicorp/boundary/internal/servers"
+diff --git a/internal/servers/controller/handlers/users/user_service_test.go b/internal/servers/controller/handlers/users/user_service_test.go
+index 169434a8b..9677b48bf 100644
+--- a/internal/servers/controller/handlers/users/user_service_test.go
++++ b/internal/servers/controller/handlers/users/user_service_test.go
+@@ -14,7 +14,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	pbs "github.com/hashicorp/boundary/internal/gen/controller/api/services"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/servers/controller/auth"
+ 	"github.com/hashicorp/boundary/internal/servers/controller/handlers"
+ 	"github.com/hashicorp/boundary/internal/servers/controller/handlers/users"
+diff --git a/internal/servers/controller/handlers/workers/worker_service.go b/internal/servers/controller/handlers/workers/worker_service.go
+index 3728128c9..760ed8b36 100644
+--- a/internal/servers/controller/handlers/workers/worker_service.go
++++ b/internal/servers/controller/handlers/workers/worker_service.go
+@@ -8,7 +8,7 @@ import (
+ 	"time"
+ 
+ 	pbs "github.com/hashicorp/boundary/internal/gen/controller/servers/services"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/observability/event"
+ 	"github.com/hashicorp/boundary/internal/servers"
+ 	"github.com/hashicorp/boundary/internal/servers/controller/common"
+diff --git a/internal/servers/controller/interceptor.go b/internal/servers/controller/interceptor.go
+index c7887ce76..e248237bc 100644
+--- a/internal/servers/controller/interceptor.go
++++ b/internal/servers/controller/interceptor.go
+@@ -10,7 +10,7 @@ import (
+ 	pb "github.com/hashicorp/boundary/internal/gen/controller/api"
+ 	authpb "github.com/hashicorp/boundary/internal/gen/controller/auth"
+ 	pberrors "github.com/hashicorp/boundary/internal/gen/errors"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/observability/event"
+ 	"github.com/hashicorp/boundary/internal/requests"
+ 	"github.com/hashicorp/boundary/internal/servers/controller/auth"
+diff --git a/internal/servers/controller/interceptor_test.go b/internal/servers/controller/interceptor_test.go
+index d1b0d5740..af4933f49 100644
+--- a/internal/servers/controller/interceptor_test.go
++++ b/internal/servers/controller/interceptor_test.go
+@@ -17,7 +17,7 @@ import (
+ 	pberrors "github.com/hashicorp/boundary/internal/gen/errors"
+ 	"github.com/hashicorp/boundary/internal/gen/testing/interceptor"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/observability/event"
+ 	"github.com/hashicorp/boundary/internal/servers"
+ 	"github.com/hashicorp/boundary/internal/servers/controller/auth"
+diff --git a/internal/servers/controller/session_cleanup_job_test.go b/internal/servers/controller/session_cleanup_job_test.go
+index 803fc9e15..b5b04ac44 100644
+--- a/internal/servers/controller/session_cleanup_job_test.go
++++ b/internal/servers/controller/session_cleanup_job_test.go
+@@ -9,7 +9,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/errors"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/scheduler"
+ 	"github.com/hashicorp/boundary/internal/servers"
+ 	"github.com/hashicorp/boundary/internal/session"
+diff --git a/internal/servers/controller/testing.go b/internal/servers/controller/testing.go
+index 1d48a6461..2871654b1 100644
+--- a/internal/servers/controller/testing.go
++++ b/internal/servers/controller/testing.go
+@@ -22,7 +22,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/gen/testing/interceptor"
+ 	"github.com/hashicorp/boundary/internal/iam"
+ 	"github.com/hashicorp/boundary/internal/intglobals"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/observability/event"
+ 	"github.com/hashicorp/boundary/internal/servers"
+ 	"github.com/hashicorp/go-hclog"
+diff --git a/internal/servers/repository.go b/internal/servers/repository.go
+index 4d71ae8b8..33dfa57df 100644
+--- a/internal/servers/repository.go
++++ b/internal/servers/repository.go
+@@ -8,7 +8,7 @@ import (
+ 	"github.com/hashicorp/boundary/globals"
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/errors"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/types/resource"
+ )
+ 
+diff --git a/internal/servers/repository_test.go b/internal/servers/repository_test.go
+index 3ff57b655..ab4f7fabb 100644
+--- a/internal/servers/repository_test.go
++++ b/internal/servers/repository_test.go
+@@ -9,7 +9,7 @@ import (
+ 	"github.com/hashicorp/boundary/api/roles"
+ 	"github.com/hashicorp/boundary/globals"
+ 	"github.com/hashicorp/boundary/internal/db"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/servers"
+ 	"github.com/hashicorp/boundary/internal/servers/controller"
+ 	"github.com/hashicorp/boundary/internal/types/scope"
+diff --git a/internal/session/repository.go b/internal/session/repository.go
+index b4c75ec1e..b01530dbb 100644
+--- a/internal/session/repository.go
++++ b/internal/session/repository.go
+@@ -6,7 +6,7 @@ import (
+ 
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/errors"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ )
+ 
+ // Clonable provides a cloning interface
+diff --git a/internal/session/repository_connection_test.go b/internal/session/repository_connection_test.go
+index 7e51ba65f..63e2c2c9e 100644
+--- a/internal/session/repository_connection_test.go
++++ b/internal/session/repository_connection_test.go
+@@ -9,7 +9,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/errors"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/oplog"
+ 	"github.com/hashicorp/boundary/internal/servers"
+ 	"github.com/hashicorp/go-secure-stdlib/strutil"
+diff --git a/internal/session/repository_session.go b/internal/session/repository_session.go
+index f324be3b6..1a12384ac 100644
+--- a/internal/session/repository_session.go
++++ b/internal/session/repository_session.go
+@@ -11,7 +11,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/db/timestamp"
+ 	"github.com/hashicorp/boundary/internal/errors"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	wrapping "github.com/hashicorp/go-kms-wrapping"
+ 	"google.golang.org/grpc/codes"
+ 	"google.golang.org/grpc/status"
+diff --git a/internal/session/repository_session_test.go b/internal/session/repository_session_test.go
+index 1bc59ee9d..582b44b30 100644
+--- a/internal/session/repository_session_test.go
++++ b/internal/session/repository_session_test.go
+@@ -26,7 +26,7 @@ import (
+ 
+ 	iamStore "github.com/hashicorp/boundary/internal/iam/store"
+ 
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/oplog"
+ 	"github.com/stretchr/testify/assert"
+ 	"github.com/stretchr/testify/require"
+diff --git a/internal/session/repository_test.go b/internal/session/repository_test.go
+index 5326a1b3a..7b45876d3 100644
+--- a/internal/session/repository_test.go
++++ b/internal/session/repository_test.go
+@@ -4,7 +4,7 @@ import (
+ 	"testing"
+ 
+ 	"github.com/hashicorp/boundary/internal/db"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/stretchr/testify/assert"
+ 	"github.com/stretchr/testify/require"
+ )
+diff --git a/internal/session/testing.go b/internal/session/testing.go
+index 7a96e2778..e77e4377e 100644
+--- a/internal/session/testing.go
++++ b/internal/session/testing.go
+@@ -12,7 +12,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/db/timestamp"
+ 	"github.com/hashicorp/boundary/internal/host/static"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/servers"
+ 	"github.com/hashicorp/boundary/internal/target"
+ 	"github.com/hashicorp/boundary/internal/target/tcp"
+diff --git a/internal/session/util.go b/internal/session/util.go
+index bbdbe6316..511d3163a 100644
+--- a/internal/session/util.go
++++ b/internal/session/util.go
+@@ -4,7 +4,7 @@ import (
+ 	"crypto/ed25519"
+ 
+ 	"github.com/hashicorp/boundary/internal/errors"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	wrapping "github.com/hashicorp/go-kms-wrapping"
+ )
+ 
+@@ -20,7 +20,7 @@ func DeriveED25519Key(wrapper wrapping.Wrapper, userId, jobId string) (ed25519.P
+ 		jId = []byte(jobId)
+ 	}
+ 
+-	reader, err := kms.NewDerivedReader(wrapper, 32, uId, jId)
++	reader, err := crypto.NewDerivedReader(wrapper, 32, uId, jId)
+ 	if err != nil {
+ 		return nil, nil, errors.WrapDeprecated(err, op)
+ 	}
+diff --git a/internal/session/util_test.go b/internal/session/util_test.go
+index 78203ec14..09e8eee1c 100644
+--- a/internal/session/util_test.go
++++ b/internal/session/util_test.go
+@@ -6,7 +6,7 @@ import (
+ 
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/errors"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	wrapping "github.com/hashicorp/go-kms-wrapping"
+ 	"github.com/stretchr/testify/assert"
+ 	"github.com/stretchr/testify/require"
+@@ -39,7 +39,7 @@ func TestDeriveED25519Key(t *testing.T) {
+ 				jobId:   "jobId",
+ 			},
+ 			want: func() keys {
+-				reader, err := kms.NewDerivedReader(wrapper, 32, []byte("userId"), []byte("jobId"))
++				reader, err := crypto.NewDerivedReader(wrapper, 32, []byte("userId"), []byte("jobId"))
+ 				require.NoError(t, err)
+ 				pub, priv, err := ed25519.GenerateKey(reader)
+ 				require.NoError(t, err)
+diff --git a/internal/target/repository.go b/internal/target/repository.go
+index fb965b68c..7ed529e33 100644
+--- a/internal/target/repository.go
++++ b/internal/target/repository.go
+@@ -8,7 +8,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	dbcommon "github.com/hashicorp/boundary/internal/db/common"
+ 	"github.com/hashicorp/boundary/internal/errors"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/oplog"
+ )
+ 
+diff --git a/internal/target/repository_credential_source.go b/internal/target/repository_credential_source.go
+index 8d158b885..fe480f1ea 100644
+--- a/internal/target/repository_credential_source.go
++++ b/internal/target/repository_credential_source.go
+@@ -9,7 +9,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/credential"
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/errors"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/oplog"
+ 	"github.com/hashicorp/boundary/internal/target/store"
+ )
+diff --git a/internal/target/repository_credential_source_test.go b/internal/target/repository_credential_source_test.go
+index d03c438f8..1247ebc14 100644
+--- a/internal/target/repository_credential_source_test.go
++++ b/internal/target/repository_credential_source_test.go
+@@ -9,7 +9,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/errors"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/target"
+ 	"github.com/hashicorp/boundary/internal/target/targettest"
+ 	"github.com/stretchr/testify/assert"
+diff --git a/internal/target/repository_host_source.go b/internal/target/repository_host_source.go
+index 013097c76..87eaaa7e3 100644
+--- a/internal/target/repository_host_source.go
++++ b/internal/target/repository_host_source.go
+@@ -6,7 +6,7 @@ import (
+ 
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/errors"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/oplog"
+ )
+ 
+diff --git a/internal/target/repository_test.go b/internal/target/repository_test.go
+index 6187421a3..40304b010 100644
+--- a/internal/target/repository_test.go
++++ b/internal/target/repository_test.go
+@@ -4,7 +4,7 @@ import (
+ 	"testing"
+ 
+ 	"github.com/hashicorp/boundary/internal/db"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/stretchr/testify/assert"
+ 	"github.com/stretchr/testify/require"
+ )
+diff --git a/internal/target/tcp/immutable_fields_test.go b/internal/target/tcp/immutable_fields_test.go
+index f268806e1..4e652b89d 100644
+--- a/internal/target/tcp/immutable_fields_test.go
++++ b/internal/target/tcp/immutable_fields_test.go
+@@ -8,7 +8,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/db/timestamp"
+ 	"github.com/hashicorp/boundary/internal/host/static"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/target"
+ 	"github.com/hashicorp/boundary/internal/target/tcp"
+ 	"github.com/stretchr/testify/assert"
+diff --git a/internal/target/tcp/repository_credential_source_test.go b/internal/target/tcp/repository_credential_source_test.go
+index 1b0c80b28..e55ae64f0 100644
+--- a/internal/target/tcp/repository_credential_source_test.go
++++ b/internal/target/tcp/repository_credential_source_test.go
+@@ -10,7 +10,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/errors"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/oplog"
+ 	"github.com/hashicorp/boundary/internal/target"
+ 	"github.com/hashicorp/boundary/internal/target/store"
+diff --git a/internal/target/tcp/repository_host_source_test.go b/internal/target/tcp/repository_host_source_test.go
+index d0a2b3fa9..c36a08368 100644
+--- a/internal/target/tcp/repository_host_source_test.go
++++ b/internal/target/tcp/repository_host_source_test.go
+@@ -10,7 +10,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/errors"
+ 	"github.com/hashicorp/boundary/internal/host/static"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/oplog"
+ 	"github.com/hashicorp/boundary/internal/target"
+ 	targetstore "github.com/hashicorp/boundary/internal/target/store"
+diff --git a/internal/target/tcp/repository_tcp_target_test.go b/internal/target/tcp/repository_tcp_target_test.go
+index 9b2338a67..0d5692c56 100644
+--- a/internal/target/tcp/repository_tcp_target_test.go
++++ b/internal/target/tcp/repository_tcp_target_test.go
+@@ -12,7 +12,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/errors"
+ 	"github.com/hashicorp/boundary/internal/host/static"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/oplog"
+ 	"github.com/hashicorp/boundary/internal/target"
+ 	"github.com/hashicorp/boundary/internal/target/store"
+diff --git a/internal/target/tcp/repository_test.go b/internal/target/tcp/repository_test.go
+index 32501047b..0c11aa74a 100644
+--- a/internal/target/tcp/repository_test.go
++++ b/internal/target/tcp/repository_test.go
+@@ -10,7 +10,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/errors"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/oplog"
+ 	"github.com/hashicorp/boundary/internal/target"
+ 	"github.com/hashicorp/boundary/internal/target/tcp"
+diff --git a/internal/target/tcp/testing_test.go b/internal/target/tcp/testing_test.go
+index 7faeb2c14..8f8fa587f 100644
+--- a/internal/target/tcp/testing_test.go
++++ b/internal/target/tcp/testing_test.go
+@@ -8,7 +8,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/host/static"
+ 	"github.com/hashicorp/boundary/internal/iam"
+-	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/target"
+ 	"github.com/hashicorp/boundary/internal/target/tcp"
+ 	"github.com/stretchr/testify/assert"

@@ -1,0 +1,22 @@
+diff --git a/internal/credential/vault/vault.go b/internal/credential/vault/vault.go
+index b9c6baf5b..e5ba2467f 100644
+--- a/internal/credential/vault/vault.go
++++ b/internal/credential/vault/vault.go
+@@ -44,7 +44,7 @@ type client struct {
+ 	token TokenSecret
+ }
+ 
+-func newClient(c *clientConfig) (*client, error) {
++func newClient(ctx context.Context, c *clientConfig) (*client, error) {
+ 	const op = "vault.newClient"
+ 	if !c.isValid() {
+ 		return nil, errors.NewDeprecated(errors.InvalidParameter, op, "invalid configuration")
+@@ -93,7 +93,7 @@ func newClient(c *clientConfig) (*client, error) {
+ // response is returned. This endpoint is accessible with the default
+ // policy in Vault 1.7.2. See
+ // https://www.vaultproject.io/api-docs/system/health#read-health-information.
+-func (c *client) ping() error {
++func (c *client) ping(ctx context.Context) error {
+ 	const op = "vault.(client).ping"
+ 	h, err := c.cl.Sys().Health()
+ 	switch {

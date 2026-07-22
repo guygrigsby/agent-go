@@ -1,0 +1,191 @@
+diff --git a/globals/globals.go b/globals/globals.go
+index daba120cc..b4b4541d7 100644
+--- a/globals/globals.go
++++ b/globals/globals.go
+@@ -3,9 +3,11 @@ package globals
+ import "time"
+ 
+ const (
+-	TcpProxyV1     = "boundary-tcp-proxy-v1"
+-	ServiceTokenV1 = "s1"
+-	SessionPrefix  = "s_"
++	TcpProxyV1      = "boundary-tcp-proxy-v1"
++	ServiceTokenV1  = "s1"
++	SessionPrefix   = "s_"
++	AnyAuthenticatedUserId = "u_auth"
++	RecoveryUserId       = "u_recovery"
+ )
+ 
+ type (
+diff --git a/internal/daemon/controller/auth/auth.go b/internal/daemon/controller/auth/auth.go
+index 7fc598d60..dc03e4e03 100644
+--- a/internal/daemon/controller/auth/auth.go
++++ b/internal/daemon/controller/auth/auth.go
+@@ -855,7 +855,7 @@ func (r *VerifyResults) ScopesAuthorizedForList(ctx context.Context, rootScopeId
+ 			// ordering coming back isn't in parent-first ordering our map
+ 			// lookup might fail.
+ 			deferredScopes = append(deferredScopes, scp)
+-		case len(aSet) == 1 || r.UserId == perms.RecoveryUserId:
++		case len(aSet) == 1 || r.UserId == globals.RecoveryUserId:
+ 			if aSet[0] != action.List {
+ 				return nil, errors.New(ctx, errors.Internal, op, "unexpected action in set")
+ 			}
+diff --git a/internal/daemon/controller/auth/testing.go b/internal/daemon/controller/auth/testing.go
+index 101a618c9..b87c1379a 100644
+--- a/internal/daemon/controller/auth/testing.go
++++ b/internal/daemon/controller/auth/testing.go
+@@ -5,7 +5,7 @@ import (
+ 
+ 	"github.com/hashicorp/boundary/internal/daemon/controller/common"
+ 	authpb "github.com/hashicorp/boundary/internal/gen/controller/auth"
+-	"github.com/hashicorp/boundary/internal/perms"
++	"github.com/hashicorp/boundary/globals"
+ 	"github.com/hashicorp/boundary/internal/requests"
+ )
+ 
+@@ -21,7 +21,7 @@ func DisabledAuthTestContext(iamRepoFn common.IamRepoFactory, scopeId string, op
+ 	}
+ 	reqInfo.UserIdOverride = opts.withUserId
+ 	if reqInfo.UserIdOverride == "" {
+-		reqInfo.UserIdOverride = perms.AnyAuthenticatedUserId
++		reqInfo.UserIdOverride = globals.AnyAuthenticatedUserId
+ 	}
+ 	requestContext := context.WithValue(context.Background(), requests.ContextRequestInformationKey, &requests.RequestContext{})
+ 	return NewVerifierContext(requestContext, iamRepoFn, nil, nil, opts.withKms, &reqInfo)
+diff --git a/internal/daemon/controller/handlers/groups/group_service.go b/internal/daemon/controller/handlers/groups/group_service.go
+index 50f2655c6..c11b5bf93 100644
+--- a/internal/daemon/controller/handlers/groups/group_service.go
++++ b/internal/daemon/controller/handlers/groups/group_service.go
+@@ -710,7 +710,7 @@ func validateAddGroupMembersRequest(req *pbs.AddGroupMembersRequest) error {
+ 			badFields["member_ids"] = fmt.Sprintf("Must only contain valid user ids but found %q.", id)
+ 			break
+ 		}
+-		if id == perms.RecoveryUserId {
++		if id == globals.RecoveryUserId {
+ 			badFields["member_ids"] = "u_recovery cannot be assigned to a group."
+ 			break
+ 		}
+@@ -734,7 +734,7 @@ func validateSetGroupMembersRequest(req *pbs.SetGroupMembersRequest) error {
+ 			badFields["member_ids"] = fmt.Sprintf("Must only contain valid user ids but found %q.", id)
+ 			break
+ 		}
+-		if id == perms.RecoveryUserId {
++		if id == globals.RecoveryUserId {
+ 			badFields["member_ids"] = "u_recovery cannot be assigned to a group."
+ 			break
+ 		}
+diff --git a/internal/daemon/controller/handlers/roles/role_service.go b/internal/daemon/controller/handlers/roles/role_service.go
+index da3a890f0..98d533186 100644
+--- a/internal/daemon/controller/handlers/roles/role_service.go
++++ b/internal/daemon/controller/handlers/roles/role_service.go
+@@ -975,7 +975,7 @@ func validateAddRolePrincipalsRequest(req *pbs.AddRolePrincipalsRequest) error {
+ 			badFields["principal_ids"] = "Must only have valid user, group, and/or managed group ids."
+ 			break
+ 		}
+-		if id == perms.RecoveryUserId {
++		if id == globals.RecoveryUserId {
+ 			badFields["principal_ids"] = "u_recovery cannot be assigned to a role"
+ 			break
+ 		}
+@@ -1001,7 +1001,7 @@ func validateSetRolePrincipalsRequest(req *pbs.SetRolePrincipalsRequest) error {
+ 			badFields["principal_ids"] = "Must only have valid user, group, and/or managed group ids."
+ 			break
+ 		}
+-		if id == perms.RecoveryUserId {
++		if id == globals.RecoveryUserId {
+ 			badFields["principal_ids"] = "u_recovery cannot be assigned to a role"
+ 			break
+ 		}
+diff --git a/internal/iam/repository_scope.go b/internal/iam/repository_scope.go
+index a6b2d734b..2d48559ed 100644
+--- a/internal/iam/repository_scope.go
++++ b/internal/iam/repository_scope.go
+@@ -6,6 +6,7 @@ import (
+ 	"fmt"
+ 	"strings"
+ 
++	"github.com/hashicorp/boundary/globals"
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/errors"
+ 	"github.com/hashicorp/boundary/internal/kms"
+@@ -87,8 +88,8 @@ func (r *Repository) CreateScope(ctx context.Context, s *Scope, userId string, o
+ 	switch {
+ 	case userId == "",
+ 		userId == perms.AnonymousUserId,
+-		userId == perms.AnyAuthenticatedUserId,
+-		userId == perms.RecoveryUserId,
++		userId == globals.AnyAuthenticatedUserId,
++		userId == globals.RecoveryUserId,
+ 		opts.withSkipAdminRoleCreation:
+ 		// TODO: Cause a log entry. The repo doesn't have a logger right now,
+ 		// and ideally we will be using context to pass around log info scoped
+@@ -338,7 +339,7 @@ func (r *Repository) CreateScope(ctx context.Context, s *Scope, userId string, o
+ 					principals := []any{}
+ 					userId := "u_anon"
+ 					if s.Type == scope.Project.String() {
+-						userId = perms.AnyAuthenticatedUserId
++						userId = globals.AnyAuthenticatedUserId
+ 					}
+ 					rolePrincipal, err := NewUserRole(defaultRolePublicId, userId)
+ 					if err != nil {
+diff --git a/internal/perms/acl.go b/internal/perms/acl.go
+index 4e8d1b63f..4c6df46bb 100644
+--- a/internal/perms/acl.go
++++ b/internal/perms/acl.go
+@@ -3,15 +3,14 @@ package perms
+ import (
+ 	"strings"
+ 
++	"github.com/hashicorp/boundary/globals"
+ 	"github.com/hashicorp/boundary/internal/types/action"
+ 	"github.com/hashicorp/boundary/internal/types/resource"
+ 	"github.com/hashicorp/boundary/sdk/pbs/controller/api/resources/scopes"
+ )
+ 
+ const (
+-	AnyAuthenticatedUserId = "u_auth"
+-	AnonymousUserId        = "u_anon"
+-	RecoveryUserId         = "u_recovery"
++	AnonymousUserId = "u_anon"
+ )
+ 
+ // ACL provides an entry point into the permissions engine for determining if an
+@@ -251,7 +250,7 @@ func (a ACL) ListPermissions(requestedScopes map[string]*scopes.ScopeInfo,
+ 			Action:   action.List,
+ 			OnlySelf: true, // default to only self to be restrictive
+ 		}
+-		if userId == RecoveryUserId {
++		if userId == globals.RecoveryUserId {
+ 			p.All = true
+ 			p.OnlySelf = false
+ 			perms = append(perms, p)
+diff --git a/internal/perms/acl_test.go b/internal/perms/acl_test.go
+index d3e54612f..a42ce5bf5 100644
+--- a/internal/perms/acl_test.go
++++ b/internal/perms/acl_test.go
+@@ -5,6 +5,7 @@ import (
+ 	"fmt"
+ 	"testing"
+ 
++	"github.com/hashicorp/boundary/globals"
+ 	"github.com/hashicorp/boundary/internal/intglobals"
+ 	"github.com/hashicorp/boundary/internal/types/action"
+ 	"github.com/hashicorp/boundary/internal/types/resource"
+@@ -723,7 +724,7 @@ func TestACL_ListPermissions(t *testing.T) {
+ 		},
+ 		{
+ 			name:         "Allow recovery user full access to sessions",
+-			userId:       RecoveryUserId,
++			userId:       globals.RecoveryUserId,
+ 			scopes:       map[string]*scopes.ScopeInfo{"o_1": nil, "o_2": nil},
+ 			resourceType: resource.Session,
+ 			actionSet:    action.ActionSet{action.List, action.Read, action.Create, action.Delete},
+@@ -748,7 +749,7 @@ func TestACL_ListPermissions(t *testing.T) {
+ 		},
+ 		{
+ 			name:         "Allow recovery user full access to targets",
+-			userId:       RecoveryUserId,
++			userId:       globals.RecoveryUserId,
+ 			scopes:       map[string]*scopes.ScopeInfo{"o_1": nil, "o_2": nil},
+ 			resourceType: resource.Target,
+ 			actionSet:    action.ActionSet{action.List, action.Read, action.Create, action.Delete},

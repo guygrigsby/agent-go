@@ -1,0 +1,272 @@
+goos: darwin
+goarch: arm64
+pkg: github.com/guygrigsby/agent-go/bench
+cpu: Apple M5 Max
+BenchmarkRename/glm-flash/boundary_fb1ea92a/raw-18         	       5	      4108 ns/op	         1.000 pass
+--- BENCH: BenchmarkRename/glm-flash/boundary_fb1ea92a/raw-18
+    bench_test.go:236: resume: results/20260718-162855/boundary_fb1ea92a/raw/0 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_fb1ea92a/raw/1 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_fb1ea92a/raw/2 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_fb1ea92a/raw/3 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_fb1ea92a/raw/4 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_fb1ea92a/raw/5 already recorded, skipping
+BenchmarkRename/glm-flash/boundary_fb1ea92a/serena-18      	       5	      1550 ns/op	         0.4000 pass
+--- BENCH: BenchmarkRename/glm-flash/boundary_fb1ea92a/serena-18
+    bench_test.go:236: resume: results/20260718-162855/boundary_fb1ea92a/serena/0 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_fb1ea92a/serena/1 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_fb1ea92a/serena/2 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_fb1ea92a/serena/3 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_fb1ea92a/serena/4 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_fb1ea92a/serena/5 already recorded, skipping
+BenchmarkRename/glm-flash/boundary_fb1ea92a/semantic-18    	       5	      2242 ns/op	         0 pass
+--- BENCH: BenchmarkRename/glm-flash/boundary_fb1ea92a/semantic-18
+    bench_test.go:236: resume: results/20260718-162855/boundary_fb1ea92a/semantic/0 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_fb1ea92a/semantic/1 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_fb1ea92a/semantic/2 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_fb1ea92a/semantic/3 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_fb1ea92a/semantic/4 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_fb1ea92a/semantic/5 already recorded, skipping
+BenchmarkRename/glm-flash/boundary_57ffc718/raw-18         	       5	      2025 ns/op	         0 pass
+--- BENCH: BenchmarkRename/glm-flash/boundary_57ffc718/raw-18
+    bench_test.go:236: resume: results/20260718-162855/boundary_57ffc718/raw/0 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_57ffc718/raw/1 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_57ffc718/raw/2 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_57ffc718/raw/3 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_57ffc718/raw/4 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_57ffc718/raw/5 already recorded, skipping
+BenchmarkRename/glm-flash/boundary_57ffc718/serena-18      	       5	      1117 ns/op	         0 pass
+--- BENCH: BenchmarkRename/glm-flash/boundary_57ffc718/serena-18
+    bench_test.go:236: resume: results/20260718-162855/boundary_57ffc718/serena/0 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_57ffc718/serena/1 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_57ffc718/serena/2 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_57ffc718/serena/3 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_57ffc718/serena/4 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_57ffc718/serena/5 already recorded, skipping
+BenchmarkRename/glm-flash/boundary_57ffc718/semantic-18    	       5	      1033 ns/op	         0.2000 pass
+--- BENCH: BenchmarkRename/glm-flash/boundary_57ffc718/semantic-18
+    bench_test.go:236: resume: results/20260718-162855/boundary_57ffc718/semantic/0 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_57ffc718/semantic/1 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_57ffc718/semantic/2 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_57ffc718/semantic/3 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_57ffc718/semantic/4 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_57ffc718/semantic/5 already recorded, skipping
+BenchmarkRename/glm-flash/boundary_bf1486f7/raw-18         	       5	      1242 ns/op	         0 pass
+--- BENCH: BenchmarkRename/glm-flash/boundary_bf1486f7/raw-18
+    bench_test.go:236: resume: results/20260718-162855/boundary_bf1486f7/raw/0 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_bf1486f7/raw/1 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_bf1486f7/raw/2 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_bf1486f7/raw/3 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_bf1486f7/raw/4 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_bf1486f7/raw/5 already recorded, skipping
+BenchmarkRename/glm-flash/boundary_bf1486f7/serena-18      	       5	      1200 ns/op	         0 pass
+--- BENCH: BenchmarkRename/glm-flash/boundary_bf1486f7/serena-18
+    bench_test.go:236: resume: results/20260718-162855/boundary_bf1486f7/serena/0 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_bf1486f7/serena/1 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_bf1486f7/serena/2 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_bf1486f7/serena/3 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_bf1486f7/serena/4 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_bf1486f7/serena/5 already recorded, skipping
+BenchmarkRename/glm-flash/boundary_bf1486f7/semantic-18    	       5	      1092 ns/op	         0.6000 pass
+--- BENCH: BenchmarkRename/glm-flash/boundary_bf1486f7/semantic-18
+    bench_test.go:236: resume: results/20260718-162855/boundary_bf1486f7/semantic/0 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_bf1486f7/semantic/1 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_bf1486f7/semantic/2 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_bf1486f7/semantic/3 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_bf1486f7/semantic/4 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_bf1486f7/semantic/5 already recorded, skipping
+BenchmarkRename/glm-flash/boundary_b4b95e0f/raw-18         	       5	      1016 ns/op	         0 pass
+--- BENCH: BenchmarkRename/glm-flash/boundary_b4b95e0f/raw-18
+    bench_test.go:236: resume: results/20260718-162855/boundary_b4b95e0f/raw/0 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_b4b95e0f/raw/1 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_b4b95e0f/raw/2 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_b4b95e0f/raw/3 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_b4b95e0f/raw/4 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_b4b95e0f/raw/5 already recorded, skipping
+BenchmarkRename/glm-flash/boundary_b4b95e0f/serena-18      	       5	       933.4 ns/op	         0 pass
+--- BENCH: BenchmarkRename/glm-flash/boundary_b4b95e0f/serena-18
+    bench_test.go:236: resume: results/20260718-162855/boundary_b4b95e0f/serena/0 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_b4b95e0f/serena/1 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_b4b95e0f/serena/2 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_b4b95e0f/serena/3 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_b4b95e0f/serena/4 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_b4b95e0f/serena/5 already recorded, skipping
+BenchmarkRename/glm-flash/boundary_b4b95e0f/semantic-18    	       5	      1100 ns/op	         0 pass
+--- BENCH: BenchmarkRename/glm-flash/boundary_b4b95e0f/semantic-18
+    bench_test.go:236: resume: results/20260718-162855/boundary_b4b95e0f/semantic/0 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_b4b95e0f/semantic/1 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_b4b95e0f/semantic/2 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_b4b95e0f/semantic/3 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_b4b95e0f/semantic/4 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_b4b95e0f/semantic/5 already recorded, skipping
+BenchmarkRename/glm-flash/boundary_eb61ac63/raw-18         	       5	      1233 ns/op	         0 pass
+--- BENCH: BenchmarkRename/glm-flash/boundary_eb61ac63/raw-18
+    bench_test.go:236: resume: results/20260718-162855/boundary_eb61ac63/raw/0 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_eb61ac63/raw/1 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_eb61ac63/raw/2 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_eb61ac63/raw/3 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_eb61ac63/raw/4 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_eb61ac63/raw/5 already recorded, skipping
+BenchmarkRename/glm-flash/boundary_eb61ac63/serena-18      	       5	      1009 ns/op	         0 pass
+--- BENCH: BenchmarkRename/glm-flash/boundary_eb61ac63/serena-18
+    bench_test.go:236: resume: results/20260718-162855/boundary_eb61ac63/serena/0 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_eb61ac63/serena/1 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_eb61ac63/serena/2 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_eb61ac63/serena/3 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_eb61ac63/serena/4 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_eb61ac63/serena/5 already recorded, skipping
+BenchmarkRename/glm-flash/boundary_eb61ac63/semantic-18    	       5	      1009 ns/op	         0.6000 pass
+--- BENCH: BenchmarkRename/glm-flash/boundary_eb61ac63/semantic-18
+    bench_test.go:236: resume: results/20260718-162855/boundary_eb61ac63/semantic/0 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_eb61ac63/semantic/1 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_eb61ac63/semantic/2 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_eb61ac63/semantic/3 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_eb61ac63/semantic/4 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_eb61ac63/semantic/5 already recorded, skipping
+BenchmarkRename/glm-flash/boundary_9354a4eb/raw-18         	       5	      1233 ns/op	         0 pass
+--- BENCH: BenchmarkRename/glm-flash/boundary_9354a4eb/raw-18
+    bench_test.go:236: resume: results/20260718-162855/boundary_9354a4eb/raw/0 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_9354a4eb/raw/1 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_9354a4eb/raw/2 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_9354a4eb/raw/3 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_9354a4eb/raw/4 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_9354a4eb/raw/5 already recorded, skipping
+BenchmarkRename/glm-flash/boundary_9354a4eb/serena-18      	       5	       908.2 ns/op	         0 pass
+--- BENCH: BenchmarkRename/glm-flash/boundary_9354a4eb/serena-18
+    bench_test.go:236: resume: results/20260718-162855/boundary_9354a4eb/serena/0 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_9354a4eb/serena/1 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_9354a4eb/serena/2 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_9354a4eb/serena/3 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_9354a4eb/serena/4 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_9354a4eb/serena/5 already recorded, skipping
+BenchmarkRename/glm-flash/boundary_9354a4eb/semantic-18    	       5	       808.2 ns/op	         0 pass
+--- BENCH: BenchmarkRename/glm-flash/boundary_9354a4eb/semantic-18
+    bench_test.go:236: resume: results/20260718-162855/boundary_9354a4eb/semantic/0 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_9354a4eb/semantic/1 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_9354a4eb/semantic/2 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_9354a4eb/semantic/3 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_9354a4eb/semantic/4 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_9354a4eb/semantic/5 already recorded, skipping
+BenchmarkRename/glm-flash/vault_cfff8d42/raw-18            	       5	       933.4 ns/op	         1.000 pass
+--- BENCH: BenchmarkRename/glm-flash/vault_cfff8d42/raw-18
+    bench_test.go:236: resume: results/20260718-162855/vault_cfff8d42/raw/0 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/vault_cfff8d42/raw/1 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/vault_cfff8d42/raw/2 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/vault_cfff8d42/raw/3 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/vault_cfff8d42/raw/4 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/vault_cfff8d42/raw/5 already recorded, skipping
+BenchmarkRename/glm-flash/vault_cfff8d42/serena-18         	       5	       833.0 ns/op	         0.6000 pass
+--- BENCH: BenchmarkRename/glm-flash/vault_cfff8d42/serena-18
+    bench_test.go:236: resume: results/20260718-162855/vault_cfff8d42/serena/0 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/vault_cfff8d42/serena/1 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/vault_cfff8d42/serena/2 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/vault_cfff8d42/serena/3 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/vault_cfff8d42/serena/4 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/vault_cfff8d42/serena/5 already recorded, skipping
+BenchmarkRename/glm-flash/vault_cfff8d42/semantic-18       	       5	       850.0 ns/op	         0.6000 pass
+--- BENCH: BenchmarkRename/glm-flash/vault_cfff8d42/semantic-18
+    bench_test.go:236: resume: results/20260718-162855/vault_cfff8d42/semantic/0 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/vault_cfff8d42/semantic/1 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/vault_cfff8d42/semantic/2 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/vault_cfff8d42/semantic/3 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/vault_cfff8d42/semantic/4 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/vault_cfff8d42/semantic/5 already recorded, skipping
+BenchmarkRename/glm-flash/vault_7103bc2c/raw-18            	       5	      1558 ns/op	         0 pass
+--- BENCH: BenchmarkRename/glm-flash/vault_7103bc2c/raw-18
+    bench_test.go:236: resume: results/20260718-162855/vault_7103bc2c/raw/0 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/vault_7103bc2c/raw/1 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/vault_7103bc2c/raw/2 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/vault_7103bc2c/raw/3 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/vault_7103bc2c/raw/4 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/vault_7103bc2c/raw/5 already recorded, skipping
+BenchmarkRename/glm-flash/vault_7103bc2c/serena-18         	       5	       833.4 ns/op	         0 pass
+--- BENCH: BenchmarkRename/glm-flash/vault_7103bc2c/serena-18
+    bench_test.go:236: resume: results/20260718-162855/vault_7103bc2c/serena/0 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/vault_7103bc2c/serena/1 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/vault_7103bc2c/serena/2 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/vault_7103bc2c/serena/3 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/vault_7103bc2c/serena/4 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/vault_7103bc2c/serena/5 already recorded, skipping
+BenchmarkRename/glm-flash/vault_7103bc2c/semantic-18       	       5	       792.0 ns/op	         0 pass
+--- BENCH: BenchmarkRename/glm-flash/vault_7103bc2c/semantic-18
+    bench_test.go:236: resume: results/20260718-162855/vault_7103bc2c/semantic/0 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/vault_7103bc2c/semantic/1 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/vault_7103bc2c/semantic/2 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/vault_7103bc2c/semantic/3 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/vault_7103bc2c/semantic/4 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/vault_7103bc2c/semantic/5 already recorded, skipping
+BenchmarkRename/glm-flash/boundary_687dd1bd/raw-18         	       5	       883.4 ns/op	         0 pass
+--- BENCH: BenchmarkRename/glm-flash/boundary_687dd1bd/raw-18
+    bench_test.go:236: resume: results/20260718-162855/boundary_687dd1bd/raw/0 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_687dd1bd/raw/1 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_687dd1bd/raw/2 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_687dd1bd/raw/3 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_687dd1bd/raw/4 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_687dd1bd/raw/5 already recorded, skipping
+BenchmarkRename/glm-flash/boundary_687dd1bd/serena-18      	       5	      1316 ns/op	         0 pass
+--- BENCH: BenchmarkRename/glm-flash/boundary_687dd1bd/serena-18
+    bench_test.go:236: resume: results/20260718-162855/boundary_687dd1bd/serena/0 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_687dd1bd/serena/1 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_687dd1bd/serena/2 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_687dd1bd/serena/3 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_687dd1bd/serena/4 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_687dd1bd/serena/5 already recorded, skipping
+BenchmarkRename/glm-flash/boundary_687dd1bd/semantic-18    	       5	       850.2 ns/op	         0 pass
+--- BENCH: BenchmarkRename/glm-flash/boundary_687dd1bd/semantic-18
+    bench_test.go:236: resume: results/20260718-162855/boundary_687dd1bd/semantic/0 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_687dd1bd/semantic/1 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_687dd1bd/semantic/2 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_687dd1bd/semantic/3 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_687dd1bd/semantic/4 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_687dd1bd/semantic/5 already recorded, skipping
+BenchmarkRename/glm-flash/boundary_dd2c3807/raw-18         	       5	       983.4 ns/op	         0.2000 pass
+--- BENCH: BenchmarkRename/glm-flash/boundary_dd2c3807/raw-18
+    bench_test.go:236: resume: results/20260718-162855/boundary_dd2c3807/raw/0 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_dd2c3807/raw/1 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_dd2c3807/raw/2 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_dd2c3807/raw/3 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_dd2c3807/raw/4 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_dd2c3807/raw/5 already recorded, skipping
+BenchmarkRename/glm-flash/boundary_dd2c3807/serena-18      	       5	       808.4 ns/op	         0 pass
+--- BENCH: BenchmarkRename/glm-flash/boundary_dd2c3807/serena-18
+    bench_test.go:236: resume: results/20260718-162855/boundary_dd2c3807/serena/0 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_dd2c3807/serena/1 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_dd2c3807/serena/2 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_dd2c3807/serena/3 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_dd2c3807/serena/4 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_dd2c3807/serena/5 already recorded, skipping
+BenchmarkRename/glm-flash/boundary_dd2c3807/semantic-18    	       5	576015649542 ns/op	         0.6000 pass
+--- BENCH: BenchmarkRename/glm-flash/boundary_dd2c3807/semantic-18
+    bench_test.go:236: resume: results/20260718-162855/boundary_dd2c3807/semantic/0 already recorded, skipping
+    bench_test.go:236: resume: results/20260718-162855/boundary_dd2c3807/semantic/1 already recorded, skipping
+BenchmarkRename/glm-flash/boundary_b26814a3/raw-18         	       5	595211663150 ns/op	         0 pass
+BenchmarkRename/glm-flash/boundary_b26814a3/serena-18      	       5	399748747792 ns/op	         1.000 pass
+BenchmarkRename/glm-flash/boundary_b26814a3/semantic-18    	       5	671172796008 ns/op	         0.6000 pass
+BenchmarkRename/glm-flash/traefik_51491463/raw-18          	       5	352437063800 ns/op	         0.8000 pass
+BenchmarkRename/glm-flash/traefik_51491463/serena-18       	       5	120473178325 ns/op	         0.8000 pass
+BenchmarkRename/glm-flash/traefik_51491463/semantic-18     	       5	310492579067 ns/op	         1.000 pass
+BenchmarkRename/glm-flash/boundary_9f2c83f3/raw-18         	       5	720031321425 ns/op	         0.2000 pass
+BenchmarkRename/glm-flash/boundary_9f2c83f3/serena-18      	       5	428174843742 ns/op	         0.4000 pass
+BenchmarkRename/glm-flash/boundary_9f2c83f3/semantic-18    	       5	452950778950 ns/op	         0.8000 pass
+BenchmarkRename/glm-flash/boundary_c0532428/raw-18         	       5	496413252192 ns/op	         1.000 pass
+BenchmarkRename/glm-flash/boundary_c0532428/serena-18      	       5	143925930983 ns/op	         1.000 pass
+BenchmarkRename/glm-flash/boundary_c0532428/semantic-18    	       5	417469003308 ns/op	         1.000 pass
+BenchmarkRename/glm-flash/boundary_caf19f86/raw-18         	       5	713927662858 ns/op	         1.000 pass
+BenchmarkRename/glm-flash/boundary_caf19f86/serena-18      	       5	170301346542 ns/op	         1.000 pass
+BenchmarkRename/glm-flash/boundary_caf19f86/semantic-18    	       5	334499947100 ns/op	         1.000 pass
+BenchmarkRename/glm-flash/boundary_06d69f69/raw-18         	       5	249147072525 ns/op	         1.000 pass
+BenchmarkRename/glm-flash/boundary_06d69f69/serena-18      	       5	183914094133 ns/op	         1.000 pass
+BenchmarkRename/glm-flash/boundary_06d69f69/semantic-18    	       5	256820301533 ns/op	         1.000 pass
+BenchmarkRename/glm-flash/boundary_35b91c66/raw-18         	       5	602987647292 ns/op	         0.2000 pass
+BenchmarkRename/glm-flash/boundary_35b91c66/serena-18      	       5	246391540917 ns/op	         0.8000 pass
+BenchmarkRename/glm-flash/boundary_35b91c66/semantic-18    	       5	572763531650 ns/op	         0.6000 pass
+BenchmarkRename/glm-flash/boundary_9237d6f7/raw-18         	       5	593797893717 ns/op	         0 pass
+BenchmarkRename/glm-flash/boundary_9237d6f7/serena-18      	       5	168752162200 ns/op	         0.8000 pass
+BenchmarkRename/glm-flash/boundary_9237d6f7/semantic-18    	       5	499195146409 ns/op	         0.4000 pass
+BenchmarkRename/glm-flash/vault_95b24f55/raw-18            	       5	314888385950 ns/op	         1.000 pass
+BenchmarkRename/glm-flash/vault_95b24f55/serena-18         	       5	244561625716 ns/op	         1.000 pass
+BenchmarkRename/glm-flash/vault_95b24f55/semantic-18       	       5	284597332017 ns/op	         1.000 pass
+BenchmarkRename/glm-flash/vault_caec65a7/raw-18            	       5	720027421142 ns/op	         0.2000 pass
+BenchmarkRename/glm-flash/vault_caec65a7/serena-18         	       5	522919049450 ns/op	         1.000 pass
+BenchmarkRename/glm-flash/vault_caec65a7/semantic-18       	       5	377468672367 ns/op	         1.000 pass
+PASS
+ok  	github.com/guygrigsby/agent-go/bench	91336.547s

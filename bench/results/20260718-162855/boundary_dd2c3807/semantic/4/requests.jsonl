@@ -1,0 +1,38 @@
+{"ms":1052,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-21T18:42:18.414558Z"}
+{"ms":1041,"op":"query","outcome":"ok","req_sha":"b9ca9d68cf1c150c","sym":"NewDerivedReader","ts":"2026-07-21T18:43:20.695773Z"}
+{"ms":20,"op":"query","outcome":"ok","req_sha":"b6db07870b806acd","sym":"TestNewDerivedReader","ts":"2026-07-21T18:43:22.687329Z"}
+{"ms":5,"op":"query","outcome":"rejected","reason":"package not found","repairs":0,"req_sha":"267332e95b2b1444","ts":"2026-07-21T18:43:37.566484Z"}
+{"ms":36,"op":"query","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/kms","req_sha":"3dc7f2a79271cd69","sym":"NewDerivedReader","ts":"2026-07-21T18:43:44.689812Z"}
+{"ms":29,"op":"query","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/kms","req_sha":"48e344dbe94431f0","sym":"TestNewDerivedReader","ts":"2026-07-21T18:44:07.789686Z"}
+{"ms":5,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/kms","req_sha":"87a5693b2f7bdc60","sym":"NewDerivedReader","ts":"2026-07-21T18:44:21.759113Z"}
+{"ms":5,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/kms","req_sha":"0c4665e48e7cc461","sym":"TestNewDerivedReader","ts":"2026-07-21T18:44:27.569439Z"}
+{"ms":19,"op":"query","outcome":"ok","req_sha":"f21bc6d52fd691ae","sym":"libs","ts":"2026-07-21T18:44:43.295505Z"}
+{"ms":8,"op":"view","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/kms","reason":"receiver type not found","repairs":1,"req_sha":"813b982cedfd0d2d","sym":"kms.go","ts":"2026-07-21T18:44:46.347031Z"}
+{"ms":18,"op":"query","outcome":"ok","req_sha":"51144c5bc9705c7d","sym":"internal/kms","ts":"2026-07-21T18:44:48.427745Z"}
+{"ms":5,"op":"upsert","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/libs/crypto","reason":"declaration does not parse","repairs":0,"req_sha":"dfcbc340ec87c5b3","ts":"2026-07-21T18:45:02.613293Z"}
+{"ms":6,"op":"upsert","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/libs/crypto","reason":"declaration does not parse","repairs":0,"req_sha":"65d6e69a67cafd5b","ts":"2026-07-21T18:45:26.271949Z"}
+{"ms":7,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-21T18:45:28.198626Z"}
+{"ms":0,"op":"help","outcome":"ok","req_sha":"0b56758d64d8a078","ts":"2026-07-21T18:45:30.453274Z"}
+{"ms":2221,"op":"patch","outcome":"accepted","req_sha":"d02b64b2f14d4486","ts":"2026-07-21T18:46:46.315986Z"}
+{"ms":1480,"op":"patch","outcome":"accepted","req_sha":"7a9dbf353c92c6f8","ts":"2026-07-21T18:47:13.32705Z"}
+{"ms":6,"op":"view","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/auth/oidc","reason":"receiver type not found","repairs":1,"req_sha":"24e66c3a3fa7a750","sym":"auth_method.go","ts":"2026-07-21T18:47:43.915787Z"}
+{"ms":6,"op":"view","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/auth/oidc","reason":"receiver type not found","repairs":1,"req_sha":"24e66c3a3fa7a750","sym":"auth_method.go","ts":"2026-07-21T18:47:47.976456Z"}
+{"ms":8,"op":"view","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/auth/oidc","reason":"receiver type not found","repairs":1,"req_sha":"24e66c3a3fa7a750","sym":"auth_method.go","ts":"2026-07-21T18:47:51.816358Z"}
+{"ms":11,"op":"query","outcome":"ok","req_sha":"2088e39c415d2819","sym":"auth/oidc","ts":"2026-07-21T18:47:56.982231Z"}
+{"ms":951,"op":"patch","outcome":"rejected","reason":"go get failed","repairs":0,"req_sha":"cbc59c41d31af71d","ts":"2026-07-21T18:48:00.466503Z"}
+{"ms":8,"op":"query","outcome":"ok","req_sha":"2cc24c98cad3c35a","sym":"auth_method.go","ts":"2026-07-21T18:48:06.651851Z"}
+{"ms":7,"op":"query","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/auth/oidc","reason":"receiver type not found","repairs":1,"req_sha":"9b4ea4824d92a59c","sym":"auth_method.go","ts":"2026-07-21T18:48:10.660725Z"}
+{"ms":18,"op":"query","outcome":"ok","req_sha":"2cc24c98cad3c35a","sym":"auth_method.go","ts":"2026-07-21T18:48:16.643371Z"}
+{"ms":19,"op":"query","outcome":"ok","req_sha":"cabef18d77fbad5c","sym":"auth","ts":"2026-07-21T18:48:19.541806Z"}
+{"ms":6,"op":"query","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/kms","reason":"symbol not found","repairs":1,"req_sha":"3dc7f2a79271cd69","sym":"NewDerivedReader","ts":"2026-07-21T18:49:29.01655Z"}
+{"ms":5,"op":"query","outcome":"rejected","reason":"package not found","repairs":0,"req_sha":"267332e95b2b1444","ts":"2026-07-21T18:49:33.206067Z"}
+{"ms":34,"op":"query","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/libs/crypto","req_sha":"e3c5c644a26f43b9","sym":"NewDerivedReader","ts":"2026-07-21T18:49:36.549679Z"}
+{"ms":31,"op":"query","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/libs/crypto","req_sha":"3ac3982d911caac3","sym":"TestNewDerivedReader","ts":"2026-07-21T18:49:48.649538Z"}
+{"ms":1588,"op":"test","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/libs/crypto","req_sha":"e747011cb915ab54","ts":"2026-07-21T18:50:06.555988Z"}
+{"ms":3655,"op":"test","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/auth/oidc","req_sha":"ed015fff2545a9e8","ts":"2026-07-21T18:50:14.422744Z"}
+{"ms":16935,"op":"test","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/credential/vault","req_sha":"b0f85ff182c5912a","ts":"2026-07-21T18:53:46.859397Z"}
+{"ms":871,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/libs/crypto","req_sha":"4735785bc98b9d6e","sym":"NewDerivedReader","ts":"2026-07-21T18:54:19.637355Z"}
+{"ms":2,"op":"inspect","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/kms","reason":"symbol not found","repairs":1,"req_sha":"06b3709f94d43a41","sym":"NewDerivedReader","ts":"2026-07-21T18:54:20.513654Z"}
+{"ms":1,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/libs/crypto","req_sha":"4d400ef2f960ae93","sym":"TestNewDerivedReader","ts":"2026-07-21T18:54:20.519786Z"}
+{"ms":1,"op":"inspect","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/kms","reason":"symbol not found","repairs":1,"req_sha":"45003c1614a7068f","sym":"TestNewDerivedReader","ts":"2026-07-21T18:54:20.525165Z"}
+{"ms":2,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-21T18:54:20.530484Z"}

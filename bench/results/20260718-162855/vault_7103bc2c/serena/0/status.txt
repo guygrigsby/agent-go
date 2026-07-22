@@ -1,0 +1,8 @@
+ M audit/format.go
+ M internal/observability/event/audit_sink_file.go
+ M internal/observability/event/audit_sink_socket.go
+ M internal/observability/event/audit_sink_syslog.go
+ M internal/observability/event/node_formatter_audit_json.go
+ M internal/observability/event/node_formatter_audit_jsonx.go
+?? .serena/
+?? opencode.json

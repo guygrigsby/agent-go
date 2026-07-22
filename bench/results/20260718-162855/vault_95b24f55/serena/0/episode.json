@@ -1,0 +1,58 @@
+{
+ "agent_done": "2026-07-22T13:22:57.587798667Z",
+ "agent_started": "2026-07-22T13:17:28.719524Z",
+ "cache_read": 305696,
+ "cache_write": 0,
+ "capped": false,
+ "failure_kind": "",
+ "intermediate_states": 2,
+ "invalid_intermediate_rate": 0,
+ "invalid_intermediates": 0,
+ "iter": 0,
+ "kind": "rename",
+ "mode": "serena",
+ "new_errors": null,
+ "op_mix": {},
+ "pass": true,
+ "predicate": true,
+ "profile": "glm-flash",
+ "prompt": "Rename PKI health check helpers\n\nSpecifically, rename: pkiFetchIssuers -\u003e pkiFetchIssuersList; pkiFetchLeaves -\u003e pkiFetchLeavesList; pkiFetchRoles -\u003e pkiFetchRolesList",
+ "rejects_total": 0,
+ "repairs_offered": 0,
+ "resends": 0,
+ "specs": [
+  {
+   "baseline_refs": 5,
+   "new_refs": 5,
+   "ok": true,
+   "old_refs_left": 0,
+   "sym": "github.com/hashicorp/vault/command/healthcheck.pkiFetchIssuers",
+   "to": "pkiFetchIssuersList"
+  },
+  {
+   "baseline_refs": 4,
+   "new_refs": 4,
+   "ok": true,
+   "old_refs_left": 0,
+   "sym": "github.com/hashicorp/vault/command/healthcheck.pkiFetchLeaves",
+   "to": "pkiFetchLeavesList"
+  },
+  {
+   "baseline_refs": 4,
+   "new_refs": 4,
+   "ok": true,
+   "old_refs_left": 0,
+   "sym": "github.com/hashicorp/vault/command/healthcheck.pkiFetchRoles",
+   "to": "pkiFetchRolesList"
+  }
+ ],
+ "steps": 17,
+ "task": "vault_95b24f55",
+ "tests": true,
+ "tests_baseline": true,
+ "tokens_in": 10177,
+ "tokens_out": 2953,
+ "tokens_reasoning": 0,
+ "typecheck": true,
+ "wall_s": 328.868274667
+}
