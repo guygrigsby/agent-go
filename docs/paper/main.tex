@@ -5,6 +5,8 @@
 \usepackage[hidelinks]{hyperref}
 \usepackage{listings}
 \usepackage{xcolor}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
 \lstset{basicstyle=\ttfamily\small, breaklines=true, columns=fullflexible}
 
 % Every number below comes from generated/ — built by `go run ./cmd/bench
@@ -37,12 +39,17 @@ solvable; tasks are mined from real commits in traefik, vault, and
 boundary. The evaluation is a three-arm grid, raw file editing, LSP
 symbol addressing with advisory validation (Serena), and the protocol,
 run against a frozen engine so the benchmark cannot chase the tasks.
-% Frozen qwen round 20260718-162906; refresh when the grid completes.
-On the first frozen round, a quantized 9B model passes 41\% of episodes
-through the protocol against 32\% with symbol addressing alone and
-24\% raw; sampled on-disk states during editing fail to compile 86\% of
-the time in both text-editing arms and 2.5\% in the semantic arm. All
-code, per-episode evidence (transcripts, request logs, serving
+% Frozen grid: qwen3.5-9b-udq4 (162906), glm-flash (162855),
+% gpt-oss-20b-medium (161639). Numbers below are generated from all three.
+Across three locally served models the arm ordering never inverts:
+the protocol beats symbol addressing, which beats raw text editing.
+The floor 9B model passes 41\% of episodes through the protocol against
+32\% with symbol addressing alone and 24\% raw; the widest gap is the
+model that is a poor freeform tool-caller, whose raw pass rate collapses
+to 4\% yet recovers to 53\% through the protocol. Sampled on-disk states
+during editing fail to compile 76--87\% of the time in the text-editing
+arms and at most 2\% in the semantic arm, in every model. All code,
+per-episode evidence (transcripts, request logs, serving
 configurations), and analysis tooling are released.
 \end{abstract}
 
@@ -158,17 +165,42 @@ each settled state compiles; no host tool wrote Go in any of them.
 evidence; pass@k over k episodes, median time-to-green over passing
 episodes.}
 \end{table}
-Semantic passed \SemanticPassCount{} episodes; raw passed
-\RawPassCount{}. The per-task table tells the sharper story: raw wins
-only where grep suffices, and goes to zero on the tasks that need
-whole-workspace consistency. On the frozen 9B round the arm ordering
-held throughout: semantic over serena over raw, so addressing helps
-and mandatory validation helps again on top of it.
-TODO: regenerate tables from the frozen grid when all three model
-rounds complete; repair-uptake analysis (the 9B model recovers through
-rejections it is offered no repairs for; the 30B-class model ignores
-repairs it is offered), floor-model section, the cfff8d42 case study
-(discovery-primitive gap found and fixed).
+Pooled over the frozen grid, semantic passed \SemanticPassCount{}
+episodes; raw passed \RawPassCount{}. The per-task table tells the
+sharper story: raw wins only where grep suffices, and goes to zero on
+the tasks that need whole-workspace consistency.
+
+\begin{figure}[h]
+\centering
+\input{generated/pass_by_arm}
+\caption{Pass@k by arm, per model. The ordering semantic $\ge$ serena
+$\ge$ raw holds for every model in the grid. The lift is largest where
+the model is a weak freeform tool-caller (gpt-oss-20b-medium: 4\% raw,
+53\% semantic). Generated from committed episode evidence.}
+\label{fig:pass}
+\end{figure}
+
+\begin{figure}[h]
+\centering
+\input{generated/invalid_by_arm}
+\caption{Fraction of sampled on-disk states that fail \texttt{go build}
+during the editing window. The text-editing arms churn through broken
+states; the semantic arm cannot land a declaration that does not
+typecheck, so its residual is only the multi-file write window.
+Generated from the same evidence.}
+\label{fig:invalid}
+\end{figure}
+
+Two readings stand out. First, the arm ordering (Figure~\ref{fig:pass})
+never inverts across models: symbol addressing helps, and mandatory
+validation helps again on top of it. Second, the protocol's advantage
+is not uniform. It is widest for the model that edits text worst: a
+strong instruction-follower that is nonetheless a poor freeform tool
+user passes almost nothing raw yet recovers to a majority through the
+protocol, because the protocol removes exactly the failure it is prone
+to. The invalid-intermediate rate (Figure~\ref{fig:invalid}) is the
+mechanism: both text arms leave the workspace uncompilable most of the
+time mid-edit, while the semantic arm holds it valid throughout.
 
 \section{Limitations}
 One language. Contamination is held constant across arms but inflates
