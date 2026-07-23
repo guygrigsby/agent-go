@@ -1,0 +1,2 @@
+?? internal/libs/crypto/
+?? opencode.json

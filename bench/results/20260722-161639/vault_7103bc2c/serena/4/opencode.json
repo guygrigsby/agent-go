@@ -1,0 +1,63 @@
+{
+ "$schema": "https://opencode.ai/config.json",
+ "agent": {
+  "bench": {
+   "mode": "primary",
+   "prompt": "You are completing a repository-wide Go refactoring task. Work only through the serena tools. Workflow: find_symbol with a name path to locate a symbol, find_referencing_symbols to see every usage, rename_symbol to rename it everywhere, replace_symbol_body to rewrite a declaration, replace_content for edits inside referencing files. Check your work with get_diagnostics_for_file on the files you changed; edits land whether or not they compile.",
+   "temperature": 1,
+   "tools": {
+    "bash": false,
+    "edit": false,
+    "glob": false,
+    "grep": false,
+    "list": false,
+    "patch": false,
+    "read": false,
+    "skill": false,
+    "task": false,
+    "webfetch": false,
+    "write": false
+   }
+  }
+ },
+ "mcp": {
+  "serena": {
+   "command": [
+    "uvx",
+    "--from",
+    "git+https://github.com/oraios/serena@7c34662996f2d2e3db38001785e1f279dced2f50",
+    "serena",
+    "start-mcp-server",
+    "--project",
+    "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenamegpt-oss-20b-mediumvault_7103bc2cserena3201807452/005/vault",
+    "--enable-web-dashboard",
+    "false",
+    "--open-web-dashboard",
+    "false",
+    "--enable-gui-log-window",
+    "false"
+   ],
+   "enabled": true,
+   "type": "local"
+  }
+ },
+ "permission": {
+  "bash": "allow",
+  "edit": "allow",
+  "webfetch": "deny"
+ },
+ "provider": {
+  "local": {
+   "models": {
+    "gpt-oss": {
+     "name": "gpt-oss"
+    }
+   },
+   "name": "local",
+   "npm": "@ai-sdk/openai-compatible",
+   "options": {
+    "baseURL": "https://llama.lab.aeryx.ai/v1"
+   }
+  }
+ }
+}

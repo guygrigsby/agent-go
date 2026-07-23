@@ -1,0 +1,2 @@
+ M internal/session/connection.go
+?? opencode.json

@@ -1,0 +1,383 @@
+diff --git a/internal/cmd/base/initial_resources.go b/internal/cmd/base/initial_resources.go
+index e32f27611..385aa8b1a 100644
+--- a/internal/cmd/base/initial_resources.go
++++ b/internal/cmd/base/initial_resources.go
+@@ -371,7 +371,7 @@ func (b *Server) CreateInitialHostResources(ctx context.Context) (*static.HostCa
+ 		}
+ 	}()
+ 
+-	staticRepo, err := static.NewRepository(rw, rw, kmsCache)
++	staticRepo, err := static.NewRepository(context.Background(), rw, rw, kmsCache)
+ 	if err != nil {
+ 		return nil, nil, nil, fmt.Errorf("error creating static repository: %w", err)
+ 	}
+diff --git a/internal/daemon/controller/handlers/host_catalogs/host_catalog_service_test.go b/internal/daemon/controller/handlers/host_catalogs/host_catalog_service_test.go
+index 14bfb8a4a..36ba81883 100644
+--- a/internal/daemon/controller/handlers/host_catalogs/host_catalog_service_test.go
++++ b/internal/daemon/controller/handlers/host_catalogs/host_catalog_service_test.go
+@@ -82,7 +82,7 @@ func TestGet_Static(t *testing.T) {
+ 
+ 	rw := db.New(conn)
+ 	repo := func() (*static.Repository, error) {
+-		return static.NewRepository(rw, rw, kms)
++		return static.NewRepository(context.Background(), rw, rw, kms)
+ 	}
+ 	pluginHostRepo := func() (*plugin.Repository, error) {
+ 		return plugin.NewRepository(rw, rw, kms, sche, map[string]plgpb.HostPluginServiceClient{})
+@@ -172,7 +172,7 @@ func TestGet_Plugin(t *testing.T) {
+ 
+ 	rw := db.New(conn)
+ 	repo := func() (*static.Repository, error) {
+-		return static.NewRepository(rw, rw, kms)
++		return static.NewRepository(context.Background(), rw, rw, kms)
+ 	}
+ 	pluginHostRepo := func() (*plugin.Repository, error) {
+ 		return plugin.NewRepository(rw, rw, kms, sche, map[string]plgpb.HostPluginServiceClient{})
+@@ -294,7 +294,7 @@ func TestList(t *testing.T) {
+ 		return host.NewRepository(rw, rw, kms)
+ 	}
+ 	repoFn := func() (*static.Repository, error) {
+-		return static.NewRepository(rw, rw, kms)
++		return static.NewRepository(context.Background(), rw, rw, kms)
+ 	}
+ 	iamRepo := iam.TestRepo(t, conn, wrapper)
+ 
+@@ -491,7 +491,7 @@ func TestDelete_Static(t *testing.T) {
+ 	_, proj := iam.TestScopes(t, iamRepo)
+ 	rw := db.New(conn)
+ 	repo := func() (*static.Repository, error) {
+-		return static.NewRepository(rw, rw, kms)
++		return static.NewRepository(context.Background(), rw, rw, kms)
+ 	}
+ 	pluginHostRepo := func() (*plugin.Repository, error) {
+ 		return plugin.NewRepository(rw, rw, kms, sche, map[string]plgpb.HostPluginServiceClient{})
+@@ -561,7 +561,7 @@ func TestDelete_Plugin(t *testing.T) {
+ 	_, proj := iam.TestScopes(t, iamRepo)
+ 	rw := db.New(conn)
+ 	repo := func() (*static.Repository, error) {
+-		return static.NewRepository(rw, rw, kms)
++		return static.NewRepository(context.Background(), rw, rw, kms)
+ 	}
+ 	pluginHostRepo := func() (*plugin.Repository, error) {
+ 		return plugin.NewRepository(rw, rw, kms, sche, map[string]plgpb.HostPluginServiceClient{})
+@@ -633,7 +633,7 @@ func TestDelete_twice(t *testing.T) {
+ 	_, proj := iam.TestScopes(t, iamRepo)
+ 	rw := db.New(conn)
+ 	repo := func() (*static.Repository, error) {
+-		return static.NewRepository(rw, rw, kms)
++		return static.NewRepository(context.Background(), rw, rw, kms)
+ 	}
+ 	pluginHostRepo := func() (*plugin.Repository, error) {
+ 		return plugin.NewRepository(rw, rw, kms, sche, map[string]plgpb.HostPluginServiceClient{})
+@@ -669,7 +669,7 @@ func TestCreate_Static(t *testing.T) {
+ 	_, proj := iam.TestScopes(t, iamRepo)
+ 	rw := db.New(conn)
+ 	repo := func() (*static.Repository, error) {
+-		return static.NewRepository(rw, rw, kms)
++		return static.NewRepository(context.Background(), rw, rw, kms)
+ 	}
+ 	pluginHostRepo := func() (*plugin.Repository, error) {
+ 		return plugin.NewRepository(rw, rw, kms, sche, map[string]plgpb.HostPluginServiceClient{})
+@@ -821,7 +821,7 @@ func TestCreate_Plugin(t *testing.T) {
+ 	org, proj := iam.TestScopes(t, iamRepo)
+ 	rw := db.New(conn)
+ 	repo := func() (*static.Repository, error) {
+-		return static.NewRepository(rw, rw, kms)
++		return static.NewRepository(context.Background(), rw, rw, kms)
+ 	}
+ 	pluginRepo := func() (*host.Repository, error) {
+ 		return host.NewRepository(rw, rw, kms)
+@@ -998,7 +998,7 @@ func TestUpdate_Static(t *testing.T) {
+ 	_, proj := iam.TestScopes(t, iamRepo)
+ 	rw := db.New(conn)
+ 	repoFn := func() (*static.Repository, error) {
+-		return static.NewRepository(rw, rw, kms)
++		return static.NewRepository(context.Background(), rw, rw, kms)
+ 	}
+ 	pluginHostRepo := func() (*plugin.Repository, error) {
+ 		return plugin.NewRepository(rw, rw, kms, sche, map[string]plgpb.HostPluginServiceClient{})
+@@ -1373,7 +1373,7 @@ func TestUpdate_Plugin(t *testing.T) {
+ 	}
+ 
+ 	repoFn := func() (*static.Repository, error) {
+-		return static.NewRepository(rw, rw, kms)
++		return static.NewRepository(context.Background(), rw, rw, kms)
+ 	}
+ 	pluginHostRepo := func() (*plugin.Repository, error) {
+ 		return plugin.NewRepository(rw, rw, kms, sche, plgm)
+diff --git a/internal/daemon/controller/handlers/host_sets/host_set_service_test.go b/internal/daemon/controller/handlers/host_sets/host_set_service_test.go
+index 04625fff1..d0a6b1334 100644
+--- a/internal/daemon/controller/handlers/host_sets/host_set_service_test.go
++++ b/internal/daemon/controller/handlers/host_sets/host_set_service_test.go
+@@ -61,7 +61,7 @@ func TestGet_Static(t *testing.T) {
+ 
+ 	rw := db.New(conn)
+ 	repoFn := func() (*static.Repository, error) {
+-		return static.NewRepository(rw, rw, kms)
++		return static.NewRepository(context.Background(), rw, rw, kms)
+ 	}
+ 	pluginRepoFn := func() (*plugin.Repository, error) {
+ 		return plugin.NewRepository(rw, rw, kms, sche, map[string]plgpb.HostPluginServiceClient{})
+@@ -155,7 +155,7 @@ func TestGet_Plugin(t *testing.T) {
+ 
+ 	rw := db.New(conn)
+ 	repoFn := func() (*static.Repository, error) {
+-		return static.NewRepository(rw, rw, kms)
++		return static.NewRepository(context.Background(), rw, rw, kms)
+ 	}
+ 
+ 	name := "test"
+@@ -272,7 +272,7 @@ func TestList_Static(t *testing.T) {
+ 
+ 	rw := db.New(conn)
+ 	repoFn := func() (*static.Repository, error) {
+-		return static.NewRepository(rw, rw, kms)
++		return static.NewRepository(context.Background(), rw, rw, kms)
+ 	}
+ 	pluginRepoFn := func() (*plugin.Repository, error) {
+ 		return plugin.NewRepository(rw, rw, kms, sche, map[string]plgpb.HostPluginServiceClient{})
+@@ -371,7 +371,7 @@ func TestList_Plugin(t *testing.T) {
+ 
+ 	rw := db.New(conn)
+ 	repoFn := func() (*static.Repository, error) {
+-		return static.NewRepository(rw, rw, kms)
++		return static.NewRepository(context.Background(), rw, rw, kms)
+ 	}
+ 	name := "test"
+ 	plg := hostplugin.TestPlugin(t, conn, name)
+@@ -485,7 +485,7 @@ func TestDelete_Static(t *testing.T) {
+ 
+ 	rw := db.New(conn)
+ 	repoFn := func() (*static.Repository, error) {
+-		return static.NewRepository(rw, rw, kms)
++		return static.NewRepository(context.Background(), rw, rw, kms)
+ 	}
+ 	pluginRepoFn := func() (*plugin.Repository, error) {
+ 		return plugin.NewRepository(rw, rw, kms, sche, map[string]plgpb.HostPluginServiceClient{})
+@@ -556,7 +556,7 @@ func TestDelete_Plugin(t *testing.T) {
+ 
+ 	rw := db.New(conn)
+ 	repoFn := func() (*static.Repository, error) {
+-		return static.NewRepository(rw, rw, kms)
++		return static.NewRepository(context.Background(), rw, rw, kms)
+ 	}
+ 	pluginRepoFn := func() (*plugin.Repository, error) {
+ 		return plugin.NewRepository(rw, rw, kms, sche, map[string]plgpb.HostPluginServiceClient{})
+@@ -634,7 +634,7 @@ func TestDelete_twice(t *testing.T) {
+ 
+ 	rw := db.New(conn)
+ 	repoFn := func() (*static.Repository, error) {
+-		return static.NewRepository(rw, rw, kms)
++		return static.NewRepository(context.Background(), rw, rw, kms)
+ 	}
+ 	plgRepoFn := func() (*plugin.Repository, error) {
+ 		return plugin.NewRepository(rw, rw, kms, sche, map[string]plgpb.HostPluginServiceClient{})
+@@ -671,7 +671,7 @@ func TestCreate_Static(t *testing.T) {
+ 
+ 	rw := db.New(conn)
+ 	repoFn := func() (*static.Repository, error) {
+-		return static.NewRepository(rw, rw, kms)
++		return static.NewRepository(context.Background(), rw, rw, kms)
+ 	}
+ 	plgRepoFn := func() (*plugin.Repository, error) {
+ 		return plugin.NewRepository(rw, rw, kms, sche, map[string]plgpb.HostPluginServiceClient{})
+@@ -827,7 +827,7 @@ func TestCreate_Plugin(t *testing.T) {
+ 
+ 	rw := db.New(conn)
+ 	repoFn := func() (*static.Repository, error) {
+-		return static.NewRepository(rw, rw, kms)
++		return static.NewRepository(context.Background(), rw, rw, kms)
+ 	}
+ 	name := "test"
+ 	plg := hostplugin.TestPlugin(t, conn, name)
+@@ -1094,7 +1094,7 @@ func TestUpdate_Static(t *testing.T) {
+ 
+ 	rw := db.New(conn)
+ 	repoFn := func() (*static.Repository, error) {
+-		return static.NewRepository(rw, rw, kms)
++		return static.NewRepository(context.Background(), rw, rw, kms)
+ 	}
+ 	repo, err := repoFn()
+ 	require.NoError(t, err, "Couldn't create new static repo.")
+@@ -1476,7 +1476,7 @@ func TestUpdate_Plugin(t *testing.T) {
+ 	}
+ 
+ 	repoFn := func() (*static.Repository, error) {
+-		return static.NewRepository(rw, rw, kms)
++		return static.NewRepository(context.Background(), rw, rw, kms)
+ 	}
+ 	pluginHostRepo := func() (*plugin.Repository, error) {
+ 		return plugin.NewRepository(rw, rw, kms, sche, plgm)
+@@ -1813,7 +1813,7 @@ func TestAddHostSetHosts(t *testing.T) {
+ 
+ 	rw := db.New(conn)
+ 	repoFn := func() (*static.Repository, error) {
+-		return static.NewRepository(rw, rw, kms)
++		return static.NewRepository(context.Background(), rw, rw, kms)
+ 	}
+ 	plgRepoFn := func() (*plugin.Repository, error) {
+ 		return plugin.NewRepository(rw, rw, kms, sche, map[string]plgpb.HostPluginServiceClient{})
+@@ -1934,7 +1934,7 @@ func TestSetHostSetHosts(t *testing.T) {
+ 
+ 	rw := db.New(conn)
+ 	repoFn := func() (*static.Repository, error) {
+-		return static.NewRepository(rw, rw, kms)
++		return static.NewRepository(context.Background(), rw, rw, kms)
+ 	}
+ 	plgRepoFn := func() (*plugin.Repository, error) {
+ 		return plugin.NewRepository(rw, rw, kms, sche, map[string]plgpb.HostPluginServiceClient{})
+@@ -2051,7 +2051,7 @@ func TestRemoveHostSetHosts(t *testing.T) {
+ 
+ 	rw := db.New(conn)
+ 	repoFn := func() (*static.Repository, error) {
+-		return static.NewRepository(rw, rw, kms)
++		return static.NewRepository(context.Background(), rw, rw, kms)
+ 	}
+ 	plgRepoFn := func() (*plugin.Repository, error) {
+ 		return plugin.NewRepository(rw, rw, kms, sche, map[string]plgpb.HostPluginServiceClient{})
+diff --git a/internal/daemon/controller/handlers/hosts/host_service_test.go b/internal/daemon/controller/handlers/hosts/host_service_test.go
+index 60a873801..f7aea8067 100644
+--- a/internal/daemon/controller/handlers/hosts/host_service_test.go
++++ b/internal/daemon/controller/handlers/hosts/host_service_test.go
+@@ -61,7 +61,7 @@ func TestGet_Static(t *testing.T) {
+ 		return plugin.NewRepository(rw, rw, kms, sche, map[string]plgpb.HostPluginServiceClient{})
+ 	}
+ 	repoFn := func() (*static.Repository, error) {
+-		return static.NewRepository(rw, rw, kms)
++		return static.NewRepository(context.Background(), rw, rw, kms)
+ 	}
+ 	hc := static.TestCatalogs(t, conn, proj.GetPublicId(), 1)[0]
+ 	h := static.TestHosts(t, conn, hc.GetPublicId(), 1)[0]
+@@ -158,7 +158,7 @@ func TestGet_Plugin(t *testing.T) {
+ 		return plugin.NewRepository(rw, rw, kms, sche, plgm)
+ 	}
+ 	repoFn := func() (*static.Repository, error) {
+-		return static.NewRepository(rw, rw, kms)
++		return static.NewRepository(context.Background(), rw, rw, kms)
+ 	}
+ 	hc := plugin.TestCatalog(t, conn, proj.GetPublicId(), plg.GetPublicId())
+ 	h := plugin.TestHost(t, conn, hc.GetPublicId(), "test")
+@@ -265,7 +265,7 @@ func TestList_Static(t *testing.T) {
+ 		return plugin.NewRepository(rw, rw, kms, sche, map[string]plgpb.HostPluginServiceClient{})
+ 	}
+ 	repoFn := func() (*static.Repository, error) {
+-		return static.NewRepository(rw, rw, kms)
++		return static.NewRepository(context.Background(), rw, rw, kms)
+ 	}
+ 	hcs := static.TestCatalogs(t, conn, proj.GetPublicId(), 2)
+ 	hc, hcNoHosts := hcs[0], hcs[1]
+@@ -384,7 +384,7 @@ func TestList_Plugin(t *testing.T) {
+ 		return plugin.NewRepository(rw, rw, kms, sche, plgm)
+ 	}
+ 	repoFn := func() (*static.Repository, error) {
+-		return static.NewRepository(rw, rw, kms)
++		return static.NewRepository(context.Background(), rw, rw, kms)
+ 	}
+ 	hcs := plugin.TestCatalogs(t, conn, proj.GetPublicId(), plg.GetPublicId(), 2)
+ 	hc, hcNoHosts := hcs[0], hcs[1]
+@@ -506,7 +506,7 @@ func TestDelete(t *testing.T) {
+ 		return plugin.NewRepository(rw, rw, kms, sche, map[string]plgpb.HostPluginServiceClient{})
+ 	}
+ 	repoFn := func() (*static.Repository, error) {
+-		return static.NewRepository(rw, rw, kms)
++		return static.NewRepository(context.Background(), rw, rw, kms)
+ 	}
+ 	hc := static.TestCatalogs(t, conn, proj.GetPublicId(), 1)[0]
+ 	h := static.TestHosts(t, conn, hc.GetPublicId(), 1)[0]
+@@ -590,7 +590,7 @@ func TestDelete_twice(t *testing.T) {
+ 		return plugin.NewRepository(rw, rw, kms, sche, map[string]plgpb.HostPluginServiceClient{})
+ 	}
+ 	repoFn := func() (*static.Repository, error) {
+-		return static.NewRepository(rw, rw, kms)
++		return static.NewRepository(context.Background(), rw, rw, kms)
+ 	}
+ 	hc := static.TestCatalogs(t, conn, proj.GetPublicId(), 1)[0]
+ 	h := static.TestHosts(t, conn, hc.GetPublicId(), 1)[0]
+@@ -627,7 +627,7 @@ func TestCreate(t *testing.T) {
+ 		return plugin.NewRepository(rw, rw, kms, sche, map[string]plgpb.HostPluginServiceClient{})
+ 	}
+ 	repoFn := func() (*static.Repository, error) {
+-		return static.NewRepository(rw, rw, kms)
++		return static.NewRepository(context.Background(), rw, rw, kms)
+ 	}
+ 	hc := static.TestCatalogs(t, conn, proj.GetPublicId(), 1)[0]
+ 
+@@ -843,7 +843,7 @@ func TestUpdate_Static(t *testing.T) {
+ 		return plugin.NewRepository(rw, rw, kms, sche, map[string]plgpb.HostPluginServiceClient{})
+ 	}
+ 	repoFn := func() (*static.Repository, error) {
+-		return static.NewRepository(rw, rw, kms)
++		return static.NewRepository(context.Background(), rw, rw, kms)
+ 	}
+ 	repo, err := repoFn()
+ 	require.NoError(t, err, "Couldn't create new static repo.")
+@@ -1275,7 +1275,7 @@ func TestUpdate_Plugin(t *testing.T) {
+ 		return plugin.NewRepository(rw, rw, kms, sche, map[string]plgpb.HostPluginServiceClient{})
+ 	}
+ 	repoFn := func() (*static.Repository, error) {
+-		return static.NewRepository(rw, rw, kms)
++		return static.NewRepository(context.Background(), rw, rw, kms)
+ 	}
+ 
+ 	plg := hostplugin.TestPlugin(t, conn, "test")
+diff --git a/internal/daemon/controller/handlers/targets/tcp/target_service_test.go b/internal/daemon/controller/handlers/targets/tcp/target_service_test.go
+index 98b5c50c5..b8ef7298f 100644
+--- a/internal/daemon/controller/handlers/targets/tcp/target_service_test.go
++++ b/internal/daemon/controller/handlers/targets/tcp/target_service_test.go
+@@ -89,7 +89,7 @@ func testService(t *testing.T, ctx context.Context, conn *db.DB, kms *kms.Kms, w
+ 		return session.NewRepository(ctx, rw, rw, kms, opts...)
+ 	}
+ 	staticHostRepoFn := func() (*static.Repository, error) {
+-		return static.NewRepository(rw, rw, kms)
++		return static.NewRepository(context.Background(), rw, rw, kms)
+ 	}
+ 	pluginHostRepoFn := func() (*plugin.Repository, error) {
+ 		return plugin.NewRepository(rw, rw, kms, sche, map[string]plgpb.HostPluginServiceClient{})
+@@ -2752,7 +2752,7 @@ func TestAuthorizeSession(t *testing.T) {
+ 	sessionRepoFn := func(opts ...session.Option) (*session.Repository, error) {
+ 		return session.NewRepository(ctx, rw, rw, kms, opts...)
+ 	}
+-	staticRepo, err := static.NewRepository(rw, rw, kms)
++	staticRepo, err := static.NewRepository(context.Background(), rw, rw, kms)
+ 	require.NoError(t, err)
+ 	staticHostRepoFn := func() (*static.Repository, error) {
+ 		return staticRepo, nil
+@@ -3013,7 +3013,7 @@ func TestAuthorizeSessionTypedCredentials(t *testing.T) {
+ 		return session.NewRepository(ctx, rw, rw, kms, opts...)
+ 	}
+ 	staticHostRepoFn := func() (*static.Repository, error) {
+-		return static.NewRepository(rw, rw, kms)
++		return static.NewRepository(context.Background(), rw, rw, kms)
+ 	}
+ 	vaultCredRepoFn := func() (*vault.Repository, error) {
+ 		return vault.NewRepository(rw, rw, kms, sche)
+@@ -3592,7 +3592,7 @@ func TestAuthorizeSession_Errors(t *testing.T) {
+ 		return session.NewRepository(ctx, rw, rw, kms, opts...)
+ 	}
+ 	staticHostRepoFn := func() (*static.Repository, error) {
+-		return static.NewRepository(rw, rw, kms)
++		return static.NewRepository(context.Background(), rw, rw, kms)
+ 	}
+ 	pluginHostRepoFn := func() (*plugin.Repository, error) {
+ 		return plugin.NewRepository(rw, rw, kms, sche, map[string]plgpb.HostPluginServiceClient{})
+diff --git a/internal/host/static/repository.go b/internal/host/static/repository.go
+index ed4bca656..ec1bd2145 100644
+--- a/internal/host/static/repository.go
++++ b/internal/host/static/repository.go
+@@ -4,6 +4,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/errors"
+ 	"github.com/hashicorp/boundary/internal/kms"
++	"context"
+ )
+ 
+ // A Repository stores and retrieves the persistent types in the static
+@@ -21,7 +22,7 @@ type Repository struct {
+ // only be used for one transaction and it is not safe for concurrent go
+ // routines to access it. WithLimit option is used as a repo wide default
+ // limit applied to all ListX methods.
+-func NewRepository(r db.Reader, w db.Writer, kms *kms.Kms, opt ...Option) (*Repository, error) {
++func NewRepository(ctx context.Context, r db.Reader, w db.Writer, kms *kms.Kms, opt ...Option) (*Repository, error) {
+ 	const op = "static.NewRepository"
+ 	switch {
+ 	case r == nil:

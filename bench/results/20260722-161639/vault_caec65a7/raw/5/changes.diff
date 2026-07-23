@@ -1,0 +1,13 @@
+diff --git a/vault/seal/seal.go b/vault/seal/seal.go
+index 0ad9ad5b7d..e450639c07 100644
+--- a/vault/seal/seal.go
++++ b/vault/seal/seal.go
+@@ -158,7 +158,7 @@ func (sgi *SealGenerationInfo) UnmarshalJSON(b []byte) error {
+ 	return nil
+ }
+ 
+-type SealInfo struct {
++type SealWrapper struct {
+ 	wrapping.Wrapper
+ 	Priority int
+ 	Name     string

@@ -1,0 +1,5 @@
+ M globals/globals.go
+ M internal/iam/repository_scope.go
+ M internal/perms/acl.go
+?? .serena/
+?? opencode.json

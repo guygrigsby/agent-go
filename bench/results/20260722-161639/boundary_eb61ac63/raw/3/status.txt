@@ -1,0 +1,4 @@
+ M internal/daemon/controller/controller.go
+ M internal/session/jobs.go
+ M internal/session/repository.go
+?? opencode.json

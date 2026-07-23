@@ -1,0 +1,63 @@
+diff --git a/globals/globals.go b/globals/globals.go
+index daba120cc..0a69731c6 100644
+--- a/globals/globals.go
++++ b/globals/globals.go
+@@ -6,6 +6,9 @@ const (
+ 	TcpProxyV1     = "boundary-tcp-proxy-v1"
+ 	ServiceTokenV1 = "s1"
+ 	SessionPrefix  = "s_"
++
++	AnyAuthenticatedUserId = "u_auth"
++	RecoveryUserId         = "u_recovery"
+ )
+ 
+ type (
+diff --git a/internal/daemon/controller/auth/testing.go b/internal/daemon/controller/auth/testing.go
+index 101a618c9..fdc5f4df3 100644
+--- a/internal/daemon/controller/auth/testing.go
++++ b/internal/daemon/controller/auth/testing.go
+@@ -21,7 +21,7 @@ func DisabledAuthTestContext(iamRepoFn common.IamRepoFactory, scopeId string, op
+ 	}
+ 	reqInfo.UserIdOverride = opts.withUserId
+ 	if reqInfo.UserIdOverride == "" {
+-		reqInfo.UserIdOverride = perms.AnyAuthenticatedUserId
++		reqInfo.UserIdOverride = globals.AnyAuthenticatedUserId
+ 	}
+ 	requestContext := context.WithValue(context.Background(), requests.ContextRequestInformationKey, &requests.RequestContext{})
+ 	return NewVerifierContext(requestContext, iamRepoFn, nil, nil, opts.withKms, &reqInfo)
+diff --git a/internal/iam/repository_scope.go b/internal/iam/repository_scope.go
+index a6b2d734b..52b9977f4 100644
+--- a/internal/iam/repository_scope.go
++++ b/internal/iam/repository_scope.go
+@@ -87,7 +87,7 @@ func (r *Repository) CreateScope(ctx context.Context, s *Scope, userId string, o
+ 	switch {
+ 	case userId == "",
+ 		userId == perms.AnonymousUserId,
+-		userId == perms.AnyAuthenticatedUserId,
++		userId == globals.AnyAuthenticatedUserId,
+ 		userId == perms.RecoveryUserId,
+ 		opts.withSkipAdminRoleCreation:
+ 		// TODO: Cause a log entry. The repo doesn't have a logger right now,
+@@ -338,7 +338,7 @@ func (r *Repository) CreateScope(ctx context.Context, s *Scope, userId string, o
+ 					principals := []any{}
+ 					userId := "u_anon"
+ 					if s.Type == scope.Project.String() {
+-						userId = perms.AnyAuthenticatedUserId
++						userId = globals.AnyAuthenticatedUserId
+ 					}
+ 					rolePrincipal, err := NewUserRole(defaultRolePublicId, userId)
+ 					if err != nil {
+diff --git a/internal/perms/acl.go b/internal/perms/acl.go
+index 4e8d1b63f..b78c46f3b 100644
+--- a/internal/perms/acl.go
++++ b/internal/perms/acl.go
+@@ -9,9 +9,7 @@ import (
+ )
+ 
+ const (
+-	AnyAuthenticatedUserId = "u_auth"
+ 	AnonymousUserId        = "u_anon"
+-	RecoveryUserId         = "u_recovery"
+ )
+ 
+ // ACL provides an entry point into the permissions engine for determining if an

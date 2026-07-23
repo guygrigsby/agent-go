@@ -1,0 +1,14 @@
+diff --git a/globals/globals.go b/globals/globals.go
+index daba120cc..b0cf6512c 100644
+--- a/globals/globals.go
++++ b/globals/globals.go
+@@ -6,6 +6,9 @@ const (
+ 	TcpProxyV1     = "boundary-tcp-proxy-v1"
+ 	ServiceTokenV1 = "s1"
+ 	SessionPrefix  = "s_"
++
++	AnyAuthenticatedUserId = "u_auth"
++	RecoveryUserId = "u_recovery"
+ )
+ 
+ type (

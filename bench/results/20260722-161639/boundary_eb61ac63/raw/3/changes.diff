@@ -1,0 +1,39 @@
+diff --git a/internal/daemon/controller/controller.go b/internal/daemon/controller/controller.go
+index 5cfbcd0a4..8748e8177 100644
+--- a/internal/daemon/controller/controller.go
++++ b/internal/daemon/controller/controller.go
+@@ -337,7 +337,7 @@ func New(ctx context.Context, conf *Config) (*Controller, error) {
+ 		return target.NewRepository(dbase, dbase, c.kms)
+ 	}
+ 	c.SessionRepoFn = func(opt ...session.Option) (*session.Repository, error) {
+-		return session.NewRepository(dbase, dbase, c.kms, opt...)
++		return session.NewRepository(ctx, dbase, dbase, c.kms, opt...)
+ 	}
+ 	c.ConnectionRepoFn = func() (*session.ConnectionRepository, error) {
+ 		return session.NewConnectionRepository(ctx, dbase, dbase, c.kms)
+diff --git a/internal/session/jobs.go b/internal/session/jobs.go
+index 70f1e113b..cb4b38246 100644
+--- a/internal/session/jobs.go
++++ b/internal/session/jobs.go
+@@ -24,7 +24,7 @@ func RegisterJobs(ctx context.Context, scheduler *scheduler.Scheduler, w db.Writ
+ 		return fmt.Errorf("error registering session cleanup job: %w", err)
+ 	}
+ 
+-	repo, err := NewRepository(r, w, k)
++	repo, err := NewRepository(ctx, r, w, k)
+ 	if err != nil {
+ 		return fmt.Errorf("error creating repository: %w", err)
+ 	}
+diff --git a/internal/session/repository.go b/internal/session/repository.go
+index 8080ae56f..dc88207b5 100644
+--- a/internal/session/repository.go
++++ b/internal/session/repository.go
+@@ -38,7 +38,7 @@ type RepositoryFactory func(opt ...Option) (*Repository, error)
+ 
+ // NewRepository creates a new session Repository. Supports the options: WithLimit
+ // which sets a default limit on results returned by repo operations.
+-func NewRepository(r db.Reader, w db.Writer, kms *kms.Kms, opt ...Option) (*Repository, error) {
++func NewRepository(ctx context.Context, r db.Reader, w db.Writer, kms *kms.Kms, opt ...Option) (*Repository, error) {
+ 	const op = "session.NewRepository"
+ 	if r == nil {
+ 		return nil, errors.NewDeprecated(errors.InvalidParameter, op, "nil reader")

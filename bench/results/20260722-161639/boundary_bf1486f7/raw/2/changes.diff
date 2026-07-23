@@ -1,0 +1,13 @@
+diff --git a/internal/target/repository.go b/internal/target/repository.go
+index 7ec5d1b2d..83105dd6f 100644
+--- a/internal/target/repository.go
++++ b/internal/target/repository.go
+@@ -48,7 +48,7 @@ type Repository struct {
+ // - WithLimit: sets a limit on the number of results returned by various repo operations.
+ // - WithPermissions: defines the permissions the user has to perform different
+ // actions and access resources within the created repo object.
+-func NewRepository(r db.Reader, w db.Writer, kms *kms.Kms, opt ...Option) (*Repository, error) {
++func NewRepository(ctx context.Context, r db.Reader, w db.Writer, kms *kms.Kms, opt ...Option) (*Repository, error) {
+ 	const op = "target.NewRepository"
+ 	if r == nil {
+ 		return nil, errors.NewDeprecated(errors.InvalidParameter, op, "nil reader")

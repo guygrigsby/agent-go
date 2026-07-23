@@ -1,0 +1,33 @@
+diff --git a/internal/auth/oidc/auth_method.go b/internal/auth/oidc/auth_method.go
+index 1f2417424..e47ff222f 100644
+--- a/internal/auth/oidc/auth_method.go
++++ b/internal/auth/oidc/auth_method.go
+@@ -14,6 +14,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/auth/oidc/store"
+ 	"github.com/hashicorp/boundary/internal/errors"
+ 	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	"github.com/hashicorp/boundary/internal/oplog"
+ 	wrapping "github.com/hashicorp/go-kms-wrapping"
+ 	"github.com/hashicorp/go-kms-wrapping/structwrapping"
+@@ -236,7 +237,7 @@ func (a *AuthMethod) hmacClientSecret(ctx context.Context, cipher wrapping.Wrapp
+ 	if cipher == nil {
+ 		return errors.New(ctx, errors.InvalidParameter, op, "missing cipher")
+ 	}
+-	reader, err := kms.NewDerivedReader(cipher, 32, []byte(a.PublicId), nil)
++	reader, err := crypto.NewDerivedReader\(cipher, 32, []byte(a.PublicId), nil)
+ 	if err != nil {
+ 		return errors.Wrap(ctx, err, op)
+ 	}
+diff --git a/internal/auth/oidc/service.go b/internal/auth/oidc/service.go
+index 568668a62..ba64cc2fc 100644
+--- a/internal/auth/oidc/service.go
++++ b/internal/auth/oidc/service.go
+@@ -11,6 +11,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/errors"
+ 	"github.com/hashicorp/boundary/internal/iam"
+ 	"github.com/hashicorp/boundary/internal/kms"
++	"github.com/hashicorp/boundary/internal/libs/crypto"
+ 	wrapping "github.com/hashicorp/go-kms-wrapping"
+ 	"github.com/hashicorp/go-kms-wrapping/wrappers/aead"
+ 

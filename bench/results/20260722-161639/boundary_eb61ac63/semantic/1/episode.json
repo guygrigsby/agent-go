@@ -1,0 +1,48 @@
+{
+ "agent_done": "2026-07-23T01:50:58.378935708Z",
+ "agent_started": "2026-07-23T01:49:28.583919Z",
+ "cache_read": 251596,
+ "cache_write": 0,
+ "capped": false,
+ "failure_kind": "scored_fail",
+ "intermediate_states": 0,
+ "invalid_intermediates": 0,
+ "iter": 1,
+ "kind": "add-param",
+ "mode": "semantic",
+ "new_errors": null,
+ "op_mix": {
+  "query": {
+   "ok": 8,
+   "rejected": 2
+  },
+  "view": {
+   "ok": 4,
+   "rejected": 3
+  }
+ },
+ "pass": false,
+ "predicate": false,
+ "profile": "gpt-oss-20b-medium",
+ "prompt": "refact(session): Add context to session factory\n\nSpecifically: add parameter ctx context.Context to NewRepository",
+ "rejects_total": 5,
+ "repairs_offered": 5,
+ "resends": 0,
+ "specs": [
+  {
+   "ok": false,
+   "param": "ctx context.Context",
+   "signature": "func(r github.com/hashicorp/boundary/internal/db.Reader, w github.com/hashicorp/boundary/internal/db.Writer, kms *github.com/hashicorp/boundary/internal/kms.Kms, opt ...Option) (*Repository, error)",
+   "sym": "github.com/hashicorp/boundary/internal/session.NewRepository"
+  }
+ ],
+ "steps": 18,
+ "task": "boundary_eb61ac63",
+ "tests": false,
+ "tests_baseline": true,
+ "tokens_in": 28460,
+ "tokens_out": 2632,
+ "tokens_reasoning": 0,
+ "typecheck": true,
+ "wall_s": 89.795016708
+}

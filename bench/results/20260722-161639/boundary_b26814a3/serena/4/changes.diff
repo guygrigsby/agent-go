@@ -1,0 +1,63 @@
+diff --git a/globals/globals.go b/globals/globals.go
+index daba120cc..21a47ff7a 100644
+--- a/globals/globals.go
++++ b/globals/globals.go
+@@ -32,6 +32,10 @@ var (
+ 	// we want
+ 	RecoveryTokenValidityPeriod = 5 * time.Minute
+ 
++	// User IDs used throughout the system
++	AnyAuthenticatedUserId = "u_auth"
++	RecoveryUserId         = "u_recovery"
++
+ 	// WorkerAuthNonceValidityPeriod is exported so we can modify it in tests if
+ 	// we want
+ 	WorkerAuthNonceValidityPeriod = 2 * time.Minute
+diff --git a/internal/iam/repository_scope.go b/internal/iam/repository_scope.go
+index a6b2d734b..5258ec287 100644
+--- a/internal/iam/repository_scope.go
++++ b/internal/iam/repository_scope.go
+@@ -11,6 +11,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/kms"
+ 	"github.com/hashicorp/boundary/internal/oplog"
+ 	"github.com/hashicorp/boundary/internal/perms"
++	"github.com/hashicorp/boundary/globals"
+ 	"github.com/hashicorp/boundary/internal/types/resource"
+ 	"github.com/hashicorp/boundary/internal/types/scope"
+ 	"github.com/hashicorp/go-dbw"
+@@ -87,7 +88,7 @@ func (r *Repository) CreateScope(ctx context.Context, s *Scope, userId string, o
+ 	switch {
+ 	case userId == "",
+ 		userId == perms.AnonymousUserId,
+-		userId == perms.AnyAuthenticatedUserId,
++		userId == globals.AnyAuthenticatedUserId,
+ 		userId == perms.RecoveryUserId,
+ 		opts.withSkipAdminRoleCreation:
+ 		// TODO: Cause a log entry. The repo doesn't have a logger right now,
+@@ -338,7 +339,7 @@ func (r *Repository) CreateScope(ctx context.Context, s *Scope, userId string, o
+ 					principals := []any{}
+ 					userId := "u_anon"
+ 					if s.Type == scope.Project.String() {
+-						userId = perms.AnyAuthenticatedUserId
++						userId = globals.AnyAuthenticatedUserId
+ 					}
+ 					rolePrincipal, err := NewUserRole(defaultRolePublicId, userId)
+ 					if err != nil {
+diff --git a/internal/perms/acl.go b/internal/perms/acl.go
+index 4e8d1b63f..fcb54ae5f 100644
+--- a/internal/perms/acl.go
++++ b/internal/perms/acl.go
+@@ -6,12 +6,11 @@ import (
+ 	"github.com/hashicorp/boundary/internal/types/action"
+ 	"github.com/hashicorp/boundary/internal/types/resource"
+ 	"github.com/hashicorp/boundary/sdk/pbs/controller/api/resources/scopes"
++	"github.com/hashicorp/boundary/globals"
+ )
+ 
+ const (
+-	AnyAuthenticatedUserId = "u_auth"
+ 	AnonymousUserId        = "u_anon"
+-	RecoveryUserId         = "u_recovery"
+ )
+ 
+ // ACL provides an entry point into the permissions engine for determining if an

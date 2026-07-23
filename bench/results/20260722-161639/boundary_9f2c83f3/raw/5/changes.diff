@@ -1,0 +1,19 @@
+diff --git a/internal/bsr/bsr.go b/internal/bsr/bsr.go
+index c58998056..8ec657a61 100644
+--- a/internal/bsr/bsr.go
++++ b/internal/bsr/bsr.go
+@@ -27,10 +27,10 @@ const (
+ 	sessionMetaFile = "session-meta.json"
+ 
+ 	bsrPubKeyFile           = "bsrKey.pub"
+-	wrappedBsrKeyFile       = "wrappedBsrKey"
+-	wrappedPrivKeyFile      = "wrappedPrivKey"
+-	pubKeyBsrSignatureFile  = "pubKeyBsrSignature.sign"
+-	pubKeySelfSignatureFile = "pubKeySelfSignature.sign"
++	wrappedBsrKeyFileName       = "wrappedBsrKey"
++	wrappedPrivKeyFileName      = "wrappedPrivKey"
++	pubKeyBsrSignatureFileName  = "pubKeyBsrSignature.sign"
++	pubKeySelfSignatureFileName = "pubKeySelfSignature.sign"
+ )
+ 
+ // Session is the top level container in a bsr that contains the files for

@@ -1,0 +1,254 @@
+diff --git a/internal/credential/vault/repository_credentials_test.go b/internal/credential/vault/repository_credentials_test.go
+index 44b3c6849..663311fcb 100644
+--- a/internal/credential/vault/repository_credentials_test.go
++++ b/internal/credential/vault/repository_credentials_test.go
+@@ -640,7 +640,7 @@ group by session_id, status;
+ 		cc[id].active = credentialCount
+ 	}
+ 
+-	sessionRepo, err := session.NewRepository(rw, rw, kms)
++	sessionRepo, err := session.NewRepository(context.Background(),rw, rw, kms)
+ 	require.NoError(err)
+ 
+ 	count, err := sessionRepo.TerminateCompletedSessions(ctx)
+diff --git a/internal/daemon/cluster/handlers/worker_service_status_test.go b/internal/daemon/cluster/handlers/worker_service_status_test.go
+index 2d839b7ab..4241d6286 100644
+--- a/internal/daemon/cluster/handlers/worker_service_status_test.go
++++ b/internal/daemon/cluster/handlers/worker_service_status_test.go
+@@ -48,7 +48,7 @@ func TestStatus(t *testing.T) {
+ 		return serverRepo, nil
+ 	}
+ 	sessionRepoFn := func() (*session.Repository, error) {
+-		return session.NewRepository(rw, rw, kms)
++		return session.NewRepository(context.Background(),rw, rw, kms)
+ 	}
+ 	connRepoFn := func() (*session.ConnectionRepository, error) {
+ 		return session.NewConnectionRepository(ctx, rw, rw, kms)
+@@ -234,7 +234,7 @@ func TestStatusSessionClosed(t *testing.T) {
+ 		return serverRepo, nil
+ 	}
+ 	sessionRepoFn := func() (*session.Repository, error) {
+-		return session.NewRepository(rw, rw, kms)
++		return session.NewRepository(context.Background(),rw, rw, kms)
+ 	}
+ 	connRepoFn := func() (*session.ConnectionRepository, error) {
+ 		return session.NewConnectionRepository(ctx, rw, rw, kms)
+@@ -415,7 +415,7 @@ func TestStatusDeadConnection(t *testing.T) {
+ 		return serverRepo, nil
+ 	}
+ 	sessionRepoFn := func() (*session.Repository, error) {
+-		return session.NewRepository(rw, rw, kms)
++		return session.NewRepository(context.Background(),rw, rw, kms)
+ 	}
+ 	connRepoFn := func() (*session.ConnectionRepository, error) {
+ 		return session.NewConnectionRepository(ctx, rw, rw, kms, session.WithWorkerStateDelay(0))
+@@ -555,7 +555,7 @@ func TestStatusWorkerWithKeyId(t *testing.T) {
+ 		return serverRepo, nil
+ 	}
+ 	sessionRepoFn := func() (*session.Repository, error) {
+-		return session.NewRepository(rw, rw, kms)
++		return session.NewRepository(context.Background(),rw, rw, kms)
+ 	}
+ 	connRepoFn := func() (*session.ConnectionRepository, error) {
+ 		return session.NewConnectionRepository(ctx, rw, rw, kms)
+diff --git a/internal/daemon/cluster/handlers/worker_service_test.go b/internal/daemon/cluster/handlers/worker_service_test.go
+index 629159355..604cef1f7 100644
+--- a/internal/daemon/cluster/handlers/worker_service_test.go
++++ b/internal/daemon/cluster/handlers/worker_service_test.go
+@@ -40,7 +40,7 @@ func TestLookupSession(t *testing.T) {
+ 		return server.NewRepository(rw, rw, kms)
+ 	}
+ 	sessionRepoFn := func() (*session.Repository, error) {
+-		return session.NewRepository(rw, rw, kms)
++		return session.NewRepository(context.Background(),rw, rw, kms)
+ 	}
+ 	connectionRepoFn := func() (*session.ConnectionRepository, error) {
+ 		return session.NewConnectionRepository(ctx, rw, rw, kms)
+@@ -215,7 +215,7 @@ func TestHcpbWorkers(t *testing.T) {
+ 		return server.NewRepository(rw, rw, kmsCache)
+ 	}
+ 	sessionRepoFn := func() (*session.Repository, error) {
+-		return session.NewRepository(rw, rw, kmsCache)
++		return session.NewRepository(context.Background(),rw, rw, kmsCache)
+ 	}
+ 	connectionRepoFn := func() (*session.ConnectionRepository, error) {
+ 		return session.NewConnectionRepository(ctx, rw, rw, kmsCache)
+diff --git a/internal/daemon/controller/common/scopeids/scope_ids_test.go b/internal/daemon/controller/common/scopeids/scope_ids_test.go
+index e65b9e9ae..40704aeea 100644
+--- a/internal/daemon/controller/common/scopeids/scope_ids_test.go
++++ b/internal/daemon/controller/common/scopeids/scope_ids_test.go
+@@ -45,7 +45,7 @@ func TestListingScopeIds(t *testing.T) {
+ 	require.NoError(t, err)
+ 
+ 	sessionsRepoFn := func(opt ...session.Option) (*session.Repository, error) {
+-		return session.NewRepository(rw, rw, kms, opt...)
++		return session.NewRepository(context.Background(),rw, rw, kms, opt...)
+ 	}
+ 	sess, err := sessions.NewService(sessionsRepoFn, iamRepoFn)
+ 	require.NoError(t, err)
+diff --git a/internal/daemon/controller/controller.go b/internal/daemon/controller/controller.go
+index 5cfbcd0a4..3def38cf8 100644
+--- a/internal/daemon/controller/controller.go
++++ b/internal/daemon/controller/controller.go
+@@ -337,7 +337,7 @@ func New(ctx context.Context, conf *Config) (*Controller, error) {
+ 		return target.NewRepository(dbase, dbase, c.kms)
+ 	}
+ 	c.SessionRepoFn = func(opt ...session.Option) (*session.Repository, error) {
+-		return session.NewRepository(dbase, dbase, c.kms, opt...)
++		return session.NewRepository(context.Background(),dbase, dbase, c.kms, opt...)
+ 	}
+ 	c.ConnectionRepoFn = func() (*session.ConnectionRepository, error) {
+ 		return session.NewConnectionRepository(ctx, dbase, dbase, c.kms)
+diff --git a/internal/daemon/controller/handlers/sessions/session_list_benchmarks_test.go b/internal/daemon/controller/handlers/sessions/session_list_benchmarks_test.go
+index eeddc12e6..d03e891fe 100644
+--- a/internal/daemon/controller/handlers/sessions/session_list_benchmarks_test.go
++++ b/internal/daemon/controller/handlers/sessions/session_list_benchmarks_test.go
+@@ -97,7 +97,7 @@ func BenchmarkSessionList(b *testing.B) {
+ 				return iamRepo, nil
+ 			}
+ 			sessRepoFn := func(opt ...session.Option) (*session.Repository, error) {
+-				return session.NewRepository(rw, rw, kmsThing, opt...)
++				return session.NewRepository(context.Background(),rw, rw, kmsThing, opt...)
+ 			}
+ 			authTokenRepoFn := func() (*authtoken.Repository, error) {
+ 				return authTokenRepo, nil
+diff --git a/internal/daemon/controller/handlers/sessions/session_service_test.go b/internal/daemon/controller/handlers/sessions/session_service_test.go
+index 241e830f4..1b89c1dd3 100644
+--- a/internal/daemon/controller/handlers/sessions/session_service_test.go
++++ b/internal/daemon/controller/handlers/sessions/session_service_test.go
+@@ -48,7 +48,7 @@ func TestGetSession(t *testing.T) {
+ 		return iamRepo, nil
+ 	}
+ 	sessRepoFn := func(opt ...session.Option) (*session.Repository, error) {
+-		return session.NewRepository(rw, rw, kms, opt...)
++		return session.NewRepository(context.Background(),rw, rw, kms, opt...)
+ 	}
+ 	tokenRepoFn := func() (*authtoken.Repository, error) {
+ 		return authtoken.NewRepository(rw, rw, kms)
+@@ -170,7 +170,7 @@ func TestList_Self(t *testing.T) {
+ 		return iamRepo, nil
+ 	}
+ 	sessRepoFn := func(opt ...session.Option) (*session.Repository, error) {
+-		return session.NewRepository(rw, rw, kms, opt...)
++		return session.NewRepository(context.Background(),rw, rw, kms, opt...)
+ 	}
+ 	tokenRepoFn := func() (*authtoken.Repository, error) {
+ 		return authtoken.NewRepository(rw, rw, kms)
+@@ -250,14 +250,14 @@ func TestList(t *testing.T) {
+ 	iamRepo := iam.TestRepo(t, conn, wrap)
+ 
+ 	rw := db.New(conn)
+-	sessRepo, err := session.NewRepository(rw, rw, kms)
++	sessRepo, err := session.NewRepository(context.Background(),rw, rw, kms)
+ 	require.NoError(t, err)
+ 
+ 	iamRepoFn := func() (*iam.Repository, error) {
+ 		return iamRepo, nil
+ 	}
+ 	sessRepoFn := func(opt ...session.Option) (*session.Repository, error) {
+-		return session.NewRepository(rw, rw, kms, opt...)
++		return session.NewRepository(context.Background(),rw, rw, kms, opt...)
+ 	}
+ 	tokenRepoFn := func() (*authtoken.Repository, error) {
+ 		return authtoken.NewRepository(rw, rw, kms)
+@@ -554,7 +554,7 @@ func TestCancel(t *testing.T) {
+ 		return iamRepo, nil
+ 	}
+ 	sessRepoFn := func(opt ...session.Option) (*session.Repository, error) {
+-		return session.NewRepository(rw, rw, kms, opt...)
++		return session.NewRepository(context.Background(),rw, rw, kms, opt...)
+ 	}
+ 	tokenRepoFn := func() (*authtoken.Repository, error) {
+ 		return authtoken.NewRepository(rw, rw, kms)
+diff --git a/internal/daemon/controller/handlers/targets/tcp/target_service_test.go b/internal/daemon/controller/handlers/targets/tcp/target_service_test.go
+index 676f0f728..db2a90daa 100644
+--- a/internal/daemon/controller/handlers/targets/tcp/target_service_test.go
++++ b/internal/daemon/controller/handlers/targets/tcp/target_service_test.go
+@@ -86,7 +86,7 @@ func testService(t *testing.T, ctx context.Context, conn *db.DB, kms *kms.Kms, w
+ 		return server.NewRepository(rw, rw, kms)
+ 	}
+ 	sessionRepoFn := func(opts ...session.Option) (*session.Repository, error) {
+-		return session.NewRepository(rw, rw, kms, opts...)
++		return session.NewRepository(context.Background(),rw, rw, kms, opts...)
+ 	}
+ 	staticHostRepoFn := func() (*static.Repository, error) {
+ 		return static.NewRepository(rw, rw, kms)
+@@ -2750,7 +2750,7 @@ func TestAuthorizeSession(t *testing.T) {
+ 		return server.NewRepository(rw, rw, kms)
+ 	}
+ 	sessionRepoFn := func(opts ...session.Option) (*session.Repository, error) {
+-		return session.NewRepository(rw, rw, kms, opts...)
++		return session.NewRepository(context.Background(),rw, rw, kms, opts...)
+ 	}
+ 	staticRepo, err := static.NewRepository(rw, rw, kms)
+ 	require.NoError(t, err)
+@@ -3010,7 +3010,7 @@ func TestAuthorizeSessionTypedCredentials(t *testing.T) {
+ 		return server.NewRepository(rw, rw, kms)
+ 	}
+ 	sessionRepoFn := func(opts ...session.Option) (*session.Repository, error) {
+-		return session.NewRepository(rw, rw, kms, opts...)
++		return session.NewRepository(context.Background(),rw, rw, kms, opts...)
+ 	}
+ 	staticHostRepoFn := func() (*static.Repository, error) {
+ 		return static.NewRepository(rw, rw, kms)
+@@ -3589,7 +3589,7 @@ func TestAuthorizeSession_Errors(t *testing.T) {
+ 		return server.NewRepository(rw, rw, kms)
+ 	}
+ 	sessionRepoFn := func(opts ...session.Option) (*session.Repository, error) {
+-		return session.NewRepository(rw, rw, kms, opts...)
++		return session.NewRepository(context.Background(),rw, rw, kms, opts...)
+ 	}
+ 	staticHostRepoFn := func() (*static.Repository, error) {
+ 		return static.NewRepository(rw, rw, kms)
+diff --git a/internal/server/repository_worker_test.go b/internal/server/repository_worker_test.go
+index eb125d4e7..a10395c85 100644
+--- a/internal/server/repository_worker_test.go
++++ b/internal/server/repository_worker_test.go
+@@ -189,7 +189,7 @@ func TestLookupWorker(t *testing.T) {
+ 		server.WithWorkerTags(&server.Tag{"key", "val"}))
+ 	require.NoError(t, err)
+ 
+-	sessRepo, err := session.NewRepository(rw, rw, kms)
++	sessRepo, err := session.NewRepository(context.Background(),rw, rw, kms)
+ 	require.NoError(t, err)
+ 	connRepo, err := session.NewConnectionRepository(ctx, rw, rw, kms, session.WithWorkerStateDelay(0))
+ 	require.NoError(t, err)
+diff --git a/internal/session/repository.go b/internal/session/repository.go
+index 8080ae56f..dc88207b5 100644
+--- a/internal/session/repository.go
++++ b/internal/session/repository.go
+@@ -38,7 +38,7 @@ type RepositoryFactory func(opt ...Option) (*Repository, error)
+ 
+ // NewRepository creates a new session Repository. Supports the options: WithLimit
+ // which sets a default limit on results returned by repo operations.
+-func NewRepository(r db.Reader, w db.Writer, kms *kms.Kms, opt ...Option) (*Repository, error) {
++func NewRepository(ctx context.Context, r db.Reader, w db.Writer, kms *kms.Kms, opt ...Option) (*Repository, error) {
+ 	const op = "session.NewRepository"
+ 	if r == nil {
+ 		return nil, errors.NewDeprecated(errors.InvalidParameter, op, "nil reader")
+diff --git a/internal/session/service_worker_status_report_test.go b/internal/session/service_worker_status_report_test.go
+index 20a4c8e7c..e82361cc0 100644
+--- a/internal/session/service_worker_status_report_test.go
++++ b/internal/session/service_worker_status_report_test.go
+@@ -33,7 +33,7 @@ func TestWorkerStatusReport(t *testing.T) {
+ 	})
+ 	require.NoError(t, err)
+ 
+-	repo, err := session.NewRepository(rw, rw, kms)
++	repo, err := session.NewRepository(context.Background(),rw, rw, kms)
+ 	require.NoError(t, err)
+ 	connRepo, err := session.NewConnectionRepository(ctx, rw, rw, kms, session.WithWorkerStateDelay(0))
+ 	require.NoError(t, err)
+diff --git a/testing/dbtest/session_list_benchmarks_dump_generation_test.go b/testing/dbtest/session_list_benchmarks_dump_generation_test.go
+index 6ef81f3ad..4a058231d 100644
+--- a/testing/dbtest/session_list_benchmarks_dump_generation_test.go
++++ b/testing/dbtest/session_list_benchmarks_dump_generation_test.go
+@@ -126,7 +126,7 @@ func TestGenerateSessionBenchmarkTemplateDumps(t *testing.T) {
+ 			require.NoError(err)
+ 			pwRepo, err := password.NewRepository(rw, rw, kms)
+ 			require.NoError(err)
+-			sessRepo, err := session.NewRepository(rw, rw, kms)
++			sessRepo, err := session.NewRepository(context.Background(),rw, rw, kms)
+ 			require.NoError(err)
+ 			connRepo, err := session.NewConnectionRepository(ctx, rw, rw, kms)
+ 			require.NoError(err)

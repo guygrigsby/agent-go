@@ -1,0 +1,49 @@
+{"ms":1786,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-23T02:33:00.471253Z"}
+{"ms":1722,"op":"query","outcome":"ok","req_sha":"67dc273c4dd40e65","sym":"Run(ctx context.Context","ts":"2026-07-23T02:33:20.717947Z"}
+{"ms":34,"op":"query","outcome":"ok","req_sha":"83a0b5942f5805f5","sym":"Run(","ts":"2026-07-23T02:33:23.53117Z"}
+{"ms":32,"op":"query","outcome":"ok","req_sha":"15031a757b0d590f","sym":"censusJob.Run","ts":"2026-07-23T02:33:24.757931Z"}
+{"ms":31,"op":"query","outcome":"ok","req_sha":"a9bcd9cbb4c5ab13","sym":"censusJob","ts":"2026-07-23T02:33:25.865533Z"}
+{"ms":10,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/census","req_sha":"efbdea05150d16c1","sym":"censusJob","ts":"2026-07-23T02:33:27.62708Z"}
+{"ms":32,"op":"query","outcome":"ok","req_sha":"d4a31de54a799014","sym":"Run(ctx","ts":"2026-07-23T02:33:28.726297Z"}
+{"ms":32,"op":"query","outcome":"ok","req_sha":"83a0b5942f5805f5","sym":"Run(","ts":"2026-07-23T02:33:30.095551Z"}
+{"ms":34,"op":"query","outcome":"ok","req_sha":"204998c839b0bacb","sym":"Run()","ts":"2026-07-23T02:33:31.252244Z"}
+{"ms":30,"op":"query","outcome":"ok","req_sha":"d4a31de54a799014","sym":"Run(ctx","ts":"2026-07-23T02:33:32.912281Z"}
+{"ms":32,"op":"query","outcome":"ok","req_sha":"67dc273c4dd40e65","sym":"Run(ctx context.Context","ts":"2026-07-23T02:33:35.133279Z"}
+{"ms":10,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/census","req_sha":"efbdea05150d16c1","sym":"censusJob","ts":"2026-07-23T02:33:36.382373Z"}
+{"ms":29,"op":"query","outcome":"ok","req_sha":"a9bcd9cbb4c5ab13","sym":"censusJob","ts":"2026-07-23T02:33:37.409528Z"}
+{"ms":6,"op":"view","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/census","reason":"receiver type not found","repairs":1,"req_sha":"342d35a20b7a5c53","sym":"census_job.go","ts":"2026-07-23T02:33:39.062682Z"}
+{"ms":10,"op":"view","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/census","reason":"symbol not found","repairs":3,"req_sha":"037e3b42d376cb45","ts":"2026-07-23T02:33:40.258172Z"}
+{"ms":32,"op":"query","outcome":"ok","req_sha":"1c94f931ce3f29c5","sym":"*censusJob","ts":"2026-07-23T02:33:41.834137Z"}
+{"ms":9,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/census","req_sha":"38f75065e357fc2a","sym":"newCensusJob","ts":"2026-07-23T02:33:42.806937Z"}
+{"ms":30,"op":"query","outcome":"ok","req_sha":"d4a31de54a799014","sym":"Run(ctx","ts":"2026-07-23T02:33:44.245292Z"}
+{"ms":35,"op":"query","outcome":"ok","req_sha":"204998c839b0bacb","sym":"Run()","ts":"2026-07-23T02:33:45.202433Z"}
+{"ms":37,"op":"query","outcome":"ok","req_sha":"d66ea674e39d914a","sym":"tokenRevocationJob","ts":"2026-07-23T02:33:46.206585Z"}
+{"ms":11,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/credential/vault","req_sha":"19d8fa27e558882e","sym":"newTokenRevocationJob","ts":"2026-07-23T02:33:48.602696Z"}
+{"ms":23,"op":"query","outcome":"ok","req_sha":"78a7fb82c7200d59","sym":"TokenRevocationJob","ts":"2026-07-23T02:33:50.131116Z"}
+{"ms":29,"op":"query","outcome":"ok","req_sha":"54cbca0c375f2db8","sym":"(j *TokenRevocationJob)","ts":"2026-07-23T02:33:52.596518Z"}
+{"ms":11,"op":"view","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/credential/vault","reason":"receiver type not found","repairs":1,"req_sha":"cbd788ddf3dbe55b","sym":"jobs.go","ts":"2026-07-23T02:33:53.681306Z"}
+{"ms":32,"op":"query","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/credential/vault","req_sha":"6c4dd461a0a4f9d6","sym":"Run(ctx","ts":"2026-07-23T02:33:56.02844Z"}
+{"ms":28,"op":"query","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/credential/vault","req_sha":"818f4cd54a99edd5","sym":"Run(","ts":"2026-07-23T02:33:57.23632Z"}
+{"ms":11,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/credential/vault","req_sha":"a2bf265e2e703f72","sym":"TestTokenRevocationJob_Run","ts":"2026-07-23T02:33:58.412573Z"}
+{"ms":32,"op":"query","outcome":"ok","req_sha":"40b56dced348e91a","sym":"type Job interface","ts":"2026-07-23T02:34:05.456167Z"}
+{"ms":28,"op":"query","outcome":"ok","req_sha":"b6716194f13ca38b","sym":"interface {","ts":"2026-07-23T02:34:06.406388Z"}
+{"ms":3,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/census","req_sha":"fd1b0afe7fcaa3cb","sym":"censusJob.Run","ts":"2026-07-23T02:34:07.872225Z"}
+{"ms":3,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/credential/vault","req_sha":"44a6f9c99582b1d6","sym":"TokenRevocationJob.Run","ts":"2026-07-23T02:34:07.87963Z"}
+{"ms":3,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/credential/vault","req_sha":"d98d438570f884d9","sym":"CredentialRenewalJob.Run","ts":"2026-07-23T02:34:07.886125Z"}
+{"ms":3,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/credential/vault","req_sha":"5697329ba0336e79","sym":"TokenRenewalJob.Run","ts":"2026-07-23T02:34:07.892486Z"}
+{"ms":3,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/credential/vault","req_sha":"0b523abfa9a84d37","sym":"CredentialCleanupJob.Run","ts":"2026-07-23T02:34:07.899344Z"}
+{"ms":3,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/credential/vault","req_sha":"a98f51e0d7e87d93","sym":"CredentialRevocationJob.Run","ts":"2026-07-23T02:34:07.906065Z"}
+{"ms":3,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/credential/vault","req_sha":"b3a47668310bf317","sym":"CredentialStoreCleanupJob.Run","ts":"2026-07-23T02:34:07.912455Z"}
+{"ms":3,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/host/plugin","req_sha":"932302a0ae260ffc","sym":"OrphanedHostCleanupJob.Run","ts":"2026-07-23T02:34:07.919248Z"}
+{"ms":3,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/host/plugin","req_sha":"7cf776ca60c1c8e5","sym":"SetSyncJob.Run","ts":"2026-07-23T02:34:07.925626Z"}
+{"ms":3,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/kms/job","req_sha":"412ec035e14e9266","sym":"dataKeyVersionDestructionMonitorJob.Run","ts":"2026-07-23T02:34:07.932235Z"}
+{"ms":3,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/kms/job","req_sha":"aa1c67d6bfb1bddb","sym":"tableRewrappingJob.Run","ts":"2026-07-23T02:34:07.938874Z"}
+{"ms":3,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/pagination/purge","req_sha":"996d2a7f9a8bfbbd","sym":"purgeJob.Run","ts":"2026-07-23T02:34:07.945444Z"}
+{"ms":3,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/scheduler/cleaner","req_sha":"d5f51e80832aadfe","sym":"cleanerJob.Run","ts":"2026-07-23T02:34:07.951849Z"}
+{"ms":3,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/scheduler","req_sha":"d158a06cb778643d","sym":"testJob.Run","ts":"2026-07-23T02:34:07.958643Z"}
+{"ms":3,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/server/job","req_sha":"1ba696c03592618c","sym":"rotateRootsJob.Run","ts":"2026-07-23T02:34:07.965395Z"}
+{"ms":3,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/server/job","req_sha":"2b4f703a5f817022","sym":"upsertWorkerStorageBucketJob.Run","ts":"2026-07-23T02:34:07.971767Z"}
+{"ms":3,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/session","req_sha":"d2e5108a2630e103","sym":"deleteTerminatedJob.Run","ts":"2026-07-23T02:34:07.978508Z"}
+{"ms":3,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/session","req_sha":"e54cc033dcc12c7e","sym":"sessionConnectionCleanupJob.Run","ts":"2026-07-23T02:34:07.985196Z"}
+{"ms":3,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/snapshot","req_sha":"f92a60ad5390562f","sym":"snapshotJob.Run","ts":"2026-07-23T02:34:07.991588Z"}
+{"ms":4,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-23T02:34:07.998463Z"}

@@ -1,0 +1,20 @@
+{"ms":2155,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-23T05:13:02.17871Z"}
+{"ms":2253,"op":"query","outcome":"ok","req_sha":"d008f7f9cb481413","sym":"Audit Factory","ts":"2026-07-23T05:13:22.579955Z"}
+{"ms":22,"op":"query","outcome":"ok","req_sha":"8089a952a43d5789","sym":"NewAudit","ts":"2026-07-23T05:13:25.710389Z"}
+{"ms":32,"op":"query","outcome":"ok","req_sha":"3dba5adc35a6161c","sym":"AuditBackend","ts":"2026-07-23T05:13:30.218296Z"}
+{"ms":7,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/vault/vault","req_sha":"647536a961e43941","sym":"Core.newAuditBackend","ts":"2026-07-23T05:13:32.828792Z"}
+{"ms":34,"op":"query","outcome":"ok","req_sha":"81bfd2900ccb2538","sym":"auditBackends","ts":"2026-07-23T05:13:36.822372Z"}
+{"ms":7,"op":"view","outcome":"rejected","pkg":"github.com/hashicorp/vault/vault","reason":"fields are not independently viewable; view the containing type","repairs":1,"req_sha":"49d16ddf68853c76","sym":"Core.auditBackends","ts":"2026-07-23T05:13:38.863357Z"}
+{"ms":36,"op":"query","outcome":"ok","req_sha":"17df6094a9d40f28","sym":"type Core","ts":"2026-07-23T05:13:39.940071Z"}
+{"ms":31,"op":"view","outcome":"rejected","pkg":"github.com/hashicorp/vault/vault","reason":"receiver type not found","repairs":1,"req_sha":"b6ea8c05d3c58dd5","sym":"core.go","ts":"2026-07-23T05:13:40.890328Z"}
+{"ms":34,"op":"query","outcome":"ok","req_sha":"382dbdff78048dd4","sym":"auditBackends map","ts":"2026-07-23T05:13:42.047337Z"}
+{"ms":7,"op":"view","outcome":"rejected","pkg":"github.com/hashicorp/vault/vault","reason":"fields are not independently viewable; view the containing type","repairs":1,"req_sha":"49d16ddf68853c76","sym":"Core.auditBackends","ts":"2026-07-23T05:13:42.980281Z"}
+{"ms":28,"op":"query","outcome":"ok","req_sha":"40baf8bbce8aad7e","sym":"auditBackends:","ts":"2026-07-23T05:13:44.198124Z"}
+{"ms":33,"op":"query","outcome":"ok","req_sha":"035a71e59f9f6704","sym":"struct {","ts":"2026-07-23T05:13:45.237503Z"}
+{"ms":32,"op":"view","outcome":"rejected","pkg":"github.com/hashicorp/vault/vault","reason":"receiver type not found","repairs":1,"req_sha":"b6ea8c05d3c58dd5","sym":"core.go","ts":"2026-07-23T05:13:46.16462Z"}
+{"ms":27,"op":"query","outcome":"ok","req_sha":"bfeec62ba67ada9f","sym":"type Core struct","ts":"2026-07-23T05:13:47.729284Z"}
+{"ms":30,"op":"query","outcome":"ok","req_sha":"6504e1c3f717b139","sym":"core struct","ts":"2026-07-23T05:13:48.726231Z"}
+{"ms":2,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/vault/builtin/audit/file","req_sha":"4c3540a12b62c322","sym":"Factory","ts":"2026-07-23T05:13:50.733905Z"}
+{"ms":2,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/vault/builtin/audit/socket","req_sha":"a0e3f335d0446612","sym":"Factory","ts":"2026-07-23T05:13:50.740028Z"}
+{"ms":2,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/vault/builtin/audit/syslog","req_sha":"14a613cd501bbcea","sym":"Factory","ts":"2026-07-23T05:13:50.746156Z"}
+{"ms":4,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-23T05:13:50.751818Z"}

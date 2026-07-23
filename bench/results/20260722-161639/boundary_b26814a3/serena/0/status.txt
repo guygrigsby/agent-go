@@ -1,0 +1,3 @@
+ M internal/iam/repository_scope.go
+?? .serena/
+?? opencode.json

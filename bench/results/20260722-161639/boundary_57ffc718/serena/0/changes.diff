@@ -1,0 +1,17 @@
+diff --git a/testing/internal/e2e/boundary/account.go b/testing/internal/e2e/boundary/account.go
+index d91625c1d..3385bfc9b 100644
+--- a/testing/internal/e2e/boundary/account.go
++++ b/testing/internal/e2e/boundary/account.go
+@@ -39,11 +39,10 @@ func CreateNewAccountApi(t testing.TB, ctx context.Context, client *api.Client,
+ 
+ // CreateNewAccountCli creates a new account using the cli.
+ // Returns the id of the new account as well as the password that was generated
+-func CreateNewAccountCli(t testing.TB, loginName string) (string, string) {
++func CreateNewAccountCli(t testing.TB, ctx context.Context, loginName string) (string, string) {
+ 	c, err := loadConfig()
+ 	require.NoError(t, err)
+ 
+-	ctx := context.Background()
+ 	password, err := base62.Random(16)
+ 	require.NoError(t, err)
+ 	output := e2e.RunCommand(ctx, "boundary",

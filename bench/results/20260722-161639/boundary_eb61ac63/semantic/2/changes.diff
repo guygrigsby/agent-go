@@ -1,0 +1,20 @@
+diff --git a/internal/session/repository.go b/internal/session/repository.go
+index 8080ae56f..0aad48302 100644
+--- a/internal/session/repository.go
++++ b/internal/session/repository.go
+@@ -54,7 +54,6 @@ func NewRepository(r db.Reader, w db.Writer, kms *kms.Kms, opt ...Option) (*Repo
+ 		// zero signals the boundary defaults should be used.
+ 		opts.withLimit = db.DefaultLimit
+ 	}
+-
+ 	if opts.withPermissions != nil {
+ 		for _, p := range opts.withPermissions.Permissions {
+ 			if p.Resource != resource.Session {
+@@ -62,7 +61,6 @@ func NewRepository(r db.Reader, w db.Writer, kms *kms.Kms, opt ...Option) (*Repo
+ 			}
+ 		}
+ 	}
+-
+ 	return &Repository{
+ 		reader:       r,
+ 		writer:       w,

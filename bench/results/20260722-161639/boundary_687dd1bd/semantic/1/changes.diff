@@ -1,0 +1,124 @@
+diff --git a/internal/servers/controller/controller.go b/internal/servers/controller/controller.go
+index 76e80816f..f354a46c0 100644
+--- a/internal/servers/controller/controller.go
++++ b/internal/servers/controller/controller.go
+@@ -368,7 +368,7 @@ func (c *Controller) registerJobs() error {
+ // registerSessionConnectionCleanupJob is a helper method to abstract
+ // registering the session connection cleanup job specifically.
+ func (c *Controller) registerSessionConnectionCleanupJob() error {
+-	sessionConnectionCleanupJob, err := newSessionConnectionCleanupJob(c.ConnectionRepoFn, c.conf.StatusGracePeriodDuration)
++	sessionConnectionCleanupJob, err := NewSessionConnectionCleanupJob(c.ConnectionRepoFn, c.conf.StatusGracePeriodDuration)
+ 	if err != nil {
+ 		return fmt.Errorf("error creating session cleanup job: %w", err)
+ 	}
+diff --git a/internal/servers/controller/session_cleanup_job.go b/internal/servers/controller/session_cleanup_job.go
+index 1d63e22e8..ee24b7fef 100644
+--- a/internal/servers/controller/session_cleanup_job.go
++++ b/internal/servers/controller/session_cleanup_job.go
+@@ -22,7 +22,7 @@ import (
+ // worker, or the event of a synchronization issue between the two,
+ // the controller will win out and order that the connections be
+ // closed on the worker.
+-type sessionConnectionCleanupJob struct {
++type SessionConnectionCleanupJob struct {
+ 	connectionRepoFn common.ConnectionRepoFactory
+ 
+ 	// The amount of time to give disconnected workers before marking
+@@ -34,10 +34,10 @@ type sessionConnectionCleanupJob struct {
+ }
+ 
+ // newSessionConnectionCleanupJob instantiates the session cleanup job.
+-func newSessionConnectionCleanupJob(
++func NewSessionConnectionCleanupJob(
+ 	connectionRepoFn common.ConnectionRepoFactory,
+ 	gracePeriod time.Duration,
+-) (*sessionConnectionCleanupJob, error) {
++) (*SessionConnectionCleanupJob, error) {
+ 	const op = "controller.newNewSessionConnectionCleanupJob"
+ 	switch {
+ 	case connectionRepoFn == nil:
+@@ -47,17 +47,17 @@ func newSessionConnectionCleanupJob(
+ 			errors.InvalidParameter, op, fmt.Sprintf("invalid gracePeriod, must be greater than %s", session.DeadWorkerConnCloseMinGrace))
+ 	}
+ 
+-	return &sessionConnectionCleanupJob{
++	return &SessionConnectionCleanupJob{
+ 		connectionRepoFn: connectionRepoFn,
+ 		gracePeriod:      gracePeriod,
+ 	}, nil
+ }
+ 
+ // Name returns a short, unique name for the job.
+-func (j *sessionConnectionCleanupJob) Name() string { return "session_cleanup" }
++func (j *SessionConnectionCleanupJob) Name() string { return "session_cleanup" }
+ 
+ // Description returns the description for the job.
+-func (j *sessionConnectionCleanupJob) Description() string {
++func (j *SessionConnectionCleanupJob) Description() string {
+ 	return "Clean up session connections from disconnected workers"
+ }
+ 
+@@ -68,12 +68,12 @@ func (j *sessionConnectionCleanupJob) Description() string {
+ // connections as soon as a worker has not reported in for a long
+ // enough time. Only one job will ever run at once, so there is no
+ // reason why it cannot run again immediately.
+-func (j *sessionConnectionCleanupJob) NextRunIn(_ context.Context) (time.Duration, error) {
++func (j *SessionConnectionCleanupJob) NextRunIn(_ context.Context) (time.Duration, error) {
+ 	return time.Second, nil
+ }
+ 
+ // Status returns the status of the running job.
+-func (j *sessionConnectionCleanupJob) Status() scheduler.JobStatus {
++func (j *SessionConnectionCleanupJob) Status() scheduler.JobStatus {
+ 	return scheduler.JobStatus{
+ 		Completed: j.totalClosed,
+ 		Total:     j.totalClosed,
+@@ -81,7 +81,7 @@ func (j *sessionConnectionCleanupJob) Status() scheduler.JobStatus {
+ }
+ 
+ // Run executes the job.
+-func (j *sessionConnectionCleanupJob) Run(ctx context.Context) error {
++func (j *SessionConnectionCleanupJob) Run(ctx context.Context) error {
+ 	const op = "controller.(sessionConnectionCleanupJob).Run"
+ 	j.totalClosed = 0
+ 
+diff --git a/internal/servers/controller/session_cleanup_job_test.go b/internal/servers/controller/session_cleanup_job_test.go
+index 094a0602d..51ba25ff2 100644
+--- a/internal/servers/controller/session_cleanup_job_test.go
++++ b/internal/servers/controller/session_cleanup_job_test.go
+@@ -18,7 +18,7 @@ import (
+ )
+ 
+ // assert the interface
+-var _ = scheduler.Job(new(sessionConnectionCleanupJob))
++var _ = scheduler.Job(new(SessionConnectionCleanupJob))
+ 
+ // This test has been largely adapted from
+ // TestRepository_CloseDeadConnectionsOnWorker in
+@@ -100,7 +100,7 @@ func TestSessionConnectionCleanupJob(t *testing.T) {
+ 	}
+ 
+ 	// Create the job.
+-	job, err := newSessionConnectionCleanupJob(
++	job, err := NewSessionConnectionCleanupJob(
+ 		func() (*session.ConnectionRepository, error) { return connectionRepo, nil },
+ 		session.DeadWorkerConnCloseMinGrace,
+ 	)
+@@ -150,7 +150,7 @@ func TestSessionConnectionCleanupJobNewJobErr(t *testing.T) {
+ 	const op = "controller.newNewSessionConnectionCleanupJob"
+ 	require := require.New(t)
+ 
+-	job, err := newSessionConnectionCleanupJob(nil, 0)
++	job, err := NewSessionConnectionCleanupJob(nil, 0)
+ 	require.Equal(err, errors.E(
+ 		ctx,
+ 		errors.WithCode(errors.InvalidParameter),
+@@ -159,7 +159,7 @@ func TestSessionConnectionCleanupJobNewJobErr(t *testing.T) {
+ 	))
+ 	require.Nil(job)
+ 
+-	job, err = newSessionConnectionCleanupJob(func() (*session.ConnectionRepository, error) { return nil, nil }, 0)
++	job, err = NewSessionConnectionCleanupJob(func() (*session.ConnectionRepository, error) { return nil, nil }, 0)
+ 	require.Equal(err, errors.E(
+ 		ctx,
+ 		errors.WithCode(errors.InvalidParameter),

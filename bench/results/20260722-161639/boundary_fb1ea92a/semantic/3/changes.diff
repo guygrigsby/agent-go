@@ -1,0 +1,26 @@
+diff --git a/internal/daemon/worker/proxy/tcp/tcp.go b/internal/daemon/worker/proxy/tcp/tcp.go
+index c4f0a1773..9d6723f5f 100644
+--- a/internal/daemon/worker/proxy/tcp/tcp.go
++++ b/internal/daemon/worker/proxy/tcp/tcp.go
+@@ -29,6 +29,7 @@ func init() {
+ // either connection.
+ func handleProxy(ctx context.Context, _ proxy.DecryptFn, conn net.Conn, out *proxy.ProxyDialer, connId string, _ *anypb.Any, _ proxy.RecordingManager) (proxy.ProxyConnFn, error) {
+ 	const op = "tcp.HandleProxy"
++
+ 	switch {
+ 	case conn == nil:
+ 		return nil, errors.New(ctx, errors.InvalidParameter, op, "conn is nil")
+@@ -41,7 +42,6 @@ func handleProxy(ctx context.Context, _ proxy.DecryptFn, conn net.Conn, out *pro
+ 	if err != nil {
+ 		return nil, err
+ 	}
+-
+ 	return func(ctx context.Context) {
+ 		connWg := new(sync.WaitGroup)
+ 		connWg.Add(2)
+@@ -59,4 +59,5 @@ func handleProxy(ctx context.Context, _ proxy.DecryptFn, conn net.Conn, out *pro
+ 		}()
+ 		connWg.Wait()
+ 	}, nil
++
+ }

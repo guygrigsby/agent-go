@@ -1,0 +1,31 @@
+diff --git a/internal/ratelimit/config.go b/internal/ratelimit/config.go
+index 9162d5c2f..d4d687ef8 100644
+--- a/internal/ratelimit/config.go
++++ b/internal/ratelimit/config.go
+@@ -50,10 +50,10 @@ const (
+ 	DefaultListPeriod                = time.Second * 30
+ )
+ 
+-// defaultLimiterMaxEntries is the default maximum number of quotas that
++// defaultLimiterMaxQuotas is the default maximum number of quotas that
+ // can be tracked by the rate limiter.
+ // This is determined at initialization time based on the number of endpoints.
+-var defaultLimiterMaxEntries int
++var defaultLimiterMaxQuotas int
+ 
+ var initDefaultLimiterMaxEntries sync.Once
+ 
+@@ -86,11 +86,11 @@ func DefaultLimiterMaxEntries() int {
+ 			endpointCount += len(actions)
+ 		}
+ 
+-		defaultLimiterMaxEntries = (endpointCount * quotasPerInTotal) +
++		defaultLimiterMaxQuotas = (endpointCount * quotasPerInTotal) +
+ 			(endpointCount * quotasPerAuthToken) +
+ 			(endpointCount * quotasPerIpAddress)
+ 	})
+-	return defaultLimiterMaxEntries
++	return defaultLimiterMaxQuotas
+ }
+ 
+ // Config is used to configure rate limits. Each config is used to specify

@@ -1,0 +1,4 @@
+ M internal/auth/oidc/auth_method.go
+ M internal/auth/oidc/service.go
+?? .serena/
+?? opencode.json

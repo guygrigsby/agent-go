@@ -1,0 +1,332 @@
+diff --git a/CHANGELOG.md b/CHANGELOG.md
+index fb05b47b8..f952b4c89 100644
+--- a/CHANGELOG.md
++++ b/CHANGELOG.md
+@@ -7208,7 +7208,7 @@ Same changelog as v2.0.3.
+ - Cannot provide multiple certificates using flag [\#757](https://github.com/traefik/traefik/issues/757)
+ - Allow multiple certificates on a single entrypoint when trying to use TLS? [\#747](https://github.com/traefik/traefik/issues/747)
+ - traefik \* Users: unsupported type: slice [\#743](https://github.com/traefik/traefik/issues/743)
+-- \[Docker swarm mode\] The traefik.docker.network seems to have no effect [\#719](https://github.com/traefik/traefik/issues/719)
++- \[Docker swarm mode\] The traefik.swarm.network seems to have no effect [\#719](https://github.com/traefik/traefik/issues/719)
+ - traefik hangs - stops handling requests [\#662](https://github.com/traefik/traefik/issues/662)
+ - Add long jobs in exponential backoff providers  [\#626](https://github.com/traefik/traefik/issues/626)
+ - Tip of tree crashes on invalid pointer on Marathon provider [\#624](https://github.com/traefik/traefik/issues/624)
+@@ -7417,7 +7417,7 @@ Same changelog as v2.0.3.
+ 
+ - Cannot provide multiple certificates using flag [\#757](https://github.com/traefik/traefik/issues/757)
+ - traefik \* Users: unsupported type: slice [\#743](https://github.com/traefik/traefik/issues/743)
+-- \[Docker swarm mode\] The traefik.docker.network seems to have no effect [\#719](https://github.com/traefik/traefik/issues/719)
++- \[Docker swarm mode\] The traefik.swarm.network seems to have no effect [\#719](https://github.com/traefik/traefik/issues/719)
+ - Case sensitive domain names breaks routing  [\#562](https://github.com/traefik/traefik/issues/562)
+ 
+ **Closed issues:**
+diff --git a/docs/content/migration/v1-to-v2.md b/docs/content/migration/v1-to-v2.md
+index 47d89b250..7aa483af3 100644
+--- a/docs/content/migration/v1-to-v2.md
++++ b/docs/content/migration/v1-to-v2.md
+@@ -1047,7 +1047,7 @@ To activate the dashboard, you can either:
+     ```yaml tab="Docker & Swarm"
+     # dynamic configuration
+     labels:
+-      - "traefik.http.routers.api.rule=Host(`traefik.docker.localhost`)"
++      - "traefik.http.routers.api.rule=Host(`traefik.swarm.localhost`)"
+       - "traefik.http.routers.api.entrypoints=websecure"
+       - "traefik.http.routers.api.service=api@internal"
+       - "traefik.http.routers.api.middlewares=myAuth"
+@@ -1077,7 +1077,7 @@ To activate the dashboard, you can either:
+      http:
+       routers:
+         api:
+-          rule: Host(`traefik.docker.localhost`)
++          rule: Host(`traefik.swarm.localhost`)
+           entryPoints:
+             - websecure
+           service: api@internal
+@@ -1110,7 +1110,7 @@ To activate the dashboard, you can either:
+     # /path/to/dynamic/config/dynamic-conf.toml
+ 
+     [http.routers.api]
+-      rule = "Host(`traefik.docker.localhost`)"
++      rule = "Host(`traefik.swarm.localhost`)"
+       entrypoints = ["websecure"]
+       service = "api@internal"
+       middlewares = ["myAuth"]
+diff --git a/docs/content/providers/docker.md b/docs/content/providers/docker.md
+index 05811656d..95a21cebf 100644
+--- a/docs/content/providers/docker.md
++++ b/docs/content/providers/docker.md
+@@ -409,7 +409,7 @@ _Optional, Default=""_
+ 
+ Defines a default docker network to use for connections to all containers.
+ 
+-This option can be overridden on a per-container basis with the `traefik.docker.network` label.
++This option can be overridden on a per-container basis with the `traefik.swarm.network` label.
+ 
+ ```yaml tab="File (YAML)"
+ providers:
+diff --git a/docs/content/providers/swarm.md b/docs/content/providers/swarm.md
+index db01f4d72..dc2bfd938 100644
+--- a/docs/content/providers/swarm.md
++++ b/docs/content/providers/swarm.md
+@@ -455,7 +455,7 @@ _Optional, Default=""_
+ 
+ Defines a default docker network to use for connections to all containers.
+ 
+-This option can be overridden on a per-container basis with the `traefik.docker.network` [routing label](../routing/providers/swarm.md#traefikdockernetwork).
++This option can be overridden on a per-container basis with the `traefik.swarm.network` [routing label](../routing/providers/swarm.md#traefikdockernetwork).
+ 
+ !!! warning
+     The Docker Swarm provider still uses the same per-container mechanism as the Docker provider, so therefore the label still uses the `docker` keyword intentionally.
+diff --git a/docs/content/reference/dynamic-configuration/docker.yml b/docs/content/reference/dynamic-configuration/docker.yml
+index 097de499d..fd90583cb 100644
+--- a/docs/content/reference/dynamic-configuration/docker.yml
++++ b/docs/content/reference/dynamic-configuration/docker.yml
+@@ -1,2 +1,2 @@
+ - "traefik.enable=true"
+-- "traefik.docker.network=foobar"
++- "traefik.swarm.network=foobar"
+diff --git a/docs/content/reference/dynamic-configuration/swarm.yml b/docs/content/reference/dynamic-configuration/swarm.yml
+index 6f9e1c62f..1b40b4483 100644
+--- a/docs/content/reference/dynamic-configuration/swarm.yml
++++ b/docs/content/reference/dynamic-configuration/swarm.yml
+@@ -1,3 +1,3 @@
+ - "traefik.enable=true"
+-- "traefik.docker.network=foobar"
+-- "traefik.docker.lbswarm=true"
++- "traefik.swarm.network=foobar"
++- "traefik.swarm.lbswarm=true"
+diff --git a/docs/content/reference/install-configuration/providers/docker.md b/docs/content/reference/install-configuration/providers/docker.md
+index 74e250ae0..8b5f13c08 100644
+--- a/docs/content/reference/install-configuration/providers/docker.md
++++ b/docs/content/reference/install-configuration/providers/docker.md
+@@ -47,7 +47,7 @@ services:
+ | `providers.docker.password` | Defines the password for Basic HTTP authentication. This should be used when the Docker daemon socket is exposed through an HTTP proxy that requires Basic HTTP authentication.|  ""    | No   |
+ | `providers.docker.useBindPortIP` | Instructs Traefik to use the IP/Port attached to the container's binding instead of its inner network IP/Port. See [here](#usebindportip) for more information |  false   | No   |
+ | `providers.docker.exposedByDefault` | Expose containers by default through Traefik. See [here](./overview.md#restrict-the-scope-of-service-discovery) for additional information |  true    | No   |
+-| `providers.docker.network` | Defines a default docker network to use for connections to all containers. This option can be overridden on a per-container basis with the `traefik.docker.network` label.|  ""    | No   |
++| `providers.docker.network` | Defines a default docker network to use for connections to all containers. This option can be overridden on a per-container basis with the `traefik.swarm.network` label.|  ""    | No   |
+ | `providers.docker.defaultRule` | Defines what routing rule to apply to a container if no rule is defined by a label. See [here](#defaultrule) for more information. |  ```"Host(`{{ normalize .Name }}`)"```  | No   |
+ | `providers.docker.httpClientTimeout` | Defines the client timeout (in seconds) for HTTP connections. If its value is 0, no timeout is set. |  0   | No   |
+ | `providers.docker.watch` | Instructs Traefik to watch Docker events or not. |  True   | No   |
+diff --git a/docs/content/reference/install-configuration/providers/swarm.md b/docs/content/reference/install-configuration/providers/swarm.md
+index becfdd577..2b478d1d5 100644
+--- a/docs/content/reference/install-configuration/providers/swarm.md
++++ b/docs/content/reference/install-configuration/providers/swarm.md
+@@ -52,7 +52,7 @@ services:
+ | `providers.swarm.password` | Defines the password for Basic HTTP authentication. This should be used when the Docker daemon socket is exposed through an HTTP proxy that requires Basic HTTP authentication.|  ""    | No   |
+ | `providers.swarm.useBindPortIP` | Instructs Traefik to use the IP/Port attached to the container's binding instead of its inner network IP/Port. See [here](#usebindportip) for more information |  false   | No   |
+ | `providers.swarm.exposedByDefault` | Expose containers by default through Traefik. See [here](./overview.md#restrict-the-scope-of-service-discovery) for additional information |  true    | No   |
+-| `providers.swarm.network` | Defines a default docker network to use for connections to all containers. This option can be overridden on a per-container basis with the `traefik.docker.network` label.|  ""    | No   |
++| `providers.swarm.network` | Defines a default docker network to use for connections to all containers. This option can be overridden on a per-container basis with the `traefik.swarm.network` label.|  ""    | No   |
+ | `providers.swarm.defaultRule` | Defines what routing rule to apply to a container if no rule is defined by a label. See [here](#defaultrule) for more information |   ```"Host(`{{ normalize .Name }}`)"```   | No   |
+ | `providers.swarm.refreshSeconds` | Defines the polling interval for Swarm Mode. |  "15s"   | No   |
+ | `providers.swarm.httpClientTimeout` | Defines the client timeout (in seconds) for HTTP connections. If its value is 0, no timeout is set. |  0   | No   |
+diff --git a/docs/content/routing/providers/docker.md b/docs/content/routing/providers/docker.md
+index 7b1f81408..b7883ad04 100644
+--- a/docs/content/routing/providers/docker.md
++++ b/docs/content/routing/providers/docker.md
+@@ -639,10 +639,10 @@ You can tell Traefik to consider (or not) the container by setting `traefik.enab
+ 
+ This option overrides the value of `exposedByDefault`.
+ 
+-#### `traefik.docker.network`
++#### `traefik.swarm.network`
+ 
+ ```yaml
+-- "traefik.docker.network=mynetwork"
++- "traefik.swarm.network=mynetwork"
+ ```
+ 
+ Overrides the default docker network to use for connections to the container.
+diff --git a/docs/content/routing/providers/swarm.md b/docs/content/routing/providers/swarm.md
+index 84b984633..2cfbf4141 100644
+--- a/docs/content/routing/providers/swarm.md
++++ b/docs/content/routing/providers/swarm.md
+@@ -648,10 +648,10 @@ You can tell Traefik to consider (or not) the container by setting `traefik.enab
+ 
+ This option overrides the value of `exposedByDefault`.
+ 
+-#### `traefik.docker.network`
++#### `traefik.swarm.network`
+ 
+ ```yaml
+-- "traefik.docker.network=mynetwork"
++- "traefik.swarm.network=mynetwork"
+ ```
+ 
+ Overrides the default docker network to use for connections to the container.
+@@ -665,10 +665,10 @@ otherwise it will randomly pick one (depending on how docker is returning them).
+ !!! warning
+     When deploying a stack from a compose file `stack`, the networks defined are prefixed with `stack`.
+ 
+-#### `traefik.docker.lbswarm`
++#### `traefik.swarm.lbswarm`
+ 
+ ```yaml
+-- "traefik.docker.lbswarm=true"
++- "traefik.swarm.lbswarm=true"
+ ```
+ 
+ Enables Swarm's inbuilt load balancer (only relevant in Swarm Mode).
+diff --git a/pkg/provider/docker/config.go b/pkg/provider/docker/config.go
+index d69fbbe81..f38a827ab 100644
+--- a/pkg/provider/docker/config.go
++++ b/pkg/provider/docker/config.go
+@@ -355,10 +355,10 @@ func (p *DynConfBuilder) getIPAddress(ctx context.Context, container dockerData)
+ 			return ""
+ 		}
+ 
+-		// Check connected container for traefik.docker.network,
++		// Check connected container for traefik.swarm.network,
+ 		// falling back to the network specified on the current container.
+ 		containerParsed := parseContainer(containerInspected)
+-		extraConf, err := p.extractLabels(containerParsed)
++		extraConf, err := p.extractSwarmLabels(containerParsed)
+ 		if err != nil {
+ 			logger.Warn().Err(err).Msgf("Unable to get IP address for container %s : failed to get extra configuration for container %s", container.Name, containerInspected.Name)
+ 			return ""
+diff --git a/pkg/provider/docker/config_test.go b/pkg/provider/docker/config_test.go
+index adddd6468..e279a3a8c 100644
+--- a/pkg/provider/docker/config_test.go
++++ b/pkg/provider/docker/config_test.go
+@@ -411,7 +411,7 @@ func TestDynConfBuilder_DefaultRule(t *testing.T) {
+ 
+ 			for i := range len(test.containers) {
+ 				var err error
+-				test.containers[i].ExtraConf, err = p.extractLabels(test.containers[i])
++				test.containers[i].ExtraConf, err = p.extractSwarmLabels(test.containers[i])
+ 				require.NoError(t, err)
+ 			}
+ 
+@@ -3667,7 +3667,7 @@ func TestDynConfBuilder_build(t *testing.T) {
+ 
+ 			for i := range len(test.containers) {
+ 				var err error
+-				test.containers[i].ExtraConf, err = p.extractLabels(test.containers[i])
++				test.containers[i].ExtraConf, err = p.extractSwarmLabels(test.containers[i])
+ 				require.NoError(t, err)
+ 			}
+ 
+@@ -3995,7 +3995,7 @@ func TestDynConfBuilder_getIPAddress_swarm(t *testing.T) {
+ 		{
+ 			service: swarmService(
+ 				serviceLabels(map[string]string{
+-					"traefik.docker.network": "barnet",
++					"traefik.swarm.network": "barnet",
+ 				}),
+ 				withEndpointSpec(modeVIP),
+ 				withEndpoint(
+diff --git a/pkg/provider/docker/pdocker.go b/pkg/provider/docker/pdocker.go
+index 9b7506711..0fd2be7ad 100644
+--- a/pkg/provider/docker/pdocker.go
++++ b/pkg/provider/docker/pdocker.go
+@@ -179,7 +179,7 @@ func (p *Provider) listContainers(ctx context.Context, dockerClient client.Conta
+ 			continue
+ 		}
+ 
+-		extraConf, err := p.extractLabels(dData)
++		extraConf, err := p.extractSwarmLabels(dData)
+ 		if err != nil {
+ 			log.Ctx(ctx).Error().Err(err).Msgf("Skip container %s", getServiceName(dData))
+ 			continue
+diff --git a/pkg/provider/docker/pswarm.go b/pkg/provider/docker/pswarm.go
+index 07f5dbd0b..d4b42c984 100644
+--- a/pkg/provider/docker/pswarm.go
++++ b/pkg/provider/docker/pswarm.go
+@@ -229,7 +229,7 @@ func (p *SwarmProvider) parseService(ctx context.Context, service swarmtypes.Ser
+ 		NetworkSettings: networkSettings{},
+ 	}
+ 
+-	extraConf, err := p.extractLabels(dData)
++	extraConf, err := p.extractSwarmLabels(dData)
+ 	if err != nil {
+ 		return dockerData{}, err
+ 	}
+diff --git a/pkg/provider/docker/pswarm_test.go b/pkg/provider/docker/pswarm_test.go
+index c9fae5f12..3f03c21a8 100644
+--- a/pkg/provider/docker/pswarm_test.go
++++ b/pkg/provider/docker/pswarm_test.go
+@@ -100,8 +100,8 @@ func TestSwarmProvider_listServices(t *testing.T) {
+ 				swarmService(
+ 					serviceName("service1"),
+ 					serviceLabels(map[string]string{
+-						"traefik.docker.network": "barnet",
+-						"traefik.docker.LBSwarm": "true",
++						"traefik.swarm.network": "barnet",
++						"traefik.swarm.LBSwarm": "true",
+ 					}),
+ 					withEndpointSpec(modeVIP),
+ 					withEndpoint(
+@@ -111,8 +111,8 @@ func TestSwarmProvider_listServices(t *testing.T) {
+ 				swarmService(
+ 					serviceName("service2"),
+ 					serviceLabels(map[string]string{
+-						"traefik.docker.network": "barnet",
+-						"traefik.docker.LBSwarm": "true",
++						"traefik.swarm.network": "barnet",
++						"traefik.swarm.LBSwarm": "true",
+ 					}),
+ 					withEndpointSpec(modeDNSRR)),
+ 			},
+@@ -126,8 +126,8 @@ func TestSwarmProvider_listServices(t *testing.T) {
+ 				swarmService(
+ 					serviceName("service1"),
+ 					serviceLabels(map[string]string{
+-						"traefik.docker.network": "barnet",
+-						"traefik.docker.LBSwarm": "true",
++						"traefik.swarm.network": "barnet",
++						"traefik.swarm.LBSwarm": "true",
+ 					}),
+ 					withEndpointSpec(modeVIP),
+ 					withEndpoint(
+@@ -137,8 +137,8 @@ func TestSwarmProvider_listServices(t *testing.T) {
+ 				swarmService(
+ 					serviceName("service2"),
+ 					serviceLabels(map[string]string{
+-						"traefik.docker.network": "barnet",
+-						"traefik.docker.LBSwarm": "true",
++						"traefik.swarm.network": "barnet",
++						"traefik.swarm.LBSwarm": "true",
+ 					}),
+ 					withEndpointSpec(modeDNSRR)),
+ 			},
+@@ -173,7 +173,7 @@ func TestSwarmProvider_listServices(t *testing.T) {
+ 				swarmService(
+ 					serviceName("service1"),
+ 					serviceLabels(map[string]string{
+-						"traefik.docker.network": "barnet",
++						"traefik.swarm.network": "barnet",
+ 					}),
+ 					withEndpointSpec(modeVIP),
+ 					withEndpoint(
+@@ -183,7 +183,7 @@ func TestSwarmProvider_listServices(t *testing.T) {
+ 				swarmService(
+ 					serviceName("service2"),
+ 					serviceLabels(map[string]string{
+-						"traefik.docker.network": "barnet",
++						"traefik.swarm.network": "barnet",
+ 					}),
+ 					withEndpointSpec(modeDNSRR)),
+ 			},
+diff --git a/pkg/provider/docker/shared_labels.go b/pkg/provider/docker/shared_labels.go
+index f17e51508..bfaf410aa 100644
+--- a/pkg/provider/docker/shared_labels.go
++++ b/pkg/provider/docker/shared_labels.go
+@@ -23,7 +23,7 @@ type specificConfiguration struct {
+ 	LBSwarm bool
+ }
+ 
+-func (p *Shared) extractLabels(container dockerData) (configuration, error) {
++func (p *Shared) extractSwarmLabels(container dockerData) (configuration, error) {
+ 	conf := configuration{
+ 		Enable: p.ExposedByDefault,
+ 		Docker: specificConfiguration{
+@@ -31,7 +31,7 @@ func (p *Shared) extractLabels(container dockerData) (configuration, error) {
+ 		},
+ 	}
+ 
+-	err := label.Decode(container.Labels, &conf, "traefik.docker.", "traefik.enable")
++	err := label.Decode(container.Labels, &conf, "traefik.swarm.", "traefik.enable")
+ 	if err != nil {
+ 		return configuration{}, err
+ 	}

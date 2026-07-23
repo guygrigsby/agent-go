@@ -1,0 +1,22 @@
+diff --git a/internal/session/connection.go b/internal/session/connection.go
+index 42712b1dc..a8841d31d 100644
+--- a/internal/session/connection.go
++++ b/internal/session/connection.go
+@@ -2,6 +2,7 @@ package session
+ 
+ import (
+ 	"context"
++	"time"
+ 
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/db/timestamp"
+@@ -181,3 +182,9 @@ func (c *Connection) validateNewConnection() error {
+ 	}
+ 	return nil
+ }
++
++type sessionConnectionCleanupJob struct {
++	connectionRepoFn func() (*ConnectionRepository, error)
++	gracePeriod      time.Duration
++	totalClosed      int
++}

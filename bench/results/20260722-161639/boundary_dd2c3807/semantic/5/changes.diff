@@ -1,0 +1,13 @@
+diff --git a/internal/kms/kms_test.go b/internal/kms/kms_test.go
+index dbd8e964e..e218ac09d 100644
+--- a/internal/kms/kms_test.go
++++ b/internal/kms/kms_test.go
+@@ -74,7 +74,7 @@ func TestKms_KeyId(t *testing.T) {
+ 	require.Error(err)
+ }
+ 
+-func TestNewDerivedReader(t *testing.T) {
++func TestNewDerivedReaderOld(t *testing.T) {
+ 	wrapper := db.TestWrapper(t)
+ 
+ 	type args struct {

@@ -1,0 +1,41 @@
+{"ms":1012,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-23T06:44:19.360466Z"}
+{"ms":1037,"op":"query","outcome":"ok","req_sha":"b9ca9d68cf1c150c","sym":"NewDerivedReader","ts":"2026-07-23T06:44:37.42272Z"}
+{"ms":18,"op":"query","outcome":"ok","req_sha":"d04b67ebeca32a11","sym":"package crypto","ts":"2026-07-23T06:44:40.136585Z"}
+{"ms":6,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/kms","req_sha":"87a5693b2f7bdc60","sym":"NewDerivedReader","ts":"2026-07-23T06:44:41.175133Z"}
+{"ms":18,"op":"query","outcome":"ok","req_sha":"42a1ac157db0eef1","sym":"package kms","ts":"2026-07-23T06:44:43.06563Z"}
+{"ms":6,"op":"view","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/kms","reason":"symbol not found","repairs":3,"req_sha":"455cf41abba16661","sym":"kms","ts":"2026-07-23T06:44:43.865757Z"}
+{"ms":18,"op":"query","outcome":"ok","req_sha":"0344534390c302e7","sym":"import (","ts":"2026-07-23T06:44:45.215503Z"}
+{"ms":8,"op":"view","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/kms","reason":"receiver type not found","repairs":1,"req_sha":"813b982cedfd0d2d","sym":"kms.go","ts":"2026-07-23T06:44:46.047667Z"}
+{"ms":18,"op":"query","outcome":"ok","req_sha":"8a5ba7f5e9441f1c","sym":"Kms","ts":"2026-07-23T06:44:47.31438Z"}
+{"ms":15,"op":"query","outcome":"ok","req_sha":"72e49e3d501045f4","sym":"func NewDerivedReader","ts":"2026-07-23T06:45:00.932935Z"}
+{"ms":5,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/kms","req_sha":"0c4665e48e7cc461","sym":"TestNewDerivedReader","ts":"2026-07-23T06:45:02.396852Z"}
+{"ms":5,"op":"query","outcome":"rejected","reason":"package not found","repairs":1,"req_sha":"142269a94f846eb8","sym":"NewDerivedReader","ts":"2026-07-23T06:45:06.729803Z"}
+{"ms":10,"op":"query","outcome":"ok","req_sha":"71a7b6d5f08bea8a","sym":"NewDerivedReader(","ts":"2026-07-23T06:45:07.797557Z"}
+{"ms":9,"op":"query","outcome":"ok","req_sha":"b9ca9d68cf1c150c","sym":"NewDerivedReader","ts":"2026-07-23T06:45:08.984954Z"}
+{"ms":18,"op":"query","outcome":"ok","req_sha":"42a1ac157db0eef1","sym":"package kms","ts":"2026-07-23T06:45:10.944824Z"}
+{"ms":7,"op":"view","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/kms","reason":"receiver type not found","repairs":1,"req_sha":"813b982cedfd0d2d","sym":"kms.go","ts":"2026-07-23T06:45:11.888251Z"}
+{"ms":16,"op":"query","outcome":"ok","req_sha":"181ab5003d4fde25","sym":"NewKms","ts":"2026-07-23T06:45:13.538149Z"}
+{"ms":5,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/kms","req_sha":"3b15f7f4f4e89734","sym":"NewKms","ts":"2026-07-23T06:45:14.651462Z"}
+{"ms":18,"op":"query","outcome":"ok","req_sha":"e66e7ff621bdaafa","sym":"multiwrapper","ts":"2026-07-23T06:45:16.230454Z"}
+{"ms":18,"op":"query","outcome":"ok","req_sha":"63cb29408b303631","sym":"aead.Wrapper","ts":"2026-07-23T06:45:17.277884Z"}
+{"ms":17,"op":"query","outcome":"ok","req_sha":"ab6a6e71d281fa7e","sym":"errors.NewDeprecated","ts":"2026-07-23T06:45:19.337846Z"}
+{"ms":18,"op":"query","outcome":"ok","req_sha":"f60692da8cd9d72a","sym":"NewDeprecated","ts":"2026-07-23T06:45:20.244575Z"}
+{"ms":7,"op":"query","outcome":"ok","req_sha":"db5f62e8e01d2323","sym":"go-crypto/aead","ts":"2026-07-23T06:45:21.843992Z"}
+{"ms":18,"op":"query","outcome":"ok","req_sha":"db5f62e8e01d2323","sym":"go-crypto/aead","ts":"2026-07-23T06:45:22.927242Z"}
+{"ms":17,"op":"query","outcome":"ok","req_sha":"6795775d4ee92d45","sym":"aead.","ts":"2026-07-23T06:45:24.581579Z"}
+{"ms":17,"op":"query","outcome":"ok","req_sha":"b0026f1fb419d53f","sym":"go-crypto","ts":"2026-07-23T06:45:25.793545Z"}
+{"ms":5,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/kms","req_sha":"0c4665e48e7cc461","sym":"TestNewDerivedReader","ts":"2026-07-23T06:45:27.255831Z"}
+{"ms":17,"op":"query","outcome":"ok","req_sha":"b9b1905d795f1ce3","sym":"TestWrapper","ts":"2026-07-23T06:45:32.240762Z"}
+{"ms":29,"op":"patch","outcome":"rejected","reason":"symbol is still referenced","repairs":0,"req_sha":"296d8a58a244f12c","ts":"2026-07-23T06:46:25.139647Z"}
+{"ms":8,"op":"view","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/auth/oidc","reason":"receiver type not found","repairs":1,"req_sha":"24e66c3a3fa7a750","sym":"auth_method.go","ts":"2026-07-23T06:46:56.138286Z"}
+{"ms":18,"op":"query","outcome":"ok","req_sha":"b9ca9d68cf1c150c","sym":"NewDerivedReader","ts":"2026-07-23T06:46:57.67706Z"}
+{"ms":27,"op":"patch","outcome":"rejected","reason":"symbol is still referenced","repairs":0,"req_sha":"055679309a806548","ts":"2026-07-23T06:47:08.760789Z"}
+{"ms":10,"op":"query","outcome":"ok","req_sha":"b9ca9d68cf1c150c","sym":"NewDerivedReader","ts":"2026-07-23T06:47:22.55053Z"}
+{"ms":36,"op":"patch","outcome":"rejected","reason":"declaration does not parse","repairs":0,"req_sha":"32f5eaee3bf9a7ed","ts":"2026-07-23T06:47:39.02289Z"}
+{"ms":2012,"op":"patch","outcome":"rejected","reason":"declaration does not typecheck","repairs":0,"req_sha":"16e4b7c989d59f5f","ts":"2026-07-23T06:48:11.357893Z"}
+{"ms":1159,"op":"patch","outcome":"accepted","req_sha":"fa2fc5601bba83c0","ts":"2026-07-23T06:48:57.88246Z"}
+{"ms":1,"op":"inspect","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/libs/crypto","reason":"package not found","repairs":1,"req_sha":"4735785bc98b9d6e","sym":"NewDerivedReader","ts":"2026-07-23T06:49:05.417793Z"}
+{"ms":1,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/kms","req_sha":"06b3709f94d43a41","sym":"NewDerivedReader","ts":"2026-07-23T06:49:05.423058Z"}
+{"ms":1,"op":"inspect","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/libs/crypto","reason":"package not found","repairs":1,"req_sha":"4d400ef2f960ae93","sym":"TestNewDerivedReader","ts":"2026-07-23T06:49:05.427878Z"}
+{"ms":1,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/kms","req_sha":"45003c1614a7068f","sym":"TestNewDerivedReader","ts":"2026-07-23T06:49:05.432709Z"}
+{"ms":2,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-23T06:49:05.437523Z"}

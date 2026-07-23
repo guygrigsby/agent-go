@@ -1,0 +1,41 @@
+{
+ "agent_done": "2026-07-23T11:00:01.804862334Z",
+ "agent_started": "2026-07-23T10:59:27.889481Z",
+ "cache_read": 40063,
+ "cache_write": 0,
+ "capped": false,
+ "failure_kind": "scored_fail",
+ "intermediate_states": 0,
+ "invalid_intermediates": 0,
+ "iter": 1,
+ "kind": "rename",
+ "mode": "raw",
+ "new_errors": null,
+ "op_mix": {},
+ "pass": false,
+ "predicate": false,
+ "profile": "gpt-oss-20b-medium",
+ "prompt": "refact(e2e): Rename credential methods for clarity\n\nSpecifically, rename: CreateStaticCredentialPasswordCli -\u003e CreateStaticCredentialUsernamePasswordCli",
+ "rejects_total": 0,
+ "repairs_offered": 0,
+ "resends": 0,
+ "specs": [
+  {
+   "baseline_refs": 9,
+   "new_refs": 0,
+   "ok": false,
+   "old_refs_left": 9,
+   "sym": "github.com/hashicorp/boundary/testing/internal/e2e/boundary.CreateStaticCredentialPasswordCli",
+   "to": "CreateStaticCredentialUsernamePasswordCli"
+  }
+ ],
+ "steps": 5,
+ "task": "boundary_06d69f69",
+ "tests": false,
+ "tests_baseline": true,
+ "tokens_in": 11354,
+ "tokens_out": 648,
+ "tokens_reasoning": 0,
+ "typecheck": true,
+ "wall_s": 33.915381334
+}

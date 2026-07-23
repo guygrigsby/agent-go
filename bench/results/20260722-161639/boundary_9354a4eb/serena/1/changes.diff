@@ -1,0 +1,275 @@
+diff --git a/internal/census/census_job.go b/internal/census/census_job.go
+index dcca07118..1c116cdc5 100644
+--- a/internal/census/census_job.go
++++ b/internal/census/census_job.go
+@@ -54,7 +54,7 @@ func (c *censusJob) Status() scheduler.JobStatus {
+ 
+ // Run performs the required work depending on the implementation.
+ // The context is used to notify the job that it should exit early.
+-func (c *censusJob) Run(ctx context.Context) error {
++func (c *censusJob) Run(ctx context.Context, _ time.Duration) error {
+ 	err := RunFn(ctx, c)
+ 	return err
+ }
+diff --git a/internal/credential/vault/jobs.go b/internal/credential/vault/jobs.go
+index d7e23d9c8..0013d09d8 100644
+--- a/internal/credential/vault/jobs.go
++++ b/internal/credential/vault/jobs.go
+@@ -130,7 +130,7 @@ func (r *TokenRenewalJob) Status() scheduler.JobStatus {
+ // Run queries the vault credential repo for tokens that need to be renewed, it then creates
+ // a vault client and renews each token.  Can not be run in parallel, if Run is invoked while
+ // already running an error with code JobAlreadyRunning will be returned.
+-func (r *TokenRenewalJob) Run(ctx context.Context) error {
++func (r *TokenRenewalJob) Run(ctx context.Context, _ time.Duration) error {
+ 	const op = "vault.(TokenRenewalJob).Run"
+ 	if !r.running.CompareAndSwap(r.running.Load(), true) {
+ 		return errors.New(ctx, errors.JobAlreadyRunning, op, "job already running")
+@@ -356,7 +356,7 @@ func (r *TokenRevocationJob) Status() scheduler.JobStatus {
+ // Run queries the vault credential repo for tokens that need to be revoked, it then creates
+ // a vault client and revokes each token.  Can not be run in parallel, if Run is invoked while
+ // already running an error with code JobAlreadyRunning will be returned.
+-func (r *TokenRevocationJob) Run(ctx context.Context) error {
++func (r *TokenRevocationJob) Run(ctx context.Context, _ time.Duration) error {
+ 	const op = "vault.(TokenRevocationJob).Run"
+ 	if !r.running.CompareAndSwap(r.running.Load(), true) {
+ 		return errors.New(ctx, errors.JobAlreadyRunning, op, "job already running")
+@@ -521,7 +521,7 @@ func (r *CredentialRenewalJob) Status() scheduler.JobStatus {
+ // Run queries the vault credential repo for credentials that need to be renewed, it then creates
+ // a vault client and renews each credential.  Can not be run in parallel, if Run is invoked while
+ // already running an error with code JobAlreadyRunning will be returned.
+-func (r *CredentialRenewalJob) Run(ctx context.Context) error {
++func (r *CredentialRenewalJob) Run(ctx context.Context, _ time.Duration) error {
+ 	const op = "vault.(CredentialRenewalJob).Run"
+ 	if !r.running.CompareAndSwap(r.running.Load(), true) {
+ 		return errors.New(ctx, errors.JobAlreadyRunning, op, "job already running")
+@@ -696,7 +696,7 @@ func (r *CredentialRevocationJob) Status() scheduler.JobStatus {
+ // Run queries the vault credential repo for credentials that need to be revoked, it then creates
+ // a vault client and revokes each credential.  Can not be run in parallel, if Run is invoked while
+ // already running an error with code JobAlreadyRunning will be returned.
+-func (r *CredentialRevocationJob) Run(ctx context.Context) error {
++func (r *CredentialRevocationJob) Run(ctx context.Context, _ time.Duration) error {
+ 	const op = "vault.(CredentialRevocationJob).Run"
+ 	if !r.running.CompareAndSwap(r.running.Load(), true) {
+ 		return errors.New(ctx, errors.JobAlreadyRunning, op, "job already running")
+@@ -847,7 +847,7 @@ func (r *CredentialStoreCleanupJob) Status() scheduler.JobStatus {
+ // Run deletes all vault credential stores in the repo that have been soft deleted.
+ // Can not be run in parallel, if Run is invoked while already running an error with code
+ // JobAlreadyRunning will be returned.
+-func (r *CredentialStoreCleanupJob) Run(ctx context.Context) error {
++func (r *CredentialStoreCleanupJob) Run(ctx context.Context, _ time.Duration) error {
+ 	const op = "vault.(CredentialStoreCleanupJob).Run"
+ 	if !r.running.CompareAndSwap(r.running.Load(), true) {
+ 		return errors.New(ctx, errors.JobAlreadyRunning, op, "job already running")
+@@ -947,7 +947,7 @@ func (r *CredentialCleanupJob) Status() scheduler.JobStatus {
+ // Run deletes all Vault credential in the repo that have a null session_id and are not active.
+ // Can not be run in parallel, if Run is invoked while already running an error with code
+ // JobAlreadyRunning will be returned.
+-func (r *CredentialCleanupJob) Run(ctx context.Context) error {
++func (r *CredentialCleanupJob) Run(ctx context.Context, _ time.Duration) error {
+ 	const op = "vault.(CredentialCleanupJob).Run"
+ 	if !r.running.CompareAndSwap(r.running.Load(), true) {
+ 		return errors.New(ctx, errors.JobAlreadyRunning, op, "job already running")
+diff --git a/internal/db/schema/internal/postgres/postgres.go b/internal/db/schema/internal/postgres/postgres.go
+index b3181eab6..13aac63ee 100644
+--- a/internal/db/schema/internal/postgres/postgres.go
++++ b/internal/db/schema/internal/postgres/postgres.go
+@@ -147,7 +147,7 @@ func (p *Postgres) UnlockShared(ctx context.Context) error {
+ }
+ 
+ // StartRun begins a transaction internal to the driver.
+-func (p *Postgres) StartRun(ctx context.Context) error {
++func (p *Postgres) StartRun(ctx context.Context, _ time.Duration) error {
+ 	tx, err := p.conn.BeginTx(ctx, nil)
+ 	if err != nil {
+ 		return err
+@@ -185,7 +185,7 @@ func (p *Postgres) RepairHook(ctx context.Context, f migration.RepairFunc) (migr
+ }
+ 
+ // CommitRun commits a transaction, if there is an error it should rollback the transaction.
+-func (p *Postgres) CommitRun(ctx context.Context) error {
++func (p *Postgres) CommitRun(ctx context.Context, _ time.Duration) error {
+ 	const op = "postgres.(Postgres).CommitRun"
+ 	defer func() {
+ 		p.tx = nil
+diff --git a/internal/host/plugin/job_orphaned_host_cleanup.go b/internal/host/plugin/job_orphaned_host_cleanup.go
+index 1206d286e..d5cf543ff 100644
+--- a/internal/host/plugin/job_orphaned_host_cleanup.go
++++ b/internal/host/plugin/job_orphaned_host_cleanup.go
+@@ -66,7 +66,7 @@ func (r *OrphanedHostCleanupJob) Status() scheduler.JobStatus {
+ // deletes those hosts.  Can not be run in parallel, if
+ // Run is invoked while already running an error with code JobAlreadyRunning
+ // will be returned.
+-func (r *OrphanedHostCleanupJob) Run(ctx context.Context) error {
++func (r *OrphanedHostCleanupJob) Run(ctx context.Context, _ time.Duration) error {
+ 	const op = "plugin.(OrphanedHostCleanupJob).Run"
+ 	if !r.running.CompareAndSwap(r.running.Load(), true) {
+ 		return errors.New(ctx, errors.JobAlreadyRunning, op, "job already running")
+diff --git a/internal/host/plugin/job_set_sync.go b/internal/host/plugin/job_set_sync.go
+index b3f537a9b..29a066236 100644
+--- a/internal/host/plugin/job_set_sync.go
++++ b/internal/host/plugin/job_set_sync.go
+@@ -85,7 +85,7 @@ func (r *SetSyncJob) Status() scheduler.JobStatus {
+ // creates a plugin client and syncs each set.  Can not be run in parallel, if
+ // Run is invoked while already running an error with code JobAlreadyRunning
+ // will be returned.
+-func (r *SetSyncJob) Run(ctx context.Context) error {
++func (r *SetSyncJob) Run(ctx context.Context, _ time.Duration) error {
+ 	const op = "plugin.(SetSyncJob).Run"
+ 	if !r.running.CompareAndSwap(r.running.Load(), true) {
+ 		return errors.New(ctx, errors.JobAlreadyRunning, op, "job already running")
+diff --git a/internal/kms/job/data_key_version_destruction_monitor_job.go b/internal/kms/job/data_key_version_destruction_monitor_job.go
+index 91be9ade8..b09d6cae5 100644
+--- a/internal/kms/job/data_key_version_destruction_monitor_job.go
++++ b/internal/kms/job/data_key_version_destruction_monitor_job.go
+@@ -35,7 +35,7 @@ func (r dataKeyVersionDestructionMonitorJob) Status() scheduler.JobStatus {
+ 
+ // Run performs the required work depending on the implementation.
+ // The context is used to notify the job that it should exit early.
+-func (r *dataKeyVersionDestructionMonitorJob) Run(ctx context.Context) error {
++func (r *dataKeyVersionDestructionMonitorJob) Run(ctx context.Context, _ time.Duration) error {
+ 	const op = "kmsjob.(dataKeyVersionDestructionMonitorJob).Run"
+ 
+ 	if err := r.kmsRepo.MonitorDataKeyVersionDestruction(ctx); err != nil {
+diff --git a/internal/kms/job/table_rewrapping_job.go b/internal/kms/job/table_rewrapping_job.go
+index 116bd167c..96962d499 100644
+--- a/internal/kms/job/table_rewrapping_job.go
++++ b/internal/kms/job/table_rewrapping_job.go
+@@ -41,7 +41,7 @@ func (r tableRewrappingJob) Status() scheduler.JobStatus {
+ 
+ // Run performs the required work depending on the implementation.
+ // The context is used to notify the job that it should exit early.
+-func (r *tableRewrappingJob) Run(ctx context.Context) error {
++func (r *tableRewrappingJob) Run(ctx context.Context, _ time.Duration) error {
+ 	const op = "kmsjob.(tableRewrappingJob).Run"
+ 
+ 	if err := r.kmsRepo.MonitorTableRewrappingRuns(ctx, r.tableName); err != nil {
+diff --git a/internal/pagination/purge/purge_job.go b/internal/pagination/purge/purge_job.go
+index 89e3e7e32..3f91f41cc 100644
+--- a/internal/pagination/purge/purge_job.go
++++ b/internal/pagination/purge/purge_job.go
+@@ -43,7 +43,7 @@ func (c *purgeJob) Status() scheduler.JobStatus {
+ 
+ // Run performs the required work depending on the implementation.
+ // The context is used to notify the job that it should exit early.
+-func (c *purgeJob) Run(ctx context.Context) error {
++func (c *purgeJob) Run(ctx context.Context, _ time.Duration) error {
+ 	const op = "purge.(purgeJob).Run"
+ 	_, err := c.w.Exec(ctx, c.query, nil)
+ 	if err != nil {
+diff --git a/internal/scheduler/cleaner/cleaner_job.go b/internal/scheduler/cleaner/cleaner_job.go
+index 402054abe..a7fa39abd 100644
+--- a/internal/scheduler/cleaner/cleaner_job.go
++++ b/internal/scheduler/cleaner/cleaner_job.go
+@@ -29,7 +29,7 @@ func (c *cleanerJob) Status() scheduler.JobStatus {
+ 
+ // Run performs the required work depending on the implementation.
+ // The context is used to notify the job that it should exit early.
+-func (c *cleanerJob) Run(ctx context.Context) error {
++func (c *cleanerJob) Run(ctx context.Context, _ time.Duration) error {
+ 	const op = "cleaner.(cleanerJob).Run"
+ 
+ 	if _, err := c.w.Exec(ctx, "delete from job_run where status='completed'", nil); err != nil {
+diff --git a/internal/scheduler/job.go b/internal/scheduler/job.go
+index c67860703..5ea1091fe 100644
+--- a/internal/scheduler/job.go
++++ b/internal/scheduler/job.go
+@@ -30,7 +30,7 @@ type Job interface {
+ 	//
+ 	// If the returned error is not nil, the job will be scheduled to run again
+ 	// immediately and the returned error will be logged.
+-	Run(ctx context.Context) error
++	Run(ctx context.Context, _ time.Duration) error
+ 
+ 	// NextRunIn returns the duration the job scheduler should wait before
+ 	// running the job again. It is only called after the Run method has
+diff --git a/internal/scheduler/scheduler.go b/internal/scheduler/scheduler.go
+index 50ad3e82b..968f9e2a0 100644
+--- a/internal/scheduler/scheduler.go
++++ b/internal/scheduler/scheduler.go
+@@ -260,7 +260,7 @@ func (s *Scheduler) runJob(ctx context.Context, wg *sync.WaitGroup, r *job.Run)
+ 	go func() {
+ 		defer rj.cancelCtx()
+ 		defer wg.Done()
+-		runErr := j.Run(jobContext)
++		runErr := j.Run(jobContext, 0)
+ 
+ 		// Get final status report to update run progress with
+ 		status := j.Status()
+diff --git a/internal/scheduler/testing.go b/internal/scheduler/testing.go
+index 71fafbcce..81f1bf82f 100644
+--- a/internal/scheduler/testing.go
++++ b/internal/scheduler/testing.go
+@@ -84,7 +84,7 @@ func (j testJob) Status() JobStatus {
+ 	return j.statusFn()
+ }
+ 
+-func (j testJob) Run(ctx context.Context) error {
++func (j testJob) Run(ctx context.Context, statusThreshold time.Duration) error {
+ 	return j.fn(ctx)
+ }
+ 
+diff --git a/internal/server/job/rotate_roots_job.go b/internal/server/job/rotate_roots_job.go
+index d0d4d2377..26a602dcd 100644
+--- a/internal/server/job/rotate_roots_job.go
++++ b/internal/server/job/rotate_roots_job.go
+@@ -78,7 +78,7 @@ func (r *rotateRootsJob) Status() scheduler.JobStatus {
+ }
+ 
+ // Run executes the job by calling the rotateRoots domain function
+-func (r *rotateRootsJob) Run(ctx context.Context) error {
++func (r *rotateRootsJob) Run(ctx context.Context, _ time.Duration) error {
+ 	const op = "server.(rotateRootsJob).Run"
+ 
+ 	_, err := server.RotateRoots(ctx, r.workerAuthRepo, nodeenrollment.WithCertificateLifetime(r.certificateLifetime))
+diff --git a/internal/server/job/upsert_worker_storage_bucket_job.go b/internal/server/job/upsert_worker_storage_bucket_job.go
+index efc8a293f..e730bb047 100644
+--- a/internal/server/job/upsert_worker_storage_bucket_job.go
++++ b/internal/server/job/upsert_worker_storage_bucket_job.go
+@@ -35,7 +35,7 @@ func (usb *upsertWorkerStorageBucketJob) Status() scheduler.JobStatus { return s
+ 
+ // Run performs the required work depending on the implementation.
+ // The context is used to notify the job that it should exit early.
+-func (usb *upsertWorkerStorageBucketJob) Run(_ context.Context) error { return nil }
++func (usb *upsertWorkerStorageBucketJob) Run(ctx context.Context) error { return nil }
+ 
+ // NextRunIn returns the duration until the next job run should be scheduled.
+ // Upsert Worker Storage Bucket will run every 24 hours unless we know there are
+diff --git a/internal/session/job_delete_terminated_sessions.go b/internal/session/job_delete_terminated_sessions.go
+index e43e9f801..a5d2e9584 100644
+--- a/internal/session/job_delete_terminated_sessions.go
++++ b/internal/session/job_delete_terminated_sessions.go
+@@ -46,7 +46,7 @@ func (d *deleteTerminatedJob) Status() scheduler.JobStatus {
+ 
+ // Run performs the required work depending on the implementation.
+ // The context is used to notify the job that it should exit early.
+-func (d *deleteTerminatedJob) Run(ctx context.Context) error {
++func (d *deleteTerminatedJob) Run(ctx context.Context, _ time.Duration) error {
+ 	const op = "session.(deleteTerminatedJob).Run"
+ 	d.deletedInRun = 0
+ 	var err error
+diff --git a/internal/session/job_session_cleanup.go b/internal/session/job_session_cleanup.go
+index d98933c46..0ec00fd89 100644
+--- a/internal/session/job_session_cleanup.go
++++ b/internal/session/job_session_cleanup.go
+@@ -93,7 +93,7 @@ func (j *sessionConnectionCleanupJob) Status() scheduler.JobStatus {
+ }
+ 
+ // Run executes the job.
+-func (j *sessionConnectionCleanupJob) Run(ctx context.Context) error {
++func (j *sessionConnectionCleanupJob) Run(ctx context.Context, _ time.Duration) error {
+ 	const op = "session.(sessionConnectionCleanupJob).Run"
+ 	j.totalClosed = 0
+ 
+diff --git a/internal/snapshot/snapshot_job.go b/internal/snapshot/snapshot_job.go
+index 6bda0cd25..6ec92cf10 100644
+--- a/internal/snapshot/snapshot_job.go
++++ b/internal/snapshot/snapshot_job.go
+@@ -41,7 +41,7 @@ func (c *snapshotJob) Status() scheduler.JobStatus {
+ 
+ // Run performs the required work depending on the implementation.
+ // The context is used to notify the job that it should exit early.
+-func (c *snapshotJob) Run(ctx context.Context) error {
++func (c *snapshotJob) Run(ctx context.Context, _ time.Duration) error {
+ 	const op = "snapshot.(snapshotJob).Run"
+ 	err := runFn(ctx, c)
+ 	return err

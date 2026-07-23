@@ -1,0 +1,2 @@
+ M internal/daemon/worker/worker.go
+?? opencode.json

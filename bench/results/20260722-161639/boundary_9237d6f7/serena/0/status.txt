@@ -1,0 +1,5 @@
+ M api/targets/custom.go
+ M internal/cmd/commands/proxy/proxy.go
+ M internal/cmd/commands/targets/target.go
+?? .serena/
+?? opencode.json

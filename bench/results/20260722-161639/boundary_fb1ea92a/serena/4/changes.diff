@@ -1,0 +1,22 @@
+diff --git a/internal/daemon/worker/handler.go b/internal/daemon/worker/handler.go
+index de3ef4829..2be653e14 100644
+--- a/internal/daemon/worker/handler.go
++++ b/internal/daemon/worker/handler.go
+@@ -52,7 +52,7 @@ func (w *Worker) handler(props HandlerProperties, sm session.Manager) (http.Hand
+ 	mux := http.NewServeMux()
+ 
+ 	var h http.Handler
+-	h, err := w.handleProxy(props.ListenerConfig, sm)
++	h, err := w.handleProxy(props.ListenerConfig, sm, w.baseContext)
+ 	if err != nil {
+ 		return nil, fmt.Errorf("%s: %w", op, err)
+ 	}
+@@ -64,7 +64,7 @@ func (w *Worker) handler(props HandlerProperties, sm session.Manager) (http.Hand
+ 	return metricHandler, nil
+ }
+ 
+-func (w *Worker) handleProxy(listenerCfg *listenerutil.ListenerConfig, sessionManager session.Manager) (http.HandlerFunc, error) {
++func (w *Worker) handleProxy(listenerCfg *listenerutil.ListenerConfig, sessionManager session.Manager, controlCtx context.Context) (http.HandlerFunc, error) {
+ 	const op = "worker.(Worker).handleProxy"
+ 	if listenerCfg == nil {
+ 		return nil, fmt.Errorf("%s: missing listener config", op)

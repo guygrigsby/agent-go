@@ -1,0 +1,18 @@
+ M CHANGELOG.md
+ M docs/content/migration/v1-to-v2.md
+ M docs/content/providers/docker.md
+ M docs/content/providers/swarm.md
+ M docs/content/reference/dynamic-configuration/docker.yml
+ M docs/content/reference/dynamic-configuration/swarm.yml
+ M docs/content/reference/install-configuration/providers/docker.md
+ M docs/content/reference/install-configuration/providers/swarm.md
+ M docs/content/routing/providers/docker.md
+ M docs/content/routing/providers/swarm.md
+ M pkg/provider/docker/config.go
+ M pkg/provider/docker/config_test.go
+ M pkg/provider/docker/pdocker.go
+ M pkg/provider/docker/pswarm.go
+ M pkg/provider/docker/pswarm_test.go
+ M pkg/provider/docker/shared_labels.go
+?? .serena/
+?? opencode.json

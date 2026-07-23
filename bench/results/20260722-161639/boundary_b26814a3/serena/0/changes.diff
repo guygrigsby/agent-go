@@ -1,0 +1,22 @@
+diff --git a/internal/iam/repository_scope.go b/internal/iam/repository_scope.go
+index a6b2d734b..52b9977f4 100644
+--- a/internal/iam/repository_scope.go
++++ b/internal/iam/repository_scope.go
+@@ -87,7 +87,7 @@ func (r *Repository) CreateScope(ctx context.Context, s *Scope, userId string, o
+ 	switch {
+ 	case userId == "",
+ 		userId == perms.AnonymousUserId,
+-		userId == perms.AnyAuthenticatedUserId,
++		userId == globals.AnyAuthenticatedUserId,
+ 		userId == perms.RecoveryUserId,
+ 		opts.withSkipAdminRoleCreation:
+ 		// TODO: Cause a log entry. The repo doesn't have a logger right now,
+@@ -338,7 +338,7 @@ func (r *Repository) CreateScope(ctx context.Context, s *Scope, userId string, o
+ 					principals := []any{}
+ 					userId := "u_anon"
+ 					if s.Type == scope.Project.String() {
+-						userId = perms.AnyAuthenticatedUserId
++						userId = globals.AnyAuthenticatedUserId
+ 					}
+ 					rolePrincipal, err := NewUserRole(defaultRolePublicId, userId)
+ 					if err != nil {

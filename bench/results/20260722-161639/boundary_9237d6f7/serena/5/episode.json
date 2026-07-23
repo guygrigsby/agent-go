@@ -1,0 +1,42 @@
+{
+ "agent_done": "2026-07-23T12:51:02.488881917Z",
+ "agent_started": "2026-07-23T12:49:11.766308Z",
+ "cache_read": 645900,
+ "cache_write": 0,
+ "capped": false,
+ "failure_kind": "",
+ "intermediate_states": 1,
+ "invalid_intermediate_rate": 0,
+ "invalid_intermediates": 0,
+ "iter": 5,
+ "kind": "rename",
+ "mode": "serena",
+ "new_errors": null,
+ "op_mix": {},
+ "pass": true,
+ "predicate": true,
+ "profile": "gpt-oss-20b-medium",
+ "prompt": "Rename authorize to authorize-session\n\nSpecifically, rename: Authorize -\u003e AuthorizeSession",
+ "rejects_total": 0,
+ "repairs_offered": 0,
+ "resends": 0,
+ "specs": [
+  {
+   "baseline_refs": 3,
+   "new_refs": 3,
+   "ok": true,
+   "old_refs_left": 0,
+   "sym": "github.com/hashicorp/boundary/api/targets.Client.Authorize",
+   "to": "AuthorizeSession"
+  }
+ ],
+ "steps": 29,
+ "task": "boundary_9237d6f7",
+ "tests": true,
+ "tests_baseline": true,
+ "tokens_in": 27460,
+ "tokens_out": 2807,
+ "tokens_reasoning": 0,
+ "typecheck": true,
+ "wall_s": 110.722573917
+}

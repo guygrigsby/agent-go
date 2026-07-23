@@ -1,0 +1,15 @@
+ M internal/credential/vault/repository_credentials_test.go
+ M internal/daemon/cluster/handlers/worker_service_status_test.go
+ M internal/daemon/cluster/handlers/worker_service_test.go
+ M internal/daemon/controller/common/scopeids/scope_ids_test.go
+ M internal/daemon/controller/controller.go
+ M internal/daemon/controller/handlers/sessions/session_list_benchmarks_test.go
+ M internal/daemon/controller/handlers/sessions/session_service_test.go
+ M internal/daemon/controller/handlers/targets/tcp/target_service_test.go
+ M internal/server/repository_worker_test.go
+ M internal/session/repository.go
+ M internal/session/repository_test.go
+ M internal/session/service_worker_status_report_test.go
+ M testing/dbtest/session_list_benchmarks_dump_generation_test.go
+?? .serena/
+?? opencode.json

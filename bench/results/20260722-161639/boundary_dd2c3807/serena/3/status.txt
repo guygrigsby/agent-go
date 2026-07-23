@@ -1,0 +1,5 @@
+ M internal/kms/kms.go
+ M internal/kms/kms_test.go
+?? .serena/
+?? internal/libs/crypto/
+?? opencode.json

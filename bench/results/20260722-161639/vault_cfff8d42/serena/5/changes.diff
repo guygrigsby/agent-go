@@ -1,0 +1,23 @@
+diff --git a/builtin/credential/aws/path_login.go b/builtin/credential/aws/path_login.go
+index 320230534a..544a69024c 100644
+--- a/builtin/credential/aws/path_login.go
++++ b/builtin/credential/aws/path_login.go
+@@ -340,7 +340,8 @@ func (b *backend) pathLoginResolveRoleIam(ctx context.Context, req *logical.Requ
+ 
+ // instanceIamRoleARN fetches the IAM role ARN associated with the given
+ // instance profile name
+-func (b *backend) instanceIamRoleARN(iamClient *iam.IAM, instanceProfileName string) (string, error) {
++func (b *backend) instanceIamRoleARN(ctx context.Context, iamClient *iam.IAM, instanceProfileName string) (string, error) {
++	_ = ctx
+ 	if iamClient == nil {
+ 		return "", fmt.Errorf("nil iamClient")
+ 	}
+@@ -724,7 +725,7 @@ func (b *backend) verifyInstanceMeetsRoleRequirements(ctx context.Context,
+ 		} else if iamClient == nil {
+ 			return nil, fmt.Errorf("received a nil iamClient")
+ 		}
+-		iamRoleARN, err := b.instanceIamRoleARN(iamClient, iamInstanceProfileEntity.FriendlyName)
++		iamRoleARN, err := b.instanceIamRoleARN(ctx, iamClient, iamInstanceProfileEntity.FriendlyName)
+ 		if err != nil {
+ 			return nil, fmt.Errorf("IAM role ARN could not be fetched: %w", err)
+ 		}

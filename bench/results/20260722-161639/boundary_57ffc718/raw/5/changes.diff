@@ -1,0 +1,13 @@
+diff --git a/testing/internal/e2e/boundary/boundary.go b/testing/internal/e2e/boundary/boundary.go
+index d4a035d00..7e7a935a1 100644
+--- a/testing/internal/e2e/boundary/boundary.go
++++ b/testing/internal/e2e/boundary/boundary.go
+@@ -60,7 +60,7 @@ func NewApiClient() (*api.Client, error) {
+ }
+ 
+ // AuthenticateAdminCli uses the cli to authenticate the specified Boundary instance as an admin
+-func AuthenticateAdminCli(t testing.TB) {
++func AuthenticateAdminCli(t testing.TB, ctx context.Context) {
+ 	c, err := loadConfig()
+ 	require.NoError(t, err)
+ 

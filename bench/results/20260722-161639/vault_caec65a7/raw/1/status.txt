@@ -1,0 +1,6 @@
+ M vault/rekey.go
+ M vault/seal/seal.go
+ M vault/seal/seal_testing.go
+ M vault/seal_autoseal.go
+ M vault/seal_testing_util.go
+?? opencode.json

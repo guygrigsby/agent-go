@@ -1,0 +1,19 @@
+ M internal/census/census_job.go
+ M internal/credential/vault/jobs.go
+ M internal/db/schema/internal/postgres/postgres.go
+ M internal/host/plugin/job_orphaned_host_cleanup.go
+ M internal/host/plugin/job_set_sync.go
+ M internal/kms/job/data_key_version_destruction_monitor_job.go
+ M internal/kms/job/table_rewrapping_job.go
+ M internal/pagination/purge/purge_job.go
+ M internal/scheduler/cleaner/cleaner_job.go
+ M internal/scheduler/job.go
+ M internal/scheduler/scheduler.go
+ M internal/scheduler/testing.go
+ M internal/server/job/rotate_roots_job.go
+ M internal/server/job/upsert_worker_storage_bucket_job.go
+ M internal/session/job_delete_terminated_sessions.go
+ M internal/session/job_session_cleanup.go
+ M internal/snapshot/snapshot_job.go
+?? .serena/
+?? opencode.json

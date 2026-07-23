@@ -1,0 +1,23 @@
+ M internal/auth/oidc/service_callback_test.go
+ M internal/auth/oidc/service_start_auth_test.go
+ M internal/daemon/controller/handlers/authtokens/authtoken_service.go
+ M internal/daemon/controller/handlers/credentiallibraries/credentiallibrary_service.go
+ M internal/daemon/controller/handlers/credentiallibraries/credentiallibrary_service_test.go
+ M internal/daemon/controller/handlers/credentials/credential_service.go
+ M internal/daemon/controller/handlers/groups/group_service.go
+ M internal/daemon/controller/handlers/groups/group_service_test.go
+ M internal/daemon/controller/handlers/host_catalogs/host_catalog_service_test.go
+ M internal/daemon/controller/handlers/host_sets/host_set_service_test.go
+ M internal/daemon/controller/handlers/hosts/host_service_test.go
+ M internal/daemon/controller/handlers/roles/role_service.go
+ M internal/daemon/controller/handlers/roles/role_service_test.go
+ M internal/daemon/controller/handlers/scopes/scope_service.go
+ M internal/daemon/controller/handlers/scopes/scope_service_test.go
+ M internal/daemon/controller/handlers/sessions/session_service.go
+ M internal/daemon/controller/handlers/targets/target_service.go
+ M internal/daemon/controller/handlers/targets/tcp/target_service_test.go
+ M internal/daemon/controller/handlers/users/user_service.go
+ M internal/daemon/controller/handlers/users/user_service_test.go
+ M internal/daemon/controller/handlers/workers/worker_service.go
+?? .serena/
+?? opencode.json

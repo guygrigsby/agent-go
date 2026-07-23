@@ -1,0 +1,11 @@
+diff --git a/internal/servers/controller/session_cleanup_job.go b/internal/servers/controller/session_cleanup_job.go
+index 1d63e22e8..2d77a6e13 100644
+--- a/internal/servers/controller/session_cleanup_job.go
++++ b/internal/servers/controller/session_cleanup_job.go
+@@ -1,5 +1,6 @@
+ package controller
+ 
++
+ import (
+ 	"context"
+ 	stderrors "errors"

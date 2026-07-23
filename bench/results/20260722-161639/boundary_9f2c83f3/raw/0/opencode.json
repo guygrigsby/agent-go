@@ -1,0 +1,34 @@
+{
+ "$schema": "https://opencode.ai/config.json",
+ "agent": {
+  "bench": {
+   "mode": "primary",
+   "prompt": "You are completing a repository-wide Go refactoring task. Use the shell and file editing tools. Workflow: grep with a name fragment to find every file mentioning the symbol, read the surrounding code to confirm which occurrences are the symbol and not a lookalike, edit the declaration and every reference, then run go build to check your work. Renames of a naming family need every symbol updated at all of its references. The compiler is your validator; a build error tells you exactly what to fix, adjust and retry.",
+   "temperature": 1,
+   "tools": {
+    "skill": false,
+    "task": false
+   }
+  }
+ },
+ "mcp": {},
+ "permission": {
+  "bash": "allow",
+  "edit": "allow",
+  "webfetch": "deny"
+ },
+ "provider": {
+  "local": {
+   "models": {
+    "gpt-oss": {
+     "name": "gpt-oss"
+    }
+   },
+   "name": "local",
+   "npm": "@ai-sdk/openai-compatible",
+   "options": {
+    "baseURL": "https://llama.lab.aeryx.ai/v1"
+   }
+  }
+ }
+}

@@ -1,0 +1,52 @@
+diff --git a/internal/daemon/controller/controller.go b/internal/daemon/controller/controller.go
+index b4427bcb8..ef2123fdc 100644
+--- a/internal/daemon/controller/controller.go
++++ b/internal/daemon/controller/controller.go
+@@ -334,7 +334,7 @@ func New(ctx context.Context, conf *Config) (*Controller, error) {
+ 		return password.NewRepository(dbase, dbase, c.kms)
+ 	}
+ 	c.TargetRepoFn = func(o ...target.Option) (*target.Repository, error) {
+-		return target.NewRepository(dbase, dbase, c.kms, o...)
++		return target.NewRepository(ctx, dbase, dbase, c.kms, o...)
+ 	}
+ 	c.SessionRepoFn = func(opt ...session.Option) (*session.Repository, error) {
+ 		return session.NewRepository(ctx, dbase, dbase, c.kms, opt...)
+diff --git a/internal/target/tcp/repository_credential_source_test.go b/internal/target/tcp/repository_credential_source_test.go
+index 79c76d9bc..fe8240bef 100644
+--- a/internal/target/tcp/repository_credential_source_test.go
++++ b/internal/target/tcp/repository_credential_source_test.go
+@@ -19,6 +19,7 @@ import (
+ 	"github.com/stretchr/testify/assert"
+ 	"github.com/stretchr/testify/require"
+ 	"google.golang.org/protobuf/proto"
++	"context"
+ )
+ 
+ func TestRepository_AddTargetCredentialSources(t *testing.T) {
+@@ -29,7 +30,7 @@ func TestRepository_AddTargetCredentialSources(t *testing.T) {
+ 	testKms := kms.TestKms(t, conn, wrapper)
+ 	iamRepo := iam.TestRepo(t, conn, wrapper)
+ 	_, staticProj := iam.TestScopes(t, iamRepo)
+-	repo, err := target.NewRepository(rw, rw, testKms)
++	repo, err := target.NewRepository(context.Background(), rw, rw, testKms)
+ 	require.NoError(t, err)
+ 
+ 	csVault := vault.TestCredentialStores(t, conn, wrapper, staticProj.GetPublicId(), 1)[0]
+@@ -336,7 +337,7 @@ func TestRepository_DeleteTargetCredentialSources(t *testing.T) {
+ 	testKms := kms.TestKms(t, conn, wrapper)
+ 	iamRepo := iam.TestRepo(t, conn, wrapper)
+ 	_, proj := iam.TestScopes(t, iamRepo)
+-	repo, err := target.NewRepository(rw, rw, testKms)
++	repo, err := target.NewRepository(context.Background(), rw, rw, testKms)
+ 	require.NoError(t, err)
+ 
+ 	type args struct {
+@@ -563,7 +564,7 @@ func TestRepository_SetTargetCredentialSources(t *testing.T) {
+ 	rw := db.New(conn)
+ 	wrapper := db.TestWrapper(t)
+ 	testKms := kms.TestKms(t, conn, wrapper)
+-	repo, err := target.NewRepository(rw, rw, testKms)
++	repo, err := target.NewRepository(context.Background(), rw, rw, testKms)
+ 	require.NoError(t, err)
+ 
+ 	iamRepo := iam.TestRepo(t, conn, wrapper)

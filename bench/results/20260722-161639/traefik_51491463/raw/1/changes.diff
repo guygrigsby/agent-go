@@ -1,0 +1,35 @@
+diff --git a/pkg/provider/docker/config_test.go b/pkg/provider/docker/config_test.go
+index adddd6468..b035a19f3 100644
+--- a/pkg/provider/docker/config_test.go
++++ b/pkg/provider/docker/config_test.go
+@@ -411,7 +411,7 @@ func TestDynConfBuilder_DefaultRule(t *testing.T) {
+ 
+ 			for i := range len(test.containers) {
+ 				var err error
+-				test.containers[i].ExtraConf, err = p.extractLabels(test.containers[i])
++				test.containers[i].ExtraConf, err = p.extractSwarmLabels(test.containers[i])
+ 				require.NoError(t, err)
+ 			}
+ 
+@@ -3667,7 +3667,7 @@ func TestDynConfBuilder_build(t *testing.T) {
+ 
+ 			for i := range len(test.containers) {
+ 				var err error
+-				test.containers[i].ExtraConf, err = p.extractLabels(test.containers[i])
++				test.containers[i].ExtraConf, err = p.extractSwarmLabels(test.containers[i])
+ 				require.NoError(t, err)
+ 			}
+ 
+diff --git a/pkg/provider/docker/shared_labels.go b/pkg/provider/docker/shared_labels.go
+index f17e51508..7272eb0d9 100644
+--- a/pkg/provider/docker/shared_labels.go
++++ b/pkg/provider/docker/shared_labels.go
+@@ -23,7 +23,7 @@ type specificConfiguration struct {
+ 	LBSwarm bool
+ }
+ 
+-func (p *Shared) extractLabels(container dockerData) (configuration, error) {
++func (p *Shared) extractSwarmLabels(container dockerData) (configuration, error) {
+ 	conf := configuration{
+ 		Enable: p.ExposedByDefault,
+ 		Docker: specificConfiguration{

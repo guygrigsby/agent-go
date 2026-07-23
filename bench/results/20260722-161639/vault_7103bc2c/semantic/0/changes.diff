@@ -1,0 +1,159 @@
+diff --git a/helper/testhelpers/corehelpers/corehelpers.go b/helper/testhelpers/corehelpers/corehelpers.go
+index 8910e4fa6e..cb16ceee69 100644
+--- a/helper/testhelpers/corehelpers/corehelpers.go
++++ b/helper/testhelpers/corehelpers/corehelpers.go
+@@ -261,7 +261,7 @@ func NewNoopAudit(config map[string]string) (*NoopAudit, error) {
+ 	return n, nil
+ }
+ 
+-func NoopAuditFactory(records **[][]byte) audit.Factory {
++func NoopAuditFactory(records **[][]byte, useEventLogger bool) audit.Factory {
+ 	return func(_ context.Context, config *audit.BackendConfig) (audit.Backend, error) {
+ 		n, err := NewNoopAudit(config.Config)
+ 		if err != nil {
+diff --git a/helper/testhelpers/teststorage/teststorage.go b/helper/testhelpers/teststorage/teststorage.go
+index edbc26e67d..3f022cce42 100644
+--- a/helper/testhelpers/teststorage/teststorage.go
++++ b/helper/testhelpers/teststorage/teststorage.go
+@@ -269,7 +269,7 @@ func ClusterSetup(conf *vault.CoreConfig, opts *vault.TestClusterOptions, setup
+ 			"file":   auditFile.Factory,
+ 			"socket": auditSocket.Factory,
+ 			"syslog": auditSyslog.Factory,
+-			"noop":   corehelpers.NoopAuditFactory(nil),
++			"noop":   corehelpers.NoopAuditFactory(nil, false),
+ 		}
+ 	}
+ 
+diff --git a/http/sys_generate_root_test.go b/http/sys_generate_root_test.go
+index dbd7796315..5a588d3e8e 100644
+--- a/http/sys_generate_root_test.go
++++ b/http/sys_generate_root_test.go
+@@ -231,7 +231,7 @@ func testCoreUnsealedWithAudit(t *testing.T, records **[][]byte) (*vault.Core, [
+ 	conf := &vault.CoreConfig{
+ 		BuiltinRegistry: corehelpers.NewMockBuiltinRegistry(),
+ 		AuditBackends: map[string]audit.Factory{
+-			"noop": corehelpers.NoopAuditFactory(records),
++			"noop": corehelpers.NoopAuditFactory(records, false),
+ 		},
+ 	}
+ 	core, keys, token := vault.TestCoreUnsealedWithConfig(t, conf)
+diff --git a/vault/audit_test.go b/vault/audit_test.go
+index c7d85dcdf3..af6e72f493 100644
+--- a/vault/audit_test.go
++++ b/vault/audit_test.go
+@@ -35,7 +35,7 @@ func TestAudit_ReadOnlyViewDuringMount(t *testing.T) {
+ 		if err == nil || !strings.Contains(err.Error(), logical.ErrSetupReadOnly.Error()) {
+ 			t.Fatalf("expected a read-only error")
+ 		}
+-		factory := corehelpers.NoopAuditFactory(nil)
++		factory := corehelpers.NoopAuditFactory(nil, false)
+ 		return factory(ctx, config)
+ 	}
+ 
+@@ -52,7 +52,7 @@ func TestAudit_ReadOnlyViewDuringMount(t *testing.T) {
+ 
+ func TestCore_EnableAudit(t *testing.T) {
+ 	c, keys, _ := TestCoreUnsealed(t)
+-	c.auditBackends["noop"] = corehelpers.NoopAuditFactory(nil)
++	c.auditBackends["noop"] = corehelpers.NoopAuditFactory(nil, false)
+ 
+ 	me := &MountEntry{
+ 		Table: auditTableType,
+@@ -73,7 +73,7 @@ func TestCore_EnableAudit(t *testing.T) {
+ 		AuditBackends: make(map[string]audit.Factory),
+ 		DisableMlock:  true,
+ 	}
+-	conf.AuditBackends["noop"] = corehelpers.NoopAuditFactory(nil)
++	conf.AuditBackends["noop"] = corehelpers.NoopAuditFactory(nil, false)
+ 	c2, err := NewCore(conf)
+ 	if err != nil {
+ 		t.Fatalf("err: %v", err)
+@@ -102,7 +102,7 @@ func TestCore_EnableAudit(t *testing.T) {
+ 
+ func TestCore_EnableAudit_MixedFailures(t *testing.T) {
+ 	c, _, _ := TestCoreUnsealed(t)
+-	c.auditBackends["noop"] = corehelpers.NoopAuditFactory(nil)
++	c.auditBackends["noop"] = corehelpers.NoopAuditFactory(nil, false)
+ 	c.auditBackends["fail"] = func(ctx context.Context, config *audit.BackendConfig) (audit.Backend, error) {
+ 		return nil, fmt.Errorf("failing enabling")
+ 	}
+@@ -151,7 +151,7 @@ func TestCore_EnableAudit_MixedFailures(t *testing.T) {
+ // correctly
+ func TestCore_EnableAudit_Local(t *testing.T) {
+ 	c, _, _ := TestCoreUnsealed(t)
+-	c.auditBackends["noop"] = corehelpers.NoopAuditFactory(nil)
++	c.auditBackends["noop"] = corehelpers.NoopAuditFactory(nil, false)
+ 	c.auditBackends["fail"] = func(ctx context.Context, config *audit.BackendConfig) (audit.Backend, error) {
+ 		return nil, fmt.Errorf("failing enabling")
+ 	}
+@@ -237,7 +237,7 @@ func TestCore_EnableAudit_Local(t *testing.T) {
+ 
+ func TestCore_DisableAudit(t *testing.T) {
+ 	c, keys, _ := TestCoreUnsealed(t)
+-	c.auditBackends["noop"] = corehelpers.NoopAuditFactory(nil)
++	c.auditBackends["noop"] = corehelpers.NoopAuditFactory(nil, false)
+ 
+ 	existed, err := c.disableAudit(namespace.RootContext(context.Background()), "foo", true)
+ 	if existed && err != nil {
+diff --git a/vault/logical_system_test.go b/vault/logical_system_test.go
+index 44f21c8b41..d760fa44cd 100644
+--- a/vault/logical_system_test.go
++++ b/vault/logical_system_test.go
+@@ -2371,7 +2371,7 @@ func TestSystemBackend_policyCRUD(t *testing.T) {
+ 
+ func TestSystemBackend_enableAudit(t *testing.T) {
+ 	c, b, _ := testCoreSystemBackend(t)
+-	c.auditBackends["noop"] = corehelpers.NoopAuditFactory(nil)
++	c.auditBackends["noop"] = corehelpers.NoopAuditFactory(nil, false)
+ 
+ 	req := logical.TestRequest(t, logical.UpdateOperation, "audit/foo")
+ 	req.Data["type"] = "noop"
+@@ -2441,7 +2441,7 @@ func TestSystemBackend_decodeToken(t *testing.T) {
+ 
+ func TestSystemBackend_auditHash(t *testing.T) {
+ 	c, b, _ := testCoreSystemBackend(t)
+-	c.auditBackends["noop"] = corehelpers.NoopAuditFactory(nil)
++	c.auditBackends["noop"] = corehelpers.NoopAuditFactory(nil, false)
+ 
+ 	req := logical.TestRequest(t, logical.UpdateOperation, "audit/foo")
+ 	req.Data["type"] = "noop"
+@@ -2503,7 +2503,7 @@ func TestSystemBackend_enableAudit_invalid(t *testing.T) {
+ 
+ func TestSystemBackend_auditTable(t *testing.T) {
+ 	c, b, _ := testCoreSystemBackend(t)
+-	c.auditBackends["noop"] = corehelpers.NoopAuditFactory(nil)
++	c.auditBackends["noop"] = corehelpers.NoopAuditFactory(nil, false)
+ 
+ 	req := logical.TestRequest(t, logical.UpdateOperation, "audit/foo")
+ 	req.Data["type"] = "noop"
+@@ -2538,7 +2538,7 @@ func TestSystemBackend_auditTable(t *testing.T) {
+ 
+ func TestSystemBackend_disableAudit(t *testing.T) {
+ 	c, b, _ := testCoreSystemBackend(t)
+-	c.auditBackends["noop"] = corehelpers.NoopAuditFactory(nil)
++	c.auditBackends["noop"] = corehelpers.NoopAuditFactory(nil, false)
+ 
+ 	req := logical.TestRequest(t, logical.UpdateOperation, "audit/foo")
+ 	req.Data["type"] = "noop"
+diff --git a/vault/testing.go b/vault/testing.go
+index 7df6f6f071..349cb6754f 100644
+--- a/vault/testing.go
++++ b/vault/testing.go
+@@ -253,7 +253,7 @@ func TestCoreWithSealAndUINoCleanup(t testing.T, opts *CoreConfig) *Core {
+ func testCoreConfig(t testing.T, physicalBackend physical.Backend, logger log.Logger) *CoreConfig {
+ 	t.Helper()
+ 	noopAudits := map[string]audit.Factory{
+-		"noop": corehelpers.NoopAuditFactory(nil),
++		"noop": corehelpers.NoopAuditFactory(nil, false),
+ 	}
+ 
+ 	noopBackends := make(map[string]logical.Factory)
+@@ -1623,7 +1623,7 @@ func NewTestCluster(t testing.T, base *CoreConfig, opts *TestClusterOptions) *Te
+ 
+ 	addAuditBackend := len(coreConfig.AuditBackends) == 0
+ 	if addAuditBackend {
+-		coreConfig.AuditBackends["noop"] = corehelpers.NoopAuditFactory(nil)
++		coreConfig.AuditBackends["noop"] = corehelpers.NoopAuditFactory(nil, false)
+ 	}
+ 
+ 	if coreConfig.Physical == nil && (opts == nil || opts.PhysicalFactory == nil) {

@@ -1,0 +1,3 @@
+ M pkg/provider/docker/shared_labels.go
+?? .serena/
+?? opencode.json

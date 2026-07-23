@@ -1,0 +1,20 @@
+{"ms":1288,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-23T01:49:27.273516Z"}
+{"ms":1313,"op":"query","outcome":"ok","req_sha":"7d67a1f1d3a4382f","sym":"NewRepository","ts":"2026-07-23T01:49:45.241092Z"}
+{"ms":9,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/session","req_sha":"1de7b4a74037fcac","sym":"NewRepository","ts":"2026-07-23T01:49:51.732043Z"}
+{"ms":6,"op":"query","outcome":"rejected","reason":"package not found","repairs":1,"req_sha":"fc89cd51a5b0f6ed","sym":"NewRepository","ts":"2026-07-23T01:49:53.598785Z"}
+{"ms":26,"op":"query","outcome":"ok","req_sha":"e3ce38d0677f2af8","sym":"NewRepository(","ts":"2026-07-23T01:49:54.666821Z"}
+{"ms":24,"op":"query","outcome":"ok","req_sha":"7d67a1f1d3a4382f","sym":"NewRepository","ts":"2026-07-23T01:49:55.540448Z"}
+{"ms":9,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/iam","req_sha":"fe243753034b0378","sym":"NewRepository","ts":"2026-07-23T01:50:00.64694Z"}
+{"ms":13,"op":"query","outcome":"ok","req_sha":"e3ce38d0677f2af8","sym":"NewRepository(","ts":"2026-07-23T01:50:02.819861Z"}
+{"ms":6,"op":"query","outcome":"rejected","reason":"package not found","repairs":1,"req_sha":"172289b7887d9999","sym":"github.com/hashicorp/boundary/internal/session.NewRepository","ts":"2026-07-23T01:50:04.304765Z"}
+{"ms":39,"op":"query","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/session","req_sha":"0e044d1d0e24ce5d","sym":"NewRepository","ts":"2026-07-23T01:50:05.746478Z"}
+{"ms":4,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/session","req_sha":"1de7b4a74037fcac","sym":"NewRepository","ts":"2026-07-23T01:50:17.325952Z"}
+{"ms":21,"op":"query","outcome":"ok","req_sha":"e3ce38d0677f2af8","sym":"NewRepository(","ts":"2026-07-23T01:50:21.227811Z"}
+{"ms":7,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/iam","req_sha":"fe243753034b0378","sym":"NewRepository","ts":"2026-07-23T01:50:25.047496Z"}
+{"ms":9,"op":"view","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/iam","reason":"symbol not found","repairs":1,"req_sha":"3ad397472fb38673","sym":"(package)","ts":"2026-07-23T01:50:26.510901Z"}
+{"ms":5,"op":"view","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/session","reason":"symbol not found","repairs":1,"req_sha":"880912fc96835330","sym":"(package)","ts":"2026-07-23T01:50:28.281563Z"}
+{"ms":4,"op":"view","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/session","reason":"receiver type not found","repairs":1,"req_sha":"14ae881ccc88b2c1","sym":"repository.go","ts":"2026-07-23T01:50:29.355761Z"}
+{"ms":20,"op":"query","outcome":"ok","req_sha":"e929ec5e7216aae3","sym":"context","ts":"2026-07-23T01:50:33.686203Z"}
+{"ms":38,"op":"query","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/session","req_sha":"0e044d1d0e24ce5d","sym":"NewRepository","ts":"2026-07-23T01:50:44.115379Z"}
+{"ms":2,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/session","req_sha":"cb414bc565d3aeed","sym":"NewRepository","ts":"2026-07-23T01:50:58.403483Z"}
+{"ms":4,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-23T01:50:58.410031Z"}

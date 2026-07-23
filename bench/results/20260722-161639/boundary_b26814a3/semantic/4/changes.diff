@@ -1,0 +1,10 @@
+diff --git a/globals/boundary_developer_env.go b/globals/boundary_developer_env.go
+index 822e37a58..93eeb2871 100644
+--- a/globals/boundary_developer_env.go
++++ b/globals/boundary_developer_env.go
+@@ -1 +1,5 @@
+ package globals
++
++const AnyAuthenticatedUserId = "anyAuthenticatedUser"
++
++const RecoveryUserId = "recoveryUser"

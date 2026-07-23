@@ -1,0 +1,22 @@
+diff --git a/internal/credential/static/repository.go b/internal/credential/static/repository.go
+index df03971ec..19e11258a 100644
+--- a/internal/credential/static/repository.go
++++ b/internal/credential/static/repository.go
+@@ -3,6 +3,8 @@ package static
+ import (
+ 	"context"
+ 
++	"context"
++
+ 	"github.com/hashicorp/boundary/internal/db"
+ 	"github.com/hashicorp/boundary/internal/errors"
+ 	"github.com/hashicorp/boundary/internal/kms"
+@@ -34,7 +36,7 @@ func NewRepository(ctx context.Context, r db.Reader, w db.Writer, kms *kms.Kms,
+ 		return nil, errors.New(ctx, errors.InvalidParameter, op, "kms")
+ 	}
+ 
+-	opts := getOpts(opt...)
++	opt := getOpts(opt...)
+ 	if opts.withLimit == 0 {
+ 		// zero signals the boundary defaults should be used.
+ 		opts.withLimit = db.DefaultLimit

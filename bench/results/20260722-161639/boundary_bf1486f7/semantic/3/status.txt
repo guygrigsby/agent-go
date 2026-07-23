@@ -1,0 +1,16 @@
+ M internal/auth/password/repository.go
+ M internal/auth/password/repository_account_test.go
+ M internal/auth/password/repository_authmethod_test.go
+ M internal/auth/password/repository_configuration_test.go
+ M internal/auth/password/repository_password_test.go
+ M internal/auth/password/repository_test.go
+ M internal/cmd/base/initial_resources.go
+ M internal/daemon/controller/controller.go
+ M internal/daemon/controller/handlers/accounts/account_service_test.go
+ M internal/daemon/controller/handlers/authmethods/authmethod_service_test.go
+ M internal/daemon/controller/handlers/authmethods/oidc_test.go
+ M internal/daemon/controller/handlers/authmethods/password_test.go
+ M internal/daemon/controller/handlers/sessions/session_list_benchmarks_test.go
+ M internal/db/schema/migrations/oss/postgres_2_10_test.go
+ M testing/dbtest/session_list_benchmarks_dump_generation_test.go
+?? opencode.json

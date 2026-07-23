@@ -1,0 +1,66 @@
+diff --git a/internal/target/repository.go b/internal/target/repository.go
+index 7ec5d1b2d..83105dd6f 100644
+--- a/internal/target/repository.go
++++ b/internal/target/repository.go
+@@ -48,7 +48,7 @@ type Repository struct {
+ // - WithLimit: sets a limit on the number of results returned by various repo operations.
+ // - WithPermissions: defines the permissions the user has to perform different
+ // actions and access resources within the created repo object.
+-func NewRepository(r db.Reader, w db.Writer, kms *kms.Kms, opt ...Option) (*Repository, error) {
++func NewRepository(ctx context.Context, r db.Reader, w db.Writer, kms *kms.Kms, opt ...Option) (*Repository, error) {
+ 	const op = "target.NewRepository"
+ 	if r == nil {
+ 		return nil, errors.NewDeprecated(errors.InvalidParameter, op, "nil reader")
+diff --git a/internal/target/tcp/repository_credential_source_test.go b/internal/target/tcp/repository_credential_source_test.go
+index 79c76d9bc..65fe022c2 100644
+--- a/internal/target/tcp/repository_credential_source_test.go
++++ b/internal/target/tcp/repository_credential_source_test.go
+@@ -29,7 +29,7 @@ func TestRepository_AddTargetCredentialSources(t *testing.T) {
+ 	testKms := kms.TestKms(t, conn, wrapper)
+ 	iamRepo := iam.TestRepo(t, conn, wrapper)
+ 	_, staticProj := iam.TestScopes(t, iamRepo)
+-	repo, err := target.NewRepository(rw, rw, testKms)
++	repo, err := target.NewRepository(context.Background(), rw, rw, testKms)
+ 	require.NoError(t, err)
+ 
+ 	csVault := vault.TestCredentialStores(t, conn, wrapper, staticProj.GetPublicId(), 1)[0]
+@@ -336,7 +336,7 @@ func TestRepository_DeleteTargetCredentialSources(t *testing.T) {
+ 	testKms := kms.TestKms(t, conn, wrapper)
+ 	iamRepo := iam.TestRepo(t, conn, wrapper)
+ 	_, proj := iam.TestScopes(t, iamRepo)
+-	repo, err := target.NewRepository(rw, rw, testKms)
++	repo, err := target.NewRepository(context.Background(), rw, rw, testKms)
+ 	require.NoError(t, err)
+ 
+ 	type args struct {
+@@ -563,7 +563,7 @@ func TestRepository_SetTargetCredentialSources(t *testing.T) {
+ 	rw := db.New(conn)
+ 	wrapper := db.TestWrapper(t)
+ 	testKms := kms.TestKms(t, conn, wrapper)
+-	repo, err := target.NewRepository(rw, rw, testKms)
++	repo, err := target.NewRepository(context.Background(), rw, rw, testKms)
+ 	require.NoError(t, err)
+ 
+ 	iamRepo := iam.TestRepo(t, conn, wrapper)
+diff --git a/internal/target/tcp/testing_test.go b/internal/target/tcp/testing_test.go
+index bcc402f5a..7e7850efc 100644
+--- a/internal/target/tcp/testing_test.go
++++ b/internal/target/tcp/testing_test.go
+@@ -23,7 +23,7 @@ func Test_TestTcpTarget(t *testing.T) {
+ 	testKms := kms.TestKms(t, conn, wrapper)
+ 	iamRepo := iam.TestRepo(t, conn, wrapper)
+ 	_, proj := iam.TestScopes(t, iamRepo)
+-	repo, err := target.NewRepository(rw, rw, testKms)
++	repo, err := target.NewRepository(context.Background(), rw, rw, testKms)
+ 	require.NoError(err)
+ 	ctx := context.Background()
+ 
+@@ -56,7 +56,7 @@ func Test_TestCredentialLibrary(t *testing.T) {
+ 	testKms := kms.TestKms(t, conn, wrapper)
+ 	iamRepo := iam.TestRepo(t, conn, wrapper)
+ 	_, proj := iam.TestScopes(t, iamRepo)
+-	repo, err := target.NewRepository(rw, rw, testKms)
++	repo, err := target.NewRepository(context.Background(), rw, rw, testKms)
+ 	require.NoError(err)
+ 	ctx := context.Background()
+ 

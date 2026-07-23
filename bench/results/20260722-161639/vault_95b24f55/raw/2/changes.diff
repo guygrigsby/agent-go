@@ -1,0 +1,74 @@
+diff --git a/command/healthcheck/pki.go b/command/healthcheck/pki.go
+index b46f460a96..4024054788 100644
+--- a/command/healthcheck/pki.go
++++ b/command/healthcheck/pki.go
+@@ -8,7 +8,7 @@ import (
+ 	"github.com/hashicorp/vault/sdk/logical"
+ )
+ 
+-func pkiFetchIssuers(e *Executor, versionError func()) (bool, *PathFetch, []string, error) {
++func pkiFetchIssuersList(e *Executor, versionError func()) (bool, *PathFetch, []string, error) {
+ 	issuersRet, err := e.FetchIfNotFetched(logical.ListOperation, "/{{mount}}/issuers")
+ 	if err != nil {
+ 		return true, nil, nil, err
+diff --git a/command/healthcheck/pki_ca_validity_period.go b/command/healthcheck/pki_ca_validity_period.go
+index 993de7cbad..c971aed522 100644
+--- a/command/healthcheck/pki_ca_validity_period.go
++++ b/command/healthcheck/pki_ca_validity_period.go
+@@ -97,7 +97,7 @@ func (h *CAValidityPeriod) LoadConfig(config map[string]interface{}) error {
+ }
+ 
+ func (h *CAValidityPeriod) FetchResources(e *Executor) error {
+-	exit, _, issuers, err := pkiFetchIssuers(e, func() {
++	exit, _, issuers, err := pkiFetchIssuersList(e, func() {
+ 		h.UnsupportedVersion = true
+ 	})
+ 	if exit || err != nil {
+diff --git a/command/healthcheck/pki_crl_validity_period.go b/command/healthcheck/pki_crl_validity_period.go
+index 16b1ebb80f..ae31e73324 100644
+--- a/command/healthcheck/pki_crl_validity_period.go
++++ b/command/healthcheck/pki_crl_validity_period.go
+@@ -70,7 +70,7 @@ func (h *CRLValidityPeriod) LoadConfig(config map[string]interface{}) error {
+ }
+ 
+ func (h *CRLValidityPeriod) FetchResources(e *Executor) error {
+-	exit, _, issuers, err := pkiFetchIssuers(e, func() {
++	exit, _, issuers, err := pkiFetchIssuersList(e, func() {
+ 		h.UnsupportedVersion = true
+ 	})
+ 	if exit || err != nil {
+diff --git a/command/healthcheck/pki_hardware_backed_root.go b/command/healthcheck/pki_hardware_backed_root.go
+index a978f120e2..e10e740b21 100644
+--- a/command/healthcheck/pki_hardware_backed_root.go
++++ b/command/healthcheck/pki_hardware_backed_root.go
+@@ -49,7 +49,7 @@ func (h *HardwareBackedRoot) LoadConfig(config map[string]interface{}) error {
+ }
+ 
+ func (h *HardwareBackedRoot) FetchResources(e *Executor) error {
+-	exit, _, issuers, err := pkiFetchIssuers(e, func() {
++	exit, _, issuers, err := pkiFetchIssuersList(e, func() {
+ 		h.UnsupportedVersion = true
+ 	})
+ 	if exit || err != nil {
+diff --git a/command/healthcheck/pki_root_issued_leaves.go b/command/healthcheck/pki_root_issued_leaves.go
+index 86159094f4..9b3864f920 100644
+--- a/command/healthcheck/pki_root_issued_leaves.go
++++ b/command/healthcheck/pki_root_issued_leaves.go
+@@ -56,7 +56,7 @@ func (h *RootIssuedLeaves) LoadConfig(config map[string]interface{}) error {
+ }
+ 
+ func (h *RootIssuedLeaves) FetchResources(e *Executor) error {
+-	exit, _, issuers, err := pkiFetchIssuers(e, func() {
++	exit, _, issuers, err := pkiFetchIssuersList(e, func() {
+ 		h.UnsupportedVersion = true
+ 	})
+ 	if exit || err != nil {
+@@ -85,7 +85,7 @@ func (h *RootIssuedLeaves) FetchResources(e *Executor) error {
+ 		h.RootCertMap[issuer] = cert
+ 	}
+ 
+-	exit, _, leaves, err := pkiFetchLeaves(e, func() {
++	exit, _, leaves, err := pkiFetchLeavesList(e, func() {
+ 		h.UnsupportedVersion = true
+ 	})
+ 	if exit || err != nil {

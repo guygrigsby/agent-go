@@ -1,0 +1,8 @@
+ M internal/cmd/base/initial_resources.go
+ M internal/daemon/controller/handlers/host_catalogs/host_catalog_service_test.go
+ M internal/daemon/controller/handlers/host_sets/host_set_service_test.go
+ M internal/daemon/controller/handlers/hosts/host_service_test.go
+ M internal/daemon/controller/handlers/targets/tcp/target_service_test.go
+ M internal/host/static/repository.go
+?? .serena/
+?? opencode.json

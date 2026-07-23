@@ -1,0 +1,71 @@
+diff --git a/internal/daemon/worker/handler.go b/internal/daemon/worker/handler.go
+index de3ef4829..352317ac3 100644
+--- a/internal/daemon/worker/handler.go
++++ b/internal/daemon/worker/handler.go
+@@ -294,7 +294,7 @@ func (w *Worker) handleProxy(listenerCfg *listenerutil.ListenerConfig, sessionMa
+ 			conn.Close(proxyHandlers.WebsocketStatusProtocolSetupError, "error getting decryption function")
+ 			event.WriteError(ctx, op, err)
+ 		}
+-		runProxy, err := handleProxyFn(ctx, decryptFn, cc, pDialer, acResp.GetConnectionId(), protocolCtx, w.recorderManager)
++		runProxy, err := handleProxyFn(ctx, ctx, decryptFn, cc, pDialer, acResp.GetConnectionId(), protocolCtx, w.recorderManager)
+ 		if err != nil {
+ 			conn.Close(proxyHandlers.WebsocketStatusProtocolSetupError, "unable to setup proxying")
+ 			event.WriteError(ctx, op, err)
+diff --git a/internal/daemon/worker/proxy/proxy.go b/internal/daemon/worker/proxy/proxy.go
+index 428c5683b..99c4e62ce 100644
+--- a/internal/daemon/worker/proxy/proxy.go
++++ b/internal/daemon/worker/proxy/proxy.go
+@@ -39,6 +39,9 @@ type DecryptFn func(ctx context.Context, from []byte, to proto.Message) error
+ 
+ // ProxyConnFn is called after the call to ConnectConnection on the cluster.
+ // ProxyConnFn blocks until the specific request that is being proxied is finished
++
++type Handler func(controlCtx context.Context, ctx context.Context, DecryptFn, net.Conn, *ProxyDialer, string, *anypb.Any, RecordingManager) (ProxyConnFn, error)
++// ProxyConnFn blocks until the specific request that is being proxied is finished
+ type ProxyConnFn func(ctx context.Context)
+ 
+ // Handler is the type that all proxies need to implement to be called by the worker
+@@ -46,7 +49,7 @@ type ProxyConnFn func(ctx context.Context)
+ // be nil. If there is no error ProxyConnFn must be set.  When Handler has
+ // returned, it is expected that the initial connection to the endpoint has been
+ // established.
+-type Handler func(context.Context, DecryptFn, net.Conn, *ProxyDialer, string, *anypb.Any, RecordingManager) (ProxyConnFn, error)
++type type Handler func(controlCtx context.Context, ctx context.Context, DecryptFn, net.Conn, *ProxyDialer, string, *anypb.Any, RecordingManager) (ProxyConnFn, error)
+ 
+ func RegisterHandler(protocol string, handler Handler) error {
+ 	_, loaded := handlers.LoadOrStore(protocol, handler)
+diff --git a/internal/daemon/worker/proxy/proxy_test.go b/internal/daemon/worker/proxy/proxy_test.go
+index e0b33d059..096bcc066 100644
+--- a/internal/daemon/worker/proxy/proxy_test.go
++++ b/internal/daemon/worker/proxy/proxy_test.go
+@@ -17,7 +17,7 @@ import (
+ func TestRegisterHandler(t *testing.T) {
+ 	assert, require := assert.New(t), require.New(t)
+ 
+-	fn := func(context.Context, DecryptFn, net.Conn, *ProxyDialer, string, *anypb.Any, RecordingManager) (ProxyConnFn, error) {
++	fn := func(controlCtx context.Context, ctx context.Context, DecryptFn, net.Conn, *ProxyDialer, string, *anypb.Any, RecordingManager) (ProxyConnFn, error) {
+ 		return nil, nil
+ 	}
+ 	oldHandler := handlers
+@@ -40,7 +40,7 @@ func TestRegisterHandler(t *testing.T) {
+ 
+ func TestAlwaysTcpGetHandler(t *testing.T) {
+ 	assert, require := assert.New(t), require.New(t)
+-	fn := func(context.Context, DecryptFn, net.Conn, *ProxyDialer, string, *anypb.Any, RecordingManager) (ProxyConnFn, error) {
++	fn := func(controlCtx context.Context, ctx context.Context, DecryptFn, net.Conn, *ProxyDialer, string, *anypb.Any, RecordingManager) (ProxyConnFn, error) {
+ 		return nil, nil
+ 	}
+ 	oldHandler := handlers
+diff --git a/internal/daemon/worker/proxy/tcp/tcp.go b/internal/daemon/worker/proxy/tcp/tcp.go
+index c4f0a1773..fe69c4bbd 100644
+--- a/internal/daemon/worker/proxy/tcp/tcp.go
++++ b/internal/daemon/worker/proxy/tcp/tcp.go
+@@ -27,7 +27,7 @@ func init() {
+ // handleProxy returns a ProxyConnFn which starts the copy between the
+ // connections and blocks until an error (EOF on happy path) is received on
+ // either connection.
+-func handleProxy(ctx context.Context, _ proxy.DecryptFn, conn net.Conn, out *proxy.ProxyDialer, connId string, _ *anypb.Any, _ proxy.RecordingManager) (proxy.ProxyConnFn, error) {
++func handleProxy(controlCtx context.Context, ctx context.Context, _ proxy.DecryptFn, conn net.Conn, out *proxy.ProxyDialer, connId string, _ *anypb.Any, _ proxy.RecordingManager) (proxy.ProxyConnFn, error) {
+ 	const op = "tcp.HandleProxy"
+ 	switch {
+ 	case conn == nil:

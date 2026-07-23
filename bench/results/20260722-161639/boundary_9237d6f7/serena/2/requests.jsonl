@@ -1,0 +1,5 @@
+{"ms":796,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/boundary/api/targets","req_sha":"8ac7aa18545123f9","sym":"Client.Authorize","ts":"2026-07-23T12:42:57.215245Z"}
+{"ms":1,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-23T12:42:58.016829Z"}
+{"ms":717,"op":"refs","outcome":"rejected","pkg":"github.com/hashicorp/boundary/api/targets","reason":"method or field not found","repairs":3,"req_sha":"8ac7aa18545123f9","sym":"Client.Authorize","ts":"2026-07-23T12:45:13.292151Z"}
+{"ms":7,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/boundary/api/targets","req_sha":"5601782cc05bdc05","sym":"Client.AuthorizeSession","ts":"2026-07-23T12:45:14.015854Z"}
+{"ms":2,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-23T12:45:14.027973Z"}

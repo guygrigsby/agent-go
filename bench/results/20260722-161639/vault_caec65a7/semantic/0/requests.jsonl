@@ -1,0 +1,17 @@
+{"ms":3275,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/vault/vault/seal","req_sha":"2496537c080ba56e","sym":"SealInfo","ts":"2026-07-23T16:07:05.041689Z"}
+{"ms":4,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-23T16:07:08.322407Z"}
+{"ms":3233,"op":"query","outcome":"ok","req_sha":"21bd0a6628616012","sym":"SealInfo","ts":"2026-07-23T16:07:27.040266Z"}
+{"ms":24,"op":"query","outcome":"ok","req_sha":"21bd0a6628616012","sym":"SealInfo","ts":"2026-07-23T16:07:32.921868Z"}
+{"ms":30,"op":"query","outcome":"ok","req_sha":"21bd0a6628616012","sym":"SealInfo","ts":"2026-07-23T16:07:35.509974Z"}
+{"ms":4,"op":"view","outcome":"rejected","pkg":"github.com/hashicorp/vault/vault/seal","reason":"receiver type not found","repairs":1,"req_sha":"f1666e23e130b822","sym":"seal.go","ts":"2026-07-23T16:07:38.146838Z"}
+{"ms":6,"op":"view","outcome":"rejected","pkg":"github.com/hashicorp/vault/vault/seal","reason":"symbol not found","repairs":3,"req_sha":"756cb1a3641bbe7a","ts":"2026-07-23T16:07:39.809946Z"}
+{"ms":31,"op":"query","outcome":"ok","req_sha":"1bd511098030489d","sym":"type SealInfo","ts":"2026-07-23T16:07:41.465252Z"}
+{"ms":7,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/vault/vault/seal","req_sha":"71832d0de0fbf6ad","sym":"SealInfo","ts":"2026-07-23T16:07:42.707307Z"}
+{"ms":369,"op":"rename","outcome":"accepted","pkg":"github.com/hashicorp/vault/vault/seal","req_sha":"5677a042d9098845","sym":"SealInfo","ts":"2026-07-23T16:07:44.472607Z"}
+{"ms":8,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/vault/vault/seal","req_sha":"113f234a19033bd3","sym":"NewAccessFromSealInfo","ts":"2026-07-23T16:07:47.564331Z"}
+{"ms":32,"op":"query","outcome":"ok","req_sha":"fe001e897642c9b7","sym":"SealInfo{","ts":"2026-07-23T16:07:49.233436Z"}
+{"ms":900,"op":"test","outcome":"ok","pkg":"github.com/hashicorp/vault/vault/seal","req_sha":"bcbd10f0e4e3e64e","ts":"2026-07-23T16:10:54.912612Z"}
+{"ms":5273,"op":"view","outcome":"rejected","pkg":"github.com/hashicorp/vault/vault/command","reason":"package not found","repairs":1,"req_sha":"d8d300056691f77b","sym":"server.go","ts":"2026-07-23T16:10:55.81391Z"}
+{"ms":5073,"op":"refs","outcome":"rejected","pkg":"github.com/hashicorp/vault/vault/seal","reason":"symbol not found","repairs":3,"req_sha":"2496537c080ba56e","sym":"SealInfo","ts":"2026-07-23T16:10:56.811586Z"}
+{"ms":39,"op":"refs","outcome":"ok","pkg":"github.com/hashicorp/vault/vault/seal","req_sha":"52ba8dab1c4e96fe","sym":"SealWrapper","ts":"2026-07-23T16:11:01.903267Z"}
+{"ms":7,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-23T16:11:01.949845Z"}

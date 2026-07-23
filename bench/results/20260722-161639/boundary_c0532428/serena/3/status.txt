@@ -1,0 +1,5 @@
+ M internal/cmd/commands/dev/dev.go
+ M internal/servers/controller/handler_noui.go
+ M internal/servers/controller/handler_ui.go
+?? .serena/
+?? opencode.json

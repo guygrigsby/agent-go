@@ -1,0 +1,13 @@
+diff --git a/pkg/provider/docker/shared_labels.go b/pkg/provider/docker/shared_labels.go
+index f17e51508..7272eb0d9 100644
+--- a/pkg/provider/docker/shared_labels.go
++++ b/pkg/provider/docker/shared_labels.go
+@@ -23,7 +23,7 @@ type specificConfiguration struct {
+ 	LBSwarm bool
+ }
+ 
+-func (p *Shared) extractLabels(container dockerData) (configuration, error) {
++func (p *Shared) extractSwarmLabels(container dockerData) (configuration, error) {
+ 	conf := configuration{
+ 		Enable: p.ExposedByDefault,
+ 		Docker: specificConfiguration{

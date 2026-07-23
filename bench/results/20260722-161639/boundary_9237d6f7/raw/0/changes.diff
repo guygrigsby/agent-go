@@ -1,0 +1,61 @@
+diff --git a/internal/auth/additional_verification_test.go b/internal/auth/additional_verification_test.go
+index a01bf03b7..7d76286b6 100644
+--- a/internal/auth/additional_verification_test.go
++++ b/internal/auth/additional_verification_test.go
+@@ -91,7 +91,7 @@ func TestAdditionalVerification(t *testing.T) {
+ 					name: "good target",
+ 					opts: []auth.Option{
+ 						auth.WithId("ttcp_1234567890"),
+-						auth.WithAction(action.Authorize),
++						auth.WithAction(action.AuthorizeSession),
+ 						auth.WithScopeId(proj.PublicId),
+ 						auth.WithType(resource.Target),
+ 					},
+diff --git a/internal/perms/grants_test.go b/internal/perms/grants_test.go
+index 3dfc49f3e..e1be55fc6 100644
+--- a/internal/perms/grants_test.go
++++ b/internal/perms/grants_test.go
+@@ -71,7 +71,7 @@ func Test_ActionParsingValidation(t *testing.T) {
+ 					action.Read:         true,
+ 					action.Delete:       true,
+ 					action.Authenticate: true,
+-					action.Authorize:    true,
++					action.AuthorizeSession:    true,
+ 				},
+ 			},
+ 		},
+diff --git a/internal/servers/controller/handlers/targets/target_service.go b/internal/servers/controller/handlers/targets/target_service.go
+index d4d8c3aaf..0e37f5610 100644
+--- a/internal/servers/controller/handlers/targets/target_service.go
++++ b/internal/servers/controller/handlers/targets/target_service.go
+@@ -230,7 +230,7 @@ func (s Service) AuthorizeSession(ctx context.Context, req *pbs.AuthorizeSession
+ 	if err := validateAuthorizeRequest(req); err != nil {
+ 		return nil, err
+ 	}
+-	authResults := s.authResult(ctx, req.GetId(), action.Authorize)
++	authResults := s.authResult(ctx, req.GetId(), action.AuthorizeSession)
+ 	if authResults.Error != nil {
+ 		return nil, authResults.Error
+ 	}
+diff --git a/internal/types/action/action.go b/internal/types/action/action.go
+index 421021e50..3d5b80134 100644
+--- a/internal/types/action/action.go
++++ b/internal/types/action/action.go
+@@ -14,7 +14,7 @@ const (
+ 	Delete           Type = 5
+ 	Authenticate     Type = 6
+ 	All              Type = 7
+-	Authorize        Type = 8
++	AuthorizeSession        Type = 8
+ 	AddGrants        Type = 9
+ 	RemoveGrants     Type = 10
+ 	SetGrants        Type = 11
+@@ -47,7 +47,7 @@ var Map = map[string]Type{
+ 	Delete.String():           Delete,
+ 	Authenticate.String():     Authenticate,
+ 	All.String():              All,
+-	Authorize.String():        Authorize,
++	AuthorizeSession.String():        AuthorizeSession,
+ 	AddGrants.String():        AddGrants,
+ 	RemoveGrants.String():     RemoveGrants,
+ 	SetGrants.String():        SetGrants,

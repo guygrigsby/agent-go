@@ -1,0 +1,22 @@
+diff --git a/pkg/provider/docker/shared_labels.go b/pkg/provider/docker/shared_labels.go
+index f17e51508..bfaf410aa 100644
+--- a/pkg/provider/docker/shared_labels.go
++++ b/pkg/provider/docker/shared_labels.go
+@@ -23,7 +23,7 @@ type specificConfiguration struct {
+ 	LBSwarm bool
+ }
+ 
+-func (p *Shared) extractLabels(container dockerData) (configuration, error) {
++func (p *Shared) extractSwarmLabels(container dockerData) (configuration, error) {
+ 	conf := configuration{
+ 		Enable: p.ExposedByDefault,
+ 		Docker: specificConfiguration{
+@@ -31,7 +31,7 @@ func (p *Shared) extractLabels(container dockerData) (configuration, error) {
+ 		},
+ 	}
+ 
+-	err := label.Decode(container.Labels, &conf, "traefik.docker.", "traefik.enable")
++	err := label.Decode(container.Labels, &conf, "traefik.swarm.", "traefik.enable")
+ 	if err != nil {
+ 		return configuration{}, err
+ 	}

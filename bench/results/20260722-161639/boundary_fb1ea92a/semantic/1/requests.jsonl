@@ -1,0 +1,44 @@
+{"ms":1274,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-22T22:52:54.337648Z"}
+{"ms":1265,"op":"query","outcome":"ok","req_sha":"1e1dfb5e315943ed","sym":"handleProxy","ts":"2026-07-22T22:53:13.019138Z"}
+{"ms":8,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/daemon/worker/proxy/tcp","req_sha":"e51f42c6fdea0a14","sym":"handleProxy","ts":"2026-07-22T22:53:16.312866Z"}
+{"ms":9,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/daemon/worker","req_sha":"b86d7a52b79e7f0f","sym":"Worker.handleProxy","ts":"2026-07-22T22:53:19.603591Z"}
+{"ms":18,"op":"query","outcome":"ok","req_sha":"0dc19f5583497ff2","sym":"GetHandler","ts":"2026-07-22T22:53:30.645855Z"}
+{"ms":9,"op":"view","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/daemon/worker/proxy","reason":"declaration not found","repairs":1,"req_sha":"c1d3687eb7f6130c","sym":"GetHandler","ts":"2026-07-22T22:53:31.968976Z"}
+{"ms":8,"op":"view","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/daemon/worker/proxy","reason":"symbol not found","repairs":3,"req_sha":"2cf6156a092fd2fe","ts":"2026-07-22T22:53:33.08503Z"}
+{"ms":21,"op":"query","outcome":"ok","req_sha":"bc8f7356b462ddc6","sym":"package proxy","ts":"2026-07-22T22:53:34.532681Z"}
+{"ms":27,"op":"query","outcome":"ok","req_sha":"bc8f7356b462ddc6","sym":"package proxy","ts":"2026-07-22T22:53:35.424194Z"}
+{"ms":28,"op":"query","outcome":"ok","req_sha":"f1e265dc517f296d","sym":"proxy.go","ts":"2026-07-22T22:53:36.36461Z"}
+{"ms":26,"op":"query","outcome":"ok","req_sha":"0dc19f5583497ff2","sym":"GetHandler","ts":"2026-07-22T22:53:37.346777Z"}
+{"ms":8,"op":"view","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/daemon/worker/proxy","reason":"symbol not found","repairs":3,"req_sha":"2cf6156a092fd2fe","ts":"2026-07-22T22:53:38.748587Z"}
+{"ms":28,"op":"query","outcome":"ok","req_sha":"bc8f7356b462ddc6","sym":"package proxy","ts":"2026-07-22T22:53:40.602538Z"}
+{"ms":28,"op":"query","outcome":"ok","req_sha":"ddcac7417690678d","sym":"proxy.","ts":"2026-07-22T22:53:42.427859Z"}
+{"ms":25,"op":"query","outcome":"ok","req_sha":"70a9f1fee5413913","sym":"GetHandler(","ts":"2026-07-22T22:53:43.892648Z"}
+{"ms":7,"op":"view","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/daemon/worker/proxy","reason":"symbol not found","repairs":3,"req_sha":"0de89a53e1b09b25","sym":"proxy","ts":"2026-07-22T22:53:45.522564Z"}
+{"ms":28,"op":"query","outcome":"ok","req_sha":"e767fb0bb5293736","sym":"type ProxyHandler","ts":"2026-07-22T22:53:48.273861Z"}
+{"ms":8,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/daemon/worker/proxy","req_sha":"78c7dbf86af2ee40","sym":"NewProxyDialer","ts":"2026-07-22T22:53:50.723824Z"}
+{"ms":8,"op":"view","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/daemon/worker/proxy","req_sha":"e35440bc9dfb76dd","sym":"ProxyDialer","ts":"2026-07-22T22:53:52.304457Z"}
+{"ms":6,"op":"view","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/daemon/worker/proxy","reason":"declaration not found","repairs":1,"req_sha":"c1d3687eb7f6130c","sym":"GetHandler","ts":"2026-07-22T22:53:53.523638Z"}
+{"ms":25,"op":"query","outcome":"ok","req_sha":"0dc19f5583497ff2","sym":"GetHandler","ts":"2026-07-22T22:54:04.029073Z"}
+{"ms":25,"op":"query","outcome":"ok","req_sha":"41487293d165f73f","sym":"protocol","ts":"2026-07-22T22:54:18.853138Z"}
+{"ms":22,"op":"query","outcome":"ok","req_sha":"3fa05e4ae3775928","sym":"GetHandler =","ts":"2026-07-22T22:54:33.146141Z"}
+{"ms":27,"op":"query","outcome":"ok","req_sha":"93135194cc6a0045","sym":"var GetHandler","ts":"2026-07-22T22:54:34.127232Z"}
+{"ms":28,"op":"query","outcome":"ok","req_sha":"dc1a5a1a34f9a155","sym":"globals.TcpProxyV1","ts":"2026-07-22T22:54:48.057957Z"}
+{"ms":29,"op":"query","outcome":"ok","req_sha":"72ef2d54a2c26027","sym":"TcpProxyV1","ts":"2026-07-22T22:54:49.05633Z"}
+{"ms":29,"op":"query","outcome":"ok","req_sha":"2321a1506403be85","sym":"ErrProtocolAlreadyRegistered","ts":"2026-07-22T22:54:52.676768Z"}
+{"ms":9,"op":"view","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/daemon/worker/proxy","reason":"receiver type not found","repairs":1,"req_sha":"71a3fbfcad0ec04b","sym":"proxy.go","ts":"2026-07-22T22:54:54.046065Z"}
+{"ms":28,"op":"query","outcome":"ok","req_sha":"d1810bfe7f3693f2","sym":"ErrUnknownProtocol","ts":"2026-07-22T22:54:55.617921Z"}
+{"ms":8,"op":"view","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/daemon/worker/proxy","reason":"declaration not found","repairs":1,"req_sha":"dd79c8071f65a6f3","sym":"ErrUnknownProtocol","ts":"2026-07-22T22:54:57.035715Z"}
+{"ms":28,"op":"query","outcome":"ok","req_sha":"3fa05e4ae3775928","sym":"GetHandler =","ts":"2026-07-22T22:55:04.193798Z"}
+{"ms":28,"op":"query","outcome":"ok","req_sha":"4c3f578f95a8ad07","sym":"HandleProxy","ts":"2026-07-22T22:55:11.807991Z"}
+{"ms":3,"op":"query","outcome":"rejected","reason":"package not found","repairs":1,"req_sha":"16e882f676d77bbb","sym":"github.com/hashicorp/boundary/internal/daemon/worker/proxy.GetHandler","ts":"2026-07-22T22:55:15.501888Z"}
+{"ms":43,"op":"query","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/daemon/worker/proxy","req_sha":"41961e29d136b0b3","sym":"GetHandler","ts":"2026-07-22T22:55:17.03534Z"}
+{"ms":8,"op":"view","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/daemon/worker/proxy","reason":"declaration not found","repairs":1,"req_sha":"c1d3687eb7f6130c","sym":"GetHandler","ts":"2026-07-22T22:55:19.179436Z"}
+{"ms":48,"op":"patch","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/daemon/worker/proxy","reason":"symbol is still referenced","repairs":0,"req_sha":"2dc37d163ac11302","ts":"2026-07-22T22:55:23.514939Z"}
+{"ms":7,"op":"patch","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/daemon/worker/handler","reason":"package not found","repairs":0,"req_sha":"6ec8abb191298d3f","ts":"2026-07-22T22:55:52.120001Z"}
+{"ms":14,"op":"patch","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/daemon/worker","reason":"patch result does not format","repairs":0,"req_sha":"931f26d1e62d62c6","ts":"2026-07-22T22:56:43.863953Z"}
+{"ms":8,"op":"query","outcome":"rejected","reason":"package not found","repairs":1,"req_sha":"16e882f676d77bbb","sym":"github.com/hashicorp/boundary/internal/daemon/worker/proxy.GetHandler","ts":"2026-07-22T22:56:57.134241Z"}
+{"ms":0,"op":"patch","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/daemon/worker/proxy/tcp","reason":"unknown op","repairs":1,"req_sha":"fa4765b23e51cf62","ts":"2026-07-22T22:57:03.484814Z"}
+{"ms":8,"op":"patch","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/daemon/worker/proxy/tcp","reason":"symbol not found","repairs":3,"req_sha":"17ce9a1be5e0701a","ts":"2026-07-22T22:57:06.692854Z"}
+{"ms":229,"op":"patch","outcome":"rejected","pkg":"github.com/hashicorp/boundary/internal/daemon/worker/proxy/tcp","reason":"patch does not typecheck","repairs":0,"req_sha":"e587a9ad6bc36ce9","ts":"2026-07-22T22:57:20.431628Z"}
+{"ms":960,"op":"inspect","outcome":"ok","pkg":"github.com/hashicorp/boundary/internal/daemon/worker/proxy/tcp","req_sha":"3ac4dcd0bc12772c","sym":"handleProxy","ts":"2026-07-22T22:57:29.602184Z"}
+{"ms":6,"op":"status","outcome":"ok","req_sha":"2c907e8be261e3e8","ts":"2026-07-22T22:57:30.57414Z"}

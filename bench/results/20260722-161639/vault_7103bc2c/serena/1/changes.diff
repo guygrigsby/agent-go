@@ -1,0 +1,176 @@
+diff --git a/audit/audit.go b/audit/audit.go
+index 35a3d38a05..31164be3f2 100644
+--- a/audit/audit.go
++++ b/audit/audit.go
+@@ -59,4 +59,4 @@ type BackendConfig struct {
+ }
+ 
+ // Factory is the factory function to create an audit backend.
+-type Factory func(context.Context, *BackendConfig) (Backend, error)
++type Factory func(context.Context, *BackendConfig, bool) (Backend, error)
+diff --git a/builtin/audit/file/backend.go b/builtin/audit/file/backend.go
+index d4471f1a9a..43471f429f 100644
+--- a/builtin/audit/file/backend.go
++++ b/builtin/audit/file/backend.go
+@@ -20,7 +20,7 @@ import (
+ 	"github.com/hashicorp/vault/sdk/logical"
+ )
+ 
+-func Factory(ctx context.Context, conf *audit.BackendConfig) (audit.Backend, error) {
++func Factory(ctx context.Context, conf *audit.BackendConfig, useEventLogger bool) (audit.Backend, error) {
+ 	if conf.SaltConfig == nil {
+ 		return nil, fmt.Errorf("nil salt config")
+ 	}
+diff --git a/builtin/audit/socket/backend.go b/builtin/audit/socket/backend.go
+index 25077fc0ff..e5e0ce3fd6 100644
+--- a/builtin/audit/socket/backend.go
++++ b/builtin/audit/socket/backend.go
+@@ -19,7 +19,7 @@ import (
+ 	"github.com/hashicorp/vault/sdk/logical"
+ )
+ 
+-func Factory(ctx context.Context, conf *audit.BackendConfig) (audit.Backend, error) {
++func Factory(ctx context.Context, conf *audit.BackendConfig, useEventLogger bool) (audit.Backend, error) {
+ 	if conf.SaltConfig == nil {
+ 		return nil, fmt.Errorf("nil salt config")
+ 	}
+diff --git a/builtin/audit/syslog/backend.go b/builtin/audit/syslog/backend.go
+index 19059b86cc..4fbcfd034e 100644
+--- a/builtin/audit/syslog/backend.go
++++ b/builtin/audit/syslog/backend.go
+@@ -16,7 +16,7 @@ import (
+ 	"github.com/hashicorp/vault/sdk/logical"
+ )
+ 
+-func Factory(ctx context.Context, conf *audit.BackendConfig) (audit.Backend, error) {
++func Factory(ctx context.Context, conf *audit.BackendConfig, useEventLogger bool) (audit.Backend, error) {
+ 	if conf.SaltConfig == nil {
+ 		return nil, fmt.Errorf("nil salt config")
+ 	}
+diff --git a/helper/testhelpers/corehelpers/corehelpers.go b/helper/testhelpers/corehelpers/corehelpers.go
+index 8910e4fa6e..e51bb26ac2 100644
+--- a/helper/testhelpers/corehelpers/corehelpers.go
++++ b/helper/testhelpers/corehelpers/corehelpers.go
+@@ -262,7 +262,7 @@ func NewNoopAudit(config map[string]string) (*NoopAudit, error) {
+ }
+ 
+ func NoopAuditFactory(records **[][]byte) audit.Factory {
+-	return func(_ context.Context, config *audit.BackendConfig) (audit.Backend, error) {
++	return func(_ context.Context, config *audit.BackendConfig, useEventLogger bool) (audit.Backend, error) {
+ 		n, err := NewNoopAudit(config.Config)
+ 		if err != nil {
+ 			return nil, err
+diff --git a/http/logical_test.go b/http/logical_test.go
+index a9ccdff052..0bca46c364 100644
+--- a/http/logical_test.go
++++ b/http/logical_test.go
+@@ -482,7 +482,7 @@ func TestLogical_Audit_invalidWrappingToken(t *testing.T) {
+ 	noop := corehelpers.TestNoopAudit(t, nil)
+ 	c, _, root := vault.TestCoreUnsealedWithConfig(t, &vault.CoreConfig{
+ 		AuditBackends: map[string]audit.Factory{
+-			"noop": func(ctx context.Context, config *audit.BackendConfig) (audit.Backend, error) {
++			"noop": func(ctx context.Context, config *audit.BackendConfig, useEventLogger bool) (audit.Backend, error) {
+ 				return noop, nil
+ 			},
+ 		},
+diff --git a/vault/audit.go b/vault/audit.go
+index 4078edbee2..2376d8dd5e 100644
+--- a/vault/audit.go
++++ b/vault/audit.go
+@@ -478,7 +478,7 @@ func (c *Core) newAuditBackend(ctx context.Context, entry *MountEntry, view logi
+ 		Location: salt.DefaultLocation,
+ 	}
+ 
+-	be, err := f(ctx, &audit.BackendConfig{
++	be, err := f(ctx, &audit.BackendConfig{, false)
+ 		SaltView:   view,
+ 		SaltConfig: saltConfig,
+ 		Config:     conf,
+diff --git a/vault/audit_test.go b/vault/audit_test.go
+index c7d85dcdf3..60df3e5883 100644
+--- a/vault/audit_test.go
++++ b/vault/audit_test.go
+@@ -27,7 +27,7 @@ import (
+ 
+ func TestAudit_ReadOnlyViewDuringMount(t *testing.T) {
+ 	c, _, _ := TestCoreUnsealed(t)
+-	c.auditBackends["noop"] = func(ctx context.Context, config *audit.BackendConfig) (audit.Backend, error) {
++	c.auditBackends["noop"] = func(ctx context.Context, config *audit.BackendConfig, useEventLogger bool) (audit.Backend, error) {
+ 		err := config.SaltView.Put(ctx, &logical.StorageEntry{
+ 			Key:   "bar",
+ 			Value: []byte("baz"),
+@@ -103,7 +103,7 @@ func TestCore_EnableAudit(t *testing.T) {
+ func TestCore_EnableAudit_MixedFailures(t *testing.T) {
+ 	c, _, _ := TestCoreUnsealed(t)
+ 	c.auditBackends["noop"] = corehelpers.NoopAuditFactory(nil)
+-	c.auditBackends["fail"] = func(ctx context.Context, config *audit.BackendConfig) (audit.Backend, error) {
++	c.auditBackends["fail"] = func(ctx context.Context, config *audit.BackendConfig, useEventLogger bool) (audit.Backend, error) {
+ 		return nil, fmt.Errorf("failing enabling")
+ 	}
+ 
+@@ -152,7 +152,7 @@ func TestCore_EnableAudit_MixedFailures(t *testing.T) {
+ func TestCore_EnableAudit_Local(t *testing.T) {
+ 	c, _, _ := TestCoreUnsealed(t)
+ 	c.auditBackends["noop"] = corehelpers.NoopAuditFactory(nil)
+-	c.auditBackends["fail"] = func(ctx context.Context, config *audit.BackendConfig) (audit.Backend, error) {
++	c.auditBackends["fail"] = func(ctx context.Context, config *audit.BackendConfig, useEventLogger bool) (audit.Backend, error) {
+ 		return nil, fmt.Errorf("failing enabling")
+ 	}
+ 
+diff --git a/vault/core_test.go b/vault/core_test.go
+index 59e0706f1d..d344b3f85b 100644
+--- a/vault/core_test.go
++++ b/vault/core_test.go
+@@ -1137,7 +1137,7 @@ func TestCore_HandleRequest_AuditTrail(t *testing.T) {
+ 	// Create a noop audit backend
+ 	noop := &corehelpers.NoopAudit{}
+ 	c, _, root := TestCoreUnsealed(t)
+-	c.auditBackends["noop"] = func(ctx context.Context, config *audit.BackendConfig) (audit.Backend, error) {
++	c.auditBackends["noop"] = func(ctx context.Context, config *audit.BackendConfig, useEventLogger bool) (audit.Backend, error) {
+ 		noop = &corehelpers.NoopAudit{
+ 			Config: config,
+ 		}
+@@ -1201,7 +1201,7 @@ func TestCore_HandleRequest_AuditTrail_noHMACKeys(t *testing.T) {
+ 	// Create a noop audit backend
+ 	var noop *corehelpers.NoopAudit
+ 	c, _, root := TestCoreUnsealed(t)
+-	c.auditBackends["noop"] = func(ctx context.Context, config *audit.BackendConfig) (audit.Backend, error) {
++	c.auditBackends["noop"] = func(ctx context.Context, config *audit.BackendConfig, useEventLogger bool) (audit.Backend, error) {
+ 		noop = &corehelpers.NoopAudit{
+ 			Config: config,
+ 		}
+@@ -1323,7 +1323,7 @@ func TestCore_HandleLogin_AuditTrail(t *testing.T) {
+ 	c.credentialBackends["noop"] = func(context.Context, *logical.BackendConfig) (logical.Backend, error) {
+ 		return noopBack, nil
+ 	}
+-	c.auditBackends["noop"] = func(ctx context.Context, config *audit.BackendConfig) (audit.Backend, error) {
++	c.auditBackends["noop"] = func(ctx context.Context, config *audit.BackendConfig, useEventLogger bool) (audit.Backend, error) {
+ 		noop = &corehelpers.NoopAudit{
+ 			Config: config,
+ 		}
+diff --git a/vault/external_tests/identity/login_mfa_totp_test.go b/vault/external_tests/identity/login_mfa_totp_test.go
+index 3244d92595..249fec790a 100644
+--- a/vault/external_tests/identity/login_mfa_totp_test.go
++++ b/vault/external_tests/identity/login_mfa_totp_test.go
+@@ -61,7 +61,7 @@ func TestLoginMfaGenerateTOTPTestAuditIncluded(t *testing.T) {
+ 			"totp": totp.Factory,
+ 		},
+ 		AuditBackends: map[string]audit.Factory{
+-			"noop": func(ctx context.Context, config *audit.BackendConfig) (audit.Backend, error) {
++			"noop": func(ctx context.Context, config *audit.BackendConfig, useEventLogger bool) (audit.Backend, error) {
+ 				return noop, nil
+ 			},
+ 		},
+diff --git a/vault/mount_test.go b/vault/mount_test.go
+index f73ce3876e..e34576e1c7 100644
+--- a/vault/mount_test.go
++++ b/vault/mount_test.go
+@@ -724,7 +724,7 @@ func TestDefaultMountTable(t *testing.T) {
+ func TestCore_MountTable_UpgradeToTyped(t *testing.T) {
+ 	c, _, _ := TestCoreUnsealed(t)
+ 
+-	c.auditBackends["noop"] = func(ctx context.Context, config *audit.BackendConfig) (audit.Backend, error) {
++	c.auditBackends["noop"] = func(ctx context.Context, config *audit.BackendConfig, useEventLogger bool) (audit.Backend, error) {
+ 		return &corehelpers.NoopAudit{
+ 			Config: config,
+ 		}, nil

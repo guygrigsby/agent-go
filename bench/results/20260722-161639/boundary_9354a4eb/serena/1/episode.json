@@ -1,0 +1,214 @@
+{
+ "agent_done": "2026-07-23T02:16:46.238200167Z",
+ "agent_started": "2026-07-23T02:11:47.559593Z",
+ "cache_read": 1200632,
+ "cache_write": 0,
+ "capped": false,
+ "failure_kind": "scored_fail",
+ "first_invalid_s": 190.036869166,
+ "intermediate_states": 1,
+ "invalid_intermediate_rate": 1,
+ "invalid_intermediates": 1,
+ "iter": 1,
+ "kind": "add-param",
+ "mode": "serena",
+ "new_errors": [
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenamegpt-oss-20b-mediumboundary_9354a4ebserena29807002/002/boundary/internal/recording/delete_session_recording_job.go:28:9|cannot use \u0026deleteSessionRecordingJob{} (value of type *deleteSessionRecordingJob) as scheduler.Job value in return statement: *deleteSessionRecordingJob does not implement scheduler.Job (wrong type for method Run)\n\t\thave Run(context.Context) error\n\t\twant Run(context.Context, \"time\".Duration) error",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenamegpt-oss-20b-mediumboundary_9354a4ebserena29807002/002/boundary/internal/credential/vault/jobs_test.go:793:19|not enough arguments in call to r.Run\n\thave (context.Context)\n\twant (context.Context, \"time\".Duration)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenamegpt-oss-20b-mediumboundary_9354a4ebserena29807002/002/boundary/internal/credential/vault/jobs_test.go:925:17|not enough arguments in call to r.Run\n\thave (context.Context)\n\twant (context.Context, \"time\".Duration)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenamegpt-oss-20b-mediumboundary_9354a4ebserena29807002/002/boundary/internal/credential/vault/jobs_test.go:1199:27|not enough arguments in call to credRenewal.Run\n\thave (context.Context)\n\twant (context.Context, \"time\".Duration)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenamegpt-oss-20b-mediumboundary_9354a4ebserena29807002/002/boundary/internal/db/schema/internal/postgres/ensure_version_test.go:18:23|not enough arguments in call to p.StartRun\n\thave (context.Context)\n\twant (context.Context, unknown type)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenamegpt-oss-20b-mediumboundary_9354a4ebserena29807002/002/boundary/internal/db/schema/internal/postgres/migration_log_test.go:149:23|not enough arguments in call to p.StartRun\n\thave (context.Context)\n\twant (context.Context, unknown type)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenamegpt-oss-20b-mediumboundary_9354a4ebserena29807002/002/boundary/internal/host/plugin/job_set_sync_test.go:276:44|not enough arguments in call to r.Run\n\thave (context.Context)\n\twant (context.Context, \"time\".Duration)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenamegpt-oss-20b-mediumboundary_9354a4ebserena29807002/002/boundary/internal/session/job_delete_terminated_sessions_test.go:104:21|not enough arguments in call to job.Run\n\thave (\"context\".Context)\n\twant (\"context\".Context, \"time\".Duration)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenamegpt-oss-20b-mediumboundary_9354a4ebserena29807002/002/boundary/internal/session/job_session_cleanup_test.go:113:29|not enough arguments in call to job.Run\n\thave (\"context\".Context)\n\twant (\"context\".Context, \"time\".Duration)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenamegpt-oss-20b-mediumboundary_9354a4ebserena29807002/002/boundary/internal/credential/vault/jobs_test.go:839:17|not enough arguments in call to r.Run\n\thave (context.Context)\n\twant (context.Context, \"time\".Duration)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenamegpt-oss-20b-mediumboundary_9354a4ebserena29807002/002/boundary/internal/credential/vault/jobs_test.go:2031:17|not enough arguments in call to r.Run\n\thave (context.Context)\n\twant (context.Context, \"time\".Duration)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenamegpt-oss-20b-mediumboundary_9354a4ebserena29807002/002/boundary/internal/credential/vault/jobs_test.go:2302:17|not enough arguments in call to r.Run\n\thave (context.Context)\n\twant (context.Context, \"time\".Duration)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenamegpt-oss-20b-mediumboundary_9354a4ebserena29807002/002/boundary/internal/db/schema/internal/postgres/migration_log_test.go:19:23|not enough arguments in call to p.StartRun\n\thave (context.Context)\n\twant (context.Context, unknown type)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenamegpt-oss-20b-mediumboundary_9354a4ebserena29807002/002/boundary/internal/host/plugin/job_orphaned_host_cleanup_test.go:121:34|not enough arguments in call to r.Run\n\thave (context.Context)\n\twant (context.Context, \"time\".Duration)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenamegpt-oss-20b-mediumboundary_9354a4ebserena29807002/002/boundary/internal/credential/vault/jobs_test.go:394:17|not enough arguments in call to r.Run\n\thave (context.Context)\n\twant (context.Context, \"time\".Duration)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenamegpt-oss-20b-mediumboundary_9354a4ebserena29807002/002/boundary/internal/credential/vault/jobs_test.go:1748:17|not enough arguments in call to r.Run\n\thave (context.Context)\n\twant (context.Context, \"time\".Duration)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenamegpt-oss-20b-mediumboundary_9354a4ebserena29807002/002/boundary/internal/credential/vault/jobs_test.go:2115:17|not enough arguments in call to r.Run\n\thave (context.Context)\n\twant (context.Context, \"time\".Duration)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenamegpt-oss-20b-mediumboundary_9354a4ebserena29807002/002/boundary/internal/credential/vault/jobs_test.go:2292:17|not enough arguments in call to r.Run\n\thave (context.Context)\n\twant (context.Context, \"time\".Duration)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenamegpt-oss-20b-mediumboundary_9354a4ebserena29807002/002/boundary/internal/host/plugin/job_set_sync_test.go:401:36|not enough arguments in call to r.Run\n\thave (context.Context)\n\twant (context.Context, \"time\".Duration)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenamegpt-oss-20b-mediumboundary_9354a4ebserena29807002/002/boundary/internal/credential/vault/jobs_test.go:1322:27|not enough arguments in call to credRenewal.Run\n\thave (context.Context)\n\twant (context.Context, \"time\".Duration)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenamegpt-oss-20b-mediumboundary_9354a4ebserena29807002/002/boundary/internal/credential/vault/jobs_test.go:2098:17|not enough arguments in call to r.Run\n\thave (context.Context)\n\twant (context.Context, \"time\".Duration)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenamegpt-oss-20b-mediumboundary_9354a4ebserena29807002/002/boundary/internal/db/schema/internal/postgres/ensure_version_test.go:24:23|not enough arguments in call to p.CommitRun\n\thave (context.Context)\n\twant (context.Context, unknown type)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenamegpt-oss-20b-mediumboundary_9354a4ebserena29807002/002/boundary/internal/db/schema/internal/postgres/migration_log_test.go:194:22|not enough arguments in call to p.StartRun\n\thave (context.Context)\n\twant (context.Context, unknown type)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenamegpt-oss-20b-mediumboundary_9354a4ebserena29807002/002/boundary/internal/db/schema/internal/postgres/migration_log_test.go:198:23|not enough arguments in call to p.CommitRun\n\thave (context.Context)\n\twant (context.Context, unknown type)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenamegpt-oss-20b-mediumboundary_9354a4ebserena29807002/002/boundary/internal/db/schema/internal/postgres/postgres_test.go:28:23|not enough arguments in call to p.StartRun\n\thave (context.Context)\n\twant (context.Context, unknown type)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenamegpt-oss-20b-mediumboundary_9354a4ebserena29807002/002/boundary/internal/db/schema/internal/postgres/ensure_version_test.go:93:22|not enough arguments in call to p.StartRun\n\thave (context.Context)\n\twant (context.Context, unknown type)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenamegpt-oss-20b-mediumboundary_9354a4ebserena29807002/002/boundary/internal/db/schema/internal/postgres/postgres_test.go:40:23|not enough arguments in call to p.CommitRun\n\thave (context.Context)\n\twant (context.Context, unknown type)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenamegpt-oss-20b-mediumboundary_9354a4ebserena29807002/002/boundary/internal/host/plugin/job_orphaned_host_cleanup_test.go:151:34|not enough arguments in call to r.Run\n\thave (context.Context)\n\twant (context.Context, \"time\".Duration)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenamegpt-oss-20b-mediumboundary_9354a4ebserena29807002/002/boundary/internal/credential/vault/jobs_test.go:888:17|not enough arguments in call to r.Run\n\thave (context.Context)\n\twant (context.Context, \"time\".Duration)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenamegpt-oss-20b-mediumboundary_9354a4ebserena29807002/002/boundary/internal/credential/vault/jobs_test.go:1767:17|not enough arguments in call to r.Run\n\thave (context.Context)\n\twant (context.Context, \"time\".Duration)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenamegpt-oss-20b-mediumboundary_9354a4ebserena29807002/002/boundary/internal/credential/vault/jobs_test.go:1855:17|not enough arguments in call to r.Run\n\thave (context.Context)\n\twant (context.Context, \"time\".Duration)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenamegpt-oss-20b-mediumboundary_9354a4ebserena29807002/002/boundary/internal/db/schema/internal/postgres/migration_log_test.go:28:23|not enough arguments in call to p.CommitRun\n\thave (context.Context)\n\twant (context.Context, unknown type)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenamegpt-oss-20b-mediumboundary_9354a4ebserena29807002/002/boundary/internal/host/plugin/job_set_sync_test.go:246:34|not enough arguments in call to r.Run\n\thave (context.Context)\n\twant (context.Context, \"time\".Duration)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenamegpt-oss-20b-mediumboundary_9354a4ebserena29807002/002/boundary/internal/host/plugin/job_set_sync_test.go:261:34|not enough arguments in call to r.Run\n\thave (context.Context)\n\twant (context.Context, \"time\".Duration)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenamegpt-oss-20b-mediumboundary_9354a4ebserena29807002/002/boundary/internal/pagination/purge/purge_test.go:57:21|not enough arguments in call to sJob.Run\n\thave (context.Context)\n\twant (context.Context, \"time\".Duration)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenamegpt-oss-20b-mediumboundary_9354a4ebserena29807002/002/boundary/internal/server/job/rotate_roots_job_test.go:130:19|not enough arguments in call to got.Run\n\thave (context.Context)\n\twant (context.Context, \"time\".Duration)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenamegpt-oss-20b-mediumboundary_9354a4ebserena29807002/002/boundary/internal/host/plugin/job_set_sync_test.go:220:34|not enough arguments in call to r.Run\n\thave (context.Context)\n\twant (context.Context, \"time\".Duration)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenamegpt-oss-20b-mediumboundary_9354a4ebserena29807002/002/boundary/internal/db/schema/internal/postgres/postgres.go:188:53|undefined: time",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenamegpt-oss-20b-mediumboundary_9354a4ebserena29807002/002/boundary/internal/credential/vault/jobs_test.go:937:17|not enough arguments in call to r.Run\n\thave (context.Context)\n\twant (context.Context, \"time\".Duration)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenamegpt-oss-20b-mediumboundary_9354a4ebserena29807002/002/boundary/internal/credential/vault/jobs_test.go:1216:27|not enough arguments in call to credRenewal.Run\n\thave (context.Context)\n\twant (context.Context, \"time\".Duration)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenamegpt-oss-20b-mediumboundary_9354a4ebserena29807002/002/boundary/internal/db/schema/internal/postgres/ensure_version_test.go:58:23|not enough arguments in call to p.CommitRun\n\thave (context.Context)\n\twant (context.Context, unknown type)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenamegpt-oss-20b-mediumboundary_9354a4ebserena29807002/002/boundary/internal/host/plugin/job_set_sync_test.go:178:34|not enough arguments in call to r.Run\n\thave (context.Context)\n\twant (context.Context, \"time\".Duration)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenamegpt-oss-20b-mediumboundary_9354a4ebserena29807002/002/boundary/internal/db/schema/internal/postgres/postgres.go:150:52|undefined: time",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenamegpt-oss-20b-mediumboundary_9354a4ebserena29807002/002/boundary/internal/credential/vault/jobs_test.go:355:17|not enough arguments in call to r.Run\n\thave (context.Context)\n\twant (context.Context, \"time\".Duration)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenamegpt-oss-20b-mediumboundary_9354a4ebserena29807002/002/boundary/internal/credential/vault/jobs_test.go:471:17|not enough arguments in call to r.Run\n\thave (context.Context)\n\twant (context.Context, \"time\".Duration)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenamegpt-oss-20b-mediumboundary_9354a4ebserena29807002/002/boundary/internal/credential/vault/jobs_test.go:1132:19|not enough arguments in call to r.Run\n\thave (context.Context)\n\twant (context.Context, \"time\".Duration)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenamegpt-oss-20b-mediumboundary_9354a4ebserena29807002/002/boundary/internal/credential/vault/jobs_test.go:2060:17|not enough arguments in call to r.Run\n\thave (context.Context)\n\twant (context.Context, \"time\".Duration)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenamegpt-oss-20b-mediumboundary_9354a4ebserena29807002/002/boundary/internal/db/schema/manager.go:103:21|cannot use postgres.New(ctx, db) (value of type *postgres.Postgres) as driver value in assignment: *postgres.Postgres does not implement driver (wrong type for method CommitRun)\n\t\thave CommitRun(context.Context, invalid type) error\n\t\twant CommitRun(context.Context) error",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenamegpt-oss-20b-mediumboundary_9354a4ebserena29807002/002/boundary/internal/host/plugin/testing.go:212:30|not enough arguments in call to j.Run\n\thave (context.Context)\n\twant (context.Context, \"time\".Duration)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenamegpt-oss-20b-mediumboundary_9354a4ebserena29807002/002/boundary/internal/db/schema/internal/postgres/ensure_version_test.go:52:22|not enough arguments in call to p.StartRun\n\thave (context.Context)\n\twant (context.Context, unknown type)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenamegpt-oss-20b-mediumboundary_9354a4ebserena29807002/002/boundary/internal/credential/vault/jobs_test.go:315:19|not enough arguments in call to r.Run\n\thave (context.Context)\n\twant (context.Context, \"time\".Duration)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenamegpt-oss-20b-mediumboundary_9354a4ebserena29807002/002/boundary/internal/credential/vault/jobs_test.go:1845:17|not enough arguments in call to r.Run\n\thave (context.Context)\n\twant (context.Context, \"time\".Duration)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenamegpt-oss-20b-mediumboundary_9354a4ebserena29807002/002/boundary/internal/credential/vault/jobs_test.go:2327:17|not enough arguments in call to r.Run\n\thave (context.Context)\n\twant (context.Context, \"time\".Duration)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenamegpt-oss-20b-mediumboundary_9354a4ebserena29807002/002/boundary/internal/host/plugin/job_set_sync_test.go:159:34|not enough arguments in call to r.Run\n\thave (context.Context)\n\twant (context.Context, \"time\".Duration)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenamegpt-oss-20b-mediumboundary_9354a4ebserena29807002/002/boundary/internal/server/job/rotate_roots_job_test.go:108:21|not enough arguments in call to got.Run\n\thave (context.Context)\n\twant (context.Context, \"time\".Duration)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenamegpt-oss-20b-mediumboundary_9354a4ebserena29807002/002/boundary/internal/server/job/upsert_worker_storage_bucket_job.go:30:9|cannot use \u0026upsertWorkerStorageBucketJob{} (value of type *upsertWorkerStorageBucketJob) as scheduler.Job value in return statement: *upsertWorkerStorageBucketJob does not implement scheduler.Job (wrong type for method Run)\n\t\thave Run(context.Context) error\n\t\twant Run(context.Context, \"time\".Duration) error",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenamegpt-oss-20b-mediumboundary_9354a4ebserena29807002/002/boundary/internal/credential/vault/jobs_test.go:1681:19|not enough arguments in call to r.Run\n\thave (context.Context)\n\twant (context.Context, \"time\".Duration)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenamegpt-oss-20b-mediumboundary_9354a4ebserena29807002/002/boundary/internal/credential/vault/jobs_test.go:1882:17|not enough arguments in call to r.Run\n\thave (context.Context)\n\twant (context.Context, \"time\".Duration)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenamegpt-oss-20b-mediumboundary_9354a4ebserena29807002/002/boundary/internal/db/schema/internal/postgres/migration_log_test.go:158:23|not enough arguments in call to p.CommitRun\n\thave (context.Context)\n\twant (context.Context, unknown type)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenamegpt-oss-20b-mediumboundary_9354a4ebserena29807002/002/boundary/internal/host/plugin/job_orphaned_host_cleanup_test.go:137:34|not enough arguments in call to r.Run\n\thave (context.Context)\n\twant (context.Context, \"time\".Duration)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenamegpt-oss-20b-mediumboundary_9354a4ebserena29807002/002/boundary/internal/host/plugin/job_orphaned_host_cleanup_test.go:158:34|not enough arguments in call to r.Run\n\thave (context.Context)\n\twant (context.Context, \"time\".Duration)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenamegpt-oss-20b-mediumboundary_9354a4ebserena29807002/002/boundary/internal/credential/vault/jobs_test.go:2070:17|not enough arguments in call to r.Run\n\thave (context.Context)\n\twant (context.Context, \"time\".Duration)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenamegpt-oss-20b-mediumboundary_9354a4ebserena29807002/002/boundary/internal/db/schema/internal/postgres/ensure_version_test.go:99:23|not enough arguments in call to p.CommitRun\n\thave (context.Context)\n\twant (context.Context, unknown type)",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenamegpt-oss-20b-mediumboundary_9354a4ebserena29807002/002/boundary/internal/host/plugin/repository_host_catalog_test.go:1595:31|cannot use j (variable of type *testSyncJob) as scheduler.Job value in argument to sched.RegisterJob: *testSyncJob does not implement scheduler.Job (wrong type for method Run)\n\t\thave Run(context.Context) error\n\t\twant Run(context.Context, \"time\".Duration) error"
+ ],
+ "op_mix": {},
+ "pass": false,
+ "predicate": true,
+ "profile": "gpt-oss-20b-medium",
+ "prompt": "refactor(scheduler): Add statusThreshold parameter to job.Run\n\nSpecifically: add parameter _ time.Duration to censusJob.Run; add parameter _ time.Duration to TokenRevocationJob.Run; add parameter _ time.Duration to CredentialRenewalJob.Run; add parameter _ time.Duration to TokenRenewalJob.Run; add parameter _ time.Duration to CredentialCleanupJob.Run; add parameter _ time.Duration to CredentialRevocationJob.Run; add parameter _ time.Duration to CredentialStoreCleanupJob.Run; add parameter _ time.Duration to OrphanedHostCleanupJob.Run; add parameter _ time.Duration to SetSyncJob.Run; add parameter _ time.Duration to dataKeyVersionDestructionMonitorJob.Run; add parameter _ time.Duration to tableRewrappingJob.Run; add parameter _ time.Duration to purgeJob.Run; add parameter _ time.Duration to cleanerJob.Run; add parameter statusThreshold time.Duration to testJob.Run; add parameter _ time.Duration to rotateRootsJob.Run; add parameter ctx context.Context to upsertWorkerStorageBucketJob.Run; add parameter _ time.Duration to deleteTerminatedJob.Run; add parameter _ time.Duration to sessionConnectionCleanupJob.Run; add parameter _ time.Duration to snapshotJob.Run",
+ "rejects_total": 0,
+ "repairs_offered": 0,
+ "resends": 0,
+ "specs": [
+  {
+   "ok": true,
+   "param": "_ time.Duration",
+   "signature": "func(ctx context.Context, _ time.Duration) error",
+   "sym": "github.com/hashicorp/boundary/internal/census.censusJob.Run"
+  },
+  {
+   "ok": true,
+   "param": "_ time.Duration",
+   "signature": "func(ctx context.Context, _ time.Duration) error",
+   "sym": "github.com/hashicorp/boundary/internal/credential/vault.TokenRevocationJob.Run"
+  },
+  {
+   "ok": true,
+   "param": "_ time.Duration",
+   "signature": "func(ctx context.Context, _ time.Duration) error",
+   "sym": "github.com/hashicorp/boundary/internal/credential/vault.CredentialRenewalJob.Run"
+  },
+  {
+   "ok": true,
+   "param": "_ time.Duration",
+   "signature": "func(ctx context.Context, _ time.Duration) error",
+   "sym": "github.com/hashicorp/boundary/internal/credential/vault.TokenRenewalJob.Run"
+  },
+  {
+   "ok": true,
+   "param": "_ time.Duration",
+   "signature": "func(ctx context.Context, _ time.Duration) error",
+   "sym": "github.com/hashicorp/boundary/internal/credential/vault.CredentialCleanupJob.Run"
+  },
+  {
+   "ok": true,
+   "param": "_ time.Duration",
+   "signature": "func(ctx context.Context, _ time.Duration) error",
+   "sym": "github.com/hashicorp/boundary/internal/credential/vault.CredentialRevocationJob.Run"
+  },
+  {
+   "ok": true,
+   "param": "_ time.Duration",
+   "signature": "func(ctx context.Context, _ time.Duration) error",
+   "sym": "github.com/hashicorp/boundary/internal/credential/vault.CredentialStoreCleanupJob.Run"
+  },
+  {
+   "ok": true,
+   "param": "_ time.Duration",
+   "signature": "func(ctx context.Context, _ time.Duration) error",
+   "sym": "github.com/hashicorp/boundary/internal/host/plugin.OrphanedHostCleanupJob.Run"
+  },
+  {
+   "ok": true,
+   "param": "_ time.Duration",
+   "signature": "func(ctx context.Context, _ time.Duration) error",
+   "sym": "github.com/hashicorp/boundary/internal/host/plugin.SetSyncJob.Run"
+  },
+  {
+   "ok": true,
+   "param": "_ time.Duration",
+   "signature": "func(ctx context.Context, _ time.Duration) error",
+   "sym": "github.com/hashicorp/boundary/internal/kms/job.dataKeyVersionDestructionMonitorJob.Run"
+  },
+  {
+   "ok": true,
+   "param": "_ time.Duration",
+   "signature": "func(ctx context.Context, _ time.Duration) error",
+   "sym": "github.com/hashicorp/boundary/internal/kms/job.tableRewrappingJob.Run"
+  },
+  {
+   "ok": true,
+   "param": "_ time.Duration",
+   "signature": "func(ctx context.Context, _ time.Duration) error",
+   "sym": "github.com/hashicorp/boundary/internal/pagination/purge.purgeJob.Run"
+  },
+  {
+   "ok": true,
+   "param": "_ time.Duration",
+   "signature": "func(ctx context.Context, _ time.Duration) error",
+   "sym": "github.com/hashicorp/boundary/internal/scheduler/cleaner.cleanerJob.Run"
+  },
+  {
+   "ok": true,
+   "param": "statusThreshold time.Duration",
+   "signature": "func(ctx context.Context, statusThreshold time.Duration) error",
+   "sym": "github.com/hashicorp/boundary/internal/scheduler.testJob.Run"
+  },
+  {
+   "ok": true,
+   "param": "_ time.Duration",
+   "signature": "func(ctx context.Context, _ time.Duration) error",
+   "sym": "github.com/hashicorp/boundary/internal/server/job.rotateRootsJob.Run"
+  },
+  {
+   "ok": true,
+   "param": "ctx context.Context",
+   "signature": "func(ctx context.Context) error",
+   "sym": "github.com/hashicorp/boundary/internal/server/job.upsertWorkerStorageBucketJob.Run"
+  },
+  {
+   "ok": true,
+   "param": "_ time.Duration",
+   "signature": "func(ctx context.Context, _ time.Duration) error",
+   "sym": "github.com/hashicorp/boundary/internal/session.deleteTerminatedJob.Run"
+  },
+  {
+   "ok": true,
+   "param": "_ time.Duration",
+   "signature": "func(ctx context.Context, _ time.Duration) error",
+   "sym": "github.com/hashicorp/boundary/internal/session.sessionConnectionCleanupJob.Run"
+  },
+  {
+   "ok": true,
+   "param": "_ time.Duration",
+   "signature": "func(ctx context.Context, _ time.Duration) error",
+   "sym": "github.com/hashicorp/boundary/internal/snapshot.snapshotJob.Run"
+  }
+ ],
+ "steps": 47,
+ "task": "boundary_9354a4eb",
+ "tests": false,
+ "tests_baseline": true,
+ "tokens_in": 53925,
+ "tokens_out": 6026,
+ "tokens_reasoning": 0,
+ "typecheck": false,
+ "wall_s": 298.678607167
+}

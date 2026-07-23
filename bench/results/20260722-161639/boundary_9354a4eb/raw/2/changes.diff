@@ -1,0 +1,26 @@
+diff --git a/internal/scheduler/testing.go b/internal/scheduler/testing.go
+index 71fafbcce..81f1bf82f 100644
+--- a/internal/scheduler/testing.go
++++ b/internal/scheduler/testing.go
+@@ -84,7 +84,7 @@ func (j testJob) Status() JobStatus {
+ 	return j.statusFn()
+ }
+ 
+-func (j testJob) Run(ctx context.Context) error {
++func (j testJob) Run(ctx context.Context, statusThreshold time.Duration) error {
+ 	return j.fn(ctx)
+ }
+ 
+diff --git a/internal/snapshot/snapshot_job.go b/internal/snapshot/snapshot_job.go
+index 6bda0cd25..6ec92cf10 100644
+--- a/internal/snapshot/snapshot_job.go
++++ b/internal/snapshot/snapshot_job.go
+@@ -41,7 +41,7 @@ func (c *snapshotJob) Status() scheduler.JobStatus {
+ 
+ // Run performs the required work depending on the implementation.
+ // The context is used to notify the job that it should exit early.
+-func (c *snapshotJob) Run(ctx context.Context) error {
++func (c *snapshotJob) Run(ctx context.Context, _ time.Duration) error {
+ 	const op = "snapshot.(snapshotJob).Run"
+ 	err := runFn(ctx, c)
+ 	return err

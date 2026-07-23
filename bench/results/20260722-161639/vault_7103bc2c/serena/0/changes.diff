@@ -1,0 +1,88 @@
+diff --git a/internal/observability/event/audit_sink_file.go b/internal/observability/event/audit_sink_file.go
+index decffce3bc..2ad4f40d94 100644
+--- a/internal/observability/event/audit_sink_file.go
++++ b/internal/observability/event/audit_sink_file.go
+@@ -35,7 +35,7 @@ type AuditFileSink struct {
+ 
+ // NewAuditFileSink should be used to create a new AuditFileSink.
+ // Accepted options: WithFileMode and WithPrefix.
+-func NewAuditFileSink(path string, format auditFormat, opt ...Option) (*AuditFileSink, error) {
++func NewAuditFileSink(path string, format auditFormat, useEventLogger bool, opt ...Option) (*AuditFileSink, error) {
+ 	const op = "event.NewAuditFileSink"
+ 
+ 	// Parse and check path
+diff --git a/internal/observability/event/audit_sink_file_test.go b/internal/observability/event/audit_sink_file_test.go
+index 94f0e7bd90..68df8ab264 100644
+--- a/internal/observability/event/audit_sink_file_test.go
++++ b/internal/observability/event/audit_sink_file_test.go
+@@ -22,7 +22,7 @@ import (
+ 
+ // TestAuditFileSink_Type ensures that the node is a 'sink' type.
+ func TestAuditFileSink_Type(t *testing.T) {
+-	f, err := NewAuditFileSink(t.TempDir(), AuditFormatJSON)
++	f, err := NewAuditFileSink(t.TempDir(), AuditFormatJSON, false)
+ 	require.NoError(t, err)
+ 	require.NotNil(t, f)
+ 	require.Equal(t, eventlogger.NodeTypeSink, f.Type())
+@@ -143,7 +143,7 @@ func TestNewAuditFileSink(t *testing.T) {
+ 				tempPath = filepath.Join(tempDir, tempPath)
+ 			}
+ 
+-			sink, err := NewAuditFileSink(tempPath, tc.Format, tc.Options...)
++			sink, err := NewAuditFileSink(tempPath, tc.Format, false, tc.Options...)
+ 
+ 			switch {
+ 			case tc.IsErrorExpected:
+@@ -236,7 +236,7 @@ func TestAuditFileSink_Reopen(t *testing.T) {
+ 				}()
+ 			}
+ 
+-			sink, err := NewAuditFileSink(tempPath, AuditFormatJSON, tc.Options...)
++			sink, err := NewAuditFileSink(tempPath, AuditFormatJSON, false, tc.Options...)
+ 			require.NoError(t, err)
+ 			require.NotNil(t, sink)
+ 
+@@ -314,7 +314,7 @@ func TestAuditFileSink_Process(t *testing.T) {
+ 			require.NotNil(t, formatter)
+ 
+ 			// Setup a sink
+-			sink, err := NewAuditFileSink(tc.Path, tc.Format)
++			sink, err := NewAuditFileSink(tc.Path, tc.Format, false)
+ 			require.NoError(t, err)
+ 			require.NotNil(t, sink)
+ 
+@@ -391,7 +391,7 @@ func BenchmarkAuditFileSink_Process(b *testing.B) {
+ 	require.NotNil(b, formatter)
+ 
+ 	// Create the sink node.
+-	sink, err := NewAuditFileSink("/dev/null", AuditFormatJSON)
++	sink, err := NewAuditFileSink("/dev/null", AuditFormatJSON, false)
+ 	require.NoError(b, err)
+ 	require.NotNil(b, sink)
+ 
+diff --git a/internal/observability/event/audit_sink_socket.go b/internal/observability/event/audit_sink_socket.go
+index f76de6c634..e611f517a2 100644
+--- a/internal/observability/event/audit_sink_socket.go
++++ b/internal/observability/event/audit_sink_socket.go
+@@ -27,7 +27,7 @@ type AuditSocketSink struct {
+ 
+ // NewAuditSocketSink should be used to create a new AuditSocketSink.
+ // Accepted options: WithMaxDuration and WithSocketType.
+-func NewAuditSocketSink(format auditFormat, address string, opt ...Option) (*AuditSocketSink, error) {
++func NewAuditSocketSink(format auditFormat, address string, useEventLogger bool, opt ...Option) (*AuditSocketSink, error) {
+ 	const op = "event.NewAuditSocketSink"
+ 
+ 	opts, err := getOpts(opt...)
+diff --git a/internal/observability/event/audit_sink_syslog.go b/internal/observability/event/audit_sink_syslog.go
+index 61fbfb0873..5ab334c235 100644
+--- a/internal/observability/event/audit_sink_syslog.go
++++ b/internal/observability/event/audit_sink_syslog.go
+@@ -20,7 +20,7 @@ type AuditSyslogSink struct {
+ 
+ // NewAuditSyslogSink should be used to create a new AuditSyslogSink.
+ // Accepted options: WithFacility and WithTag.
+-func NewAuditSyslogSink(format auditFormat, opt ...Option) (*AuditSyslogSink, error) {
++func NewAuditSyslogSink(format auditFormat, useEventLogger bool, opt ...Option) (*AuditSyslogSink, error) {
+ 	const op = "event.NewAuditSyslogSink"
+ 
+ 	opts, err := getOpts(opt...)

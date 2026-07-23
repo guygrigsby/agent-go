@@ -1,0 +1,62 @@
+{
+ "agent_done": "2026-07-23T06:20:57.0863895Z",
+ "agent_started": "2026-07-23T06:18:07.293006Z",
+ "cache_read": 1136908,
+ "cache_write": 0,
+ "capped": false,
+ "failure_kind": "scored_fail",
+ "first_invalid_s": 85.379574,
+ "intermediate_states": 6,
+ "invalid_intermediate_rate": 1,
+ "invalid_intermediates": 6,
+ "iter": 4,
+ "kind": "move",
+ "mode": "raw",
+ "new_errors": [
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenamegpt-oss-20b-mediumboundary_dd2c3807raw2189170583/005/boundary/internal/libs/crypto/crypto_test.go:4:5|\"context\" imported and not used",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenamegpt-oss-20b-mediumboundary_dd2c3807raw2189170583/005/boundary/internal/libs/crypto/crypto_test.go:5:5|\"crypto/rand\" imported and not used",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenamegpt-oss-20b-mediumboundary_dd2c3807raw2189170583/005/boundary/internal/libs/crypto/crypto_test.go:12:5|\"github.com/hashicorp/boundary/internal/types/scope\" imported and not used",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenamegpt-oss-20b-mediumboundary_dd2c3807raw2189170583/005/boundary/internal/kms/kms.go:5:2|\"crypto/sha256\" imported and not used",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenamegpt-oss-20b-mediumboundary_dd2c3807raw2189170583/005/boundary/internal/kms/kms.go:16:2|\"golang.org/x/crypto/hkdf\" imported and not used",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenamegpt-oss-20b-mediumboundary_dd2c3807raw2189170583/005/boundary/internal/auth/oidc/service.go:166:53|undefined: kms",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenamegpt-oss-20b-mediumboundary_dd2c3807raw2189170583/005/boundary/internal/auth/oidc/service.go:179:49|undefined: kms",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenamegpt-oss-20b-mediumboundary_dd2c3807raw2189170583/005/boundary/internal/libs/crypto/crypto_test.go:15:5|\"github.com/hashicorp/go-uuid\" imported as uuid and not used",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenamegpt-oss-20b-mediumboundary_dd2c3807raw2189170583/005/boundary/internal/kms/kms.go:7:2|\"io\" imported and not used",
+  "/var/folders/9f/txt0j2rs2wx3lqx9vfj9x3240000gn/T/BenchmarkRenamegpt-oss-20b-mediumboundary_dd2c3807raw2189170583/005/boundary/internal/auth/oidc/service.go:179:69|undefined: kms"
+ ],
+ "op_mix": {},
+ "pass": false,
+ "predicate": true,
+ "profile": "gpt-oss-20b-medium",
+ "prompt": "refactor: Move functions from kms pkg to new libs/crypto pkg\n\nSpecifically: move NewDerivedReader from github.com/hashicorp/boundary/internal/kms to github.com/hashicorp/boundary/internal/libs/crypto; move TestNewDerivedReader from github.com/hashicorp/boundary/internal/kms to github.com/hashicorp/boundary/internal/libs/crypto",
+ "rejects_total": 0,
+ "repairs_offered": 0,
+ "resends": 0,
+ "specs": [
+  {
+   "in_target": true,
+   "ok": true,
+   "still_in_source": false,
+   "sym": "github.com/hashicorp/boundary/internal/kms.NewDerivedReader",
+   "to_name": "",
+   "to_pkg": "github.com/hashicorp/boundary/internal/libs/crypto"
+  },
+  {
+   "in_target": true,
+   "ok": true,
+   "still_in_source": false,
+   "sym": "github.com/hashicorp/boundary/internal/kms.TestNewDerivedReader",
+   "to_name": "",
+   "to_pkg": "github.com/hashicorp/boundary/internal/libs/crypto"
+  }
+ ],
+ "steps": 44,
+ "task": "boundary_dd2c3807",
+ "tests": false,
+ "tests_baseline": true,
+ "tokens_in": 42114,
+ "tokens_out": 7289,
+ "tokens_reasoning": 0,
+ "typecheck": false,
+ "wall_s": 169.7933835
+}

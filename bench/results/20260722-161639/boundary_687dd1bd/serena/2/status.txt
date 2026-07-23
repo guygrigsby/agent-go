@@ -1,0 +1,3 @@
+?? .serena/
+?? internal/session/session_cleanup_job.go
+?? opencode.json

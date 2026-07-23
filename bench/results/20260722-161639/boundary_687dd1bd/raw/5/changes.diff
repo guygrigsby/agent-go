@@ -1,0 +1,142 @@
+diff --git a/internal/servers/controller/controller.go b/internal/servers/controller/controller.go
+index 76e80816f..702f9945e 100644
+--- a/internal/servers/controller/controller.go
++++ b/internal/servers/controller/controller.go
+@@ -368,7 +368,7 @@ func (c *Controller) registerJobs() error {
+ // registerSessionConnectionCleanupJob is a helper method to abstract
+ // registering the session connection cleanup job specifically.
+ func (c *Controller) registerSessionConnectionCleanupJob() error {
+-	sessionConnectionCleanupJob, err := newSessionConnectionCleanupJob(c.ConnectionRepoFn, c.conf.StatusGracePeriodDuration)
++    sessionConnectionCleanupJob, err := session.NewSessionConnectionCleanupJob(common.ConnectionRepoFactory(c.ConnectionRepoFn), c.conf.StatusGracePeriodDuration)
+ 	if err != nil {
+ 		return fmt.Errorf("error creating session cleanup job: %w", err)
+ 	}
+diff --git a/internal/servers/controller/session_cleanup_job_test.go b/internal/servers/controller/session_cleanup_job_test.go
+index 094a0602d..0b747e1aa 100644
+--- a/internal/servers/controller/session_cleanup_job_test.go
++++ b/internal/servers/controller/session_cleanup_job_test.go
+@@ -1,4 +1,4 @@
+-package controller
++package session
+ 
+ import (
+ 	"context"
+@@ -12,7 +12,7 @@ import (
+ 	"github.com/hashicorp/boundary/internal/kms"
+ 	"github.com/hashicorp/boundary/internal/scheduler"
+ 	"github.com/hashicorp/boundary/internal/servers"
+-	"github.com/hashicorp/boundary/internal/session"
++
+ 	"github.com/stretchr/testify/assert"
+ 	"github.com/stretchr/testify/require"
+ )
+@@ -37,16 +37,16 @@ func TestSessionConnectionCleanupJob(t *testing.T) {
+ 	kms := kms.TestKms(t, conn, wrapper)
+ 	serversRepo, err := servers.NewRepository(rw, rw, kms)
+ 	require.NoError(err)
+-	sessionRepo, err := session.NewRepository(rw, rw, kms)
+-	connectionRepo, err := session.NewConnectionRepository(ctx, rw, rw, kms, session.WithDeadWorkerConnCloseMinGrace(gracePeriod))
++	sessionRepo, err := NewRepository(rw, rw, kms)
++	connectionRepo, err := NewConnectionRepository(ctx, rw, rw, kms, WithDeadWorkerConnCloseMinGrace(gracePeriod))
+ 	require.NoError(err)
+ 
+ 	numConns := 12
+ 
+ 	// Create two "workers". One will remain untouched while the other "goes
+ 	// away and comes back" (worker 2).
+-	worker1 := session.TestWorker(t, conn, wrapper, session.WithServerId("worker1"))
+-	worker2 := session.TestWorker(t, conn, wrapper, session.WithServerId("worker2"))
++	worker1 := TestWorker(t, conn, wrapper, WithServerId("worker1"))
++	worker2 := TestWorker(t, conn, wrapper, WithServerId("worker2"))
+ 
+ 	// Create a few sessions on each, activate, and authorize a connection
+ 	var connIds []string
+@@ -56,13 +56,13 @@ func TestSessionConnectionCleanupJob(t *testing.T) {
+ 		if i%2 == 0 {
+ 			serverId = worker2.PrivateId
+ 		}
+-		sess := session.TestDefaultSession(t, conn, wrapper, iamRepo, session.WithServerId(serverId), session.WithDbOpts(db.WithSkipVetForWrite(true)))
++		sess := TestDefaultSession(t, conn, wrapper, iamRepo, WithServerId(serverId), WithDbOpts(db.WithSkipVetForWrite(true)))
+ 		sess, _, err = sessionRepo.ActivateSession(ctx, sess.GetPublicId(), sess.Version, serverId, "worker", []byte("foo"))
+ 		require.NoError(err)
+-		c, cs, _, err := session.AuthorizeConnection(ctx, sessionRepo, connectionRepo, sess.GetPublicId(), serverId)
++		c, cs, _, err := AuthorizeConnection(ctx, sessionRepo, connectionRepo, sess.GetPublicId(), serverId)
+ 		require.NoError(err)
+ 		require.Len(cs, 1)
+-		require.Equal(session.StatusAuthorized, cs[0].Status)
++		require.Equal(StatusAuthorized, cs[0].Status)
+ 		connIds = append(connIds, c.GetPublicId())
+ 		if i%2 == 0 {
+ 			connIdsByWorker[worker2.PrivateId] = append(connIdsByWorker[worker2.PrivateId], c.GetPublicId())
+@@ -75,7 +75,7 @@ func TestSessionConnectionCleanupJob(t *testing.T) {
+ 	// This is just to ensure we have a spread when we test it out.
+ 	for i, connId := range connIds {
+ 		if i%2 == 0 {
+-			_, cs, err := connectionRepo.ConnectConnection(ctx, session.ConnectWith{
++			_, cs, err := connectionRepo.ConnectConnection(ctx, ConnectWith{
+ 				ConnectionId:       connId,
+ 				ClientTcpAddress:   "127.0.0.1",
+ 				ClientTcpPort:      22,
+@@ -87,10 +87,10 @@ func TestSessionConnectionCleanupJob(t *testing.T) {
+ 			require.Len(cs, 2)
+ 			var foundAuthorized, foundConnected bool
+ 			for _, status := range cs {
+-				if status.Status == session.StatusAuthorized {
++				if status.Status == StatusAuthorized {
+ 					foundAuthorized = true
+ 				}
+-				if status.Status == session.StatusConnected {
++				if status.Status == StatusConnected {
+ 					foundConnected = true
+ 				}
+ 			}
+@@ -100,9 +100,9 @@ func TestSessionConnectionCleanupJob(t *testing.T) {
+ 	}
+ 
+ 	// Create the job.
+-	job, err := newSessionConnectionCleanupJob(
+-		func() (*session.ConnectionRepository, error) { return connectionRepo, nil },
+-		session.DeadWorkerConnCloseMinGrace,
++	job, err := NewSessionConnectionCleanupJob(
++		func() (*ConnectionRepository, error) { return connectionRepo, nil },
++		DeadWorkerConnCloseMinGrace,
+ 	)
+ 	job.gracePeriod = gracePeriod // by-pass factory assert so we dont have to wait so long
+ 	require.NoError(err)
+@@ -129,7 +129,7 @@ func TestSessionConnectionCleanupJob(t *testing.T) {
+ 			require.NoError(err)
+ 			var foundClosed bool
+ 			for _, state := range states {
+-				if state.Status == session.StatusClosed {
++				if state.Status == StatusClosed {
+ 					foundClosed = true
+ 					break
+ 				}
+@@ -147,10 +147,10 @@ func TestSessionConnectionCleanupJob(t *testing.T) {
+ func TestSessionConnectionCleanupJobNewJobErr(t *testing.T) {
+ 	t.Parallel()
+ 	ctx := context.TODO()
+-	const op = "controller.newNewSessionConnectionCleanupJob"
++	const op = "NewSessionConnectionCleanupJob"
+ 	require := require.New(t)
+ 
+-	job, err := newSessionConnectionCleanupJob(nil, 0)
++	job, err := NewSessionConnectionCleanupJob(nil, 0)
+ 	require.Equal(err, errors.E(
+ 		ctx,
+ 		errors.WithCode(errors.InvalidParameter),
+@@ -159,12 +159,12 @@ func TestSessionConnectionCleanupJobNewJobErr(t *testing.T) {
+ 	))
+ 	require.Nil(job)
+ 
+-	job, err = newSessionConnectionCleanupJob(func() (*session.ConnectionRepository, error) { return nil, nil }, 0)
++	job, err = NewSessionConnectionCleanupJob(func() (*ConnectionRepository, error) { return nil, nil }, 0)
+ 	require.Equal(err, errors.E(
+ 		ctx,
+ 		errors.WithCode(errors.InvalidParameter),
+ 		errors.WithOp(op),
+-		errors.WithMsg(fmt.Sprintf("invalid gracePeriod, must be greater than %s", session.DeadWorkerConnCloseMinGrace)),
++		errors.WithMsg(fmt.Sprintf("invalid gracePeriod, must be greater than %s", DeadWorkerConnCloseMinGrace)),
+ 	))
+ 	require.Nil(job)
+ }
