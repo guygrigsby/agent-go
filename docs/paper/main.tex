@@ -277,6 +277,20 @@ One baseline per alternative. Raw uses shell tools. Serena is one
 symbol-addressing implementation at a pinned revision. A different text
 harness or a different LSP server could close or widen the gap.
 
+Uncontrolled conditions. The runs were not executed in a controlled
+environment. The hardware is a home lab of consumer parts, shared with
+other load, under thermal and power conditions that varied across a run.
+Rounds were paused and resumed rather than run start to finish, so a
+single round spans hours or days of wall clock and whatever the machine
+was doing in between. Completed episodes are never re-run on resume, so
+the pass counts and invalid-intermediate counts are unaffected. The
+timing figures are not. Median time-to-green and the wall-clock cap sit
+on top of variable generation speed, and an episode that throttles near
+the cap can hit it for a reason that is thermal, not model. This bites
+only the episodes already close to the limit, but where a model caps
+often it is a real source of noise. Treat the outcome columns as the
+result and the timing columns as soft.
+
 Author-run. The serving, harness, and scoring are all ours. Every
 transcript, diff, request log, and serving configuration is released so
 the result can be checked, but it has not been reproduced independently
