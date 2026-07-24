@@ -62,10 +62,90 @@ func paperTables(runDirs []string, outDir string) error {
 	fmt.Fprintf(&mb, "\\newcommand{\\RawPassRate}{%s}\n", pct(rawP, rawN))
 	fmt.Fprintf(&mb, "\\newcommand{\\SemanticPassCount}{%d/%d}\n", semP, semN)
 	fmt.Fprintf(&mb, "\\newcommand{\\RawPassCount}{%d/%d}\n", rawP, rawN)
+	mb.WriteString(perModelMacros(rows))
 	if err := os.WriteFile(filepath.Join(outDir, "summary_macros.tex"), []byte(mb.String()), 0o644); err != nil {
 		return err
 	}
 	return paperFigures(rows, outDir)
+}
+
+// perModelMacros emits the per-model pass rates and the invalid-intermediate
+// bounds the abstract and captions cite, so no result number is hand-typed.
+// Macro names use a LaTeX-safe alias per profile (letters only, no digits or
+// hyphens); unknown profiles fall back to a sanitized name.
+func perModelMacros(rows []row) string {
+	alias := map[string]string{
+		"qwen3.5-9b-udq4":    "Qwen",
+		"glm-flash":          "Glm",
+		"gpt-oss-20b-medium": "GptOss",
+	}
+	type cell struct{ pass, n, invalid, states int }
+	pool := map[string]map[string]*cell{}
+	tasks := map[string]bool{}
+	for _, r := range rows {
+		tasks[r.Task] = true
+		if pool[r.Profile] == nil {
+			pool[r.Profile] = map[string]*cell{}
+		}
+		c := pool[r.Profile][r.Mode]
+		if c == nil {
+			c = &cell{}
+			pool[r.Profile][r.Mode] = c
+		}
+		c.pass += r.Passes
+		c.n += r.N
+		c.invalid += r.Invalid
+		c.states += r.States
+	}
+	rate := func(num, den int) int {
+		if den == 0 {
+			return 0
+		}
+		return int(100*float64(num)/float64(den) + 0.5)
+	}
+	var b strings.Builder
+	fmt.Fprintf(&b, "\\newcommand{\\TaskCount}{%d}\n", len(tasks))
+	rawMin, rawMax, semMax := 101, -1, -1
+	for profile, modes := range pool {
+		a := alias[profile]
+		if a == "" {
+			a = sanitizeAlias(profile)
+		}
+		for _, m := range []string{"raw", "serena", "semantic"} {
+			c := modes[m]
+			if c == nil {
+				continue
+			}
+			name := a + strings.ToUpper(m[:1]) + m[1:] + "Pass"
+			fmt.Fprintf(&b, "\\newcommand{\\%s}{%d\\%%}\n", name, rate(c.pass, c.n))
+			iv := rate(c.invalid, c.states)
+			switch m {
+			case "raw":
+				rawMin, rawMax = min(rawMin, iv), max(rawMax, iv)
+			case "semantic":
+				semMax = max(semMax, iv)
+			}
+		}
+	}
+	fmt.Fprintf(&b, "\\newcommand{\\InvalidRawMin}{%d\\%%}\n", rawMin)
+	fmt.Fprintf(&b, "\\newcommand{\\InvalidRawMax}{%d\\%%}\n", rawMax)
+	fmt.Fprintf(&b, "\\newcommand{\\InvalidSemanticMax}{%d\\%%}\n", semMax)
+	return b.String()
+}
+
+// sanitizeAlias reduces a profile name to a LaTeX-macro-safe token: letters
+// only, first letter upper. ponytail: good enough for the fallback path.
+func sanitizeAlias(s string) string {
+	var out []rune
+	for _, r := range s {
+		if (r >= 'a' && r <= 'z') || (r >= 'A' && r <= 'Z') {
+			out = append(out, r)
+		}
+	}
+	if len(out) == 0 {
+		return "Model"
+	}
+	return strings.ToUpper(string(out[0])) + string(out[1:])
 }
 
 // paperFigures renders the two cross-model bar charts the paper needs: pass@k

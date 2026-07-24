@@ -32,6 +32,17 @@ func TestPaperTablesGenerated(t *testing.T) {
 			t.Fatalf("macros missing %s:\n%s", m, macros)
 		}
 	}
+	// Per-model result numbers are generated too, so the abstract cites no
+	// literals. Fixture: glm semantic 1/1 = 100%, raw 0/1 = 0%.
+	for _, m := range []string{`\GlmSemanticPass{100\%}`, `\GlmRawPass{0\%}`, `\TaskCount{1}`, `\InvalidSemanticMax`} {
+		want := "\\newcommand{" + strings.SplitN(m, "{", 2)[0] + "}"
+		if !strings.Contains(string(macros), want) {
+			t.Fatalf("macros missing %s:\n%s", want, macros)
+		}
+	}
+	if !strings.Contains(string(macros), `\newcommand{\GlmSemanticPass}{100\%}`) {
+		t.Fatalf("GlmSemanticPass wrong value:\n%s", macros)
+	}
 }
 
 // Figures are generated the same way tables are: pgfplots bar charts whose
