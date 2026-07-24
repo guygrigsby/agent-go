@@ -221,11 +221,13 @@ on the tasks that need consistency across files.
 \begin{figure}[tbp]
 \centering
 \input{generated/pass_by_arm}
-\caption{Pass@k by mode, per model. The ordering semantic $\ge$ serena
-$\ge$ raw holds for every model in the grid. The lift is largest where
-the model is a weak freeform tool-caller (gpt-oss-20b-medium at
-\GptOssRawPass{} raw, \GptOssSemanticPass{} semantic). Generated from
-committed episode evidence.}
+\caption{Pass@k by mode, per model. Error bars are 95\% Wilson
+intervals over the k episodes per cell. The ordering semantic $\ge$
+serena $\ge$ raw holds for every model in the grid, though at this k the
+intervals overlap within a model. The lift is largest where the model is
+a weak freeform tool-caller (gpt-oss-20b-medium at \GptOssRawPass{} raw,
+\GptOssSemanticPass{} semantic). Generated from committed episode
+evidence.}
 \label{fig:pass}
 \end{figure}
 

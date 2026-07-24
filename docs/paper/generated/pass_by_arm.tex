@@ -6,12 +6,11 @@
   symbolic x coords={glm-flash,gpt-oss-20b-medium,qwen3.5-9b-udq4},
   xtick=data, x tick label style={rotate=18,anchor=east,font=\small},
   legend style={at={(0.5,1.04)},anchor=south,legend columns=-1,draw=none},
-  enlarge x limits=0.35, nodes near coords,
-  every node near coord/.append style={font=\tiny,/pgf/number format/precision=0,/pgf/number format/fixed},
+  enlarge x limits=0.35,
 ]
-\addplot coordinates {(glm-flash,41) (gpt-oss-20b-medium,5) (qwen3.5-9b-udq4,24)};
-\addplot coordinates {(glm-flash,49) (gpt-oss-20b-medium,36) (qwen3.5-9b-udq4,32)};
-\addplot coordinates {(glm-flash,55) (gpt-oss-20b-medium,54) (qwen3.5-9b-udq4,41)};
+\addplot+[error bars/.cd, y dir=both, y explicit] coordinates {(glm-flash,41) += (0,10) -= (0,9) (gpt-oss-20b-medium,5) += (0,6) -= (0,3) (qwen3.5-9b-udq4,24) += (0,9) -= (0,7)};
+\addplot+[error bars/.cd, y dir=both, y explicit] coordinates {(glm-flash,49) += (0,10) -= (0,10) (gpt-oss-20b-medium,36) += (0,10) -= (0,9) (qwen3.5-9b-udq4,32) += (0,10) -= (0,8)};
+\addplot+[error bars/.cd, y dir=both, y explicit] coordinates {(glm-flash,55) += (0,9) -= (0,10) (gpt-oss-20b-medium,54) += (0,9) -= (0,10) (qwen3.5-9b-udq4,41) += (0,10) -= (0,9)};
 \legend{raw, serena, semantic}
 \end{axis}
 \end{tikzpicture}
