@@ -64,21 +64,23 @@ tooling are released.
 TODO(guy): expand from idea.md.
 
 \section{Related Work}
-% From the 2026-07-16 landscape survey; expand with proper citations.
-Symbol-level agent tooling over LSP (Serena; gopls's experimental MCP
-server) navigates semantically but still edits text, or exposes a
-single mutation. The compiler diagnostics sit right there in those
-stacks; the difference here is that validation is not advisory.
-CODESTRUCT frames agents over structured action spaces with
-syntax-validated edits and reports token and accuracy gains; ago's
-mutations are type-checked, transactional, and carry repairs.
-Editing-format benchmarks (EDIT-Bench, RES-Q, FEA-Bench) measure text
-formats and find that strict formats hurt current models. That is the
-failure mode the repair channel converts: the format stays strict and
-the rejection hands back the corrected call. Compiler-guided patch
-generation (Repilot) and typed-hole context (Hazel) take the same
-validate-during-generation stance at expression granularity.
-TODO: full citations.
+Symbol-level agent tooling over LSP (Serena~\cite{serena}; gopls's
+experimental MCP server~\cite{goplsmcp}) navigates semantically but
+still edits text, or exposes a single mutation. The compiler
+diagnostics sit right there in those stacks; the difference here is
+that validation is not advisory. CODESTRUCT~\cite{codestruct} frames
+agents over structured action spaces with syntax-validated edits and
+reports token and accuracy gains; ago's mutations are type-checked,
+transactional, and carry repairs. Repository-scale editing benchmarks
+(RES-Q~\cite{resq}, FEA-Bench~\cite{feabench}, EDIT-Bench~\cite{editbench})
+find instructed edits hard for current models, and edit-format
+leaderboards~\cite{aider} track a distinct failure where a model cannot
+emit a valid edit in the required format at all. That is the failure
+mode the repair channel converts: the format stays strict and the
+rejection hands back the corrected call. Compiler-guided patch
+generation (Repilot~\cite{repilot}) and typed-hole context
+(Hazel~\cite{hazel}) take the same validate-during-generation stance at
+expression granularity.
 
 \section{The ago Protocol}
 \subsection{Surface}
@@ -213,5 +215,8 @@ infrastructure is author-run. TODO: expand honestly.
 \section{Availability}
 Code (MIT), all episode evidence, and analysis tooling:
 \url{https://github.com/guygrigsby/agent-go}.
+
+\bibliographystyle{plain}
+\bibliography{references}
 
 \end{document}
