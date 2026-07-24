@@ -207,9 +207,10 @@ shows each settled state compiles. No host tool wrote Go in any of them.
 
 \section{Results}
 Pooled over the frozen grid, semantic passed \SemanticPassCount{}
-episodes. Raw passed \RawPassCount{}. The per-task table tells the
-sharper story. Raw wins only where grep suffices, and goes to zero on
-the tasks that need whole-workspace consistency.
+episodes. Raw passed \RawPassCount{}. The full per-task table
+(Appendix~\ref{app:pertask}) tells the sharper story. Raw wins only
+where grep suffices, and goes to zero on the tasks that need
+whole-workspace consistency.
 
 \begin{figure}[tbp]
 \centering
@@ -246,16 +247,35 @@ of the time mid-edit, while the semantic mode holds it valid throughout.
 
 \FloatBarrier
 
-\captionof{table}{Per-task, per-mode outcomes across the frozen grid.
-Generated from committed episode evidence. Each pass@k is over k
-episodes. Median time-to-green is over passing episodes.}
-\label{tab:results}
-{\footnotesize\input{generated/results_table}}
-
 \section{Limitations}
-One language. Contamination is held constant across modes but inflates
-absolute rates. One serving stack per model, small k, and the
-infrastructure is author-run. TODO: expand honestly.
+One language. The protocol is built on Go's type and package model, and
+every result here is Go. Whether it helps in a language with a weaker or
+slower static checker is untested.
+
+Contamination. The tasks are mined from public repositories the models
+have likely trained on. This inflates the absolute pass rates. It is
+held equal across all three modes, so the comparison between them is
+fair. The claim is the ordering, not the raw percentages.
+
+Small k. Each cell is five or six episodes, so the per-task confidence
+intervals are wide. The result rests on the direction repeating across
+twenty tasks and three models, not on any single cell. One quant fixes
+each model to a single serving stack. A different quantization or server
+could move the numbers.
+
+Narrow task shape. The development set is twenty tasks over a few edit
+kinds, rename, add-parameter, and move. Real editing is wider. The
+held-out set from etcd, caddy, and hugo is the first test of whether the
+numbers survive off the tasks the engine was tuned on.
+
+One baseline per alternative. Raw uses shell tools. Serena is one
+symbol-addressing implementation at a pinned revision. A different text
+harness or a different LSP server could close or widen the gap.
+
+Author-run. The serving, harness, and scoring are all ours. Every
+transcript, diff, request log, and serving configuration is released so
+the result can be checked, but it has not been reproduced independently
+yet.
 
 \section{Conclusion}
 \texttt{ago} shows that how a weak model edits code matters more than
@@ -291,6 +311,15 @@ model is also a way to make one less weak.
 \section{Availability}
 Code (MIT), all episode evidence, and analysis tooling are at
 \url{https://github.com/guygrigsby/agent-go}.
+
+\appendix
+\section{Per-task results}
+\label{app:pertask}
+\captionof{table}{Per-task, per-mode outcomes across the frozen grid.
+Generated from committed episode evidence. Each pass@k is over k
+episodes. Median time-to-green is over passing episodes.}
+\label{tab:results}
+{\footnotesize\input{generated/results_table}}
 
 \bibliographystyle{plain}
 \bibliography{references}
