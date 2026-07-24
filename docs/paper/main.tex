@@ -33,7 +33,7 @@ mutations from a versioned operation catalog. The compiler validates
 every mutation against an in-memory snapshot before anything reaches
 disk. Edits apply as atomic, generation-checked transactions or not at
 all. An edit that does not typecheck is unrepresentable, not merely
-checked. Rejections are the conversation. Each one carries typed
+flagged. Rejections are the conversation. Each one carries typed
 diagnostics and paste-ready repairs, the corrected call written out
 verbatim. Resending a rejected call unchanged escalates. An oracle
 replays each task's ground-truth commit through the protocol before any
@@ -71,7 +71,7 @@ The usual fix is a stricter text format or a bigger model. We take the
 opposite position. Keep the small model and change what it is allowed
 to do. \texttt{ago} is a semantic edit protocol for Go. The agent does
 not write files. It queries a typechecked workspace and submits
-mutations from a fixed operation catalog. The compiler checks every
+mutations from a versioned operation catalog. The compiler checks every
 mutation against an in-memory snapshot before anything is written. An
 edit that does not typecheck is not caught after the fact. It never
 reaches disk.
@@ -84,8 +84,8 @@ A weak model does not have to know the fix. It has to be handed the fix
 and copy it. That is a much lower bar, and it is the bar most small
 models can clear.
 
-We test this against the honest alternatives, not a strawman. The same
-model, prompts, and time budget run in three modes. Raw file editing.
+We test this against the honest alternatives. The same model, prompts,
+and time budget run in three modes. Raw file editing.
 LSP symbol addressing with advisory validation (Serena~\cite{serena}).
 The protocol. An oracle replays each task's real answer through the
 protocol first, so no task enters the benchmark unless it is known to be
@@ -159,7 +159,8 @@ cannot get through, the model never had a chance. The problem is then
 ours, whether an engine bug, an extractor error, or a named protocol
 ceiling. The task stays out of the roster until it is fixed. This
 separates ``the model failed'' from ``the task was impossible'' by
-construction. The oracle transcripts double as a training corpus.
+construction. The oracle transcripts are a byproduct, a record of
+correct protocol usage for every task.
 
 \section{Benchmark}
 Same model, same harness, same prompts, same time cap, three modes.
@@ -213,9 +214,9 @@ shows each settled state compiles. No host tool wrote Go in any of them.
 \section{Results}
 Pooled over the frozen grid, semantic passed \SemanticPassCount{}
 episodes. Raw passed \RawPassCount{}. The full per-task table
-(Appendix~\ref{app:pertask}) tells the sharper story. Raw wins only
-where grep suffices, and goes to zero on the tasks that need
-whole-workspace consistency.
+(Appendix~\ref{app:pertask}) tells the sharper story. Raw does best on
+the edits a find-and-replace would nearly cover, and drops toward zero
+on the tasks that need consistency across files.
 
 \begin{figure}[tbp]
 \centering
@@ -262,7 +263,7 @@ have likely trained on. This inflates the absolute pass rates. It is
 held equal across all three modes, so the comparison between them is
 fair. The claim is the ordering, not the raw percentages.
 
-Small k. Each cell is five or six episodes, so the per-task confidence
+Small k. Each cell is five episodes, so the per-task confidence
 intervals are wide. The result rests on the direction repeating across
 twenty tasks and three models, not on any single cell. One quant fixes
 each model to a single serving stack. A different quantization or server
@@ -282,14 +283,16 @@ symbol-addressing implementation at a pinned revision. A different text
 harness or a different LSP server could close or widen the gap.
 
 Uncontrolled conditions. The runs were not executed in a controlled
-environment. The hardware is a home lab of consumer parts, shared with
-other load, under thermal and power conditions that varied across a run.
+environment. The hardware is a self-hosted home lab, prosumer and
+consumer parts, shared with other load, under thermal and power
+conditions that varied across a run.
 Rounds were paused and resumed rather than run start to finish, so a
 single round spans hours or days of wall clock and whatever the machine
 was doing in between. Completed episodes are never re-run on resume, so
 the pass counts and invalid-intermediate counts are unaffected. The
-timing figures are not. Median time-to-green and the wall-clock cap sit
-on top of variable generation speed, and an episode that throttles near
+timing figures are not. Median time-to-green, the wall-clock seconds to
+a passing state, and the cap sit on top of variable generation speed,
+and an episode that throttles near
 the cap can hit it for a reason that is thermal, not model. This bites
 only the episodes already close to the limit, but where a model caps
 often it is a real source of noise. Treat the outcome columns as the
@@ -310,8 +313,8 @@ is largest exactly where it should be, on the model that is worst at
 freeform editing, which climbs from \GptOssRawPass{} to
 \GptOssSemanticPass{}.
 
-The mechanism is not a mystery. Validation happens before the write, so
-a broken state is never on disk for the next step to trip over. The
+The mechanism is direct. Validation happens before the write, so a
+broken state is never on disk for the next step to trip over. The
 repair channel turns a rejection into a paste. The model spends its
 budget on the task instead of on recovering from its own malformed
 edits. The invalid-intermediate rate makes this concrete. The text
@@ -328,8 +331,9 @@ absolute numbers travel.
 Two things come next. The held-out set from etcd, caddy, and hugo tests
 the frozen engine on tasks it was never tuned against. A failure there
 is a protocol ceiling we report, not a bug we patch. And the oracle
-transcripts are a training corpus. The protocol that measures a weak
-model is also a way to make one less weak.
+transcripts record correct protocol usage for every task, a natural
+seed for training a model to use it. The protocol that measures a weak
+model could also help make one less weak.
 
 \section{Availability}
 Code (MIT), all episode evidence, and analysis tooling are at
