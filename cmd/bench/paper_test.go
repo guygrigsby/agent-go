@@ -80,4 +80,13 @@ func TestPaperFiguresGenerated(t *testing.T) {
 	if !strings.Contains(string(pass), "(glm,100)") || !strings.Contains(string(pass), "(glm,0)") {
 		t.Fatalf("pass chart missing expected coords:\n%s", pass)
 	}
+	// pass@k carries Wilson error bars; the invalid-state figure does not
+	// (its states are clustered within episodes, so a binomial CI is wrong).
+	if !strings.Contains(string(pass), "error bars") {
+		t.Fatalf("pass chart missing error bars:\n%s", pass)
+	}
+	inv, _ := os.ReadFile(filepath.Join(out, "invalid_by_arm.tex"))
+	if strings.Contains(string(inv), "error bars") {
+		t.Fatalf("invalid chart should not have error bars:\n%s", inv)
+	}
 }
