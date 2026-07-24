@@ -45,8 +45,9 @@ One sees only the protocol. All run against a frozen engine, so the
 benchmark cannot chase the tasks.
 % Frozen grid: qwen3.5-9b-udq4 (162906), glm-flash (162855),
 % gpt-oss-20b-medium (161639). Numbers below are generated from all three.
-Across three locally served models the mode ordering never inverts. The
-protocol beats symbol addressing, which beats raw text editing. The
+Across three locally served models the ranking comes out the same each
+time. The protocol leads symbol addressing, which leads raw text
+editing. The
 floor 9B model passes \QwenSemanticPass{} of episodes through the
 protocol, against \QwenSerenaPass{} with symbol addressing alone and
 \QwenRawPass{} raw. The widest gap is the model that is a poor freeform
@@ -89,8 +90,9 @@ and time budget run in three modes. Raw file editing.
 LSP symbol addressing with advisory validation (Serena~\cite{serena}).
 The protocol. An oracle replays each task's real answer through the
 protocol first, so no task enters the benchmark unless it is known to be
-solvable. Across three locally served models the ordering never flips.
-The protocol beats symbol addressing, which beats raw editing. The gap
+solvable. Across three locally served models the same ranking appears
+in every model. The protocol leads symbol addressing, which leads raw
+editing. The gap
 is widest for the model that edits text worst. It passes almost nothing
 raw and recovers to a majority through the protocol. The reason is
 visible mid-edit. In the text modes the workspace fails to compile most
@@ -243,8 +245,11 @@ Generated from the same evidence.}
 \end{figure}
 
 Two readings stand out. First, the mode ordering
-(Figure~\ref{fig:pass}) never inverts across models. Symbol addressing
-helps, and mandatory validation helps again on top of it. Second, the
+(Figure~\ref{fig:pass}) comes out the same in all three models, semantic
+over serena over raw, though at k=5 the per-model intervals overlap and
+the ranking rests on the repetition across models and tasks, not on any
+one cell. Symbol addressing helps, and mandatory validation helps again
+on top of it. Second, the
 protocol's advantage is not uniform. It is widest for the model that
 edits text worst. A strong instruction-follower that is nonetheless a
 poor freeform tool user passes almost nothing raw, yet recovers to a
