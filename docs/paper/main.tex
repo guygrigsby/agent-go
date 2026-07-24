@@ -7,6 +7,7 @@
 \usepackage{xcolor}
 \usepackage{pgfplots}
 \pgfplotsset{compat=1.18}
+\usepackage{placeins} % \FloatBarrier keeps figures inside their section
 \lstset{basicstyle=\ttfamily\small, breaklines=true, columns=fullflexible}
 
 % Every number below comes from generated/ — built by `go run ./cmd/bench
@@ -174,7 +175,7 @@ episodes; raw passed \RawPassCount{}. The per-task table tells the
 sharper story: raw wins only where grep suffices, and goes to zero on
 the tasks that need whole-workspace consistency.
 
-\begin{figure}[h]
+\begin{figure}[tbp]
 \centering
 \input{generated/pass_by_arm}
 \caption{Pass@k by arm, per model. The ordering semantic $\ge$ serena
@@ -185,7 +186,7 @@ committed episode evidence.}
 \label{fig:pass}
 \end{figure}
 
-\begin{figure}[h]
+\begin{figure}[tbp]
 \centering
 \input{generated/invalid_by_arm}
 \caption{Fraction of sampled on-disk states that fail \texttt{go build}
@@ -206,6 +207,8 @@ protocol, because the protocol removes exactly the failure it is prone
 to. The invalid-intermediate rate (Figure~\ref{fig:invalid}) is the
 mechanism: both text arms leave the workspace uncompilable most of the
 time mid-edit, while the semantic arm holds it valid throughout.
+
+\FloatBarrier
 
 \section{Limitations}
 One language. Contamination is held constant across arms but inflates
