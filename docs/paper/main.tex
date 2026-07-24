@@ -313,11 +313,12 @@ the result can be checked, but it has not been reproduced independently
 yet.
 
 \section{Conclusion}
-\texttt{ago} shows that how a weak model edits code matters more than
-how big it is. Replace text editing with validated, transactional
+\texttt{ago} shows that how a weak model edits code can matter as much
+as how big it is. Replace text editing with validated, transactional
 mutations. Make every rejection carry its own fix. A 9B model then
-becomes a competent repository-scale editor, passing \QwenSemanticPass{}
-of episodes through the protocol against \QwenRawPass{} raw. The effect
+passes \QwenSemanticPass{} of repository-scale edits through the
+protocol against \QwenRawPass{} raw, beside the 30B-class incumbent's
+\GlmRawPass{} with raw text editing. The effect
 is largest exactly where it should be, on the model that is worst at
 freeform editing, which climbs from \GptOssRawPass{} to
 \GptOssSemanticPass{}.
