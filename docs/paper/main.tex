@@ -175,8 +175,12 @@ where a pristine worktree also fails it. Serving is pinned per run.
 GLM-4.7-Flash (MoE) runs at UD-Q4\_K\_XL, roughly 20 GiB, with a q8\_0
 K/V cache at 128k context. gpt-oss-20b runs at MXFP4, 11.28 GiB of
 weights before KV. Qwen3.5-9B runs at UD-Q4\_K\_XL, with its card's
-embedding server evicted to fit the larger quant. Local serving is part
-of the experiment, constraints included. Every episode records its
+embedding server evicted to fit the larger quant. Serving ran on two
+locally hosted GPUs, a 32 GB AMD Radeon AI Pro R9700 and an 8 GB NVIDIA
+RTX 3070 Ti, with the harness and typechecking on a separate Apple M5
+Max workstation. Per-run hardware and serving configurations are in the
+released evidence. Local serving is part of the experiment, constraints
+included. Every episode records its
 transcript, diff, score, token usage, failure kind, and the daemon's
 request log. The evidence is the contribution as much as the numbers.
 
