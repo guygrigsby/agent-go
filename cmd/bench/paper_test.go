@@ -23,6 +23,13 @@ func TestPaperTablesGenerated(t *testing.T) {
 	if !strings.Contains(string(table), "traefik\\_1") || !strings.Contains(string(table), "1/1") {
 		t.Fatalf("table missing cells:\n%s", table)
 	}
+	// longtable with a repeating header, so the full multi-model grid
+	// paginates instead of overflowing a single page.
+	for _, m := range []string{"\\begin{longtable}", "\\endhead", "\\endlastfoot"} {
+		if !strings.Contains(string(table), m) {
+			t.Fatalf("table not a paginating longtable, missing %s:\n%s", m, table)
+		}
+	}
 	macros, err := os.ReadFile(filepath.Join(out, "summary_macros.tex"))
 	if err != nil {
 		t.Fatal(err)
