@@ -45,9 +45,18 @@ func wilson(k, n int) (lo, hi float64) {
 	return lo, hi
 }
 
+// maxItersPerCell normalizes k across the grid. Go's benchmark ran a warmup
+// leg on some rounds, leaving six iterations per cell where others have five.
+// Reporting the shared first five (iter 0-4) keeps k equal across models. The
+// raw evidence keeps every iteration on disk; only the aggregate caps.
+const maxItersPerCell = 5
+
 func aggregate(episodes []map[string]any) []row {
 	byKey := map[string]*row{}
 	for _, e := range episodes {
+		if it, ok := e["iter"].(float64); ok && int(it) >= maxItersPerCell {
+			continue
+		}
 		task, _ := e["task"].(string)
 		mode, _ := e["mode"].(string)
 		profile, _ := e["profile"].(string)

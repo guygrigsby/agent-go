@@ -64,3 +64,25 @@ func TestAggregateAndRender(t *testing.T) {
 		}
 	}
 }
+
+// A benchmark warmup leg left some cells with six iterations where others
+// have five. aggregate normalizes every cell to the first five (iter 0-4)
+// so k is equal across models; the extra iteration is excluded, not the
+// raw evidence, which keeps all six on disk.
+func TestAggregateNormalizesToFiveIters(t *testing.T) {
+	var episodes []map[string]any
+	for i := range 6 {
+		episodes = append(episodes, map[string]any{
+			"task": "boundary_x", "mode": "raw", "profile": "glm",
+			"iter": float64(i), "pass": i < 4, // iters 0-3 pass, 4-5 fail
+		})
+	}
+	rows := aggregate(episodes)
+	if len(rows) != 1 {
+		t.Fatalf("want 1 row, got %d", len(rows))
+	}
+	// iter 5 dropped: N=5 (iters 0-4), passes=4 (iters 0-3).
+	if rows[0].N != 5 || rows[0].Passes != 4 {
+		t.Fatalf("want N=5 passes=4, got N=%d passes=%d", rows[0].N, rows[0].Passes)
+	}
+}
