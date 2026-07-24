@@ -95,8 +95,9 @@ in every model. The protocol leads symbol addressing, which leads raw
 editing. The gap
 is widest for the model that edits text worst. It passes almost nothing
 raw and recovers to a majority through the protocol. The reason is
-visible mid-edit. In the text modes the workspace fails to compile most
-of the time while the agent works. In the protocol it never does.
+visible mid-edit. In the text modes the workspace spends much of the
+editing window failing to compile. In the protocol it almost never
+does.
 
 Our contributions:
 \begin{itemize}
@@ -255,8 +256,9 @@ edits text worst. A strong instruction-follower that is nonetheless a
 poor freeform tool user passes almost nothing raw, yet recovers to a
 majority through the protocol. The protocol removes exactly the failure
 it is prone to. The invalid-intermediate rate (Figure~\ref{fig:invalid})
-is the mechanism. Both text modes leave the workspace uncompilable most
-of the time mid-edit, while the semantic mode holds it valid throughout.
+is the mechanism. Both text modes leave the workspace uncompilable for
+half to most of the editing window, while the semantic mode holds it
+valid nearly throughout.
 
 \FloatBarrier
 
@@ -331,9 +333,9 @@ modes leave the workspace uncompilable \InvalidRawMin{} to
 
 The scope is narrow and stated. One language. One serving stack per
 model. Small k, and the infrastructure is author-run. Contamination is
-held equal across modes but still inflates the absolute rates. None of
-this moves the ordering, which is the claim, but it caps how far the
-absolute numbers travel.
+held equal across modes but still inflates the absolute rates. The
+ordering is the claim, and it repeated in every model and task set we
+ran, but these caveats cap how far the absolute numbers travel.
 
 Two things come next. The held-out set from etcd, caddy, and hugo tests
 the frozen engine on tasks it was never tuned against. A failure there
