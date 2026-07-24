@@ -60,12 +60,52 @@ configurations), and analysis tooling are released.
 \end{abstract}
 
 \section{Introduction}
-% Thesis: weak local models become effective repo-scale Go editors when
-% raw file editing is replaced by semantic queries and validated
-% mutations with typed rejections. Expand from idea.md; keep the
-% conversational-repair framing central: the contribution is not an op
-% catalog, it is an interaction design under which weak models recover.
-TODO(guy): expand from idea.md.
+Coding agents edit files as text. A frontier model mostly gets away
+with it. A small local model does not. It guesses an identifier that
+does not exist, writes a diff that does not apply, or renames in one
+file and forgets the other twelve. The error shows up after the bytes
+are on disk, when a build breaks, and the agent is already three edits
+downstream. The weaker the model, the more of its budget goes to this.
+
+The usual fix is a stricter text format or a bigger model. We take the
+opposite position. Keep the small model and change what it is allowed
+to do. \texttt{ago} is a semantic edit protocol for Go. The agent does
+not write files. It queries a typechecked workspace and submits
+mutations from a fixed operation catalog. The compiler checks every
+mutation against an in-memory snapshot before anything is written. An
+edit that does not typecheck is not caught after the fact. It never
+reaches disk.
+
+The catalog is not the contribution. The interaction is. Every
+rejection is a turn in a conversation. It names what is wrong in typed
+compiler terms, and it hands back the corrected call, ready to resend.
+A weak model does not have to know the fix. It has to be handed the fix
+and copy it. That is a much lower bar, and it is the bar most small
+models can clear.
+
+We test this against the honest alternatives, not a strawman. The same
+model, prompts, and time budget run in three modes. Raw file editing.
+LSP symbol addressing with advisory validation (Serena~\cite{serena}).
+The protocol. An oracle replays each task's real answer through the
+protocol first, so no task enters the benchmark unless it is known to be
+solvable. Across three locally served models the ordering never flips.
+The protocol beats symbol addressing, which beats raw editing. The gap
+is widest for the model that edits text worst. It passes almost nothing
+raw and recovers to a majority through the protocol. The reason is
+visible mid-edit. In the text modes the workspace fails to compile most
+of the time while the agent works. In the protocol it never does.
+
+Our contributions:
+\begin{itemize}
+\item A semantic, transactional edit protocol for Go where an invalid
+edit is unrepresentable, not merely flagged.
+\item The rejection-as-repair interaction, and evidence that it is what
+lets weak models recover.
+\item An oracle that certifies a task is solvable before any model
+spends time on it.
+\item A three-mode benchmark across three local models, with every
+transcript, diff, and score released.
+\end{itemize}
 
 \section{Related Work}
 Symbol-level agent tooling over LSP navigates semantically but still
@@ -216,6 +256,37 @@ episodes. Median time-to-green is over passing episodes.}
 One language. Contamination is held constant across modes but inflates
 absolute rates. One serving stack per model, small k, and the
 infrastructure is author-run. TODO: expand honestly.
+
+\section{Conclusion}
+\texttt{ago} shows that how a weak model edits code matters more than
+how big it is. Replace text editing with validated, transactional
+mutations. Make every rejection carry its own fix. A 9B model then
+becomes a competent repository-scale editor, passing \QwenSemanticPass{}
+of episodes through the protocol against \QwenRawPass{} raw. The effect
+is largest exactly where it should be, on the model that is worst at
+freeform editing, which climbs from \GptOssRawPass{} to
+\GptOssSemanticPass{}.
+
+The mechanism is not a mystery. Validation happens before the write, so
+a broken state is never on disk for the next step to trip over. The
+repair channel turns a rejection into a paste. The model spends its
+budget on the task instead of on recovering from its own malformed
+edits. The invalid-intermediate rate makes this concrete. The text
+modes leave the workspace uncompilable \InvalidRawMin{} to
+\InvalidRawMax{} of the time mid-edit. The protocol holds at
+\InvalidSemanticMax{} or below.
+
+The scope is narrow and stated. One language. One serving stack per
+model. Small k, and the infrastructure is author-run. Contamination is
+held equal across modes but still inflates the absolute rates. None of
+this moves the ordering, which is the claim, but it caps how far the
+absolute numbers travel.
+
+Two things come next. The held-out set from etcd, caddy, and hugo tests
+the frozen engine on tasks it was never tuned against. A failure there
+is a protocol ceiling we report, not a bug we patch. And the oracle
+transcripts are a training corpus. The protocol that measures a weak
+model is also a way to make one less weak.
 
 \section{Availability}
 Code (MIT), all episode evidence, and analysis tooling are at
