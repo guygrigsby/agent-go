@@ -265,9 +265,13 @@ each model to a single serving stack. A different quantization or server
 could move the numbers.
 
 Narrow task shape. The development set is twenty tasks over a few edit
-kinds, rename, add-parameter, and move. Real editing is wider. The
-held-out set from etcd, caddy, and hugo is the first test of whether the
-numbers survive off the tasks the engine was tuned on.
+kinds, rename, add-parameter, and move. These all transform code that
+already exists in a known-correct form. Authoring new code is a
+different regime. The protocol can still reject an edit that does not
+typecheck, but the repair channel has no ground-truth declaration to
+hand back, so whether the advantage holds is untested. The held-out set
+from etcd, caddy, and hugo widens the task pool, but it does not cross
+into authoring. That gap is open.
 
 One baseline per alternative. Raw uses shell tools. Serena is one
 symbol-addressing implementation at a pinned revision. A different text
