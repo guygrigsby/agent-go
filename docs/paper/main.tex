@@ -43,14 +43,16 @@ run against a frozen engine so the benchmark cannot chase the tasks.
 % gpt-oss-20b-medium (161639). Numbers below are generated from all three.
 Across three locally served models the arm ordering never inverts:
 the protocol beats symbol addressing, which beats raw text editing.
-The floor 9B model passes 41\% of episodes through the protocol against
-32\% with symbol addressing alone and 24\% raw; the widest gap is the
-model that is a poor freeform tool-caller, whose raw pass rate collapses
-to 4\% yet recovers to 53\% through the protocol. Sampled on-disk states
-during editing fail to compile 76--87\% of the time in the text-editing
-arms and at most 2\% in the semantic arm, in every model. All code,
-per-episode evidence (transcripts, request logs, serving
-configurations), and analysis tooling are released.
+The floor 9B model passes \QwenSemanticPass{} of episodes through the
+protocol against \QwenSerenaPass{} with symbol addressing alone and
+\QwenRawPass{} raw; the widest gap is the model that is a poor freeform
+tool-caller, whose raw pass rate collapses to \GptOssRawPass{} yet
+recovers to \GptOssSemanticPass{} through the protocol. Sampled on-disk
+states during editing fail to compile \InvalidRawMin--\InvalidRawMax{}
+of the time in the raw arm and at most \InvalidSemanticMax{} in the
+semantic arm, in every model. All code, per-episode evidence
+(transcripts, request logs, serving configurations), and analysis
+tooling are released.
 \end{abstract}
 
 \section{Introduction}
@@ -175,8 +177,9 @@ the tasks that need whole-workspace consistency.
 \input{generated/pass_by_arm}
 \caption{Pass@k by arm, per model. The ordering semantic $\ge$ serena
 $\ge$ raw holds for every model in the grid. The lift is largest where
-the model is a weak freeform tool-caller (gpt-oss-20b-medium: 4\% raw,
-53\% semantic). Generated from committed episode evidence.}
+the model is a weak freeform tool-caller (gpt-oss-20b-medium:
+\GptOssRawPass{} raw, \GptOssSemanticPass{} semantic). Generated from
+committed episode evidence.}
 \label{fig:pass}
 \end{figure}
 
