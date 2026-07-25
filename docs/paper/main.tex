@@ -38,8 +38,7 @@ diagnostics and paste-ready repairs, the corrected call written out
 verbatim. Resending a rejected call unchanged escalates. An oracle
 replays each task's ground-truth commit through the protocol before any
 model attempts it, so a task enters the benchmark only once it is proven
-solvable. Tasks are mined from real commits in traefik, vault, and
-boundary. The evaluation is a grid of three modes. One edits files raw.
+solvable. Tasks are mined from real commits in traefik, vault and boundary. The evaluation is a grid of three modes. One edits files raw.
 One addresses symbols through an LSP with advisory validation (Serena).
 One sees only the protocol. All run against a frozen engine, so the
 benchmark cannot chase the tasks.
@@ -54,16 +53,16 @@ protocol, against \QwenSerenaPass{} with symbol addressing alone and
 tool-caller. Its raw pass rate collapses to \GptOssRawPass{}, yet
 recovers to \GptOssSemanticPass{} through the protocol. Sampled on-disk
 states during editing fail to compile \InvalidRawMin{} to
-\InvalidRawMax{} of the time in raw mode, and at most
+\InvalidRawMax{} of the time in raw mode and at most
 \InvalidSemanticMax{} in semantic mode, in every model. All code,
 per-episode evidence (transcripts, request logs, serving
-configurations), and analysis tooling are released.
+configurations) and analysis tooling are released.
 \end{abstract}
 
 \section{Introduction}
 Coding agents edit source files as text. A frontier model mostly gets away
 with it. A small local model does not. It guesses an identifier that
-does not exist, writes a diff that does not apply, or renames in one
+does not exist, writes a diff that does not apply or renames in one
 file and forgets the other twelve. The error shows up after the bytes
 are on disk, when a build breaks, and the agent is already three edits
 downstream. The weaker the model, the more of its budget goes to this.
@@ -85,7 +84,7 @@ A weak model does not have to know the fix. It has to be handed the fix
 and copy it. That is a much lower bar, and it is the bar most small
 models can clear.
 
-We test this against the honest alternatives. The same model, prompts,
+We test this against the honest alternatives. The same model, prompts
 and time budget run in three modes. Raw file editing.
 LSP symbol addressing with advisory validation (Serena~\cite{serena}).
 The protocol. An oracle replays each task's real answer through the
@@ -103,23 +102,22 @@ Our contributions:
 \begin{itemize}
 \item A semantic, transactional edit protocol for Go where an invalid
 edit is unrepresentable, not merely flagged.
-\item The rejection-as-repair interaction, and evidence that it is what
+\item The rejection-as-repair interaction and evidence that it is what
 lets weak models recover.
 \item An oracle that certifies a task is solvable before any model
 spends time on it.
 \item A three-mode benchmark across three local models, with every
-transcript, diff, and score released.
+transcript, diff and score released.
 \end{itemize}
 
 \section{Related Work}
 Symbol-level agent tooling over LSP navigates semantically but still
-edits text, or exposes a single mutation. Serena~\cite{serena} and
+edits text, or it exposes a single mutation. Serena~\cite{serena} and
 gopls's experimental MCP server~\cite{goplsmcp} are examples. The
 compiler diagnostics sit right there in those stacks. The difference
 here is that validation is not advisory. CODESTRUCT~\cite{codestruct}
-frames agents over structured action spaces with syntax-validated
-edits, and reports token and accuracy gains. \texttt{ago}'s mutations
-are type-checked, transactional, and carry repairs. Repository-scale
+frames agents over structured action spaces with syntax-validated edits and reports token and accuracy gains. \texttt{ago}'s mutations
+are type-checked, transactional and carry repairs. Repository-scale
 editing benchmarks find instructed edits hard for current models
 (RES-Q~\cite{resq}, FEA-Bench~\cite{feabench},
 EDIT-Bench~\cite{editbench}). Edit-format leaderboards~\cite{aider}
@@ -133,7 +131,7 @@ validate-during-generation stance, at expression granularity.
 \section{The \texttt{ago} Protocol}
 \subsection{Surface}
 Ten tools carry a versioned catalog of 33 operations. They span
-declaration, statement, test, and project families. Seven query kinds
+declaration, statement, test and project families. Seven query kinds
 return deterministic, paged responses. Node handles address statements
 inside declarations. Generation counters make staleness explicit
 instead of silent.
@@ -147,7 +145,7 @@ does. Pre-existing issues in the affected packages are baselined and
 tolerated. Real codebases carry history, so only new diagnostics reject.
 \subsection{Rejection as conversation}
 Every rejection answers one question. What is the correct next call?
-It carries typed diagnostics, candidate lists, and
+It carries typed diagnostics, candidate lists and
 \texttt{possible\_repairs}, complete calls the agent resends verbatim.
 Repairs are tested by execution before they are offered. A repair that
 would itself reject is worse than none. Resending a rejected call
@@ -159,7 +157,7 @@ Every benchmark task comes from a real commit, so the correct answer is
 already known. Before any model attempts a task, the oracle submits
 that known answer through the protocol itself. If the right answer
 cannot get through, the model never had a chance. The problem is then
-ours, whether an engine bug, an extractor error, or a named protocol
+ours, whether an engine bug, an extractor error or a named protocol
 ceiling. The task stays out of the roster until it is fixed. This
 separates ``the model failed'' from ``the task was impossible'' by
 construction. The oracle transcripts are a byproduct, a record of
@@ -174,7 +172,7 @@ advisory. Diagnostics are available on request, and nothing blocks a
 broken write from landing. Semantic sees only the protocol. The middle
 mode is the ablation that separates the two variables the protocol
 bundles, symbol addressing and mandatory validation. Scoring is a goal
-predicate, a clean typecheck, and scoped tests. The test gate is voided
+predicate, a clean typecheck and scoped tests. The test gate is voided
 where a pristine worktree also fails it. Serving is pinned per run.
 GLM-4.7-Flash (MoE) runs at UD-Q4\_K\_XL, roughly 20 GiB, with a q8\_0
 K/V cache at 128k context. gpt-oss-20b runs at MXFP4, 11.28 GiB of
@@ -184,7 +182,7 @@ RTX 3070 Ti, with the harness and typechecking on a separate Apple M5
 Max workstation. Per-run hardware and serving configurations are in the
 released evidence. Local serving is part of the experiment, constraints
 included. Every episode records its
-transcript, diff, score, token usage, failure kind, and the daemon's
+transcript, diff, score, token usage, failure kind and the daemon's
 request log. The evidence is the contribution as much as the numbers.
 
 \subsection{Evaluation freeze}
@@ -194,8 +192,7 @@ contribution, but it cannot also be the headline evidence. The engine
 is frozen at a tagged revision (\texttt{eval-freeze-1}). Every episode
 records the engine revision it ran under, so the split is auditable.
 Headline tables come only from frozen-tag runs over the development set
-of 20 oracle-certified tasks. A held-out set mined from etcd, caddy,
-and hugo is extracted and certified only after the tag, with the frozen
+of 20 oracle-certified tasks. A held-out set mined from etcd, caddy and hugo is extracted and certified only after the tag, with the frozen
 engine. A certification failure there is reported as a protocol
 ceiling, not fixed.
 
@@ -217,8 +214,7 @@ shows each settled state compiles. No host tool wrote Go in any of them.
 Pooled over the frozen grid, semantic passed \SemanticPassCount{}
 episodes. Raw passed \RawPassCount{}. The full per-task table
 (Appendix~\ref{app:pertask}) tells the sharper story. Raw does best on
-the edits a find-and-replace would nearly cover, and drops toward zero
-on the tasks that need consistency across files.
+the edits a find-and-replace would nearly cover. It drops toward zero on the tasks that need consistency across files.
 
 \begin{figure}[tbp]
 \centering
@@ -278,12 +274,12 @@ each model to a single serving stack. A different quantization or server
 could move the numbers.
 
 Narrow task shape. The development set is twenty tasks over a few edit
-kinds, rename, add-parameter, and move. These all transform code that
+kinds, rename, add-parameter and move. These all transform code that
 already exists in a known-correct form. Authoring new code is a
 different regime. The protocol can still reject an edit that does not
 typecheck, but the repair channel has no ground-truth declaration to
 hand back, so whether the advantage holds is untested. The held-out set
-from etcd, caddy, and hugo widens the task pool, but it does not cross
+from etcd, caddy and hugo widens the task pool, but it does not cross
 into authoring. That gap is open.
 
 One baseline per alternative. Raw uses shell tools. Serena is one
@@ -306,8 +302,8 @@ only the episodes already close to the limit, but where a model caps
 often it is a real source of noise. Treat the outcome columns as the
 result and the timing columns as soft.
 
-Author-run. The serving, harness, and scoring are all ours. Every
-transcript, diff, request log, and serving configuration is released so
+Author-run. The serving, harness and scoring are all ours. Every
+transcript, diff, request log and serving configuration is released so
 the result can be checked, but it has not been reproduced independently
 yet.
 
@@ -337,7 +333,7 @@ held equal across modes but still inflates the absolute rates. The
 ordering is the claim, and it repeated in every model and task set we
 ran, but these caveats cap how far the absolute numbers travel.
 
-Two things come next. The held-out set from etcd, caddy, and hugo tests
+Two things come next. The held-out set from etcd, caddy and hugo tests
 the frozen engine on tasks it was never tuned against. A failure there
 is a protocol ceiling we report, not a bug we patch. And the oracle
 transcripts record correct protocol usage for every task, a natural
@@ -345,7 +341,7 @@ seed for training a model to use it. The protocol that measures a weak
 model could also help make one less weak.
 
 \section{Availability}
-Code (MIT), all episode evidence, and analysis tooling are at
+Code (MIT), all episode evidence and analysis tooling are at
 \url{https://github.com/guygrigsby/agent-go}.
 
 \appendix
