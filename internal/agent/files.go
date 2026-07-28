@@ -10,11 +10,18 @@ import (
 // write_file rejects .go paths mechanically: Go source is reachable only
 // through validated ops, and the invariant lives here, not in the
 // prompt (ADR 0005). Everything stays inside root; escapes reject.
+// NewRawFileTools drops the .go gate for benchmarking the raw arm.
 type FileTools struct {
-	root string
+	root    string
+	allowGo bool
 }
 
 func NewFileTools(root string) *FileTools { return &FileTools{root: root} }
+
+// NewRawFileTools drops the .go gate: the bench's raw arm measures what a
+// model does WITHOUT the protocol, so it writes Go source directly. Never
+// served outside the bench raw surface (ADR 0006).
+func NewRawFileTools(root string) *FileTools { return &FileTools{root: root, allowGo: true} }
 
 func (f *FileTools) Call(name string, args map[string]any) (string, bool) {
 	rel, _ := args["path"].(string)
@@ -30,7 +37,7 @@ func (f *FileTools) Call(name string, args map[string]any) (string, bool) {
 		}
 		return string(b), false
 	case "write_file":
-		if strings.EqualFold(filepath.Ext(rel), ".go") {
+		if !f.allowGo && strings.EqualFold(filepath.Ext(rel), ".go") {
 			return "write_file does not touch Go source; use upsert_decl and the other ago ops, which validate before landing", true
 		}
 		content, _ := args["content"].(string)

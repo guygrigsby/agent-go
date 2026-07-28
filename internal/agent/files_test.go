@@ -63,3 +63,20 @@ func TestFileToolsUnknownName(t *testing.T) {
 		t.Fatal("unknown tool accepted")
 	}
 }
+
+func TestRawFileToolsWritesGo(t *testing.T) {
+	dir := t.TempDir()
+	f := NewRawFileTools(dir)
+	out, isErr := f.Call("write_file", map[string]any{"path": "echo.go", "content": "package echo\n"})
+	if isErr {
+		t.Fatalf("raw write_file rejected a .go path: %s", out)
+	}
+	b, err := os.ReadFile(filepath.Join(dir, "echo.go"))
+	if err != nil || string(b) != "package echo\n" {
+		t.Fatalf("raw write did not land: %v %q", err, b)
+	}
+	// The raw surface still cannot escape the workspace.
+	if _, isErr := f.Call("write_file", map[string]any{"path": "../out.go", "content": "x"}); !isErr {
+		t.Fatal("raw write_file must still reject workspace escapes")
+	}
+}
