@@ -594,6 +594,37 @@ func runOracle(c config, wt string, t Manifest) (string, error) {
 			}
 			applied[m.Pkg+"|"+m.Sym] = true
 		}
+	case "author":
+		repo := filepath.Join(c.scratch, t.Repo)
+		out, err := exec.Command("git", "-C", repo, "diff-tree",
+			"--no-commit-id", "--name-only", "-r", t.SHA).Output()
+		if err != nil {
+			return b.String(), err
+		}
+		files := map[string]string{}
+		for f := range strings.SplitSeq(strings.TrimSpace(string(out)), "\n") {
+			if !strings.HasPrefix(f, t.Author.Dir+"/") || !strings.HasSuffix(f, ".go") ||
+				strings.HasSuffix(f, "_test.go") {
+				continue
+			}
+			src, err := exec.Command("git", "-C", repo, "show", t.SHA+":"+f).Output()
+			if err != nil {
+				return b.String(), err
+			}
+			files[f] = string(src)
+		}
+		ops, err := authorOracleOps(t.Author.Pkg, files)
+		if err != nil {
+			return b.String(), err
+		}
+		body, _ := json.Marshal(map[string]any{"pkg": t.Author.Pkg, "ops": ops})
+		res := agoJSONStdin(c, wt, string(body), "patch", "--body-file", "-")
+		rec, _ := json.Marshal(map[string]any{"call": []string{"patch", "author"}, "res": res})
+		b.Write(rec)
+		b.WriteByte('\n')
+		if res["status"] != "accepted" {
+			return b.String(), fmt.Errorf("author oracle patch: %v", res)
+		}
 	default:
 		return "", fmt.Errorf("oracle has no replay for kind %q", t.Kind)
 	}

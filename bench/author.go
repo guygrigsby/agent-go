@@ -8,8 +8,13 @@ package bench
 
 import (
 	"fmt"
+	"go/ast"
+	"go/parser"
+	"go/token"
+	"maps"
 	"os"
 	"path/filepath"
+	"slices"
 )
 
 // writeAuthorSpec lands the frozen spec tests in a fresh worktree.
@@ -39,4 +44,40 @@ func specFilesIntact(wt string, spec *AuthorSpec) (string, bool) {
 		}
 	}
 	return "", true
+}
+
+// authorOracleOps parses ground-truth implementation files into one
+// atomic patch of upsert_decl ops, sorted file order then source order.
+// One patch, not sequential upserts: the package typechecks whole, so
+// intra-package declaration order never rejects. Import blocks are
+// skipped; the engine manages imports (set_body/upsert goimports sugar).
+func authorOracleOps(pkg string, files map[string]string) ([]map[string]any, error) {
+	var ops []map[string]any
+	fset := token.NewFileSet()
+	for _, path := range slices.Sorted(maps.Keys(files)) {
+		src := files[path]
+		f, err := parser.ParseFile(fset, path, src, parser.ParseComments)
+		if err != nil {
+			return nil, fmt.Errorf("%s: %w", path, err)
+		}
+		for _, d := range f.Decls {
+			if g, ok := d.(*ast.GenDecl); ok && g.Tok == token.IMPORT {
+				continue
+			}
+			start := d.Pos()
+			switch n := d.(type) {
+			case *ast.FuncDecl:
+				if n.Doc != nil {
+					start = n.Doc.Pos()
+				}
+			case *ast.GenDecl:
+				if n.Doc != nil {
+					start = n.Doc.Pos()
+				}
+			}
+			text := src[fset.Position(start).Offset:fset.Position(d.End()).Offset]
+			ops = append(ops, map[string]any{"op": "upsert_decl", "pkg": pkg, "text": text})
+		}
+	}
+	return ops, nil
 }
