@@ -277,7 +277,7 @@ func newRoot() *cobra.Command {
 			return runMCP(abs)
 		},
 	})
-	var agentProfileFlag, agentEndpoint, agentModel string
+	var agentProfileFlag, agentEndpoint, agentModel, agentSurface, agentTranscript string
 	var agentMaxSteps int
 	var agentCap time.Duration
 	agentCmd := &cobra.Command{
@@ -290,7 +290,7 @@ func newRoot() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			return runAgent(abs, args[0], agentProfileFlag, agentEndpoint, agentModel, agentMaxSteps, agentCap)
+			return runAgent(abs, args[0], agentProfileFlag, agentEndpoint, agentModel, agentMaxSteps, agentCap, agentSurface, agentTranscript)
 		},
 	}
 	agentCmd.Flags().StringVar(&agentProfileFlag, "profile", "", "profile name from .ago/agent.json")
@@ -298,6 +298,8 @@ func newRoot() *cobra.Command {
 	agentCmd.Flags().StringVar(&agentModel, "model", "", "model name at the endpoint")
 	agentCmd.Flags().IntVar(&agentMaxSteps, "max-steps", 40, "completion cap for the episode")
 	agentCmd.Flags().DurationVar(&agentCap, "cap", 15*time.Minute, "wall clock cap for the episode")
+	agentCmd.Flags().StringVar(&agentSurface, "surface", "semantic", "tool surface: semantic (ops) or raw (bench-only, ungated writes)")
+	agentCmd.Flags().StringVar(&agentTranscript, "transcript", "", "write the JSONL transcript here instead of .ago/sessions")
 	root.AddCommand(agentCmd)
 
 	daemonCmd := &cobra.Command{

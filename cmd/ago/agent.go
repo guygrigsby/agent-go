@@ -25,38 +25,71 @@ Non-Go files (go.mod hand-edits, README, configs) use read_file and write_file; 
 
 When the task is complete, answer with a short summary of what changed and stop calling tools.`
 
-// agentToolDefs converts the MCP tool surface plus the two file tools
-// into the driver's tool definitions.
-func agentToolDefs() []agent.ToolDef {
+// agentRawPrompt is the raw arm's system prompt (ADR 0006): the same
+// workflow shape as bench/prompts.go's promptRaw, but for the file tools
+// since the raw surface has no shell.
+const agentRawPrompt = `You are a Go authoring agent. Use read_file to inspect the workspace, write_file to create or change any file, Go source included, and test to check your work. A failing test names exactly what to fix; adjust and retry.
+
+When the task is complete, answer with a short summary of what changed and stop calling tools.`
+
+// agentReadFileDef is read_file's def, identical on every surface.
+func agentReadFileDef() agent.ToolDef {
+	return agent.ToolDef{Name: "read_file", Description: "Read any file in the workspace by relative path.",
+		Schema: mcpObjSchema([]string{"path"}, map[string]any{"path": mcpStr("relative path")})}
+}
+
+func writeFileDef(desc string) agent.ToolDef {
+	return agent.ToolDef{Name: "write_file", Description: desc,
+		Schema: mcpObjSchema([]string{"path", "content"}, map[string]any{
+			"path": mcpStr("relative path"), "content": mcpStr("full file content")})}
+}
+
+// agentToolDefs converts the MCP tool surface plus the file tools into
+// the driver's tool definitions. The raw surface (bench-only, ADR 0006)
+// serves only read_file, an ungated write_file, and test; every other
+// surface gets the full closed surface.
+func agentToolDefs(surface string) []agent.ToolDef {
+	if surface == "raw" {
+		var defs []agent.ToolDef
+		for _, t := range mcpTools() {
+			if t.Name == "test" {
+				defs = append(defs, agent.ToolDef{Name: t.Name, Description: t.Description, Schema: t.InputSchema})
+			}
+		}
+		return append(defs, agentReadFileDef(), writeFileDef("Write any file in the workspace, Go source included."))
+	}
 	var defs []agent.ToolDef
 	for _, t := range mcpTools() {
 		defs = append(defs, agent.ToolDef{Name: t.Name, Description: t.Description, Schema: t.InputSchema})
 	}
-	defs = append(defs,
-		agent.ToolDef{Name: "read_file", Description: "Read any file in the workspace by relative path.",
-			Schema: mcpObjSchema([]string{"path"}, map[string]any{"path": mcpStr("relative path")})},
-		agent.ToolDef{Name: "write_file", Description: "Write a non-Go file (docs, configs, go.mod). Rejects .go paths: Go source goes through the validated ops.",
-			Schema: mcpObjSchema([]string{"path", "content"}, map[string]any{
-				"path": mcpStr("relative path"), "content": mcpStr("full file content")})},
-	)
-	return defs
+	return append(defs, agentReadFileDef(),
+		writeFileDef("Write a non-Go file (docs, configs, go.mod). Rejects .go paths: Go source goes through the validated ops."))
 }
 
-// agentTools multiplexes tool calls: the two file tools run locally, and
+// agentTools multiplexes tool calls: the file tools run locally, and
 // everything else takes the same path as ago mcp, aliases, redirects,
-// and repairs included.
+// and repairs included, unless the raw surface gates it out by name
+// (ADR 0006: raw serves no ops, only read_file, write_file, and test).
 type agentTools struct {
-	dir   string
-	files *agent.FileTools
+	dir     string
+	surface string
+	files   *agent.FileTools
 }
 
-func newAgentTools(dir string) *agentTools {
-	return &agentTools{dir: dir, files: agent.NewFileTools(dir)}
+func newAgentTools(dir, surface string) *agentTools {
+	files := agent.NewFileTools(dir)
+	if surface == "raw" {
+		files = agent.NewRawFileTools(dir)
+	}
+	return &agentTools{dir: dir, surface: surface, files: files}
 }
 
 func (t *agentTools) Call(name string, args map[string]any) (string, bool) {
 	if name == "read_file" || name == "write_file" {
 		return t.files.Call(name, args)
+	}
+	if t.surface == "raw" && name != "test" {
+		return "tool " + name + " is not on the raw surface; use read_file, write_file, and test", true
 	}
 	return mcpCall(t.dir, name, args)
 }
@@ -113,8 +146,11 @@ func loadAgentProfile(dir, name, endpoint, model string) (agentProfile, error) {
 	return p, nil
 }
 
-// runAgent drives one one-shot episode and prints how it ended.
-func runAgent(dir, task, profile, endpoint, model string, maxSteps int, cap time.Duration) error {
+// runAgent drives one one-shot episode and prints how it ended. surface
+// picks the tool surface and its matching prompt (ADR 0006); transcript,
+// when non-empty, names the exact JSONL path instead of the
+// .ago/sessions default (bench episodes need a caller-chosen path).
+func runAgent(dir, task, profile, endpoint, model string, maxSteps int, cap time.Duration, surface, transcript string) error {
 	p, err := loadAgentProfile(dir, profile, endpoint, model)
 	if err != nil {
 		return err
@@ -122,20 +158,31 @@ func runAgent(dir, task, profile, endpoint, model string, maxSteps int, cap time
 	client := agent.NewClient(agent.Options{
 		Endpoint: p.Endpoint, Model: p.Model, APIKey: os.Getenv(p.KeyEnv), Sampler: p.Sampler})
 
-	sessions := filepath.Join(dir, ".ago", "sessions")
-	if err := os.MkdirAll(sessions, 0o755); err != nil {
+	path := transcript
+	if path == "" {
+		sessions := filepath.Join(dir, ".ago", "sessions")
+		if err := os.MkdirAll(sessions, 0o755); err != nil {
+			return err
+		}
+		path = filepath.Join(sessions, time.Now().Format("20060102-150405")+".jsonl")
+	} else if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 		return err
 	}
-	transcript, err := os.Create(filepath.Join(sessions, time.Now().Format("20060102-150405")+".jsonl"))
+	transcriptFile, err := os.Create(path)
 	if err != nil {
 		return err
 	}
-	defer transcript.Close()
+	defer transcriptFile.Close()
+
+	prompt := agentSystemPrompt
+	if surface == "raw" {
+		prompt = agentRawPrompt
+	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), cap)
 	defer cancel()
-	res, err := agent.Run(ctx, client, newAgentTools(dir), agentToolDefs(),
-		agentSystemPrompt, task, agent.Config{MaxSteps: maxSteps, Transcript: transcript})
+	res, err := agent.Run(ctx, client, newAgentTools(dir, surface), agentToolDefs(surface),
+		prompt, task, agent.Config{MaxSteps: maxSteps, Transcript: transcriptFile})
 	if err != nil {
 		return err
 	}
@@ -149,6 +196,6 @@ func runAgent(dir, task, profile, endpoint, model string, maxSteps int, cap time
 	if out, err := exec.Command("git", "-C", dir, "status", "--short").Output(); err == nil && len(out) > 0 {
 		fmt.Printf("\n%s", out)
 	}
-	fmt.Printf("transcript: %s\n", transcript.Name())
+	fmt.Printf("transcript: %s\n", transcriptFile.Name())
 	return nil
 }

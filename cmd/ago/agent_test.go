@@ -1,13 +1,17 @@
 package main
 
 import (
+	"maps"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
+
+	"github.com/guygrigsby/agent-go/internal/agent"
 )
 
 func TestAgentToolDefsCoverSurfacePlusFileTools(t *testing.T) {
-	defs := agentToolDefs()
+	defs := agentToolDefs("semantic")
 	got := map[string]bool{}
 	for _, d := range defs {
 		if d.Description == "" || d.Schema == nil {
@@ -27,7 +31,7 @@ func TestAgentToolDefsCoverSurfacePlusFileTools(t *testing.T) {
 
 func TestAgentToolsRouteFileToolsLocally(t *testing.T) {
 	dir := t.TempDir()
-	tools := newAgentTools(dir)
+	tools := newAgentTools(dir, "semantic")
 	if out, isErr := tools.Call("write_file", map[string]any{"path": "notes.md", "content": "hi"}); isErr {
 		t.Fatalf("write_file rejected: %s", out)
 	}
@@ -67,6 +71,39 @@ func TestLoadAgentProfile(t *testing.T) {
 	}
 	if _, err := loadAgentProfile(dir, "nope", "", ""); err == nil {
 		t.Fatal("unknown profile accepted")
+	}
+}
+
+func TestAgentSurfaces(t *testing.T) {
+	names := func(defs []agent.ToolDef) map[string]bool {
+		m := map[string]bool{}
+		for _, d := range defs {
+			m[d.Name] = true
+		}
+		return m
+	}
+	raw := names(agentToolDefs("raw"))
+	want := map[string]bool{"read_file": true, "write_file": true, "test": true}
+	if !maps.Equal(raw, want) {
+		t.Fatalf("raw surface drifted from ADR 0006: %v", raw)
+	}
+	sem := names(agentToolDefs("semantic"))
+	if !sem["upsert_decl"] || !sem["read_file"] || !sem["write_file"] {
+		t.Fatalf("semantic surface lost a tool: %v", sem)
+	}
+	if sem["shell"] || sem["bash"] {
+		t.Fatalf("no shell on any surface: %v", sem)
+	}
+}
+
+func TestRawSurfaceGatesDispatch(t *testing.T) {
+	tools := newAgentTools(t.TempDir(), "raw")
+	out, isErr := tools.Call("rename", map[string]any{"pkg": "x", "sym": "A", "to": "B"})
+	if !isErr || !strings.Contains(out, "raw surface") {
+		t.Fatalf("raw dispatch must reject op calls by name: %q %v", out, isErr)
+	}
+	if out, isErr := tools.Call("write_file", map[string]any{"path": "a.go", "content": "package a\n"}); isErr {
+		t.Fatalf("raw write_file must land .go: %s", out)
 	}
 }
 
