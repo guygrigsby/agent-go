@@ -13,7 +13,7 @@ import (
 
 func main() {
 	if len(os.Args) < 2 {
-		fail("usage: bench <prep-rename|prep-addparam|prep-move|mine|export|paper|report|certify> [flags]")
+		fail("usage: bench <prep-rename|prep-addparam|prep-move|prep-author|mine|export|paper|report|certify> [flags]")
 	}
 	cmd, args := os.Args[1], os.Args[2:]
 	fs := flag.NewFlagSet(cmd, flag.ExitOnError)
@@ -22,6 +22,9 @@ func main() {
 	out := fs.String("out", "bench/tasks-rename.json", "output manifest")
 	curve := fs.String("curve", "", "write the completion-time curve CSV here")
 	mlflow := fs.String("mlflow", "", "MLflow tracking server URI for export")
+	minCover := fs.Float64("min-cover", 90, "prep-author: minimum ground-truth statement coverage percent")
+	maxImplFiles := fs.Int("max-impl-files", 1, "prep-author: maximum implementation files per candidate")
+	maxImplLines := fs.Int("max-impl-lines", 150, "prep-author: maximum implementation lines per candidate")
 	fs.Parse(args)
 
 	switch cmd {
@@ -51,6 +54,16 @@ func main() {
 		}
 		if err := prepMove(*scratch, *tasks, *out); err != nil {
 			fail("prep-move: %v", err)
+		}
+	case "prep-author":
+		if *scratch == "" {
+			fail("prep-author requires -scratch")
+		}
+		if *out == "bench/tasks-rename.json" {
+			*out = "bench/tasks-author.json"
+		}
+		if err := prepAuthor(*scratch, *out, *minCover, *maxImplFiles, *maxImplLines); err != nil {
+			fail("prep-author: %v", err)
 		}
 	case "mine":
 		if *scratch == "" || fs.NArg() == 0 {
