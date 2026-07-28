@@ -281,7 +281,9 @@ func episode(b testing.TB, c config, t Manifest, mode string, iter int) bool {
 			b.Fatal(err)
 		}
 	}
-	writeOpencodeConfig(b, c, wt, mode)
+	if t.Kind != "author" {
+		writeOpencodeConfig(b, c, wt, mode)
+	}
 	// Warm what any agent would find warm on a dev machine: module cache,
 	// build cache, and (semantic mode) the daemon snapshot.
 	run(wt, c.cap, "go", "mod", "download")
@@ -315,6 +317,11 @@ func episode(b testing.TB, c config, t Manifest, mode string, iter int) bool {
 	var timedOut bool
 	if mode == "oracle" {
 		agentOut, agentErr = runOracle(c, wt, t)
+	} else if t.Kind == "author" {
+		ctx, cancel := context.WithTimeout(context.Background(), c.cap)
+		agentOut, agentErr = runAgentDriver(ctx, c, wt, t.Prompt, mode)
+		timedOut = ctx.Err() == context.DeadlineExceeded
+		cancel()
 	} else {
 		ctx, cancel := context.WithTimeout(context.Background(), c.cap)
 		agentOut, agentErr = runAgent(ctx, c, wt, t.Prompt)
@@ -828,6 +835,32 @@ func runAgent(ctx context.Context, c config, wt, prompt string) (string, error) 
 		"OPENCODE_CONFIG="+filepath.Join(wt, "opencode.json"),
 		"XDG_CONFIG_HOME="+xdg)
 	out, err := cmd.CombinedOutput()
+	return string(out), err
+}
+
+// runAgentDriver runs one ago agent episode: the author kind's arms both
+// live on the first-party driver (ADR 0006), opencode never hosts them.
+// The profile lands in the worktree's .ago/agent.json so the sampler
+// block rides along, same identity the opencode arms record.
+func runAgentDriver(ctx context.Context, c config, wt, prompt, mode string) (string, error) {
+	if err := os.MkdirAll(filepath.Join(wt, ".ago"), 0o755); err != nil {
+		return "", err
+	}
+	writeJSON(filepath.Join(wt, ".ago", "agent.json"), map[string]any{
+		"default": c.profile.Name,
+		"profiles": []map[string]any{{"name": c.profile.Name, "endpoint": c.endpoint,
+			"model": c.model, "sampler": c.profile.Sampler}},
+	})
+	tr := filepath.Join(wt, ".ago", "driver-transcript.jsonl")
+	cmd := exec.CommandContext(ctx, c.agoBin, "agent",
+		"--surface", mode, "--profile", c.profile.Name,
+		"--transcript", tr, "--cap", c.cap.String(), prompt)
+	cmd.Dir = wt
+	cmd.Env = agoEnv(c)
+	out, err := cmd.CombinedOutput()
+	if b, rerr := os.ReadFile(tr); rerr == nil {
+		return string(b), err
+	}
 	return string(out), err
 }
 
