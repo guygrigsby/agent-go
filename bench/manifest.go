@@ -7,6 +7,26 @@ import (
 	"sort"
 )
 
+// AuthorFile is one frozen spec test file: the bytes the harness lands in
+// the worktree and the bytes scoring demands are still there. Byte
+// equality IS the freeze; no separate hash to drift.
+type AuthorFile struct {
+	Path    string `json:"path"`
+	Content string `json:"content"`
+}
+
+// AuthorSpec is a tier 1 authoring task: the ground-truth commit's tests
+// are the spec, the model authors the package that passes them
+// (docs/specs/authoring-bench.md). Coverage records the ground-truth
+// suite's own statement coverage at mining time; the gate lives in the
+// extractor, the number rides here as evidence.
+type AuthorSpec struct {
+	Pkg       string       `json:"pkg"`
+	Dir       string       `json:"dir"`
+	Coverage  float64      `json:"coverage"`
+	TestFiles []AuthorFile `json:"test_files"`
+}
+
 // Manifest is one bench task, shared by the prep tool that writes it and
 // the runner that scores it. Kind selects the goal predicate; empty means
 // rename, the original task family.
@@ -19,6 +39,7 @@ type Manifest struct {
 	Renames     []RenameSpec   `json:"renames,omitempty"`
 	AddParams   []AddParamSpec `json:"add_params,omitempty"`
 	Moves       []MoveSpec     `json:"moves,omitempty"`
+	Author      *AuthorSpec    `json:"author,omitempty"`
 	NeedsReview string         `json:"needs_review,omitempty"`
 
 	// Certified marks that the oracle has replayed this task's ground
@@ -140,6 +161,16 @@ func (m Manifest) HasSpecs() bool {
 			}
 		}
 		return len(m.Moves) > 0
+	case "author":
+		if m.Author == nil || m.Author.Pkg == "" || m.Author.Dir == "" || len(m.Author.TestFiles) == 0 {
+			return false
+		}
+		for _, f := range m.Author.TestFiles {
+			if f.Path == "" || f.Content == "" {
+				return false
+			}
+		}
+		return true
 	}
 	return false
 }

@@ -177,3 +177,19 @@ func TestHasSpecsRejectsEmptyPkg(t *testing.T) {
 		}
 	}
 }
+
+func TestHasSpecsAuthor(t *testing.T) {
+	m := Manifest{Kind: "author"}
+	if m.HasSpecs() {
+		t.Fatal("author without a spec must not count")
+	}
+	m.Author = &AuthorSpec{Pkg: "example.com/m/echo", Dir: "echo", Coverage: 95.0,
+		TestFiles: []AuthorFile{{Path: "echo/echo_test.go", Content: "package echo\n"}}}
+	if !m.HasSpecs() {
+		t.Fatal("complete author spec must count")
+	}
+	m.Author.TestFiles[0].Content = ""
+	if m.HasSpecs() {
+		t.Fatal("empty spec content scores vacuously and must not count")
+	}
+}
