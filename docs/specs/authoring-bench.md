@@ -72,10 +72,33 @@ spent on it.
 - Is small. Start dead simple, echo-server scale: one non-test file, a
   handful of declarations. Thresholds are tuned by what the roster
   yields, recorded in the extractor, not in prose here.
+- Its own tests cover its own implementation. At the ground-truth
+  commit, `go test -cover` on the new package must clear a recorded
+  threshold (start high, near total). Tests-as-spec is honest only
+  when the tests pin the behavior; a thin suite makes every pass a
+  false green. A commit below threshold is rejected with the coverage
+  named.
 
 Open point: vault and traefik class repos may hold nothing that
 simple. The fallback is adding one small repo to the roster, never
 hand-writing tasks; mined-from-reality is the bench's identity.
+
+## End state: differential scoring
+
+The mined test suite is the floor, not the ceiling. No human suite is
+complete, and the model is never expected to write the human's code;
+the score must therefore stop depending on test comprehensiveness.
+The mined commit provides the tool for that: a reference
+implementation. End state, a differential harness drives the model's
+package and the ground-truth package with generated inputs and
+compares behavior; disagreement fails the episode with the input
+named. Coverage-gated mined tests remain the tier 1 score because
+they exist today and certify mechanically; differential scoring
+replaces them as the pass bar once built. Known limits to design
+around, not ignore: effectful and nondeterministic packages need
+seams or exclusion, and input generation quality bounds what
+disagreements are found. Tracked as its own bead, not blocked on
+tier 2.
 
 ## Tier 2: held-out intent (filed, not built)
 
