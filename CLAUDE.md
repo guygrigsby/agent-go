@@ -63,6 +63,7 @@ AGO_BENCH_MODES=oracle AGO_BENCH_SCRATCH=~/.cache/ago-bench/clones \
 AGO_BENCH_PROFILE=<name> AGO_BENCH_SCRATCH=~/.cache/ago-bench/clones \
   go test ./bench -bench Rename -benchtime 3x -timeout 0     # model round (profiles.json)
 # AGO_BENCH_SUITE=smoke: one certified task per kind, smallest repo (first contact tier)
+go run ./cmd/bench prep-author -scratch ~/.cache/ago-bench/clones   # mine greenfield author tasks
 go run ./cmd/bench certify bench/results/<run> ...           # flip certified flags from oracle evidence
 go run ./cmd/bench report|export|paper bench/results/<run>   # Wilson CIs | MLflow | LaTeX tables
 ```

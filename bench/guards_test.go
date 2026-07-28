@@ -1,6 +1,8 @@
 package bench
 
 import (
+	"os"
+	"strings"
 	"testing"
 	"time"
 )
@@ -26,5 +28,29 @@ func TestCountersReadRealLogFields(t *testing.T) {
 	}
 	if c["time_to_first_mutation_s"].(float64) != 3.0 {
 		t.Fatalf("time_to_first_mutation_s: %v", c["time_to_first_mutation_s"])
+	}
+}
+
+// Every scored kind is documented where its scoring is specified; the
+// backticked name is the marker, prose mentions do not count. New kinds
+// add the predicate entry AND the doc row; this guard makes forgetting
+// the row a test failure, not a review catch.
+func TestScoredKindsDocumented(t *testing.T) {
+	docs := []string{"../docs/specs/bench.md", "../docs/specs/authoring-bench.md"}
+	blob := ""
+	for _, d := range docs {
+		b, err := os.ReadFile(d)
+		if err != nil {
+			t.Fatal(err)
+		}
+		blob += string(b)
+	}
+	for kind := range predicates {
+		if kind == "" {
+			continue
+		}
+		if !strings.Contains(blob, "`"+kind+"`") {
+			t.Fatalf("kind %q is scored but no spec doc names it in backticks; add a row to docs/specs/bench.md or docs/specs/authoring-bench.md", kind)
+		}
 	}
 }

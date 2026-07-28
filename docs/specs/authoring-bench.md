@@ -11,8 +11,8 @@ tool. Every tier is still scored the same way: the code works.
 
 ## Task kind: author (tier 1, tests as the spec)
 
-A task is mined from a real commit in the roster repos that introduces
-one new package plus its tests. Setup per episode:
+A task for the `author` kind is mined from a real commit in the roster
+repos that introduces one new package plus its tests. Setup per episode:
 
 - Worktree at the parent commit.
 - The commit's `_test.go` files are written into the new package

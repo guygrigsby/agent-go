@@ -9,7 +9,7 @@ shell and file editing.
 
 Mined from real commits (traefik, vault, boundary), never hand-written.
 `bench/mine.py` finds them; `bench/candidates.json` holds 83 modules-era
-candidates across kinds: rename, add-param, signature, move, wrap-error.
+candidates across kinds: `rename`, `add-param`, signature, `move`, wrap-error.
 
 A task is usable when its parent commit typechecks clean with the current
 toolchain. Task = repo, sha, kind, prompt, worktree checked out at `sha^`.
@@ -20,16 +20,19 @@ Prompt = the commit subject, lightly cleaned (strip issue refs, ticket ids).
 Subjects of mined refactor commits are already what a user would type:
 "Rename MaxEntries to MaxQuotas".
 
+The `author` kind (greenfield authoring, tests as the spec) is specified in
+`authoring-bench.md`.
+
 ## Scoring
 
 A run passes when all three hold within the time cap:
 
 1. **Goal predicate**: the change happened. Derived mechanically from the
    ground-truth commit, checked with `ago` queries:
-   - rename: old symbol gone; new symbol exists with the old reference count
-   - add-param: target signature includes the new parameter
+   - `rename`: old symbol gone; new symbol exists with the old reference count
+   - `add-param`: target signature includes the new parameter
    - signature: target signature matches ground truth's
-   - move: symbol's defining package changed to the target package
+   - `move`: symbol's defining package changed to the target package
    - wrap-error: new error path present at target sites
 2. **Typecheck clean** across the workspace.
 3. **Tests pass**, scoped to packages the ground-truth commit touched.
