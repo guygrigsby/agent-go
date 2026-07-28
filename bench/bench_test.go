@@ -276,6 +276,11 @@ func episode(b testing.TB, c config, t Manifest, mode string, iter int) bool {
 	if absLog, err := filepath.Abs(filepath.Join(epDir, "requests.jsonl")); err == nil {
 		c.reqLog = absLog
 	}
+	if t.Kind == "author" {
+		if err := writeAuthorSpec(wt, t.Author); err != nil {
+			b.Fatal(err)
+		}
+	}
 	writeOpencodeConfig(b, c, wt, mode)
 	// Warm what any agent would find warm on a dev machine: module cache,
 	// build cache, and (semantic mode) the daemon snapshot.
@@ -628,6 +633,28 @@ var predicates = map[string]predicateFn{
 	"": renamePredicate, "rename": renamePredicate,
 	"add-param": addParamPredicate,
 	"move":      movePredicate,
+	"author":    authorPredicate,
+}
+
+// authorPredicate: the spec tests are byte-frozen and an implementation
+// exists. Behavior is scored by the tests gate (scopedTests already runs
+// the new package's directory); the predicate proves the spec was
+// honored and something non-test was authored.
+func authorPredicate(_ config, wt string, t Manifest, _ map[string]int) (bool, []map[string]any) {
+	reason, intact := specFilesIntact(wt, t.Author)
+	impl := false
+	entries, _ := os.ReadDir(filepath.Join(wt, t.Author.Dir))
+	for _, e := range entries {
+		if strings.HasSuffix(e.Name(), ".go") && !strings.HasSuffix(e.Name(), "_test.go") {
+			impl = true
+			break
+		}
+	}
+	ev := map[string]any{"pkg": t.Author.Pkg, "spec_intact": intact, "impl_present": impl}
+	if reason != "" {
+		ev["spec_violation"] = reason
+	}
+	return intact && impl, []map[string]any{ev}
 }
 
 func movePredicate(c config, wt string, t Manifest, _ map[string]int) (bool, []map[string]any) {
@@ -732,9 +759,12 @@ func score(b testing.TB, c config, wt string, t Manifest, baseline map[string]in
 	baselineTests := true
 	if predicate && typecheck {
 		tests = scopedTests(c, wt, t)
-		if !tests {
+		if !tests && t.Kind != "author" {
 			// Lazy baseline: only a failing gate pays for the pristine
 			// worktree that decides whether the gate could pass at all.
+			// Author tasks skip it: the spec tests cannot run at the
+			// parent, and a vacuous gate would let a non-working package
+			// pass (docs/specs/authoring-bench.md, Scoring).
 			pw := worktree(b, c, t)
 			defer teardown(c, t, pw)
 			run(pw, c.cap, "go", "mod", "download")
@@ -942,4 +972,26 @@ func tail(s string, n int) string {
 		return s
 	}
 	return "..." + s[len(s)-n:]
+}
+
+func TestAuthorPredicate(t *testing.T) {
+	wt := t.TempDir()
+	m := Manifest{Kind: "author", Author: &AuthorSpec{Pkg: "example.com/m/echo", Dir: "echo",
+		TestFiles: []AuthorFile{{Path: "echo/echo_test.go", Content: "package echo\n"}}}}
+	if err := writeAuthorSpec(wt, m.Author); err != nil {
+		t.Fatal(err)
+	}
+	// Spec intact but nothing authored: not yet a pass.
+	if ok, _ := authorPredicate(config{}, wt, m, nil); ok {
+		t.Fatal("no implementation file must not satisfy the predicate")
+	}
+	os.WriteFile(filepath.Join(wt, "echo", "echo.go"), []byte("package echo\n"), 0o644)
+	if ok, _ := authorPredicate(config{}, wt, m, nil); !ok {
+		t.Fatal("spec intact plus implementation present must satisfy the predicate")
+	}
+	// A gutted spec test fails regardless of the implementation.
+	os.WriteFile(filepath.Join(wt, "echo", "echo_test.go"), []byte("package echo // gutted\n"), 0o644)
+	if ok, specs := authorPredicate(config{}, wt, m, nil); ok || len(specs) == 0 {
+		t.Fatalf("modified spec must fail the predicate with evidence, got ok=%v specs=%v", ok, specs)
+	}
 }
