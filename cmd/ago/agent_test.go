@@ -96,6 +96,29 @@ func TestAgentSurfaces(t *testing.T) {
 	}
 }
 
+func TestValidateSurfaceRejectsUnknown(t *testing.T) {
+	if err := validateSurface("semantic"); err != nil {
+		t.Fatalf("semantic must be valid: %v", err)
+	}
+	if err := validateSurface("raw"); err != nil {
+		t.Fatalf("raw must be valid: %v", err)
+	}
+	err := validateSurface("serena")
+	if err == nil {
+		t.Fatal("unknown surface accepted")
+	}
+	if !strings.Contains(err.Error(), "serena") || !strings.Contains(err.Error(), "semantic") || !strings.Contains(err.Error(), "raw") {
+		t.Fatalf("error must name the given value and the two valid surfaces: %v", err)
+	}
+}
+
+func TestRunAgentRejectsUnknownSurfaceBeforeClientSetup(t *testing.T) {
+	err := runAgent(t.TempDir(), "task", "", "", "", 1, 0, "serena", "")
+	if err == nil || !strings.Contains(err.Error(), "serena") {
+		t.Fatalf("runAgent must reject surface serena by name: %v", err)
+	}
+}
+
 func TestRawSurfaceGatesDispatch(t *testing.T) {
 	tools := newAgentTools(t.TempDir(), "raw")
 	out, isErr := tools.Call("rename", map[string]any{"pkg": "x", "sym": "A", "to": "B"})

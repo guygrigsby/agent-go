@@ -146,11 +146,25 @@ func loadAgentProfile(dir, name, endpoint, model string) (agentProfile, error) {
 	return p, nil
 }
 
+// validateSurface rejects any surface value other than the two ADR 0006
+// tool surfaces, naming the given value so a typo (or a foreign name
+// like "serena") fails loudly instead of silently falling through to
+// the semantic surface.
+func validateSurface(surface string) error {
+	if surface != "semantic" && surface != "raw" {
+		return fmt.Errorf("unknown surface %q: must be \"semantic\" or \"raw\"", surface)
+	}
+	return nil
+}
+
 // runAgent drives one one-shot episode and prints how it ended. surface
 // picks the tool surface and its matching prompt (ADR 0006); transcript,
 // when non-empty, names the exact JSONL path instead of the
 // .ago/sessions default (bench episodes need a caller-chosen path).
 func runAgent(dir, task, profile, endpoint, model string, maxSteps int, cap time.Duration, surface, transcript string) error {
+	if err := validateSurface(surface); err != nil {
+		return err
+	}
 	p, err := loadAgentProfile(dir, profile, endpoint, model)
 	if err != nil {
 		return err
