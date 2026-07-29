@@ -798,6 +798,48 @@ func TestUpsertDeclIntoEmptyModule(t *testing.T) {
 	}
 }
 
+// A package directory holding only an in-package _test.go file (no
+// non-test source) is a second authoring start: go/packages still loads
+// a primary ID==PkgPath variant for it, but with zero Syntax, since every
+// file in the directory is a test file. upsert_decl landing a brand-new
+// declaration there must not index that empty Syntax; agent-go-djb. The
+// test file's own reference to the not-yet-existing symbol proves the
+// added declaration lands where the test expects it and resolves.
+func TestUpsertDeclIntoTestOnlyPackageDir(t *testing.T) {
+	dir := t.TempDir()
+	os.WriteFile(filepath.Join(dir, "go.mod"), []byte("module scratch.local/patchmod\n\ngo 1.24\n"), 0o644)
+	pkgDir := filepath.Join(dir, "internal", "libs", "patchstruct")
+	if err := os.MkdirAll(pkgDir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	os.WriteFile(filepath.Join(pkgDir, "patchstruct_test.go"), []byte(`package patchstruct
+
+import "testing"
+
+func TestGet(t *testing.T) {
+	if Get("k") != "k" {
+		t.Fatal("bad")
+	}
+}
+`), 0o644)
+
+	s := New(dir)
+	pkgPath := "scratch.local/patchmod/internal/libs/patchstruct"
+	if _, err := s.UpsertDecl(pkgPath, "func Get(k string) string { return k }"); err != nil {
+		t.Fatal(err)
+	}
+	b, err := os.ReadFile(filepath.Join(pkgDir, "agent.go"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.HasPrefix(string(b), "package patchstruct\n") {
+		t.Fatalf("created file:\n%s", b)
+	}
+	if _, _, rej := s.findObject(pkgPath, "Get"); rej != nil {
+		t.Fatalf("Get missing after upsert: %v", rej)
+	}
+}
+
 func TestUpsertDeclEmptyModuleBareNameSuggestsModulePath(t *testing.T) {
 	dir := t.TempDir()
 	os.WriteFile(filepath.Join(dir, "go.mod"), []byte("module scratch.local/kvd\n\ngo 1.24\n"), 0o644)
@@ -849,6 +891,43 @@ func TestPatchUpsertDeclIntoEmptyModule(t *testing.T) {
 		t.Fatalf("got %v", res)
 	}
 	if _, err := os.Stat(filepath.Join(dir, "kv", "agent.go")); err != nil {
+		t.Fatal(err)
+	}
+}
+
+// Same test-only-directory shape as TestUpsertDeclIntoTestOnlyPackageDir,
+// but through the composable patch path (patchComposable ->
+// upsertDeclOp.apply -> upsertDeclEdit): this is the exact call stack the
+// authoring bench oracle panicked on for agent-go-djb.
+func TestPatchUpsertDeclIntoTestOnlyPackageDir(t *testing.T) {
+	dir := t.TempDir()
+	os.WriteFile(filepath.Join(dir, "go.mod"), []byte("module scratch.local/patchmod\n\ngo 1.24\n"), 0o644)
+	pkgDir := filepath.Join(dir, "internal", "libs", "patchstruct")
+	if err := os.MkdirAll(pkgDir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	os.WriteFile(filepath.Join(pkgDir, "patchstruct_test.go"), []byte(`package patchstruct
+
+import "testing"
+
+func TestGet(t *testing.T) {
+	if Get("k") != "k" {
+		t.Fatal("bad")
+	}
+}
+`), 0o644)
+
+	s := New(dir)
+	pkgPath := "scratch.local/patchmod/internal/libs/patchstruct"
+	res, err := s.Patch([]byte(`{"pkg":"` + pkgPath + `",
+		"ops":[{"op":"upsert_decl","text":"func Get(k string) string { return k }"}]}`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if res["status"] != "accepted" {
+		t.Fatalf("got %v", res)
+	}
+	if _, err := os.Stat(filepath.Join(pkgDir, "agent.go")); err != nil {
 		t.Fatal(err)
 	}
 }

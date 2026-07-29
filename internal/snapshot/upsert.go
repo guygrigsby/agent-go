@@ -129,12 +129,57 @@ func upsertDeclEdit(s *Snapshot, pkgPath, name, sym string, testDecl bool) (file
 	if testDecl {
 		base = "agent_test.go"
 	}
-	agentFile := filepath.Join(filepath.Dir(p.Fset.Position(p.Syntax[0].Pos()).Filename), base)
+	dir, rej := packageDir(s, p, pkgPath)
+	if rej != nil {
+		return "", 0, 0, "", false, "", rej
+	}
+	agentFile := filepath.Join(dir, base)
 	b, err := os.ReadFile(agentFile)
 	if err != nil {
 		return agentFile, 0, 0, "added", true, "", nil
 	}
 	return agentFile, len(b), len(b), "added", false, "", nil
+}
+
+// packageDir resolves p's directory without indexing p.Syntax[0], which is
+// empty when p's directory holds only in-package _test.go files: go/packages
+// still loads a primary ID==PkgPath variant for such a directory, but with
+// zero non-test files, so zero Syntax. Preference order: another variant of
+// the same package that does carry files (the in-package test variant, whose
+// Syntax has the _test.go files), then p's own GoFiles/CompiledGoFiles, then
+// the module-relative derivation newPackageFile uses for a not-yet-loaded
+// package.
+func packageDir(s *Snapshot, p *packages.Package, pkgPath string) (string, *Reject) {
+	if len(p.Syntax) > 0 {
+		return filepath.Dir(p.Fset.Position(p.Syntax[0].Pos()).Filename), nil
+	}
+	for _, v := range s.pkgs {
+		if v == p || v.PkgPath != pkgPath || strings.HasSuffix(v.ID, ".test") {
+			continue
+		}
+		if len(v.Syntax) > 0 {
+			return filepath.Dir(v.Fset.Position(v.Syntax[0].Pos()).Filename), nil
+		}
+	}
+	if len(p.GoFiles) > 0 {
+		return filepath.Dir(p.GoFiles[0]), nil
+	}
+	if len(p.CompiledGoFiles) > 0 {
+		return filepath.Dir(p.CompiledGoFiles[0]), nil
+	}
+	modPath, modDir, ok := s.moduleInfo()
+	if !ok {
+		return "", &Reject{Reason: "package not found", Detail: pkgPath}
+	}
+	rel, ok := strings.CutPrefix(pkgPath, modPath+"/")
+	if !ok {
+		if pkgPath != modPath {
+			return "", &Reject{Reason: "package is outside the module",
+				Detail: pkgPath + " not under " + modPath}
+		}
+		rel = ""
+	}
+	return filepath.Join(modDir, rel), nil
 }
 
 // groupMemberText slices the spec (with its doc comment) out of a
