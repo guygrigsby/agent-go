@@ -16,15 +16,16 @@ repos that introduces one new package plus its tests. Setup per episode:
 
 - Worktree at the parent commit.
 - The commit's `_test.go` files are written into the new package
-  directory by the harness before the episode starts. Their hashes are
-  recorded in the manifest.
+  directory by the harness before the episode starts. The manifest
+  carries their frozen bytes.
 - Prompt: the new package's import path plus the instruction to make
   its tests pass. No API description, no file list; the tests carry
   the spec.
 
-The spec tests are frozen. Scoring recomputes their hashes; any change
-fails the episode outright, otherwise deleting the test is the shortest
-path to green.
+The spec tests are frozen. Scoring demands them back byte for byte;
+byte equality is the freeze, no separate hash to drift. Any change
+fails the episode outright, otherwise deleting the test is the
+shortest path to green.
 
 ## Arms
 
@@ -42,7 +43,7 @@ riding opencode for comparability with recorded rounds.
 
 An episode passes when all hold within the time cap:
 
-1. Spec test hashes unchanged.
+1. Spec test bytes unchanged.
 2. `go test` green on the new package.
 3. The workspace still builds (typecheck clean, same check the edit
    bench uses).
@@ -113,7 +114,7 @@ green. Tracked as a bead blocked on tier 1.
 - The author kind lands under the existing lattice: `HasSpecs` arm,
   classify entry, prompt template, kind row here, each with the guard
   the edit kinds already have.
-- Spec test hashes in the manifest are a recorded-hash freeze; the
+- Spec test bytes in the manifest are a byte-equality freeze; the
   scoring check doubles as the guard.
 - The raw-mode surface (which tools each arm serves) is asserted by a
   driver test, not prose, so this file cannot drift from the actual
