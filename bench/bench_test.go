@@ -619,7 +619,7 @@ func runOracle(c config, wt string, t Manifest) (string, error) {
 		}
 		body, _ := json.Marshal(map[string]any{"pkg": t.Author.Pkg, "ops": ops})
 		res := agoJSONStdin(c, wt, string(body), "patch", "--body-file", "-")
-		rec, _ := json.Marshal(map[string]any{"call": []string{"patch", "author"}, "res": res})
+		rec, _ := json.Marshal(map[string]any{"call": []string{"patch", string(body)}, "res": res})
 		b.Write(rec)
 		b.WriteByte('\n')
 		if res["status"] != "accepted" {
