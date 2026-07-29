@@ -153,6 +153,10 @@ func packageDir(s *Snapshot, p *packages.Package, pkgPath string) (string, *Reje
 	if len(p.Syntax) > 0 {
 		return filepath.Dir(p.Fset.Position(p.Syntax[0].Pos()).Filename), nil
 	}
+	// No v.Types == nil filter here, unlike the sibling loops earlier in
+	// upsertDeclEdit: this only needs a parsed file position to derive a
+	// directory, not a resolved types.Package, so an untyped variant still
+	// qualifies. Do not "fix" this into matching those other loops.
 	for _, v := range s.pkgs {
 		if v == p || v.PkgPath != pkgPath || strings.HasSuffix(v.ID, ".test") {
 			continue

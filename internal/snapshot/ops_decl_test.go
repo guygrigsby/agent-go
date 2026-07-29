@@ -1,10 +1,13 @@
 package snapshot
 
 import (
+	"go/types"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"golang.org/x/tools/go/packages"
 )
 
 // Task 8: composable decl ops (rename/set_body/add_param/upsert_decl folded
@@ -929,6 +932,62 @@ func TestGet(t *testing.T) {
 	}
 	if _, err := os.Stat(filepath.Join(pkgDir, "agent.go")); err != nil {
 		t.Fatal(err)
+	}
+}
+
+// packageDir's own two lower tiers (GoFiles/CompiledGoFiles, then the
+// module-relative derivation) are dead code from the upsert_decl paths'
+// coverage alone: no shape a real go/packages Load produces reaches them,
+// since the in-package test variant (tier 2) already satisfies every
+// concrete test-only-directory case. packageDir is a free function in this
+// package, so these hand-construct the *packages.Package shapes tier 2
+// cannot match and call it directly to pin the contract.
+func TestPackageDirGoFilesFallback(t *testing.T) {
+	s := New(t.TempDir())
+	p := &packages.Package{
+		PkgPath: "example.com/foo",
+		Types:   types.NewPackage("example.com/foo", "foo"),
+		GoFiles: []string{filepath.Join("some", "dir", "foo.go")},
+	}
+	dir, rej := packageDir(s, p, "example.com/foo")
+	if rej != nil {
+		t.Fatalf("rejected: %v", rej)
+	}
+	if want := filepath.Join("some", "dir"); dir != want {
+		t.Fatalf("dir = %q, want %q", dir, want)
+	}
+}
+
+func TestPackageDirCompiledGoFilesFallback(t *testing.T) {
+	s := New(t.TempDir())
+	p := &packages.Package{
+		PkgPath:         "example.com/foo",
+		Types:           types.NewPackage("example.com/foo", "foo"),
+		CompiledGoFiles: []string{filepath.Join("other", "dir", "foo.go")},
+	}
+	dir, rej := packageDir(s, p, "example.com/foo")
+	if rej != nil {
+		t.Fatalf("rejected: %v", rej)
+	}
+	if want := filepath.Join("other", "dir"); dir != want {
+		t.Fatalf("dir = %q, want %q", dir, want)
+	}
+}
+
+func TestPackageDirModuleRelativeFallback(t *testing.T) {
+	dir := t.TempDir()
+	os.WriteFile(filepath.Join(dir, "go.mod"), []byte("module scratch.local/nofiles\n\ngo 1.24\n"), 0o644)
+	s := New(dir)
+	p := &packages.Package{
+		PkgPath: "scratch.local/nofiles/sub/pkg",
+		Types:   types.NewPackage("scratch.local/nofiles/sub/pkg", "pkg"),
+	}
+	got, rej := packageDir(s, p, "scratch.local/nofiles/sub/pkg")
+	if rej != nil {
+		t.Fatalf("rejected: %v", rej)
+	}
+	if want := filepath.Join(dir, "sub", "pkg"); got != want {
+		t.Fatalf("dir = %q, want %q", got, want)
 	}
 }
 
