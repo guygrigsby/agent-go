@@ -79,6 +79,10 @@ spent on it.
   when the tests pin the behavior; a thin suite makes every pass a
   false green. A commit below threshold is rejected with the coverage
   named.
+- Its ground truth is deterministic. The suite must pass twice, each
+  run in its own fresh worktree so the build itself varies, not just
+  the run. A flake (green in one build, red in the next) rejects with
+  the blocker named.
 
 Open point: vault and traefik class repos may hold nothing that
 simple. The fallback is adding one small repo to the roster, never

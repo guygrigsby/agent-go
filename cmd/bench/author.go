@@ -133,11 +133,13 @@ func authorCandidates(repoDir, repoName string, minCover float64, maxImplFiles, 
 
 // authorCandidate runs one commit through the gate ladder: shape, tier 1
 // ceilings (impl file count, impl line count, dir must be new, module
-// path must derive), then the coverage gate last since it is the
-// expensive one (a temp worktree, a real `go test -cover`). Every
-// rejection past the shape check logs its blocker to stderr; the shape
-// mismatch itself stays silent, it is the common case (most commits are
-// not greenfield package additions).
+// path must derive), then the coverage gate (a temp worktree, a real
+// `go test -cover`), then last the determinism gate: a second fresh
+// worktree re-runs the same suite to catch ground truth that only
+// passes in the coverage worktree's compiled binary (agent-go-yq4).
+// Every rejection past the shape check logs its blocker to stderr; the
+// shape mismatch itself stays silent, it is the common case (most
+// commits are not greenfield package additions).
 func authorCandidate(repoDir, repoName, sha string, minCover float64, maxImplFiles, maxImplLines int) (Manifest, bool) {
 	skip := func(why string) (Manifest, bool) {
 		fmt.Fprintf(os.Stderr, "skip %s %.8s: %s\n", repoName, sha, why)
@@ -183,6 +185,9 @@ func authorCandidate(repoDir, repoName, sha string, minCover float64, maxImplFil
 	if blocker != "" {
 		return skip(blocker)
 	}
+	if blocker := authorDeterminism(repoDir, sha, shape.Dir); blocker != "" {
+		return skip(blocker)
+	}
 
 	return Manifest{
 		Repo: repoName, SHA: sha, Kind: "author",
@@ -194,8 +199,8 @@ func authorCandidate(repoDir, repoName, sha string, minCover float64, maxImplFil
 
 // authorCoverage runs the ground-truth commit's own test suite in a
 // disposable worktree and measures its statement coverage: the expensive
-// gate, so it runs last and only on structural survivors. The worktree
-// is always removed, success or failure.
+// gate, so it runs only on structural survivors. The worktree is always
+// removed, success or failure.
 func authorCoverage(repoDir, sha, dir string, minCover float64) (float64, string) {
 	tmp, err := os.MkdirTemp("", "ago-bench-author-*")
 	if err != nil {
@@ -226,6 +231,42 @@ func authorCoverage(repoDir, sha, dir string, minCover float64) (float64, string
 		return cov, fmt.Sprintf("coverage %.1f below %.0f", cov, minCover)
 	}
 	return cov, ""
+}
+
+// authorDeterminism re-runs the ground-truth suite in a second, freshly
+// built worktree, plain pass/fail, no coverage parsing. Some suites are
+// nondeterministic per compiled binary (protobuf detrand randomizes an
+// error prefix per build, agent-go-k8z), and two runs in the SAME
+// worktree share a test binary and always agree; a fresh worktree path
+// gives the second run a different build identity, which is what
+// catches the flake. Runs last, only on coverage survivors, since it
+// pays for a second worktree, download and compile. The worktree is
+// always removed, success or failure.
+func authorDeterminism(repoDir, sha, dir string) string {
+	tmp, err := os.MkdirTemp("", "ago-bench-author-determinism-*")
+	if err != nil {
+		return fmt.Sprintf("determinism worktree: %v", err)
+	}
+	defer os.RemoveAll(tmp)
+	if out, err := exec.Command("git", "-C", repoDir, "worktree", "add", tmp, sha).CombinedOutput(); err != nil {
+		return fmt.Sprintf("determinism worktree add failed: %v: %s", err, strings.TrimSpace(string(out)))
+	}
+	defer exec.Command("git", "-C", repoDir, "worktree", "remove", "--force", tmp).Run()
+
+	dl := exec.Command("go", "mod", "download")
+	dl.Dir = tmp
+	if out, err := dl.CombinedOutput(); err != nil {
+		return fmt.Sprintf("go mod download failed: %v: %s", err, strings.TrimSpace(string(out)))
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), authorCoverageTimeout)
+	defer cancel()
+	test := exec.CommandContext(ctx, "go", "test", "./"+dir)
+	test.Dir = tmp
+	if out, err := test.CombinedOutput(); err != nil {
+		return fmt.Sprintf("suite nondeterministic across builds: %v: %s", err, strings.TrimSpace(string(out)))
+	}
+	return ""
 }
 
 // diffTreeFiles lists every path the commit touched, not just Go files:
