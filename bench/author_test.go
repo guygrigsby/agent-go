@@ -117,6 +117,37 @@ func TestAuthorOracleOpsCycle(t *testing.T) {
 	}
 }
 
+// TestAuthorOracleOpsLocalShadow covers a decl whose body declares a local
+// variable that happens to share a name with an unrelated top-level decl:
+// the local must not manufacture a fake dependency edge. Reviewer's
+// repro: B calls A (a real edge, A before B); A's body only has a local
+// `B := 5` that it reads back, no real call to top-level B. Treating that
+// local as a reference to top-level B fabricates a second edge (B before
+// A) on top of the real one, producing a 2-cycle where none exists; the
+// cycle tie-break then forces B (the earlier original index) into
+// position 0, where createFileInPatch's eager validation sees `func B()
+// { A() }` alone and rejects on undefined: A. The fix must see through
+// the shadow: A is actually self-contained and must land first.
+func TestAuthorOracleOpsLocalShadow(t *testing.T) {
+	files := map[string]string{
+		"pkg/f.go": "package pkg\n\nfunc B() { A() }\n\nfunc A() { B := 5; _ = B }\n",
+	}
+	ops, err := authorOracleOps("example.com/m/pkg", files)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(ops) != 2 {
+		t.Fatalf("want 2 ops, got %d: %v", len(ops), ops)
+	}
+	if !strings.Contains(ops[0]["text"].(string), "func A") {
+		t.Fatalf("A's local \"B\" must not shadow-edge into top-level B; A is self-contained and must land first, got: %v / %v",
+			ops[0]["text"], ops[1]["text"])
+	}
+	if !strings.Contains(ops[1]["text"].(string), "func B") {
+		t.Fatalf("B genuinely calls A, it must land second, got: %v / %v", ops[0]["text"], ops[1]["text"])
+	}
+}
+
 // TestAuthorOracleOpsImports covers the goimports-ambiguity half of the
 // bug: each file's own import block (path plus alias, alias empty for the
 // default name) rides on that file's ops, so an explicit imports field

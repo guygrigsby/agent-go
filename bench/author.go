@@ -185,7 +185,14 @@ func declProvides(d ast.Decl) map[string]bool {
 // real references), a composite literal's key (struct field or map key),
 // and a field list's parameter/struct-field names (declarations, not
 // uses; the field's type is still walked, so an embedded or field type
-// naming another top-level decl still counts).
+// naming another top-level decl still counts). It then subtracts every
+// name the decl binds locally (localBoundNames): a local variable,
+// parameter, or receiver that happens to share a spelling with an
+// unrelated top-level decl is not a reference to it, and counting it as
+// one manufactures a dependency edge that isn't there (the exact failure
+// class this function exists to prevent, just one level down: a fake
+// edge can build a fake cycle, and the cycle tie-break can then place a
+// dependent decl first).
 func declRequires(d ast.Decl) map[string]bool {
 	refs := map[string]bool{}
 	switch n := d.(type) {
@@ -212,7 +219,87 @@ func declRequires(d ast.Decl) map[string]bool {
 			}
 		}
 	}
+	for name := range localBoundNames(d) {
+		delete(refs, name)
+	}
 	return refs
+}
+
+// localBoundNames returns every identifier a decl binds locally rather
+// than at package scope: the receiver and parameter/result names of the
+// decl itself (and of any nested closure), short variable declarations
+// (:=, including a range statement's and a type switch guard's define
+// form), and local var/const/type declarations inside a body. None of
+// these are references to a same-named top-level decl, so declRequires
+// subtracts them.
+//
+// This is a flat collect-then-subtract, not a scope-tracking walk: a name
+// is excluded from the whole decl the moment it's bound anywhere inside
+// it, even outside that binding's actual lexical block. The only shape
+// this misses is a local name that shadows a top-level decl in one block
+// while the same spelling is legitimately used elsewhere in the same decl
+// to mean the top-level decl; that's rare, and the cost of missing it is
+// only a weaker ordering (falls back to source order), never a dropped or
+// duplicated op.
+func localBoundNames(d ast.Decl) map[string]bool {
+	names := map[string]bool{}
+	bindIdent := func(e ast.Expr) {
+		if id, ok := e.(*ast.Ident); ok && id.Name != "_" {
+			names[id.Name] = true
+		}
+	}
+	bindFields := func(list *ast.FieldList) {
+		if list == nil {
+			return
+		}
+		for _, f := range list.List {
+			for _, id := range f.Names {
+				if id.Name != "_" {
+					names[id.Name] = true
+				}
+			}
+		}
+	}
+	if fn, ok := d.(*ast.FuncDecl); ok {
+		bindFields(fn.Recv)
+	}
+	ast.Inspect(d, func(n ast.Node) bool {
+		switch x := n.(type) {
+		case *ast.FuncType:
+			bindFields(x.Params)
+			bindFields(x.Results)
+		case *ast.AssignStmt:
+			if x.Tok == token.DEFINE {
+				for _, l := range x.Lhs {
+					bindIdent(l)
+				}
+			}
+		case *ast.RangeStmt:
+			if x.Tok == token.DEFINE {
+				bindIdent(x.Key)
+				bindIdent(x.Value)
+			}
+		case *ast.DeclStmt:
+			if g, ok := x.Decl.(*ast.GenDecl); ok {
+				for _, spec := range g.Specs {
+					switch s := spec.(type) {
+					case *ast.ValueSpec:
+						for _, id := range s.Names {
+							if id.Name != "_" {
+								names[id.Name] = true
+							}
+						}
+					case *ast.TypeSpec:
+						names[s.Name.Name] = true
+					}
+				}
+			}
+		case *ast.LabeledStmt:
+			names[x.Label.Name] = true
+		}
+		return true
+	})
+	return names
 }
 
 // collectIdents walks n collecting identifier names that are genuine
