@@ -61,7 +61,9 @@ func TestSmokeSuitePicksOnePerKind(t *testing.T) {
 // Tenet 7: every task is mined from a real commit, never hand-written.
 // Each manifest entry must cite a full commit SHA from a known repo.
 func TestTaskManifestsCiteRealCommits(t *testing.T) {
-	known := map[string]bool{"traefik": true, "vault": true, "boundary": true, "cobra": true}
+	// hugo joined for the author kind: the roster's first greenfield task
+	// that clears the coverage and determinism gates (628efd6e, common/para).
+	known := map[string]bool{"traefik": true, "vault": true, "boundary": true, "cobra": true, "hugo": true}
 	sha := regexp.MustCompile(`^[0-9a-f]{40}$`)
 	paths, err := filepath.Glob("tasks-*.json")
 	if err != nil || len(paths) == 0 {
