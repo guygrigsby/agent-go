@@ -1,0 +1,18 @@
+{
+ "ago_rev": "61b59183d549c2abb4deb35c590463af9d98de6b",
+ "cap": "15m0s",
+ "endpoint": "",
+ "model": "",
+ "profiles": [
+  {
+   "name": "adhoc",
+   "endpoint": "",
+   "model": ""
+  }
+ ],
+ "raw_prompt_tokens": 129,
+ "semantic_prompt_tokens": 138,
+ "serena_prompt_tokens": 111,
+ "serena_rev": "7c34662996f2d2e3db38001785e1f279dced2f50",
+ "started": "2026-07-28T18:44:57-06:00"
+}
